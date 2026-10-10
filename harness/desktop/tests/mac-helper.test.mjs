@@ -15,7 +15,13 @@ import { after, test } from "node:test";
 import { MacHelper, MacHelperError, HELPER_NAME, HELPER_SCREEN_PERMISSION_TEXT, QUARANTINE_KEPT_TEXT, clearQuarantine, defaultHelperPath, describeAction, translocated } from "../out/mac-helper.js";
 
 const roots = [];
-after(() => {
+const servers = [];
+after(async () => {
+  // Assertion failures must not keep the test process alive through fake HTTP listeners.
+  await Promise.all(servers.map((server) => new Promise((resolve) => {
+    server.close(resolve);
+    server.closeAllConnections();
+  })));
   for (const dir of roots) rmSync(dir, { recursive: true, force: true });
 });
 
@@ -148,6 +154,7 @@ function fakeHelper(mode = "ok") {
       });
     });
     state.servers.push(server);
+    servers.push(server);
     await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
     state.port = server.address().port;
     // the real helper writes it atomically; a short delay stands for its start-up
@@ -158,9 +165,10 @@ function fakeHelper(mode = "ok") {
   return state;
 }
 
-test("absent bundle: not present, never launched, every call says so", async () => {
+test("absent bundle: not present, never launched, every call says so", async (t) => {
   const dir = scratch();
   const helper = new MacHelper({ appPath: join(dir, "nowhere.app"), dataDir: join(dir, "data") });
+  t.after(() => helper.stop());
   assert.equal(helper.present(), false);
   assert.equal(await helper.ready(), false);
   assert.equal(helper.running(), false);
@@ -168,16 +176,18 @@ test("absent bundle: not present, never launched, every call says so", async () 
   assert.match(helper.failure(), /no helper bundle/);
   await assert.rejects(helper.screenshot(), (exc) => exc instanceof MacHelperError && exc.status === 503 && exc.code === "not_running");
   const off = new MacHelper({ appPath: undefined, dataDir: join(dir, "data2") });
+  t.after(() => off.stop());
   assert.equal(off.present(), false);
   assert.equal(await off.ready(), false);
 });
 
-test("start: token file 0600 before the launch, open's arguments, port discovery, status cached", async () => {
+test("start: token file 0600 before the launch, open's arguments, port discovery, status cached", async (t) => {
   const dir = scratch();
   const app = fakeBundle(dir);
   const fake = fakeHelper();
   const lines = [];
   const helper = new MacHelper({ appPath: app, dataDir: join(dir, "data"), launch: fake.launch, log: (l) => lines.push(l) });
+  t.after(() => helper.stop());
   assert.equal(helper.present(), true);
   assert.equal(await helper.ready(), true);
   assert.equal(helper.running(), true);
@@ -186,9 +196,11 @@ test("start: token file 0600 before the launch, open's arguments, port discovery
   assert.ok(fake.args.includes("--port-file"));
   assert.equal(fake.parentPid, process.pid);
   assert.equal(fake.token.length, 48);
-  // the token file is the person's alone while the helper runs
-  assert.equal(statSync(fake.args[1]).mode & 0o777, 0o600);
-  assert.equal(statSync(join(dir, "data")).mode & 0o777, 0o700);
+  // POSIX permission bits are enforced on Mac/Linux; Windows uses filesystem ACLs.
+  if (process.platform !== "win32") {
+    assert.equal(statSync(fake.args[1]).mode & 0o777, 0o600);
+    assert.equal(statSync(join(dir, "data")).mode & 0o777, 0o700);
+  }
   // the token the fake read is the one the client sends: /status was answered 200
   const status = helper.cachedStatus();
   assert.equal(status.screen, "granted");
@@ -207,10 +219,11 @@ test("start: token file 0600 before the launch, open's arguments, port discovery
   assert.equal(existsSync(join(dir, "data", "token")), false);
 });
 
-test("the endpoints map one to one: status, request, screenshot, execute", async () => {
+test("the endpoints map one to one: status, request, screenshot, execute", async (t) => {
   const dir = scratch();
   const fake = fakeHelper();
   const helper = new MacHelper({ appPath: fakeBundle(dir), dataDir: join(dir, "data"), launch: fake.launch });
+  t.after(() => helper.stop());
   assert.equal(await helper.ready(), true);
   const asked = await helper.request("screen", true);
   assert.equal(asked.screen, "granted");
@@ -230,10 +243,11 @@ test("the endpoints map one to one: status, request, screenshot, execute", async
   await helper.stop();
 });
 
-test("the window routes: /windows lists, /window captures one by id, 404 when it is gone; status carries the capture source", async () => {
+test("the window routes: /windows lists, /window captures one by id, 404 when it is gone; status carries the capture source", async (t) => {
   const dir = scratch();
   const fake = fakeHelper();
   const helper = new MacHelper({ appPath: fakeBundle(dir), dataDir: join(dir, "data"), launch: fake.launch });
+  t.after(() => helper.stop());
   assert.equal(await helper.ready(), true);
   assert.equal(helper.cachedStatus().capture, "ScreenCaptureKit");
   assert.equal(helper.cachedStatus().screenDetail, undefined);
@@ -251,10 +265,11 @@ test("the window routes: /windows lists, /window captures one by id, 404 when it
   await helper.stop();
 });
 
-test("denied: /screenshot's 403 comes through with its code; status says denied", async () => {
+test("denied: /screenshot's 403 comes through with its code; status says denied", async (t) => {
   const dir = scratch();
   const fake = fakeHelper("denied");
   const helper = new MacHelper({ appPath: fakeBundle(dir), dataDir: join(dir, "data"), launch: fake.launch });
+  t.after(() => helper.stop());
   assert.equal(await helper.ready(), true);
   assert.equal(helper.cachedStatus().screen, "denied");
   assert.equal(helper.cachedStatus().accessibility, false);
@@ -262,11 +277,12 @@ test("denied: /screenshot's 403 comes through with its code; status says denied"
   await helper.stop();
 });
 
-test("a helper that never writes its port: ready() is false, and not retried for a while", async () => {
+test("a helper that never writes its port: ready() is false, and not retried for a while", async (t) => {
   const dir = scratch();
   const fake = fakeHelper("no-port");
   const lines = [];
   const helper = new MacHelper({ appPath: fakeBundle(dir), dataDir: join(dir, "data"), launch: fake.launch, startTimeoutMs: 250, retryAfterMs: 60_000, log: (l) => lines.push(l) });
+  t.after(() => helper.stop());
   assert.equal(helper.failedToStart(), false);
   assert.equal(await helper.ready(), false);
   assert.equal(helper.failedToStart(), true);
@@ -356,6 +372,7 @@ test("operator: a helper bundle that did not start is the reason — for the pic
   const dir = scratch();
   const fake = fakeHelper("no-port");
   const { operator, helper } = macOperator(dir, fake, { startTimeoutMs: 200, retryAfterMs: 60_000 });
+  t.after(() => helper.stop());
   await onDarwin(async () => {
     electronFake.captures = 0;
     await assert.rejects(operator.screenshot(), (exc) => exc instanceof OperatorError && exc.status === 503 && /^no screenshot: Nanodot Computer Use did not start \(no port after/.test(exc.message));
@@ -369,10 +386,11 @@ test("operator: a helper bundle that did not start is the reason — for the pic
   assert.equal(helper.running(), false);
 });
 
-test("operator: with no helper bundle at all the Electron path takes the picture (a build without the helper)", async () => {
+test("operator: with no helper bundle at all the Electron path takes the picture (a build without the helper)", async (t) => {
   const dir = scratch();
   const lines = [];
   const helper = new MacHelper({ appPath: join(dir, "nowhere.app"), dataDir: join(dir, "data") });
+  t.after(() => helper.stop());
   const operator = new Operator({ helper, log: (l) => lines.push(l) });
   await onDarwin(async () => {
     electronFake.captures = 0;
@@ -414,6 +432,7 @@ test("a helper that dies: the next call fails as not_running and ready() launche
   const dir = scratch();
   const fake = fakeHelper("dies");
   const helper = new MacHelper({ appPath: fakeBundle(dir), dataDir: join(dir, "data"), launch: fake.launch });
+  t.after(() => helper.stop());
   assert.equal(await helper.ready(), true);
   // the fake closed its server after the first /status; the socket is refused now
   await assert.rejects(helper.status(), (exc) => exc instanceof MacHelperError && exc.code === "not_running");
@@ -428,6 +447,7 @@ test("restart: /quit to the old one, then a fresh launch with a new token", asyn
   const dir = scratch();
   const fake = fakeHelper();
   const helper = new MacHelper({ appPath: fakeBundle(dir), dataDir: join(dir, "data"), launch: fake.launch });
+  t.after(() => helper.stop());
   assert.equal(await helper.ready(), true);
   const first = fake.token;
   assert.equal(await helper.restart(), true);
@@ -442,6 +462,7 @@ test("restart: two at once are one — a single /quit, a single fresh launch; bu
   const dir = scratch();
   const fake = fakeHelper();
   const helper = new MacHelper({ appPath: fakeBundle(dir), dataDir: join(dir, "data"), launch: fake.launch });
+  t.after(() => helper.stop());
   assert.equal(await helper.ready(), true);
   assert.equal(helper.busy(), false);
   const first = helper.restart();
@@ -457,16 +478,18 @@ test("restart: two at once are one — a single /quit, a single fresh launch; bu
   await helper.stop();
 });
 
-test("quarantine: a flag that came off is logged; one that stays is why the helper is not started", async () => {
+test("quarantine: a flag that came off is logged; one that stays is why the helper is not started", async (t) => {
   const dir = scratch();
   const fake = fakeHelper();
   const lines = [];
   const removed = new MacHelper({ appPath: fakeBundle(dir), dataDir: join(dir, "data"), launch: fake.launch, quarantine: () => ({ result: "removed", detail: "" }), log: (l) => lines.push(l) });
+  t.after(() => removed.stop());
   assert.equal(await removed.ready(), true);
   assert.ok(lines.some((l) => /removed the quarantine flag/.test(l)));
   await removed.stop();
   const stuck = fakeHelper();
   const kept = new MacHelper({ appPath: fakeBundle(dir), dataDir: join(dir, "data2"), launch: stuck.launch, quarantine: () => ({ result: "kept", detail: "Operation not permitted" }) });
+  t.after(() => kept.stop());
   assert.equal(await kept.ready(), false);
   assert.equal(stuck.args, undefined);
   assert.ok(kept.failure().includes(QUARANTINE_KEPT_TEXT));
@@ -496,7 +519,7 @@ test("clearQuarantine: xattr's answers → none, removed, kept (with what it sai
   assert.equal(calls.length, before);
 });
 
-test("an app under App Translocation does not start its helper, and says why", async () => {
+test("an app under App Translocation does not start its helper, and says why", async (t) => {
   const dir = scratch();
   const app = join(dir, "AppTranslocation", "4F1C", "d", "Nanodot.app", "Contents", "Helpers", `${HELPER_NAME}.app`);
   mkdirSync(app, { recursive: true });
@@ -504,6 +527,7 @@ test("an app under App Translocation does not start its helper, and says why", a
   assert.equal(translocated("/Applications/Nanodot.app/Contents/Helpers/x.app"), false);
   const fake = fakeHelper();
   const helper = new MacHelper({ appPath: app, dataDir: join(dir, "data"), launch: fake.launch, quarantine: () => ({ result: "none", detail: "" }) });
+  t.after(() => helper.stop());
   assert.equal(helper.present(), true);
   assert.equal(await helper.ready(), false);
   assert.equal(fake.args, undefined);
