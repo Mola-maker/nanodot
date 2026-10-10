@@ -26,11 +26,12 @@ class NanodotRebrandTest(unittest.TestCase):
                     "Nanodot is non-profit, free forever.</string>"
                     '<string name="nm_cloud_notice">A developer-funded model.</string>'
                     '<string name="nm_cloud_spent_total">%1$s %2$s paid by developer</string>'
-                    '<string name="nm_cloud_notice_title">Non-profit</string></resources>'
+                    '<string name="nm_cloud_notice_title">Non-profit</string></resources>',
+                    encoding="utf-8",
                 )
             rebrand.apply_brand(root, load_brand(ROOT / "config/brand.nanodot.json"))
             for source in locales:
-                result = (root / source.relative_to(ROOT)).read_text()
+                result = (root / source.relative_to(ROOT)).read_text(encoding="utf-8")
                 self.assertNotIn("non-profit", result)
                 self.assertNotIn("developer-funded", result)
                 self.assertIn("nanoMuse Cloud", result)
@@ -49,11 +50,12 @@ class NanodotRebrandTest(unittest.TestCase):
                 "ButtonDefaults.buttonColors(containerColor = MuseTones.action, "
                 "contentColor = Color.White)\n"
                 "ButtonDefaults.buttonColors(containerColor = Color.Red, "
-                "contentColor = Color.White)"
+                "contentColor = Color.White)",
+                encoding="utf-8",
             )
             brand = load_brand(ROOT / "config/brand.nanodot.json")
             rebrand.apply_brand(root, brand)
-            result = path.read_text()
+            result = path.read_text(encoding="utf-8")
             self.assertIn("MaterialTheme.colorScheme.onPrimary", result)
             self.assertIn("containerColor = Color.Red, contentColor = Color.White", result)
             self.assertEqual([], rebrand.apply_brand(root, brand))
@@ -87,35 +89,42 @@ class NanodotRebrandTest(unittest.TestCase):
                 }
                 for path, value in files.items():
                     (root / path).parent.mkdir(parents=True, exist_ok=True)
-                    (root / path).write_text(value)
+                    (root / path).write_text(value, encoding="utf-8")
                 brand = load_brand(ROOT / "config/brand.nanodot.json")
                 self.assertTrue(rebrand.apply_brand(root, brand))
                 self.assertEqual([], rebrand.apply_brand(root, brand))
-                gradle = (root / APP / "build.gradle.kts").read_text()
+                gradle = (root / APP / "build.gradle.kts").read_text(encoding="utf-8")
                 self.assertIn('applicationId = "io.github.nanodot.app"', gradle)
                 self.assertIn('namespace = "com.openminis.app"', gradle)
                 self.assertIn('versionName = "1.0.1"', gradle)
                 self.assertIn(
-                    'android:scheme="nanodot"', (root / MAIN / "AndroidManifest.xml").read_text()
+                    'android:scheme="nanodot"',
+                    (root / MAIN / "AndroidManifest.xml").read_text(encoding="utf-8"),
                 )
                 self.assertIn(
                     'android:targetPackage="io.github.nanodot.app"',
-                    (root / MAIN / "res/xml/shortcuts.xml").read_text(),
+                    (root / MAIN / "res/xml/shortcuts.xml").read_text(encoding="utf-8"),
                 )
-                soul = (root / JAVA / "agent/SoulStore.kt").read_text()
+                soul = (root / JAVA / "agent/SoulStore.kt").read_text(encoding="utf-8")
                 self.assertIn('name = "Dot"', soul)
                 self.assertIn('"/var/minis"', soul)
                 self.assertIn('"minis://settings/soul"', soul)
-                nm = (root / MAIN / "res/values/nm_strings.xml").read_text()
+                nm = (root / MAIN / "res/values/nm_strings.xml").read_text(encoding="utf-8")
                 self.assertIn("nanoMuse Cloud", nm)
                 self.assertIn("Based on nanoMuse and OpenMinis", nm)
                 self.assertIn(">Nanodot<", nm)
-                self.assertEqual(files[Path("NOTICE")], (root / "NOTICE").read_text())
+                self.assertEqual(
+                    files[Path("NOTICE")], (root / "NOTICE").read_text(encoding="utf-8")
+                )
                 self.assertIn(
                     "BuildConfig.APPLICATION_ID",
-                    (root / JAVA / "accessibility/MinisAccessibilityService.kt").read_text(),
+                    (root / JAVA / "accessibility/MinisAccessibilityService.kt").read_text(
+                        encoding="utf-8"
+                    ),
                 )
-                self.assertIn("0xFF136F63", (root / JAVA / "ui/theme/Theme.kt").read_text())
+                self.assertIn(
+                    "0xFF136F63", (root / JAVA / "ui/theme/Theme.kt").read_text(encoding="utf-8")
+                )
 
     def test_every_existing_android_locale_gets_a_manual_update_explanation(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -124,12 +133,13 @@ class NanodotRebrandTest(unittest.TestCase):
             for source in locales:
                 path = root / source.relative_to(ROOT)
                 path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text("<resources></resources>")
+                path.write_text("<resources></resources>", encoding="utf-8")
             brand = load_brand(ROOT / "config/brand.nanodot.json")
             rebrand.apply_brand(root, brand)
             for source in locales:
                 self.assertIn(
-                    'name="nm_update_manual"', (root / source.relative_to(ROOT)).read_text()
+                    'name="nm_update_manual"',
+                    (root / source.relative_to(ROOT)).read_text(encoding="utf-8"),
                 )
             self.assertEqual([], rebrand.apply_brand(root, brand))
 
@@ -146,18 +156,23 @@ class NanodotRebrandTest(unittest.TestCase):
             }
             for path, value in paths.items():
                 (root / path).parent.mkdir(parents=True, exist_ok=True)
-                (root / path).write_text(value)
+                (root / path).write_text(value, encoding="utf-8")
             rebrand.apply_brand(root, load_brand(ROOT / "config/brand.nanodot.json"))
-            chat = (root / JAVA / "ui/theme/ChatColors.kt").read_text()
+            chat = (root / JAVA / "ui/theme/ChatColors.kt").read_text(encoding="utf-8")
             self.assertIn("background = Color(0xFFF4F7F8)", chat)
             self.assertIn("background = Color(0xFF10191D)", chat)
             self.assertIn("primaryText = Color(0xFF16252C)", chat)
             self.assertIn("primaryText = Color(0xFFE5EDF0)", chat)
             self.assertIn(
                 "DotColors.DarkPrimary",
-                (root / MAIN / "java/io/github/nanomuse/ui/home/MuseTones.kt").read_text(),
+                (root / MAIN / "java/io/github/nanomuse/ui/home/MuseTones.kt").read_text(
+                    encoding="utf-8"
+                ),
             )
-            self.assertIn("Hi, I am Dot.", (root / MAIN / "res/values/nm_strings.xml").read_text())
+            self.assertIn(
+                "Hi, I am Dot.",
+                (root / MAIN / "res/values/nm_strings.xml").read_text(encoding="utf-8"),
+            )
             self.assertEqual(
                 [], rebrand.apply_brand(root, load_brand(ROOT / "config/brand.nanodot.json"))
             )
@@ -187,33 +202,42 @@ class NanodotRebrandTest(unittest.TestCase):
             }
             for path, value in files.items():
                 (root / path).parent.mkdir(parents=True, exist_ok=True)
-                (root / path).write_text(value)
+                (root / path).write_text(value, encoding="utf-8")
             brand = load_brand(ROOT / "config/brand.nanodot.json")
             rebrand.apply_brand(root, brand)
-            strings = (root / MAIN / "res/values-ko/nm_strings.xml").read_text()
+            strings = (root / MAIN / "res/values-ko/nm_strings.xml").read_text(encoding="utf-8")
             self.assertIn(">Dot예요<", strings)
             self.assertIn(">nanoMuse의 AI 모델 개선 돕기<", strings)
             self.assertIn(">Nanodot helps<", strings)
-            self.assertIn('.ifEmpty { "Dot" }', (root / JAVA / "agent/SoulStore.kt").read_text())
-            events = (root / "android/src/ios/NanoMuse/Events.swift").read_text()
+            self.assertIn(
+                '.ifEmpty { "Dot" }',
+                (root / JAVA / "agent/SoulStore.kt").read_text(encoding="utf-8"),
+            )
+            events = (root / "android/src/ios/NanoMuse/Events.swift").read_text(encoding="utf-8")
             self.assertIn('"nanoMuse.openRoom"', events)
             self.assertIn('"nanoMuse.chatAction"', events)
             self.assertIn(
                 'return n.isEmpty ? "Dot" : n',
-                (root / "android/src/ios/Agent/Session/SoulStore.swift").read_text(),
+                (root / "android/src/ios/Agent/Session/SoulStore.swift").read_text(
+                    encoding="utf-8"
+                ),
             )
             self.assertIn(
                 "private static let updatesEnabled = false",
-                (root / "android/src/ios/NanoMuse/NanoMuseUpdateCheck.swift").read_text(),
+                (root / "android/src/ios/NanoMuse/NanoMuseUpdateCheck.swift").read_text(
+                    encoding="utf-8"
+                ),
             )
 
-            catalog = (root / "android/src/ios/Localizable.xcstrings").read_text()
+            catalog = (root / "android/src/ios/Localizable.xcstrings").read_text(encoding="utf-8")
             self.assertIn("Help improve nanoMuse's AI models", catalog)
             self.assertIn("帮助改进 nanoMuse 的 AI 模型", catalog)
             self.assertIn("Hi, I'm Dot", catalog)
             self.assertIn("Dot예요", catalog)
             self.assertIn(
                 "Hi, I'm Dot",
-                (root / "android/src/ios/NanoMuse/NanoMuseFirstRun.swift").read_text(),
+                (root / "android/src/ios/NanoMuse/NanoMuseFirstRun.swift").read_text(
+                    encoding="utf-8"
+                ),
             )
             self.assertEqual([], rebrand.apply_brand(root, brand))

@@ -4,7 +4,13 @@ import os
 import subprocess
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
+
+# These fixtures use POSIX paths, executable bits, and shebangs. A native Windows
+# bash.exe may only be the WSL launcher, without an installed Linux distribution.
+pytestmark = pytest.mark.skipif(os.name != "posix", reason="requires a POSIX Python and shell")
 
 
 def test_mobile_tools_use_verified_local_versions(tmp_path: Path) -> None:

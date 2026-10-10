@@ -49,14 +49,14 @@ def fixture(tmp_path):
     for relative, value in preserved.items():
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(value)
-    with (root / "web/src/index.css").open("a") as source:
+        path.write_text(value, encoding="utf-8")
+    with (root / "web/src/index.css").open("a", encoding="utf-8") as source:
         source.write("\n.custom-chip { color: #136F63; }\n")
     return root, preserved
 
 
 def alternate_brand(tmp_path, *, enabled=True):
-    data = json.loads((ROOT / "config/brand.nanodot.json").read_text())
+    data = json.loads((ROOT / "config/brand.nanodot.json").read_text(encoding="utf-8"))
     data["updates"] = {
         "enabled": enabled,
         "repositoryUrl": "https://github.com/Mola-maker/nanodot-releases",
@@ -65,7 +65,7 @@ def alternate_brand(tmp_path, *, enabled=True):
         for i, token in enumerate(data["themeColors"][mode]):
             data["themeColors"][mode][token] = f"#{offset + i + 1:02X}2233"
     path = tmp_path / "brand.json"
-    path.write_text(json.dumps(data))
+    path.write_text(json.dumps(data), encoding="utf-8")
     return load_brand(path)
 
 
@@ -79,19 +79,25 @@ def test_explicit_update_channel_reaches_every_platform_and_is_idempotent(tmp_pa
     assert apply_brand(root, brand)
     api = "https://api.github.com/repos/Mola-maker/nanodot-releases/releases/latest"
     repo = brand.updates.repositoryUrl
-    assert 'private const val REPO = "nanodot-releases"' in (root / INSTALLER).read_text()
-    assert f"{repo}/releases" in (root / ANDROID_UPDATE).read_text()
-    assert api in (root / ANDROID_UPDATE).read_text()
-    assert api in (root / IOS_UPDATE).read_text()
-    assert "private static let updatesEnabled = true" in (root / IOS_UPDATE).read_text()
-    assert f"{repo}/releases/latest" in (root / IOS_UPDATE).read_text()
-    assert api in (root / DESK).read_text()
-    assert "export const UPDATE_CHECKS_ENABLED = true" in (root / DESK).read_text()
-    assert f"{repo}/releases/latest" in (root / "harness/desktop/src/main.ts").read_text()
-    assert brand.repositoryUrl in (root / "nanomuse/brand.py").read_text()
-    assert repo in (root / "nanomuse/brand.py").read_text()
+    assert 'private const val REPO = "nanodot-releases"' in (root / INSTALLER).read_text(
+        encoding="utf-8"
+    )
+    assert f"{repo}/releases" in (root / ANDROID_UPDATE).read_text(encoding="utf-8")
+    assert api in (root / ANDROID_UPDATE).read_text(encoding="utf-8")
+    assert api in (root / IOS_UPDATE).read_text(encoding="utf-8")
+    assert "private static let updatesEnabled = true" in (root / IOS_UPDATE).read_text(
+        encoding="utf-8"
+    )
+    assert f"{repo}/releases/latest" in (root / IOS_UPDATE).read_text(encoding="utf-8")
+    assert api in (root / DESK).read_text(encoding="utf-8")
+    assert "export const UPDATE_CHECKS_ENABLED = true" in (root / DESK).read_text(encoding="utf-8")
+    assert f"{repo}/releases/latest" in (root / "harness/desktop/src/main.ts").read_text(
+        encoding="utf-8"
+    )
+    assert brand.repositoryUrl in (root / "nanomuse/brand.py").read_text(encoding="utf-8")
+    assert repo in (root / "nanomuse/brand.py").read_text(encoding="utf-8")
     for relative, value in preserved.items():
-        assert (root / relative).read_text() == value
+        assert (root / relative).read_text(encoding="utf-8") == value
     assert apply_brand(root, brand) == []
 
 
@@ -101,22 +107,23 @@ def test_disabling_and_restoring_the_profile_updates_existing_generated_values(t
     apply_brand(root, active)
     disabled = alternate_brand(tmp_path, enabled=False)
     apply_brand(root, disabled)
-    assert "export const UPDATE_CHECKS_ENABLED = false" in (root / DESK).read_text()
-    assert "private static let updatesEnabled = false" in (root / IOS_UPDATE).read_text()
-    assert (
-        "UPDATES_ENABLED = false"
-        in (
-            root / "android/src/android/app/src/main/java/io/github/nanomuse/dot/DotBrand.kt"
-        ).read_text()
+    assert "export const UPDATE_CHECKS_ENABLED = false" in (root / DESK).read_text(encoding="utf-8")
+    assert "private static let updatesEnabled = false" in (root / IOS_UPDATE).read_text(
+        encoding="utf-8"
     )
-    assert "UPDATES_ENABLED = False" in (root / "nanomuse/brand.py").read_text()
+    assert "UPDATES_ENABLED = false" in (
+        root / "android/src/android/app/src/main/java/io/github/nanomuse/dot/DotBrand.kt"
+    ).read_text(encoding="utf-8")
+    assert "UPDATES_ENABLED = False" in (root / "nanomuse/brand.py").read_text(encoding="utf-8")
     original = load_brand(ROOT / "config/brand.nanodot.json")
     apply_brand(root, original)
-    assert "nanodot-releases" not in (root / DESK).read_text()
-    assert "nanodot-releases" not in (root / IOS_UPDATE).read_text()
-    assert "static let action = tone(0x136F63, 0x7DD6C5)" in (root / IOS_TONES).read_text()
-    assert "--om-accent: #136F63;" in (root / "web/src/index.css").read_text()
-    assert "--nm-accent: #7DD6C5;" in (root / DESKTOP_STYLE).read_text()
+    assert "nanodot-releases" not in (root / DESK).read_text(encoding="utf-8")
+    assert "nanodot-releases" not in (root / IOS_UPDATE).read_text(encoding="utf-8")
+    assert "static let action = tone(0x136F63, 0x7DD6C5)" in (root / IOS_TONES).read_text(
+        encoding="utf-8"
+    )
+    assert "--om-accent: #136F63;" in (root / "web/src/index.css").read_text(encoding="utf-8")
+    assert "--nm-accent: #7DD6C5;" in (root / DESKTOP_STYLE).read_text(encoding="utf-8")
     assert apply_brand(root, original) == []
 
 
@@ -124,9 +131,9 @@ def test_alternate_palettes_reach_semantic_tokens_and_preserve_unrelated_colors(
     root, preserved = fixture(tmp_path)
     brand = alternate_brand(tmp_path)
     apply_brand(root, brand)
-    web = (root / "web/src/index.css").read_text()
-    desktop = (root / DESKTOP_STYLE).read_text()
-    swift = (root / IOS_TONES).read_text()
+    web = (root / "web/src/index.css").read_text(encoding="utf-8")
+    desktop = (root / DESKTOP_STYLE).read_text(encoding="utf-8")
+    swift = (root / IOS_TONES).read_text(encoding="utf-8")
     for mode, selector, desktop_selector in (
         ("light", ":root", "html[data-nanomuse] body"),
         ("dark", 'html[data-theme="dark"]', "html[data-nanomuse] body[data-ds-dark-theme]"),
@@ -146,9 +153,11 @@ def test_alternate_palettes_reach_semantic_tokens_and_preserve_unrelated_colors(
         block = css_block(desktop, desktop_selector)
         assert f"--nm-base: {palette['background']};" in block
         assert f"--nm-card: {palette['surface']};" in block
-        assert palette["background"] in (root / "web/src/theme.ts").read_text()
-        assert palette["background"] in (root / "web/index.html").read_text()
-        assert palette["background"] in (root / "harness/desktop/src/main.ts").read_text()
+        assert palette["background"] in (root / "web/src/theme.ts").read_text(encoding="utf-8")
+        assert palette["background"] in (root / "web/index.html").read_text(encoding="utf-8")
+        assert palette["background"] in (root / "harness/desktop/src/main.ts").read_text(
+            encoding="utf-8"
+        )
     for field, token in {
         "canvas": "background",
         "surface": "surface",
@@ -165,7 +174,7 @@ def test_alternate_palettes_reach_semantic_tokens_and_preserve_unrelated_colors(
     assert f"--nm-on-primary: {brand.themeColors['dark']['onPrimary']};" in css_block(
         desktop, "html[data-nanomuse] body[data-ds-dark-theme]"
     )
-    theme = (root / THEME).read_text()
+    theme = (root / THEME).read_text(encoding="utf-8")
     assert (
         f"private val TealDarkTertiary = Color(0xFF{brand.themeColors['dark']['care'][1:]})"
         in theme
@@ -174,16 +183,16 @@ def test_alternate_palettes_reach_semantic_tokens_and_preserve_unrelated_colors(
     assert "onTertiary = TealDarkOnTertiary," in theme
     assert ".custom-chip { color: #136F63; }" in web
     for relative, value in preserved.items():
-        assert (root / relative).read_text() == value
+        assert (root / relative).read_text(encoding="utf-8") == value
     assert apply_brand(root, brand) == []
 
 
 def test_ios_system_accent_uses_each_configured_primary_and_preserves_asset_metadata(tmp_path):
     root, _ = fixture(tmp_path)
     brand = alternate_brand(tmp_path)
-    before = json.loads((root / IOS_ACCENT).read_text())
+    before = json.loads((root / IOS_ACCENT).read_text(encoding="utf-8"))
     apply_brand(root, brand)
-    asset = json.loads((root / IOS_ACCENT).read_text())
+    asset = json.loads((root / IOS_ACCENT).read_text(encoding="utf-8"))
     assert asset["info"] == before["info"]
     for entry in asset["colors"]:
         mode = "dark" if entry.get("appearances") else "light"

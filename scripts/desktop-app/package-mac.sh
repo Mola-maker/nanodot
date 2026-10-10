@@ -53,8 +53,8 @@ if [ ! -d "$app" ]; then
   echo "renamed $(basename "${candidates[0]}") -> $app_name.app"
 fi
 executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Contents/Info.plist")"
-lipo -verify_arch "$native_arch" "$app/Contents/MacOS/$executable"
-lipo -verify_arch "$native_arch" "$app/Contents/Resources/runtime/nanomuse"
+lipo "$app/Contents/MacOS/$executable" -verify_arch "$native_arch"
+lipo "$app/Contents/Resources/runtime/nanomuse" -verify_arch "$native_arch"
 out="$app_dir/dist"
 name="$artifact-$version-mac-$arch"
 
@@ -117,7 +117,7 @@ done
 # over (docs/desktop.md "macOS permissions").
 helper="$app/Contents/Helpers/Nanodot Computer Use.app"
 if [ -d "$helper" ]; then
-  lipo -verify_arch "$native_arch" "$helper/Contents/MacOS/Nanodot Computer Use"
+  lipo "$helper/Contents/MacOS/Nanodot Computer Use" -verify_arch "$native_arch"
   helper_flags=(--timestamp=none)
   [ "$identity" != "-" ] && helper_flags=(--timestamp --options runtime)
   codesign --force --sign "$identity" "${helper_flags[@]}" --identifier io.github.nanodot.desktop.computer-use "$helper"

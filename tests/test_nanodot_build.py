@@ -5,7 +5,13 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
+
+# The APK wrapper runs in Linux/macOS or inside WSL, not through the Windows
+# bash.exe launcher with native Windows paths and no Linux distribution.
+pytestmark = pytest.mark.skipif(os.name != "posix", reason="requires a POSIX Python and shell")
 
 
 def run_wrapper(tmp_path: Path, *args: str) -> subprocess.CompletedProcess[str]:

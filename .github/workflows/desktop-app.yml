@@ -39,8 +39,8 @@ on:
 permissions:
   contents: read
 
-# One run per branch; a newer push to the same branch cancels the older build,
-# but a tag or a manual run is never cancelled.
+# One run per ref: an incoming push can cancel any older run on that ref.
+# Incoming manual and tag runs leave the currently running build intact.
 concurrency:
   group: desktop-app-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' && !startsWith(github.ref, 'refs/tags/') }}

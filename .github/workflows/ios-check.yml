@@ -61,7 +61,7 @@ jobs:
 
       - name: Native dependency cache
         id: deps-cache
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
           path: |
             android/deps/libs
@@ -89,6 +89,20 @@ jobs:
           test -d android/deps/resources/alpine-rootfs
           test -d android/deps/frameworks/FFmpeg.framework
           test -d android/deps/frameworks/Rclone.xcframework
+
+      # Save after native validation, before Xcode: a Swift failure must not
+      # discard an hour of successfully built native dependencies.
+      - name: Save completed native dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            android/deps/libs
+            android/deps/include
+            android/deps/resources
+            android/deps/frameworks
+            android/deps/lame-build
+          key: ${{ steps.deps-cache.outputs.cache-primary-key }}
 
       - name: Archive for a device, unsigned
         working-directory: android/src/ios
