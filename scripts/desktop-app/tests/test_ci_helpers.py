@@ -25,6 +25,45 @@ def load(name: str):
 
 
 class RuntimeCheckTests(unittest.TestCase):
+    @unittest.skipUnless(os.name == "posix", "PyInstaller framework links are POSIX-only")
+    def test_runtime_staging_preserves_framework_links_and_library_aliases(self):
+        runtime = load("build-runtime")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            dist = root / "dist"
+            target = root / "runtime"
+
+            def freeze(*_cmd, **_kwargs):
+                built = dist / "nanomuse"
+                version = built / "_internal/Python.framework/Versions/3.12"
+                (version / "Resources").mkdir(parents=True)
+                (built / "nanomuse").write_bytes(b"runtime executable")
+                (version / "Python").write_bytes(b"framework library")
+                (version / "Resources/Info.plist").write_bytes(b"framework metadata")
+                framework = version.parent.parent
+                (framework / "Versions/Current").symlink_to("3.12", target_is_directory=True)
+                (framework / "Python").symlink_to("Versions/Current/Python")
+                (framework / "Resources").symlink_to(
+                    "Versions/Current/Resources", target_is_directory=True
+                )
+                (built / "_internal/Python").symlink_to("Python.framework/Python")
+
+            with patch.object(runtime, "DIST", dist), patch.object(runtime, "run", freeze):
+                executable = runtime.build(target)
+            self.assertEqual(executable.read_bytes(), b"runtime executable")
+            for name in (
+                "Python",
+                "Python.framework/Python",
+                "Python.framework/Resources",
+                "Python.framework/Versions/Current",
+            ):
+                self.assertTrue((target / "_internal" / name).is_symlink(), name)
+            self.assertEqual((target / "_internal/Python").read_bytes(), b"framework library")
+            self.assertEqual(
+                (target / "_internal/Python.framework/Resources/Info.plist").read_bytes(),
+                b"framework metadata",
+            )
+
     def test_timeout_stops_a_live_verbose_runtime_without_waiting_for_pipe_eof(self):
         runtime = load("build-runtime")
         popen = subprocess.Popen

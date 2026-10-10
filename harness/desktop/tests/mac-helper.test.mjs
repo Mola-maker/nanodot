@@ -521,7 +521,8 @@ test("clearQuarantine: xattr's answers → none, removed, kept (with what it sai
 
 test("an app under App Translocation does not start its helper, and says why", async (t) => {
   const dir = scratch();
-  const app = join(dir, "AppTranslocation", "4F1C", "d", "Nanodot.app", "Contents", "Helpers", `${HELPER_NAME}.app`);
+  // This models a macOS path even when the test host accepts Windows separators.
+  const app = join(dir, "AppTranslocation", "4F1C", "d", "Nanodot.app", "Contents", "Helpers", `${HELPER_NAME}.app`).replaceAll("\\", "/");
   mkdirSync(app, { recursive: true });
   assert.equal(translocated(app), true);
   assert.equal(translocated("/Applications/Nanodot.app/Contents/Helpers/x.app"), false);
@@ -536,8 +537,8 @@ test("an app under App Translocation does not start its helper, and says why", a
 
 test("defaultHelperPath: the env override, Contents/Helpers when packaged, the build dir in development", () => {
   assert.equal(defaultHelperPath("/x/Nanodot.app/Contents/MacOS/nanomuse-desktop", true, "/proj", { NANOMUSE_COMPUTER_USE_APP: "/elsewhere/Helper.app" }), "/elsewhere/Helper.app");
-  assert.equal(defaultHelperPath("/x/Nanodot.app/Contents/MacOS/nanomuse-desktop", true, "/proj", {}), "/x/Nanodot.app/Contents/Helpers/Nanodot Computer Use.app");
-  assert.equal(defaultHelperPath("/usr/bin/electron", false, "/proj", {}), "/proj/mac/computer-use/build/Nanodot Computer Use.app");
+  assert.equal(defaultHelperPath("/x/Nanodot.app/Contents/MacOS/nanomuse-desktop", true, "/proj", {}), join("/x", "Nanodot.app", "Contents", "Helpers", `${HELPER_NAME}.app`));
+  assert.equal(defaultHelperPath("/usr/bin/electron", false, "/proj", {}), join("/proj", "mac", "computer-use", "build", `${HELPER_NAME}.app`));
 });
 
 test("describeAction: the glow's words, as the operator phrases them", () => {

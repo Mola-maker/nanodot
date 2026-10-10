@@ -15,7 +15,7 @@ const config = readFileSync(new URL("electron-builder.yml", here), "utf8");
 
 /** The lines of one top-level block of the YAML, by its key. */
 function block(key) {
-  const lines = config.split("\n");
+  const lines = config.split(/\r?\n/);
   const start = lines.findIndex((line) => line === `${key}:`);
   assert.notEqual(start, -1, `electron-builder.yml has a ${key} block`);
   const body = [];

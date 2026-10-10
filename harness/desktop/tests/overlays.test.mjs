@@ -58,7 +58,7 @@ test("the capsule is the phone's pill: the face in a three-hue ring, four breath
 });
 
 test("under prefers-reduced-motion both pages are steady lights", () => {
-  assert.match(glow, /@media \(prefers-reduced-motion: reduce\) \{\n\s*\.on \.glow, \.on \.hair, \.mark \.arc, \.mark\.lock, \.chip \{ animation: none; \}/);
+  assert.match(glow, /@media \(prefers-reduced-motion: reduce\) \{\r?\n\s*\.on \.glow, \.on \.hair, \.mark \.arc, \.mark\.lock, \.chip \{ animation: none; \}/);
   assert.match(glow, /if \(reduced\.matches\) \{ place\(mark, fx2, fy2\)/, "a drag's ring goes straight to the far end");
   assert.match(capsule, /@media \(prefers-reduced-motion: reduce\) \{ \.pill, \.card, \.ring, \.bars i \{ animation: none; \} \}/);
 });
