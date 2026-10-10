@@ -198,7 +198,7 @@ export function makeCloudSection(t: Translate, part: 'account' | 'data' = 'accou
         // The pickers and the "ways on" (C11): the account's models and each own row's in one
         // chooser, the account's row first, then the catalogue grouped for the region.
         h(OwnKeyPanel, { t, onChanged: refreshStatus }),
-        // The proxy for the providers (the shell's setting; drawn inside nanoMuse Desktop only).
+        // The proxy for the providers (the shell's setting; drawn inside Nanodot Desktop only).
         h(NetworkRows, { t, relayURL: status.baseURL }),
         // The account as the phone shows it — the pool in yuan, the ways on, invite, usage,
         // password, devices holding a key, the timeline, deletion — read live from the relay.

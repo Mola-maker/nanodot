@@ -189,7 +189,7 @@ class AgentForegroundService : Service() {
         if (com.openminis.app.crash.CrashFrequencyDetector.isSafeMode()) {
             try {
                 val stub = androidx.core.app.NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("nanoMuse")
+                    .setContentTitle("Nanodot")
                     .setSmallIcon(android.R.drawable.stat_sys_warning)
                     .setOngoing(false)
                     .build()
@@ -756,7 +756,7 @@ class AgentForegroundService : Service() {
         )
 
         // T-bg-overlay phase 1: enrich the ongoing notification.
-        // Title:   "nanoMuse is using <Tool>"  (or session-count summary when idle/between turns)
+        // Title:   "Nanodot is using <Tool>"  (or session-count summary when idle/between turns)
         // Text:    one-line "<sessionLabel> · <elapsed>" so the always-visible row stays compact
         // BigText: full status string from SessionActivityTracker.currentToolStatus when expanded
         // Progress: indeterminate while a tool is in flight (isToolRunning), hidden otherwise
@@ -767,7 +767,7 @@ class AgentForegroundService : Service() {
         // [T-android-live-update-completed] In the completed resting state the
         // title/status must stop describing work in progress. `toolName` is
         // already null by then (setInactive clears it), so the old code fell
-        // through to the generic "nanoMuse is running" title while the icon fell
+        // through to the generic "Nanodot is running" title while the icon fell
         // through to the wrench (toolSmallIconRes' else branch) — a finished
         // task rendered exactly like a running one.
         val titleText = when {
@@ -983,15 +983,15 @@ class AgentForegroundService : Service() {
      * so the user still gets a hint about what's running.
      */
     private fun toolDisplayLabel(toolName: String): String = when (toolName) {
-        "shell_execute" -> "nanoMuse is using Shell"
-        "file_read" -> "nanoMuse is reading File"
-        "file_write" -> "nanoMuse is using Editor"
-        "file_edit" -> "nanoMuse is editing File"
-        "browser_use" -> "nanoMuse is using Browser"
-        "read_image" -> "nanoMuse is reading Image"
-        "memory_write", "memory_get" -> "nanoMuse is using Memory"
-        "web_search" -> "nanoMuse is using Search"
-        else -> "nanoMuse is using $toolName"
+        "shell_execute" -> "Nanodot is using Shell"
+        "file_read" -> "Nanodot is reading File"
+        "file_write" -> "Nanodot is using Editor"
+        "file_edit" -> "Nanodot is editing File"
+        "browser_use" -> "Nanodot is using Browser"
+        "read_image" -> "Nanodot is reading Image"
+        "memory_write", "memory_get" -> "Nanodot is using Memory"
+        "web_search" -> "Nanodot is using Search"
+        else -> "Nanodot is using $toolName"
     }
 
     /**

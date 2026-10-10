@@ -39,7 +39,7 @@ description: What this does, and when to use it; the model picks the skill from 
 export function SkillsScreen() {
   const { state, toast, draft } = useStore();
   const t = useT();
-  const name = state.profile?.name ?? "nanoMuse";
+  const name = state.profile?.name ?? "Dot";
   const [data, setData] = useState<SkillsData | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);

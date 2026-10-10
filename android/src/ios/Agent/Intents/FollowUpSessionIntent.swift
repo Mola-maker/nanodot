@@ -7,7 +7,7 @@ private let logger = AppLogger(category: "FollowUpIntent")
 /// Sends a follow-up prompt to an existing session, continuing the conversation.
 struct FollowUpSessionIntent: AppIntent {
     static var title: LocalizedStringResource = "Follow Up Session"
-    static var description = IntentDescription("Sends a follow-up prompt to an existing nanoMuse session, continuing the conversation with the AI agent.")
+    static var description = IntentDescription("Sends a follow-up prompt to an existing Nanodot session, continuing the conversation with the AI agent.")
     static var openAppWhenRun = false
 
     @Parameter(title: "Session")
@@ -112,7 +112,7 @@ struct FollowUpSessionIntent: AppIntent {
             let promptPreview = String(prompt.prefix(50))
             ShortcutNotification.post(
                 id: "shortcut-followup-\(sid)",
-                title: AppLocalized("nanoMuse: Follow-up Sent"),
+                title: AppLocalized("Nanodot: Follow-up Sent"),
                 body: "\(modelName): \(promptPreview)\(prompt.count > 50 ? "…" : "")",
                 sessionId: sid
             )
@@ -135,7 +135,7 @@ struct FollowUpSessionIntent: AppIntent {
             if sendCompletionNotification {
                 ShortcutNotification.post(
                     id: "shortcut-followup-done-\(sid)",
-                    title: AppLocalized("nanoMuse: Follow-up Done"),
+                    title: AppLocalized("Nanodot: Follow-up Done"),
                     body: "\(modelName): \(String(responseText.prefix(200)))",
                     sessionId: sid
                 )
@@ -174,7 +174,7 @@ struct FollowUpSessionIntent: AppIntent {
             if capturedSendCompletionNotification {
                 ShortcutNotification.post(
                     id: "shortcut-followup-done-\(capturedSid)",
-                    title: AppLocalized("nanoMuse: Follow-up Done"),
+                    title: AppLocalized("Nanodot: Follow-up Done"),
                     body: "\(capturedModelName): \(summary)",
                     sessionId: capturedSid
                 )

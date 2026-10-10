@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * The installed version and the latest one, side by side (shared contract C2). The latest
- * comes from the download index on nanomuse.cn first, then GitHub's latest release; it is
+ * comes from the configured Nanodot GitHub release channel when enabled; it is
  * looked up at most once a day and the answer kept, with a "check now" for a stale or failed
  * check. Only the two lines of the Version row live on this; the in-app APK download on the
  * About page is the upstream UpdateChecker, untouched.
@@ -31,9 +31,8 @@ object UpdateCheck {
     private const val KEY_FAILED = "failed"
 
     /** Where "Update" goes on Android: the download page, with the APK and the store links. */
-    const val DOWNLOAD_URL = "https://nanomuse.cn/dl/"
-    const val INDEX_URL = "https://nanomuse.cn/dl/index.json"
-    const val GITHUB_LATEST_URL = "https://api.github.com/repos/nano-muse/nanoMuse/releases/latest"
+    const val DOWNLOAD_URL = "https://github.com/Mola-maker/nanodot/releases"
+    const val GITHUB_LATEST_URL = "https://api.github.com/repos/Mola-maker/nanodot/releases/latest"
 
     /** A check is repeated at most this often on its own. */
     const val FRESH_MS = 24L * 60 * 60 * 1000
@@ -48,7 +47,7 @@ object UpdateCheck {
         val checking: Boolean = false,
     ) {
         /** The latest is newer than this build. */
-        val newer: Boolean get() = latest != null && isNewer(latest, BuildConfig.VERSION_NAME)
+        val newer: Boolean get() = io.github.nanomuse.dot.DotBrand.UPDATES_ENABLED && latest != null && isNewer(latest, BuildConfig.VERSION_NAME)
     }
 
     private val _state = MutableStateFlow<State?>(null)
@@ -69,6 +68,7 @@ object UpdateCheck {
 
     /** The kept state, read from prefs the first time. */
     fun load(context: Context): State {
+        if (!io.github.nanomuse.dot.DotBrand.UPDATES_ENABLED) return State().also { _state.value = it }
         _state.value?.let { return it }
         val p = prefs(context)
         val s = State(latest = p.getString(KEY_LATEST, null), checkedAt = p.getLong(KEY_CHECKED_AT, 0L), failed = p.getBoolean(KEY_FAILED, false))
@@ -88,6 +88,7 @@ object UpdateCheck {
 
     /** A check right now (the row's tap). */
     fun checkNow(context: Context) {
+        if (!io.github.nanomuse.dot.DotBrand.UPDATES_ENABLED) { load(context); return }
         if (!checking.compareAndSet(false, true)) return
         val app = context.applicationContext
         _state.value = load(app).copy(checking = true)
@@ -109,15 +110,15 @@ object UpdateCheck {
         }
     }
 
-    /** The index on nanomuse.cn, then GitHub; null when neither answered with a version. */
+    /** Disabled channels do no network work; an enabled channel reads GitHub only. */
     internal fun fetchLatest(): String? {
-        get(INDEX_URL)?.let { parseIndex(it) }?.let { return it }
+        if (!io.github.nanomuse.dot.DotBrand.UPDATES_ENABLED) return null
         return get(GITHUB_LATEST_URL)?.let { parseGitHubLatest(it) }
     }
 
     private fun get(url: String): String? = try {
         val req = Request.Builder().url(url).get()
-            .header("User-Agent", "nanoMuse-Android/${BuildConfig.VERSION_NAME}")
+            .header("User-Agent", "Nanodot-Android/${BuildConfig.VERSION_NAME}")
             .header("Accept", "application/json")
             .build()
         http.newCall(req).execute().use { r ->

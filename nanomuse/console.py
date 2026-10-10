@@ -11,6 +11,7 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 from rich.text import Text
 
+from nanomuse.brand import AGENT_NAME
 from nanomuse.schema import ToolCall, ToolResult
 from nanomuse.ui import ApprovalDecision, ApprovalRequest
 
@@ -23,7 +24,7 @@ class ConsoleUI:
         console: Console | None = None,
         show_thinking: bool = False,
         quiet: bool = False,
-        name: str = "nanoMuse",
+        name: str = AGENT_NAME,
         unattended: bool = False,
     ):
         self.console = console or Console()

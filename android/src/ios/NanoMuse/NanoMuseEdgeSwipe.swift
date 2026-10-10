@@ -1,6 +1,6 @@
 //
 //  NanoMuseEdgeSwipe.swift
-//  nanoMuse
+//  Nanodot
 //
 //  A swipe in from the leading edge of the main chat opens the side drawer, as Android's
 //  ModalNavigationDrawer does on the Chat tab (NanoMuseHome.kt: `gesturesEnabled = … ||

@@ -361,7 +361,7 @@ private fun EmptyState(generating: Boolean, onWriteNow: () -> Unit) {
                 Button(
                     onClick = onWriteNow,
                     shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = Color.White),
+                    colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
                     modifier = Modifier.fillMaxWidth().height(46.dp),
                 ) { Text(stringResource(R.string.nm_feed_write_now), fontSize = 15.sp, fontWeight = FontWeight.SemiBold) }
             }
@@ -467,7 +467,7 @@ private fun FeedSettingsSheet(onDismiss: () -> Unit, onEditRoutine: (String) -> 
             Button(
                 onClick = { FeedStore.savePreferences(text); FeedFlow.acknowledgeIntro(context); onDismiss() },
                 shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = Color.White),
+                colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
                 modifier = Modifier.fillMaxWidth().height(46.dp),
             ) { Text(stringResource(R.string.nm_feed_save), fontSize = 15.sp, fontWeight = FontWeight.SemiBold) }
         }

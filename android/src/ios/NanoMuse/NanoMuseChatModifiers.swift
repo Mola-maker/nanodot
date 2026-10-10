@@ -1,6 +1,6 @@
 //
 //  NanoMuseChatModifiers.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Why these exist. `AIChatView.body` is one expression of some sixty chained
 //  modifiers (sheets, alerts, listeners). Each link wraps the value so far in

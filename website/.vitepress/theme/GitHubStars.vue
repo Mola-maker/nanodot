@@ -1,16 +1,15 @@
 <script setup lang="ts">
-// The repository link in the nav, with its star count. The same fetch, cache key, TTL and
-// number format as the homepage's site.js (nanomuse.cn), so a visitor who has seen one page
-// sees the same number on the other without a second request: `nm-stars` in localStorage,
+// The Nanodot repository link in the nav, with its own star-count cache.
+// This cache must not reuse nanoMuse's count: `nanodot-stars` in localStorage,
 // `{ n, t }`, good for an hour. Without a number — API down, private mode, first visit while
 // offline — the link still says GitHub. The count's slot is reserved so nothing moves when
 // the number arrives.
 import { onMounted, ref } from 'vue'
 import { useData } from 'vitepress'
 
-const REPO = 'https://github.com/nano-muse/nanoMuse'
-const API = 'https://api.github.com/repos/nano-muse/nanoMuse'
-const KEY = 'nm-stars'
+const REPO = 'https://github.com/Mola-maker/nanodot'
+const API = 'https://api.github.com/repos/Mola-maker/nanodot'
+const KEY = 'nanodot-stars'
 const TTL = 3600000
 
 const { lang } = useData()
@@ -59,7 +58,7 @@ onMounted(() => {
     :href="REPO"
     target="_blank"
     rel="noopener"
-    :aria-label="lang.startsWith('zh') ? 'nanoMuse 的 GitHub 仓库' : 'nanoMuse on GitHub'"
+    :aria-label="lang.startsWith('zh') ? 'Nanodot 的 GitHub 仓库' : 'Nanodot on GitHub'"
   >
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">
       <path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.9l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z" />

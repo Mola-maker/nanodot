@@ -1,24 +1,4 @@
-/**
- * The agent's face where the harness shows a brand: the sidebar mark, the
- * sidebar name, the hero mark above a blank session, the capsule, the header.
- * The face is the account's — the dragon by default, an emoji on a colour, or
- * one drawn in the avatar studio on the phone whose stills the host pulled —
- * and its mood follows what the agent is doing, the way the Android app's
- * `AgentAvatarDisc` and the web app's `Avatar` do: idle, working, waiting (for
- * the person), happy, error.
- *
- * The dragon moves: a short looping clip per mood — a head shake at rest,
- * headphones and a laptop while working, a crystal ball while waiting, a star
- * when pleased — the same clips the phone and the web app play. A drawn face
- * moves too once this computer has drawn its clips (`motion.ts`, Settings →
- * Media): the same four moods from `/nanomuse/avatar/motion/<mood>.mp4`, with
- * the file's mtime as the cache key, so a redrawn clip is not the old one from
- * the cache. The still shows where a clip is not worth it or not wanted: small
- * sizes, lists and pickers, a person who prefers reduced motion, a clip that
- * failed to load or was not drawn, the error mood. Without a clip the face and
- * the emoji move as a whole instead: breathe when idle, sway while working, hop
- * while waiting. A clip pauses while the window is hidden.
- */
+/** Dot uses bundled mood stills. A custom face keeps its own pictures and motion clips. */
 import { createElement as h, useEffect, useRef, useState, type CSSProperties, type ReactElement } from 'react'
 import { useLive, type Live, type LiveMotion, type LiveProfile } from './live.ts'
 import type { Translate } from './api.ts'
@@ -49,7 +29,7 @@ export function clipUrl(profile: LiveProfile | undefined, mood: Mood = 'idle', m
     const clip = motion.clips[mood]
     return clip ? `nanomuse/avatar/motion/${mood}.mp4?v=${clip.v}` : null
   }
-  return `nanomuse/assets/dragon-${mood}.mp4`
+  return null
 }
 
 /**
@@ -87,7 +67,7 @@ export interface AvatarProps {
 
 /** A round face of the agent at the requested size, moving when it may; an emoji face is drawn, not loaded. */
 export function Avatar({ size, profile, mood = 'idle', className, title, still = false }: AvatarProps): ReactElement {
-  const name = title ?? profile?.name ?? 'nanoMuse'
+  const name = title ?? profile?.name ?? 'Dot'
   const [, bump] = useState(0)
   const live = useLive()
   const visible = useVisible()
@@ -107,7 +87,7 @@ export function Avatar({ size, profile, mood = 'idle', className, title, still =
   const box: CSSProperties = { width: size, height: size }
   const emoji = profile?.avatar === 'emoji'
   const inner = emoji
-    ? h('span', { className: 'nm-avatar-emoji', style: { background: profile.color || '#0064d4', fontSize: Math.round(size * 0.58), lineHeight: `${size}px` } }, profile.emoji || '✨')
+    ? h('span', { className: 'nm-avatar-emoji', style: { background: profile.color || '#136F63', fontSize: Math.round(size * 0.58), lineHeight: `${size}px` } }, profile.emoji || '✨')
     : clip
       ? h('video', {
           key: clip,
@@ -125,7 +105,10 @@ export function Avatar({ size, profile, mood = 'idle', className, title, still =
             bump((n) => n + 1)
           },
         })
-      : h('img', { src: stillUrl(profile, mood), alt: '', width: size, height: size, draggable: false })
+      : h('img', { src: stillUrl(profile, mood), onError: (event: { currentTarget: HTMLImageElement }) => {
+          const fallback = stillUrl(undefined, mood)
+          if (event.currentTarget.getAttribute('src') !== fallback) event.currentTarget.src = fallback
+        }, alt: '', width: size, height: size, draggable: false })
 
   return h(
     'span',

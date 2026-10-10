@@ -13,7 +13,7 @@ export type { Grant, Hold, PendingApproval, SharedConnector, UpdateInfo }
 export interface LiveProfile {
   rev: number
   name: string
-  avatar: 'dragon' | 'emoji' | 'face'
+  avatar: 'dot-v1' | 'dragon' | 'emoji' | 'face'
   emoji: string
   color: string
   description: string
@@ -189,7 +189,7 @@ export interface LiveMotion {
 
 export const NO_MOTION: LiveMotion = { progress: null, clips: {}, faceId: '' }
 
-export const DEFAULT_PROFILE: LiveProfile = { rev: 0, name: 'nanoMuse', avatar: 'dragon', emoji: '', color: '', description: '', style: '', faceId: '', connectors: [] }
+export const DEFAULT_PROFILE: LiveProfile = { rev: 0, name: 'Dot', avatar: 'dot-v1', emoji: '', color: '', description: '', style: '', faceId: '', connectors: [] }
 
 const INITIAL: Live = {
   cloud: { signedIn: false, hint: '' },

@@ -215,10 +215,10 @@ final class GeminiOAuthManager: NSObject, ObservableObject {
 
     // MARK: - Legacy singleton Keychain (for migration)
 
-    static let legacyKeychainService = "io.github.nanomuse.app.gemini-oauth"
+    static let legacyKeychainService = "io.github.nanodot.app.gemini-oauth"
     static let legacyKeychainAccount = "token"
-    static let legacyEmailKey = "io.github.nanomuse.app.gemini-email"
-    static let legacyProjectIDKey = "io.github.nanomuse.app.gemini-gcp-project"
+    static let legacyEmailKey = "io.github.nanodot.app.gemini-email"
+    static let legacyProjectIDKey = "io.github.nanodot.app.gemini-gcp-project"
 
     static func loadLegacyToken() -> GeminiTokenStorage? {
         let query: [String: Any] = [

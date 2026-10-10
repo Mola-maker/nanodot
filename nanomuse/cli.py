@@ -18,13 +18,14 @@ from rich.prompt import Prompt
 from rich.table import Table
 
 from nanomuse import __version__
+from nanomuse.brand import DISPLAY_NAME
 from nanomuse.channels.cli import channels_app
 from nanomuse.chatgpt_cli import chatgpt_app
 from nanomuse.config import DEFAULT_DATA_DIR, Settings, find_config_file, load_settings
 
 app = typer.Typer(
     name="nanomuse",
-    help="nanoMuse: an open-source personal agent for every device you own. This is its runtime: the agent, the Sentinel that decides what may run, and the web app.",
+    help=f"{DISPLAY_NAME}: an open-source personal agent for every device you own. This is its runtime: the agent, the Sentinel that decides what may run, and the web app.",
     no_args_is_help=True,
     rich_markup_mode="rich",
     pretty_exceptions_show_locals=False,
@@ -68,7 +69,7 @@ console = Console()
 
 def _version_flag(value: bool) -> None:
     if value:
-        console.print(f"nanomuse {__version__}")
+        console.print(f"{DISPLAY_NAME} {__version__}")
         raise typer.Exit()
 
 
@@ -83,7 +84,7 @@ def _root(
         is_eager=True,
     ),
 ) -> None:
-    """nanoMuse: an open-source personal agent for every device you own. This is its runtime: the agent, the Sentinel that decides what may run, and the web app."""
+    """Nanodot: an open-source personal agent for every device you own. This is its runtime: the agent, the Sentinel that decides what may run, and the web app."""
     from nanomuse import loopback
 
     loopback.install()  # Windows: a self-pipe that fails with a reason instead of hanging
@@ -109,7 +110,7 @@ def _settings(config: Path | None, auto: bool = False) -> Settings:
     except ValidationError as exc:
         where = find_config_file(config)
         console.print(
-            f"[red]config.toml has {exc.error_count()} setting(s) nanoMuse does not understand[/red] ({where}):"
+            f"[red]config.toml has {exc.error_count()} setting(s) {DISPLAY_NAME} does not understand[/red] ({where}):"
         )
         for err in exc.errors():
             console.print(f"  [bold]{'.'.join(str(x) for x in err['loc'])}[/bold]: {err['msg']}")
@@ -166,9 +167,9 @@ def _agent_name(settings: Settings) -> str:
 
 def _banner(settings: Settings) -> None:
     name = _agent_name(settings)
-    who = f"  ·  [bold]{name}[/bold]" if name and name != "nanoMuse" else ""
+    who = f"  ·  [bold]{name}[/bold]" if name and name != DISPLAY_NAME else ""
     console.print(
-        f"[bold magenta]nanoMuse[/bold magenta] v{__version__}{who}  ·  model [cyan]{settings.llm.model}[/cyan] "
+        f"[bold magenta]{DISPLAY_NAME}[/bold magenta] v{__version__}{who}  ·  model [cyan]{settings.llm.model}[/cyan] "
         f"via {settings.llm.provider}  ·  sentinel [yellow]{settings.sentinel.mode}[/yellow]  ·  "
         f"config [dim]{settings.source}[/dim]"
     )
@@ -354,7 +355,7 @@ def serve(
     no_qr: Annotated[bool, typer.Option("--no-qr", help="Do not print the QR code")] = False,
     auto: AutoOpt = False,
 ) -> None:
-    """Run the always-on nanoMuse with the mobile-first web app (chat, goals, ideas, memory, approvals)."""
+    """Run the always-on Nanodot with the mobile-first web app (chat, goals, ideas, memory, approvals)."""
     settings = _settings(config, auto=auto)
     if no_auth:
         settings.server.auth = False
@@ -373,7 +374,7 @@ def serve(
     except PermissionError as exc:
         console.print(
             f"[red]the data directory is not writable[/red] ({settings.data_dir}): {exc.strerror or exc}\n"
-            "nanoMuse keeps its access token, timelines and vault there. Point NANOMUSE_DATA_DIR at a "
+            f"{DISPLAY_NAME} keeps its access token, timelines and vault there. Point NANOMUSE_DATA_DIR at a "
             "folder you can write to, or set server.token in config.toml."
         )
         raise typer.Exit(1) from exc
@@ -1052,7 +1053,7 @@ def memory_tidy(
 ) -> None:
     """Merge lines that say the same thing, keep the newer fact, drop what was never a fact.
 
-    The model proposes, nanoMuse checks (nothing invented, nothing you wrote dropped),
+    The model proposes, Nanodot checks (nothing invented, nothing you wrote dropped),
     and every change is logged so `memory restore` can undo it.
     """
     from nanomuse.app import NanoMuseApp
@@ -1521,14 +1522,14 @@ def phone_trace(
 @app.command()
 def version() -> None:
     """Print the version."""
-    console.print(f"nanomuse {__version__}")
+    console.print(f"{DISPLAY_NAME} {__version__}")
 
 
 @app.command()
 def mcp(config: ConfigOpt = None) -> None:
     """Serve this computer's screen and hands over MCP on stdio (for the desktop app).
 
-    Another host, such as nanoMuse on DeepSeek Harness (docs/harness.md), connects here. The
+    Another host, such as Nanodot on DeepSeek Harness (docs/harness.md), connects here. The
     connectors config.toml turns on (mailbox, calendar, contacts) are served too. Nothing is
     printed on stdout but the protocol; the hands, gui and connectors sections of the config
     are read when it exists."""

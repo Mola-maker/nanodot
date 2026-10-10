@@ -35,7 +35,7 @@ export function ChatsDrawer() {
     }
   }, [open]);
 
-  const name = state.profile?.name || "nanoMuse";
+  const name = state.profile?.name || "Dot";
   const side = useMemo(() => {
     const q = query.trim().toLowerCase();
     return state.threads

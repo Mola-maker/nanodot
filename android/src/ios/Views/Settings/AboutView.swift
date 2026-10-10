@@ -43,7 +43,7 @@ struct AboutView: View {
                                     .stroke(Color(UIColor.separator), lineWidth: 0.5)
                             )
                     }
-                    Text("nanoMuse")
+                    Text("Nanodot")
                         .font(.title2.bold())
                     Text("Version \(appVersion)")
                         .font(.subheadline)
@@ -112,7 +112,7 @@ struct AboutView: View {
                 Label {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(AppLocalized("Not affiliated with Meta"))
-                        Text(AppLocalized("Muse is a trademark of Meta Platforms, Inc. nanoMuse is an independent free-software project."))
+                        Text(AppLocalized("Muse is a trademark of Meta Platforms, Inc. Nanodot is an independent free-software project."))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

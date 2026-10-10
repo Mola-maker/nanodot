@@ -6,8 +6,8 @@ import XCTest
 final class NanoMuseOwnSchemeTests: XCTestCase {
 
     func testBothNamesAreOursAndNothingElseIs() {
-        for s in ["minis", "MINIS", "nanomuse", "NanoMuse"] { XCTAssertTrue(NanoMuseOwnScheme.isOwn(s), s) }
-        for s in ["", "http", "https", "minis-mcp", "nanomuse-mcp", "file", "shortcuts"] {
+        for s in ["minis", "MINIS", "nanodot", "Nanodot", "nanomuse", "NanoMuse"] { XCTAssertTrue(NanoMuseOwnScheme.isOwn(s), s) }
+        for s in ["", "http", "https", "minis-mcp", "nanomuse-mcp", "nanodot-mcp", "file", "shortcuts"] {
             XCTAssertFalse(NanoMuseOwnScheme.isOwn(s), s)
         }
         XCTAssertFalse(NanoMuseOwnScheme.isOwn(nil))
@@ -15,6 +15,8 @@ final class NanoMuseOwnSchemeTests: XCTestCase {
 
     func testTheSystemsNameReadsAsTheAppsOwn() {
         func read(_ s: String) -> String { NanoMuseOwnScheme.internalURL(URL(string: s)!).absoluteString }
+        XCTAssertEqual(read("nanodot://share"), "minis://share")
+        XCTAssertEqual(read("Nanodot://session/abc?title=x"), "minis://session/abc?title=x")
         XCTAssertEqual(read("nanomuse://share"), "minis://share")
         XCTAssertEqual(read("NanoMuse://settings/soul"), "minis://settings/soul")
         XCTAssertEqual(read("nanomuse://session/abc/index.html?title=x&y=1"), "minis://session/abc/index.html?title=x&y=1")

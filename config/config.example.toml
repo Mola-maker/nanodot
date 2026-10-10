@@ -1,4 +1,4 @@
-# nanoMuse configuration
+# Nanodot configuration
 # Copy to config/config.toml (or ~/.nanomuse/config.toml) and edit.
 # String values may reference environment variables: "${VAR}" or "${VAR:-default}".
 
@@ -74,7 +74,7 @@ pass_reasoning = false
 
 # ------------------------------------------------------------------------------
 [agent]
-name = "nanoMuse"
+name = "Dot"
 max_steps = 30
 # workspace = "./workspace"     # the agent's files. Default: ./workspace when the current directory has one, else <data_dir>/workspace
 # Directories outside the workspace the files tool may use. Reads there count as
@@ -303,7 +303,7 @@ token = ""               # empty → generated once, kept in <data_dir>/server_t
 approval_timeout = 3600  # seconds an approval card waits before it counts as "deny"
 cors_origins = []        # only for the Vite dev server of the web app, e.g. ["http://localhost:5173"]
 max_upload_mb = 25       # largest file the app may attach to a message
-update_check = true      # say under Settings → About when a newer release is out (GitHub Releases, every 6 h; nothing is sent)
+update_check = true      # inert until brand.nanodot.json enables an explicit update repository
 start_grace = 4          # seconds the tools/MCP servers/cloud account may take before the app answers anyway (/api/health names the step still running)
 
 # ------------------------------------------------------------------------------

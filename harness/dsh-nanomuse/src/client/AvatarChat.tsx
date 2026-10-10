@@ -207,7 +207,7 @@ export function makeAvatarChat(t: Translate) {
       return () => document.removeEventListener('keydown', onKey)
     }, [flow.phase])
     if (flow.phase === 'idle') return null
-    const name = live.profile.name || t('brand')
+    const name = live.profile.name || 'Dot'
     const quoted = `“${flow.desc}”`
     let body: ReactNode
     if (flow.phase === 'cost') body = h(Cost, { t, flow })

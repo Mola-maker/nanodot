@@ -20,7 +20,7 @@ def test_version_flag_and_command_agree():
     for args in (["--version"], ["-V"], ["version"]):
         result = runner.invoke(app, args)
         assert result.exit_code == 0, result.output
-        assert plain(result.output).strip() == f"nanomuse {__version__}"
+        assert plain(result.output).strip() == f"Nanodot {__version__}"
 
 
 def test_help_lists_the_version_flag():

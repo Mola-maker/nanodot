@@ -7,7 +7,7 @@
     <string name="nm_about_upstream">Bazat pe OpenMinis 1.13</string>
     <string name="nm_about_upstream_detail">GPL-3.0 · modificat de la 2026-09-24 · sursa pe GitHub</string>
     <string name="nm_about_trademark">Fără legătură cu Meta</string>
-    <string name="nm_about_trademark_detail">Muse este o marcă înregistrată a Meta Platforms, Inc. nanoMuse este un proiect independent de software liber.</string>
+    <string name="nm_about_trademark_detail">Muse este o marcă înregistrată a Meta Platforms, Inc. Nanodot este un proiect independent de software liber.</string>
 
     <!-- Chat header -->
     <string name="nm_avatar_content_description">Agentul tău. Atinge pentru a-i schimba numele, pictograma sau stilul.</string>
@@ -22,29 +22,29 @@
     <string name="nm_star_action">Dă o stea pe GitHub</string>
     <string name="nm_star_later">Nu acum</string>
     <string name="nm_star_done">Am dat deja steaua</string>
-    <string name="nm_star_signed_in">Bine ai venit. nanoMuse este gratuit, open source și nonprofit: un agent personal pentru oricine îl rulează. Dacă asta înseamnă ceva pentru tine, o stea pe GitHub este felul în care următoarea persoană îl găsește.</string>
+    <string name="nm_star_signed_in">Nanodot este un asistent personal cu sursă deschisă bazat pe nanoMuse.</string>
     <plurals name="nm_star_tasks">
-        <item quantity="one">O sarcină încheiată. Dacă nanoMuse a ajutat, o stea pe GitHub le spune celor care îl construiesc că a făcut-o.</item>
-        <item quantity="few">%1$d sarcini încheiate. Dacă nanoMuse e util, o stea pe GitHub ajută următoarea persoană să-l găsească.</item>
-        <item quantity="other">%1$d de sarcini încheiate. Dacă nanoMuse e util, o stea pe GitHub ajută următoarea persoană să-l găsească.</item>
+        <item quantity="one">O sarcină încheiată. Dacă Nanodot a ajutat, o stea pe GitHub le spune celor care îl construiesc că a făcut-o.</item>
+        <item quantity="few">%1$d sarcini încheiate. Dacă Nanodot e util, o stea pe GitHub ajută următoarea persoană să-l găsească.</item>
+        <item quantity="other">%1$d de sarcini încheiate. Dacă Nanodot e util, o stea pe GitHub ajută următoarea persoană să-l găsească.</item>
     </plurals>
-    <string name="nm_star_days_used_week">O săptămână cu nanoMuse. Dacă și-a câștigat un loc în ziua ta, o stea pe GitHub ajută următoarea persoană să-l găsească.</string>
-    <string name="nm_star_days_used_month">O lună cu nanoMuse. Dacă a devenit parte din rutina ta, o stea pe GitHub le spune altora că merită încercat.</string>
+    <string name="nm_star_days_used_week">O săptămână cu Nanodot. Dacă și-a câștigat un loc în ziua ta, o stea pe GitHub ajută următoarea persoană să-l găsească.</string>
+    <string name="nm_star_days_used_month">O lună cu Nanodot. Dacă a devenit parte din rutina ta, o stea pe GitHub le spune altora că merită încercat.</string>
     <plurals name="nm_star_days_used">
-        <item quantity="one">O zi cu nanoMuse. Dacă a ajutat, o stea pe GitHub ajută următoarea persoană să-l găsească.</item>
-        <item quantity="few">%1$d zile cu nanoMuse. Dacă și-a câștigat un loc în ziua ta, o stea pe GitHub ajută următoarea persoană să-l găsească.</item>
-        <item quantity="other">%1$d de zile cu nanoMuse. Dacă și-a câștigat un loc în ziua ta, o stea pe GitHub ajută următoarea persoană să-l găsească.</item>
+        <item quantity="one">O zi cu Nanodot. Dacă a ajutat, o stea pe GitHub ajută următoarea persoană să-l găsească.</item>
+        <item quantity="few">%1$d zile cu Nanodot. Dacă și-a câștigat un loc în ziua ta, o stea pe GitHub ajută următoarea persoană să-l găsească.</item>
+        <item quantity="other">%1$d de zile cu Nanodot. Dacă și-a câștigat un loc în ziua ta, o stea pe GitHub ajută următoarea persoană să-l găsească.</item>
     </plurals>
-    <string name="nm_star_goal_done">Obiectiv atins. Dacă nanoMuse te-a ajutat să ajungi aici, o stea pe GitHub le spune celor care îl construiesc.</string>
-    <string name="nm_star_new_look">O față nouă, desenată pentru tine. Dacă îți place direcția în care merge nanoMuse, o stea pe GitHub ajută mai mulți oameni să-l găsească.</string>
-    <string name="nm_star_exhausted">Creditul gratuit s-a epuizat. Mulțumim că ai ajuns până aici. Dacă nanoMuse a meritat-o, o stea pe GitHub ține proiectul la vedere pentru următoarea persoană.</string>
+    <string name="nm_star_goal_done">Obiectiv atins. Dacă Nanodot te-a ajutat să ajungi aici, o stea pe GitHub le spune celor care îl construiesc.</string>
+    <string name="nm_star_new_look">O față nouă, desenată pentru tine. Dacă îți place direcția în care merge Nanodot, o stea pe GitHub ajută mai mulți oameni să-l găsească.</string>
+    <string name="nm_star_exhausted">Creditul gratuit s-a epuizat. Mulțumim că ai ajuns până aici. Dacă Nanodot a meritat-o, o stea pe GitHub ține proiectul la vedere pentru următoarea persoană.</string>
     <string name="nm_chat_menu_rename">Redenumește chatul</string>
 
     <!-- Foreground-service notification title while no tool is running -->
     <string name="nm_notif_working">%1$s lucrează</string>
 
     <!-- First conversation: the scripted opening (see io.github.nanomuse.onboarding) -->
-    <string name="nm_intro_hello">Bună, sunt nanoMuse, asistentul care trăiește pe telefonul tău. Lasă-mă să-ți iau câteva lucruri de pe cap.</string>
+    <string name="nm_intro_hello">Bună, sunt Dot, asistentul care trăiește pe telefonul tău. Lasă-mă să-ți iau câteva lucruri de pe cap.</string>
     <string name="nm_intro_how_i_work">Câteva lucruri despre cum lucrez:\n\n- Am propriul computer (un sandbox Linux și un browser), așa că pot rula comenzi, deschide site-uri și completa formulare.\n- Pot citi și organiza fișierele și fotografiile pe care mi le pui la dispoziție și pot avea grijă de mementouri și de sarcinile programate.\n- Înainte de orice pas care contează, te întreb mai întâi.\n- Totul rulează pe acest telefon. Mesajele tale ajung la modelul pe care l-ai configurat; cu nanoMuse Cloud, această conversație te urmează și pe celelalte dispozitive; se poate opri din Controlul datelor.</string>
     <string name="nm_intro_ask_name">Înainte să începem, cum să-ți spun?</string>
 
@@ -197,7 +197,7 @@
     <string name="nm_risk_class_outbound">Trimitere</string>
     <string name="nm_risk_class_money">Plată</string>
     <string name="nm_risk_class_install">Instalare</string>
-    <string name="nm_grants_header">Aprobări memorate de nanoMuse</string>
+    <string name="nm_grants_header">Aprobări memorate de Nanodot</string>
     <string name="nm_grants_empty">Nimic memorat încă</string>
     <string name="nm_grants_revoke">Revocă</string>
     <string name="nm_grants_revoke_confirm">Revoci această aprobare? Data viitoare când apare, vei fi întrebat din nou.</string>
@@ -205,7 +205,7 @@
     <string name="nm_risk_remember_money_note">Confirmat cu blocarea ecranului. Plățile din această aplicație sau de pe acest site vor rula apoi fără card de aprobare; apar primele sub Setări → Permisiuni, de unde le poți revoca oricând.</string>
     <string name="nm_risk_remember_money_needs_lock">Ca să memorezi plăți, setează mai întâi o blocare a ecranului (Setări → Securitate): memorarea uneia se confirmă cu ea.</string>
     <string name="nm_risk_lock_title">Confirmă că ești tu</string>
-    <string name="nm_risk_lock_subtitle">nanoMuse va memora aprobările de plată pentru %1$s și le va rula fără să întrebe.</string>
+    <string name="nm_risk_lock_subtitle">Nanodot va memora aprobările de plată pentru %1$s și le va rula fără să întrebe.</string>
     <string name="nm_risk_remembered_toast">Memorat · vezi Setări → Permisiuni pentru a revoca</string>
     <string name="nm_risk_tier_highest">Rulează fără să întrebe · plăți</string>
     <string name="nm_risk_tier_confirm">Memorate de pe card · ștergere și trimitere</string>
@@ -276,7 +276,7 @@
     <string name="nm_sysfiles_open_memory">Deschide memoria</string>
     <string name="nm_sysfiles_footer">Aceste fișiere sunt ale agentului: cine este, ce știe despre tine, ce își amintește, ce scrie pentru tine și când se trezește. Stau în memoria telefonului; agentul le citește și le editează din shell-ul lui sub /var/minis/memory, iar tu poți edita orice aici.</string>
     <string name="nm_sysfile_about_lead">Despre acest fișier.</string>
-    <string name="nm_sysfile_about_soul">Aceasta este persona agentului: valorile și obiceiurile pe care încearcă să le respecte în fiecare conversație, numele lui și stilul în care răspunde. Pornește de la un șablon livrat cu nanoMuse; agentul îl poate rafina în timp și îți spune când o face. Îl poți edita oricând. Această notă nu face parte din fișier.</string>
+    <string name="nm_sysfile_about_soul">Aceasta este persona agentului: valorile și obiceiurile pe care încearcă să le respecte în fiecare conversație, numele lui și stilul în care răspunde. Pornește de la un șablon livrat cu Nanodot; agentul îl poate rafina în timp și îți spune când o face. Îl poți edita oricând. Această notă nu face parte din fișier.</string>
     <string name="nm_sysfile_about_user">Agentul ține acest fișier ca notițe de lucru despre tine: numele tău, cum vrei să ți se adreseze, fusul tău orar și contextul de care are nevoie ca să fie util, de exemplu la ce lucrezi. Îl completează în timp din conversațiile voastre și îl citește la începutul fiecăreia. Reflectă înțelegerea actuală a agentului, așa că poate fi incomplet sau depășit. Poți edita orice aici, iar agentul va urma ce scrii. Această notă nu face parte din fișier.</string>
     <string name="nm_sysfile_about_memory">Notițe durabile pe care agentul le păstrează de la o conversație la alta: lucrurile care merită reținute, cu cuvintele lui, plus tot ce ai importat de la alt asistent. Jurnalul zi cu zi stă alături, în dosarul de memorie. Citit la începutul fiecărei conversații când memoria e pornită. Această notă nu face parte din fișier.</string>
     <string name="nm_sysfile_about_feed">Un paragraf care ghidează fluxul: ce vrei mai mult, ce să sară, cât de lungi să fie postările. Rutina zilnică a fluxului îl citește înainte de a scrie. Această notă nu face parte din fișier.</string>
@@ -356,7 +356,7 @@
     <string name="nm_avatar_footer">Imaginile sunt stocate pe acest telefon sub minis-global/nanomuse/avatar. Fiecare față costă cinci imagini de la furnizorul tău: una aleasă de tine plus patru stări.</string>
 
     <!-- First run (Muse-style welcome; the steps are OpenMinis' provider and model screens) -->
-    <string name="nm_setup_title">Bine ai venit la nanoMuse</string>
+    <string name="nm_setup_title">Bine ai venit la Nanodot</string>
     <string name="nm_setup_step_models">Alege modelele</string>
     <string name="nm_setup_step_models_sub">Modelele oferite de furnizorul tău sunt listate pentru tine; alege până la trei</string>
     <string name="nm_setup_step_start">Fă cunoștință cu %1$s</string>
@@ -372,7 +372,7 @@
     <string name="nm_settings_no_model">Niciun model încă</string>
     <string name="nm_settings_no_model_sub">Adaugă un furnizor și alege-i modelele</string>
     <string name="nm_settings_change_model">Schimbă</string>
-    <string name="nm_settings_version">nanoMuse %1$s (%2$d)</string>
+    <string name="nm_settings_version">Nanodot %1$s (%2$d)</string>
     <string name="nm_version_title">Versiune</string>
     <string name="nm_version_checking">Se caută cea mai nouă versiune…</string>
     <string name="nm_version_have">Cea mai nouă e %1$s, o ai deja</string>
@@ -452,8 +452,8 @@
     <string name="nm_avatar_share_title">Partajează avatarul meu</string>
     <string name="nm_avatar_share_subtitle">Alege un card. Pleacă prin fereastra de partajare a sistemului.</string>
     <string name="nm_avatar_share_system">Partajează</string>
-    <string name="nm_avatar_share_bubble">Bună, sunt %1$s, un agent AI personal. Fă cunoștință cu nanoMuse: open source, rulează pe telefonul tău.</string>
-    <string name="nm_avatar_share_tagline">Agentul tău AI personal, open source · github.com/nano-muse/nanoMuse</string>
+    <string name="nm_avatar_share_bubble">Bună, sunt %1$s, un agent AI personal. Fă cunoștință cu Nanodot: open source, rulează pe telefonul tău.</string>
+    <string name="nm_avatar_share_tagline">Agentul tău AI personal, open source · github.com/nano-muse/Nanodot</string>
 
     <!-- 0.1.10 · Motion -->
     <string name="nm_media_title">Modele de imagine și video</string>
@@ -504,7 +504,7 @@
     <string name="nm_hands_section_needs">De ce are nevoie</string>
     <string name="nm_hands_needs_footer">Serviciul de accesibilitate face captura de ecran și execută gesturile; nu citește conținutul ecranului. Afișarea peste alte aplicații e pentru capsulă.</string>
     <string name="nm_hands_need_a11y">Serviciu de accesibilitate</string>
-    <string name="nm_hands_need_a11y_fix">Pornește nanoMuse sub Aplicații instalate în setările de accesibilitate</string>
+    <string name="nm_hands_need_a11y_fix">Pornește Nanodot sub Aplicații instalate în setările de accesibilitate</string>
     <string name="nm_hands_need_overlay">Afișare peste alte aplicații</string>
     <string name="nm_hands_need_overlay_fix">Permite-o, ca să poată fi afișată capsula cu Stop</string>
     <string name="nm_hands_need_model">Un model care vede imagini</string>
@@ -542,7 +542,7 @@
     <string name="nm_hands_protected_screen">Acest ecran e protejat și nu poate fi citit. Termină tu această parte, apoi atinge Continuă.</string>
     <string name="nm_hands_secret_field">Un câmp de parolă sau de cod: te rog completează-l tu, apoi atinge Continuă.</string>
     <string name="nm_hands_approval_title">Așteaptă aprobarea ta</string>
-    <string name="nm_hands_approval_detail">Atinge „%1$s”: confirmă în nanoMuse (cere blocarea ecranului).</string>
+    <string name="nm_hands_approval_detail">Atinge „%1$s”: confirmă în Nanodot (cere blocarea ecranului).</string>
     <string name="nm_hands_approval_here">Atingi „%1$s”?</string>
     <string name="nm_hands_allow_once">Permite</string>
     <string name="nm_hands_deny">Refuză</string>
@@ -573,10 +573,10 @@
     <!-- Reach (0.1.13): the phone drives your computer -->
     <string name="nm_pc_title">Computere</string>
     <string name="nm_pc_none_short">Niciunul</string>
-    <string name="nm_pc_intro">Spui aici, se face pe computerul tău: o comandă, un fișier, o pagină în browserul lui, o privire pe ecranul lui sau o sarcină întreagă pentru nanoMuse de acolo. Telefonul conduce computerul, niciodată invers; fiecare aprobare se decide mai întâi aici.</string>
-    <string name="nm_pc_hub_title">Calea simplă: nanoMuse Desktop, același cont</string>
-    <string name="nm_pc_hub_body">Instalează nanoMuse Desktop pe computer și conectează-te cu contul acestui telefon; apare sub Cont → Dispozitive în câteva secunde.</string>
-    <string name="nm_pc_hub_download">Descarcă nanoMuse Desktop</string>
+    <string name="nm_pc_intro">Spui aici, se face pe computerul tău: o comandă, un fișier, o pagină în browserul lui, o privire pe ecranul lui sau o sarcină întreagă pentru Nanodot de acolo. Telefonul conduce computerul, niciodată invers; fiecare aprobare se decide mai întâi aici.</string>
+    <string name="nm_pc_hub_title">Calea simplă: Nanodot Desktop, același cont</string>
+    <string name="nm_pc_hub_body">Instalează Nanodot Desktop pe computer și conectează-te cu contul acestui telefon; apare sub Cont → Dispozitive în câteva secunde.</string>
+    <string name="nm_pc_hub_download">Descarcă Nanodot Desktop</string>
     <string name="nm_pc_hub_account">Cont și dispozitive</string>
     <string name="nm_pc_section_paired">Computere pe acest cont</string>
     <string name="nm_pc_none">Niciun computer încă</string>
@@ -589,7 +589,7 @@
     <string name="nm_pc_account_hint">Acest telefon e conectat ca %1$s; computerul trebuie să se conecteze cu același cont.</string>
     <string name="nm_pc_checking">Se verifică…</string>
     <string name="nm_pc_answering">%1$s răspunde</string>
-    <string name="nm_pc_not_answering">%1$s nu răspunde. Mai rulează nanoMuse Desktop acolo?</string>
+    <string name="nm_pc_not_answering">%1$s nu răspunde. Mai rulează Nanodot Desktop acolo?</string>
 
     <!-- the approval card -->
     <string name="nm_risk_desc_on_computer">Pe computerul „%1$s”, nu pe acest telefon.</string>
@@ -610,7 +610,7 @@
     <string name="nm_setup_source_title">Care model răspunde?</string>
     <string name="nm_setup_source_sub">Contul tău aduce deja unul. Poți adăuga și propria cheie API și poți comuta oricând.</string>
     <string name="nm_setup_source_cloud">Folosește modelul nanoMuse Cloud</string>
-    <string name="nm_setup_source_cloud_sub">DeepSeek pentru chat și Qwen pentru mâini, cu un credit gratuit per cont plătit de dezvoltator. Nimic de configurat.</string>
+    <string name="nm_setup_source_cloud_sub">Folosește propriul model sau conectează nanoMuse Cloud. Accesul și limitele respectă condițiile furnizorului. Consultă politica sa de confidențialitate și setările datelor.</string>
     <string name="nm_setup_source_own_sub">OpenAI, Anthropic, DeepSeek, Bailian și alte endpointuri compatibile OpenAI. Cheia rămâne pe acest telefon.</string>
     <string name="nm_setup_source_fine_print">Cele două nu concurează: modelul Cloud rămâne disponibil, iar fiecare grup de modele își alege propriul.</string>
     <string name="nm_setup_password_title">Setează o parolă</string>
@@ -622,8 +622,8 @@
     <string name="nm_welcome_feat_hands">Mâini: îți folosește telefonul</string>
     <string name="nm_welcome_feat_hands_sub">Rezervă trenul, comandă masa, caută ceva într-o aplicație; tu privești și îl poți opri oricând</string>
     <string name="nm_welcome_feat_reach">Acces: computerele tale, de aici</string>
-    <string name="nm_welcome_feat_reach_sub">Instalează nanoMuse Desktop pe un Mac, un Windows sau un Linux, conectează-te cu același cont și dă-i de lucru de pe telefon</string>
-    <string name="nm_welcome_notice">nanoMuse este un proiect comunitar open source, nonprofit: gratuit, pentru totdeauna. Modelul vine cu un credit gratuit plătit de dezvoltator; după aceea, propria ta cheie. Nimic nu se vinde; ce păstrează relay-ul e în politica de confidențialitate, iar Setări → Controlul datelor e al tău.</string>
+    <string name="nm_welcome_feat_reach_sub">Instalează Nanodot Desktop pe un Mac, un Windows sau un Linux, conectează-te cu același cont și dă-i de lucru de pe telefon</string>
+    <string name="nm_welcome_notice">Nanodot este un asistent personal cu sursă deschisă bazat pe nanoMuse. Folosește propriul model sau conectează nanoMuse Cloud. Accesul și limitele respectă condițiile furnizorului. Consultă politica sa de confidențialitate și setările datelor.</string>
     <string name="nm_welcome_hands_title">Lasă-l să-ți folosească telefonul</string>
     <string name="nm_welcome_hands_sub">Cu două permisiuni poate deschide aplicații, atinge și tasta pentru tine. O capsulă cu fiecare pas și un buton Stop rămâne pe ecran; autentificările, parolele și codurile sunt întotdeauna ale tale.</string>
     <string name="nm_welcome_hands_turn_on">Pornește</string>
@@ -761,7 +761,7 @@
     <string name="nm_cloud_invite_share">Partajează linkul</string>
     <string name="nm_cloud_invite_copy">Copiază</string>
     <string name="nm_cloud_invite_copied">Copiat</string>
-    <string name="nm_cloud_invite_share_text">Încearcă nanoMuse împreună cu mine: un agent personal complet open source, gratuit. Înscrie-te cu codul meu %1$s: %2$s</string>
+    <string name="nm_cloud_invite_share_text">Încearcă Nanodot împreună cu mine: un agent personal complet open source, gratuit. Înscrie-te cu codul meu %1$s: %2$s</string>
     <string name="nm_cloud_invite_count">%1$d prieteni s-au alăturat</string>
     <string name="nm_cloud_invite_earned">¥%1$s adăugați prin invitații</string>
     <string name="nm_cloud_invite_have">Ai un cod de invitație?</string>
@@ -861,7 +861,7 @@
     <!-- 0.1.20: the coding agents on the account's computers -->
     <string name="nm_coding_title">Agenți de programare</string>
     <string name="nm_coding_intro">Cursor, Codex și Claude Code de pe computerele tale: sesiunile lor, ultimul lor răspuns și un mesaj către oricare dintre ei, de aici. Nimic de-al lor nu e copiat pe telefon.</string>
-    <string name="nm_coding_no_computer">Niciun computer cu un agent de programare nu e online. Rulează nanoMuse pe computerul unde e instalat Cursor, Codex sau Claude Code, conectat cu acest cont.</string>
+    <string name="nm_coding_no_computer">Niciun computer cu un agent de programare nu e online. Rulează Nanodot pe computerul unde e instalat Cursor, Codex sau Claude Code, conectat cu acest cont.</string>
     <string name="nm_coding_account_hint">Acest telefon e conectat ca %1$s; computerul trebuie să folosească același cont.</string>
     <string name="nm_coding_refresh">Reîmprospătează</string>
     <string name="nm_coding_all">Toate</string>
@@ -887,20 +887,20 @@
 
     <!-- nanoMuse: money on the account page, and the community notice -->
     <string name="nm_cloud_spend_member">Membru · fără limită</string>
-    <string name="nm_cloud_spent_total">¥%1$s · $%2$s cheltuiți în total, plătiți de dezvoltator</string>
+    <string name="nm_cloud_spent_total">nanoMuse Cloud: ¥%1$s · $%2$s</string>
     <string name="nm_cloud_allowance_used">Folosit ¥%1$s · $%2$s</string>
     <string name="nm_cloud_allowance_of">din ¥%1$s · $%2$s, fără expirare</string>
     <string name="nm_cloud_allowance_left">¥%1$s · $%2$s rămași</string>
     <string name="nm_cloud_allowance_why">¥%1$s la început, +¥%2$s pentru fiecare prieten invitat, și +¥%2$s pentru el; după aceea, propria ta cheie ține modelul în funcțiune.</string>
     <string name="nm_cloud_tokens_line">%1$s tokenuri în total · %2$s azi</string>
-    <string name="nm_cloud_notice_title">Gratuit, open source, nonprofit</string>
+    <string name="nm_cloud_notice_title">Nanodot · nanoMuse Cloud</string>
     <string name="nm_cloud_notice_closing">Ai găsit o eroare, vrei o funcție, ai un patch? Depozitul GitHub e locul potrivit.</string>
-    <string name="nm_cloud_notice">nanoMuse este un proiect comunitar open source, nonprofit: gratuit, pentru totdeauna. Modelul vine cu un credit gratuit plătit de dezvoltator; după aceea, propria ta cheie. Nimic nu se vinde; ce păstrează relay-ul e în politica de confidențialitate, iar Setări → Controlul datelor e al tău. Șterge contul oricând vrei.</string>
+    <string name="nm_cloud_notice">Nanodot este un asistent personal cu sursă deschisă bazat pe nanoMuse. Folosește propriul model sau conectează nanoMuse Cloud. Accesul și limitele respectă condițiile furnizorului. Consultă politica sa de confidențialitate și setările datelor.</string>
 
     <!-- nanoMuse: devices on the hub -->
     <string name="nm_hub_channel">Mesaje de la dispozitivele tale</string>
     <string name="nm_hub_service_channel">Conectat la dispozitivele tale</string>
-    <string name="nm_hub_service_title">nanoMuse · accesibil de pe dispozitivele tale</string>
+    <string name="nm_hub_service_title">Nanodot · accesibil de pe dispozitivele tale</string>
     <string name="nm_hub_service_connecting">Se conectează la nanoMuse Cloud…</string>
     <string name="nm_hub_service_alone">Niciun alt dispozitiv nu e online acum</string>
     <plurals name="nm_hub_service_devices">
@@ -923,7 +923,7 @@
     <string name="nm_devices_connected">Conectat</string>
     <string name="nm_devices_connecting">Se conectează…</string>
     <string name="nm_devices_off">Oprit</string>
-    <string name="nm_devices_none">Niciun alt dispozitiv încă. Pe computer, instalează nanoMuse Desktop și conectează-te cu același cont; apare aici în câteva secunde.</string>
+    <string name="nm_devices_none">Niciun alt dispozitiv încă. Pe computer, instalează Nanodot Desktop și conectează-te cu același cont; apare aici în câteva secunde.</string>
     <string name="nm_devices_online">online</string>
     <string name="nm_devices_offline">offline</string>
     <string name="nm_devices_web">Consola web</string>
@@ -942,7 +942,7 @@
     <string name="nm_hub_err_not_controllable">Acelui dispozitiv nu i se pot cere lucruri.</string>
     <string name="nm_hub_err_unknown_agent">Acel agent de programare nu e pe computer.</string>
     <string name="nm_hub_err_no_session">Acea sesiune nu mai e pe computer.</string>
-    <string name="nm_hub_err_unknown_action">Computerul rulează un nanoMuse mai vechi, care nu cunoaște această acțiune.</string>
+    <string name="nm_hub_err_unknown_action">Computerul rulează un Nanodot mai vechi, care nu cunoaște această acțiune.</string>
     <string name="nm_hub_err_bad_key">Deconectat pe relay; conectează-te din nou.</string>
     <string name="nm_hub_err_generic">Computerul nu a putut face asta.</string>
     <string name="nm_devices_refused">Refuzat de relay; conectează-te din nou</string>
@@ -961,7 +961,7 @@
     <string name="nm_connectors_sign_in">Conectează-te</string>
     <string name="nm_connectors_disconnect">Deconectează</string>
     <string name="nm_connectors_docs">Pagina furnizorului despre acest server</string>
-    <string name="nm_connectors_how_oauth">Se conectează cu contul tău %1$s în browser; nanoMuse se înregistrează singur la serviciu, așa că nu e nimic de tastat. Tokenul rămâne pe acest telefon.</string>
+    <string name="nm_connectors_how_oauth">Se conectează cu contul tău %1$s în browser; Nanodot se înregistrează singur la serviciu, așa că nu e nimic de tastat. Tokenul rămâne pe acest telefon.</string>
     <string name="nm_connectors_how_key">Are nevoie de o cheie de la serviciu: %1$s. E păstrată doar în intrarea MCP de pe acest telefon.</string>
     <string name="nm_connectors_how_none">Deschis tuturor; nu e nevoie de conectare.</string>
     <string name="nm_connectors_how_auto">Verifică mai întâi de ce are nevoie serverul: nimic, o conectare sau o cheie.</string>
@@ -1024,7 +1024,7 @@
     <string name="nm_devices_ask_hint">Atinge un dispozitiv care e online ca să-i scrii din conversație: mesajul începe cu @ și numele lui, iar acel dispozitiv face treaba.</string>
     <string name="nm_reach_the_provider">furnizorul</string>
     <string name="nm_reach_unreachable_title">%1$s nu poate fi atins din această rețea</string>
-    <string name="nm_reach_unreachable_body">Nimic nu a răspuns la %1$s. Este vorba de drumul de la acest telefon la furnizor; serverele nanoMuse nu sunt implicate.</string>
+    <string name="nm_reach_unreachable_body">Nimic nu a răspuns la %1$s. Este vorba de drumul de la acest telefon la furnizor; serverele Nanodot nu sunt implicate.</string>
     <string name="nm_reach_region_title">OpenAI nu deservește această regiune</string>
     <string name="nm_reach_region_body">Cererea a ajuns la OpenAI, care a răspuns că nu oferă serviciul acolo de unde vine această conexiune.</string>
     <string name="nm_reach_signed_out_title">Autentificarea ChatGPT nu mai este valabilă</string>
@@ -1111,4 +1111,5 @@
     <string name="nm_models_search">Caută modele</string>
     <string name="nm_models_search_clear">Șterge căutarea</string>
     <string name="nm_models_no_match">Niciun model nu se potrivește</string>
+    <string name="nm_update_manual">Actualizările automate sunt dezactivate. Verifică manual pagina de versiuni Nanodot.</string>
 </resources>

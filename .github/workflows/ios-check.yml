@@ -1,12 +1,7 @@
-name: iOS · build check
+name: iOS · unsigned build
 
-# Compiles the iOS app on a Mac runner without signing and without Apple credentials: the way
-# to find out whether android/src/ios still builds (the tree is written on Linux) before
-# spending an App Store Connect upload on it. Manual only — the native dependencies take the
-# better part of an hour the first time, and macOS minutes are dear on a private repository.
-# Shares the dependency cache with ios-testflight.yml, so a green check makes the next
-# TestFlight run cheap.
-
+# Build artifacts only: no Apple credentials, provisioning profiles, export IPA,
+# TestFlight upload, or GitHub release. Native libraries currently support devices.
 on:
   workflow_dispatch:
 
@@ -19,11 +14,12 @@ permissions:
 
 jobs:
   build:
-    name: xcodebuild (unsigned)
+    name: Release archive (unsigned iOS device)
     runs-on: macos-26
     timeout-minutes: 150
     env:
-      GO_VERSION: "1.25"
+      GO_VERSION: "1.26"
+      GOTOOLCHAIN: auto
     steps:
       - uses: actions/checkout@v7
         with:
@@ -41,13 +37,27 @@ jobs:
       - name: Homebrew packages (iSH kernel and rootfs tooling)
         run: brew install ninja meson llvm lld libarchive pkg-config
 
+      - name: Apply Nanodot branding
+        run: python3 scripts/rebrand.py
+
       - name: Build-time configuration
         working-directory: android/src/ios
         run: cp Configs/ProviderCustomization.xcconfig.example Configs/ProviderCustomization.xcconfig
 
-      - name: Pinned iSH revision
-        id: ish
-        run: echo "rev=$(git rev-parse HEAD:android/deps/ish)" >> "$GITHUB_OUTPUT"
+      - name: Native cache identity and toolchain evidence
+        id: native
+        run: |
+          mkdir -p android/src/ios/build/unsigned
+          echo "ish=$(git rev-parse HEAD:android/deps/ish)" >> "$GITHUB_OUTPUT"
+          echo "xcode=$(xcodebuild -version | shasum -a 256 | cut -c1-12)" >> "$GITHUB_OUTPUT"
+          {
+            git rev-parse HEAD
+            git submodule status --recursive
+            xcodebuild -version
+            xcrun --sdk iphoneos --show-sdk-version
+            go version
+            uname -m
+          } | tee android/src/ios/build/unsigned/toolchains.log
 
       - name: Native dependency cache
         id: deps-cache
@@ -59,46 +69,106 @@ jobs:
             android/deps/resources
             android/deps/frameworks
             android/deps/lame-build
-          key: ios-deps-${{ runner.os }}-${{ steps.ish.outputs.rev }}-${{ hashFiles('android/deps/*.sh', 'android/deps/ffmpeg-patch/**', 'android/deps/rclone-mobile/**') }}
+          # Device-only outputs must not collide with a Simulator or old Xcode cache.
+          key: ios-device-deps-v2-${{ runner.os }}-${{ runner.arch }}-${{ env.GO_VERSION }}-${{ steps.native.outputs.xcode }}-${{ steps.native.outputs.ish }}-${{ hashFiles('android/deps/*.sh', 'android/deps/ffmpeg-patch/**', 'android/deps/rclone-mobile/**') }}
 
       - name: Native dependencies (LAME → FFmpeg → iSH → Alpine rootfs → rclone)
         if: steps.deps-cache.outputs.cache-hit != 'true'
         working-directory: android
         run: |
-          ./deps/build_lame.sh
-          ./deps/build_ffmpeg.sh
-          ./deps/build_ish.sh
-          ./deps/prepare_alpine_rootfs.sh
-          ./deps/build_rclone_ios.sh
+          set -euo pipefail
+          for script in build_lame build_ffmpeg build_ish prepare_alpine_rootfs build_rclone_ios; do
+            bash "deps/$script.sh" 2>&1 | tee "src/ios/build/unsigned/$script.log"
+          done
 
-      - name: Build for a device, unsigned
+      - name: Check required native outputs
+        run: |
+          test -s android/deps/libs/libish.a
+          test -s android/deps/libs/libish_emu.a
+          test -s android/deps/libs/libfakefs.a
+          test -d android/deps/resources/alpine-rootfs
+          test -d android/deps/frameworks/FFmpeg.framework
+          test -d android/deps/frameworks/Rclone.xcframework
+
+      - name: Archive for a device, unsigned
         working-directory: android/src/ios
         run: |
-          set -o pipefail
-          mkdir -p build
-          xcodebuild build \
-            -project Minis.xcodeproj -scheme Minis -configuration Debug \
+          set -euo pipefail
+          xcodebuild archive \
+            -project Minis.xcodeproj -scheme Minis -configuration Release \
             -destination 'generic/platform=iOS' \
-            -derivedDataPath build/DerivedData \
+            -archivePath "$PWD/build/unsigned/Nanodot-unsigned.xcarchive" \
+            -derivedDataPath "$PWD/build/DerivedData" \
+            -resultBundlePath "$PWD/build/unsigned/Archive.xcresult" \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= DEVELOPMENT_TEAM= \
             -skipPackagePluginValidation -skipMacroValidation \
-            2>&1 | tee build/xcodebuild.log | grep -E "error:|/NanoMuse/.*warning:|BUILD|Compiling|Linking" || true
-          grep -q "\*\* BUILD SUCCEEDED \*\*" build/xcodebuild.log
+            2>&1 | tee build/unsigned/xcodebuild.log
 
-      # docs/ios.md: the device build must finish with zero warnings in NanoMuse/. Upstream's
-      # files are theirs; ours are held to the bar here, so a warning cannot sit on main unnoticed.
+      # AGENTS.md/docs/ios.md: warnings in NanoMuse/ fail the device build.
       - name: Zero warnings in NanoMuse/
         working-directory: android/src/ios
         run: |
-          if grep -E "/NanoMuse/[^:]+:[0-9]+:[0-9]+: warning:" build/xcodebuild.log | sort -u | tee build/nanomuse-warnings.txt | grep -q .; then
-            echo "::error::warnings in NanoMuse/ (see above)"
+          test -s build/unsigned/xcodebuild.log
+          grep -E '(^|[[:space:]/])NanoMuse/[^:]+:[0-9]+(:[0-9]+)?: warning:' \
+            build/unsigned/xcodebuild.log | sort -u > build/unsigned/nanomuse-warnings.txt || true
+          if [ -s build/unsigned/nanomuse-warnings.txt ]; then
+            cat build/unsigned/nanomuse-warnings.txt
+            echo "::error::warnings in NanoMuse/"
             exit 1
           fi
+
+      - name: Package unsigned archive and device app
+        working-directory: android/src/ios
+        run: |
+          set -euo pipefail
+          archive="$PWD/build/unsigned/Nanodot-unsigned.xcarchive"
+          app="$archive/Products/Applications/Minis.app"
+          test -d "$app"
+          executable=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Info.plist")
+          arches=$(lipo -archs "$app/$executable")
+          [[ " $arches " == *" arm64 "* ]]
+          xcrun vtool -show-build "$app/$executable" | tee build/unsigned/binary-metadata.log
+          grep -Eq 'platform[[:space:]]+IOS$' build/unsigned/binary-metadata.log
+          # The main app must be unsigned; an embedded third-party framework may
+          # carry its upstream ad-hoc signature, which is not a device identity.
+          if codesign -d "$app" >/dev/null 2>&1; then
+            echo "::error::expected an unsigned device app"
+            exit 1
+          fi
+          ditto -c -k --sequesterRsrc --keepParent "$archive" build/unsigned/Nanodot-unsigned.xcarchive.zip
+          ditto -c -k --sequesterRsrc --keepParent "$app" build/unsigned/Nanodot-device-unsigned.app.zip
+          cat > build/unsigned/README.txt <<'EOF'
+          Nanodot unsigned iOS device build
+
+          Nanodot-unsigned.xcarchive.zip contains the Release archive and dSYMs.
+          Nanodot-device-unsigned.app.zip contains the same unsigned device .app.
+          These are not Simulator builds or installable IPAs. To install on an
+          iPhone, a developer must sign the app and its extensions using their
+          own valid Apple certificate and matching provisioning profiles, or
+          rebuild this source with their signing configuration in Xcode.
+          This workflow does not export an IPA, upload to TestFlight, or publish.
+          EOF
+          cd build/unsigned
+          shasum -a 256 Nanodot-unsigned.xcarchive.zip Nanodot-device-unsigned.app.zip > SHA256SUMS
+
+      - uses: actions/upload-artifact@v7
+        if: success()
+        with:
+          name: nanodot-ios-device-unsigned-${{ github.run_number }}
+          path: |
+            android/src/ios/build/unsigned/*.zip
+            android/src/ios/build/unsigned/README.txt
+            android/src/ios/build/unsigned/SHA256SUMS
+          retention-days: 14
+          if-no-files-found: error
 
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: ios-check-log-${{ github.run_number }}
-          path: android/src/ios/build/xcodebuild.log
-          retention-days: 7
+          name: ios-build-evidence-${{ github.run_number }}
+          path: |
+            android/src/ios/build/unsigned/*.log
+            android/src/ios/build/unsigned/*warnings.txt
+            android/src/ios/build/unsigned/Archive.xcresult
+          retention-days: 14
           if-no-files-found: warn

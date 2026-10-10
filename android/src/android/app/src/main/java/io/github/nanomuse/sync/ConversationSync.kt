@@ -423,7 +423,7 @@ object ConversationSync {
         return SyncEngine(
             store = RoomSyncStore(ctx),
             chats = RoomChats(ctx, repo),
-            api = RelaySyncApi(NanoMuseCloud.baseUrl(ctx), token, "nanoMuse-Android/${BuildConfig.VERSION_NAME}"),
+            api = RelaySyncApi(NanoMuseCloud.baseUrl(ctx), token, "Nanodot-Android/${BuildConfig.VERSION_NAME}"),
             deviceId = Hub.deviceId(ctx),
             account = account,
             sideChats = { _sideChats.value },

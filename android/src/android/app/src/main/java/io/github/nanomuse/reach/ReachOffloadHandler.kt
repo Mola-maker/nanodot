@@ -49,8 +49,8 @@ class ReachOffloadHandler(private val context: Context) : NativeOffloadHandler {
                 "no_computer",
                 when {
                     Computers.all(context).isEmpty() && !io.github.nanomuse.hub.Hub.isConnected ->
-                        "No other device is connected. Computers join by running nanoMuse Desktop signed in to the same nanoMuse Cloud account; this phone is not signed in to nanoMuse Cloud yet."
-                    Computers.all(context).isEmpty() -> "No other device is online right now. Computers join by running nanoMuse Desktop signed in to the same nanoMuse Cloud account."
+                        "No other device is connected. Computers join by running Nanodot Desktop signed in to the same nanoMuse Cloud account; this phone is not signed in to nanoMuse Cloud yet."
+                    Computers.all(context).isEmpty() -> "No other device is online right now. Computers join by running Nanodot Desktop signed in to the same nanoMuse Cloud account."
                     else -> "No connected device matches “${args.get("on")}”. Connected: " + Computers.all(context).joinToString(", ") { it.name } + "."
                 },
             )
@@ -70,7 +70,7 @@ class ReachOffloadHandler(private val context: Context) : NativeOffloadHandler {
             failed(sub, computer, "${computer.name} answered ${e.code}: ${e.message}")
         } catch (e: java.io.IOException) {
             AppLogger.warning(TAG, "$sub on ${computer.name}: ${e.message}")
-            failed(sub, computer, "${computer.name} does not answer: ${e.message ?: e.javaClass.simpleName}. Is nanoMuse still running there?")
+            failed(sub, computer, "${computer.name} does not answer: ${e.message ?: e.javaClass.simpleName}. Is Nanodot still running there?")
         }
     }
 

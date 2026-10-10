@@ -16,7 +16,7 @@ const MOOD_ORDER = ["idle", "working", "waiting", "happy", "error"];
  * the four clips being made behind it. The runtime updates the event in place
  * (`avatar.*` patches over the socket); a tap here calls `/api/avatar/*`.
  */
-export function AvatarOptionsCard({ event, name = "nanoMuse" }: { event: AvatarEvent; name?: string }) {
+export function AvatarOptionsCard({ event, name = "Dot" }: { event: AvatarEvent; name?: string }) {
   const t = useT();
   const { toast } = useStore();
   const [busy, setBusy] = useState<string | null>(null);

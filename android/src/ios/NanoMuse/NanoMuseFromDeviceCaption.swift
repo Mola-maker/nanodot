@@ -1,6 +1,6 @@
 //
 //  NanoMuseFromDeviceCaption.swift
-//  nanoMuse
+//  Nanodot
 //
 //  C8: a text that came down through account sync is shown as an ordinary
 //  bubble with one small line under it — "From Pixel 8" — nothing else marks

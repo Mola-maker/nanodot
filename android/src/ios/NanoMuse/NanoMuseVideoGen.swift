@@ -1,6 +1,6 @@
 //
 //  NanoMuseVideoGen.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Short clips through Alibaba Cloud Model Studio's asynchronous video API —
 //  Wan 2.2 Flash by default, or whichever Wan or MiniMax model the person
@@ -132,7 +132,7 @@ enum NanoMuseVideoGen {
         return String(format: AppLocalized("The video task ended as %@."), status.isEmpty ? "FAILED" : status)
     }
 
-    /// DashScope puts the message at the top; the nanoMuse relay answers OpenAI-shaped (`error.message`, e.g. the clip allowance). Empty when there is none.
+    /// DashScope puts the message at the top; the Nanodot relay answers OpenAI-shaped (`error.message`, e.g. the clip allowance). Empty when there is none.
     static func apiMessage(_ data: Data) -> String {
         guard let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { return "" }
         var message = json["message"] as? String ?? ""
@@ -163,7 +163,7 @@ enum NanoMuseVideoGen {
         request.httpMethod = method
         if let key { request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization") }
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
-        request.setValue("nanoMuse-iOS/\(version)", forHTTPHeaderField: "User-Agent")
+        request.setValue("Nanodot-iOS/\(version)", forHTTPHeaderField: "User-Agent")
         return request
     }
 

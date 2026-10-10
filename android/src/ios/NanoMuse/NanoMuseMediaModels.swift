@@ -1,8 +1,8 @@
 //
 //  NanoMuseMediaModels.swift
-//  nanoMuse
+//  Nanodot
 //
-//  The three models nanoMuse runs on. Muse ships with all of them built in;
+//  The three models Nanodot runs on. Muse ships with all of them built in;
 //  here each is one of the person's own providers, chosen in Settings →
 //  Image & video models:
 //
@@ -219,7 +219,7 @@ enum NanoMuseMediaModels {
 
 // MARK: - Screen
 
-/// Settings → Image & video models. The one place that says what Muse never has to: nanoMuse
+/// Settings → Image & video models. The one place that says what Muse never has to: Nanodot
 /// runs on three of the person's own models. The chat model is OpenMinis' default group (a row
 /// to its picker); the image and video models are chosen here — a provider, then one of the
 /// models the key turns out to have — and each section says plainly what stops working
@@ -414,7 +414,7 @@ struct NanoMuseMediaModelsView: View {
             Text(AppLocalized("Video model"))
         } footer: {
             Text(videoInstances.isEmpty
-                 ? AppLocalized("No provider that can make video yet. nanoMuse speaks Alibaba Cloud Model Studio's video API, which nanoMuse Cloud relays too. Sign in to nanoMuse Cloud, or add a Model Studio key (it can be the same one as the image model uses), and the avatar starts moving; until then it stays as still pictures.")
+                 ? AppLocalized("No provider that can make video yet. Nanodot speaks Alibaba Cloud Model Studio's video API, which nanoMuse Cloud relays too. Sign in to nanoMuse Cloud, or add a Model Studio key (it can be the same one as the image model uses), and the avatar starts moving; until then it stays as still pictures.")
                  : AppLocalized("Makes the avatar move: a short looping clip for each state. Alibaba Cloud Model Studio: wan2.2-i2v-flash (recommended, ¥0.10 a second at 480P), another Wan model or MiniMax/MiniMax-H3; the list shows the ones this key can use, each activated once on the model's card in the Model Studio console. Billed per second of video; an avatar takes four clips of a few seconds."))
         }
     }

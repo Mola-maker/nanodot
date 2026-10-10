@@ -202,7 +202,7 @@ object Nudges {
         val url = NanoMuseCloud.baseUrl(context) + "/v1/nudges"
         return try {
             val req = Request.Builder().url(url).get()
-                .header("User-Agent", "nanoMuse-Android/${BuildConfig.VERSION_NAME}")
+                .header("User-Agent", "Nanodot-Android/${BuildConfig.VERSION_NAME}")
                 .build()
             http.newCall(req).execute().use { r ->
                 if (!r.isSuccessful) {

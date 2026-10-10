@@ -78,7 +78,7 @@ private const val CLOUD_DOC_URL = "https://github.com/nano-muse/nanoMuse/blob/ma
  * address, then the code it receives — or the account's password. The code box is marked as a
  * one-time code so the system's autofill or the keyboard can offer the SMS it just saw.
  * On success the relay is a provider with a default model, and the caller decides where to
- * go (the first run continues to "Meet nanoMuse"; from Settings it returns to the account page).
+ * go (the first run continues to "Meet Nanodot"; from Settings it returns to the account page).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -404,7 +404,7 @@ fun CloudSignInScreen(
                 onClick = { submit() },
                 enabled = canSubmit,
                 shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = Color.White),
+                colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
                 modifier = Modifier.fillMaxWidth().height(50.dp),
             ) {
                 if (verifying) {

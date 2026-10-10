@@ -27,6 +27,7 @@ from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from nanomuse.brand import AGENT_NAME
 from nanomuse.logger import logger
 from nanomuse.schema import RiskLevel
 
@@ -202,7 +203,7 @@ class MediaSettings(BaseModel):
 
 
 class AgentSettings(BaseModel):
-    name: str = "nanoMuse"
+    name: str = AGENT_NAME
     max_steps: int = 30
     # Where the agent's files live. A relative path is relative to the current directory, which is
     # what a terminal user expects. When nothing is configured, Settings resolves it: a `workspace/`
@@ -603,8 +604,8 @@ class ServerSettings(BaseModel):
     cors_origins: list[str] = Field(default_factory=list)
     # Largest file the app may attach to a message (photos from a phone run 3–12 MB).
     max_upload_mb: int = 25
-    # Ask GitHub Releases (at most every six hours) whether a newer nanoMuse is out, and say so
-    # under Settings → About. Nothing is downloaded or reported. NANOMUSE_NO_UPDATE_CHECK=1 also turns it off.
+    # Check the brand profile's explicitly enabled release channel, cached for a day.
+    # Disabled until that channel is configured; NANOMUSE_NO_UPDATE_CHECK=1 also turns it off.
     update_check: bool = True
     # How long the services (tools, MCP servers, the cloud account) may take before the
     # socket opens anyway; past it the app answers and /api/health names the step still running.

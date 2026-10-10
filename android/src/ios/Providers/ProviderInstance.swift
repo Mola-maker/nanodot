@@ -200,7 +200,7 @@ struct ProviderInstance: Identifiable, Codable, Hashable {
 
     /// Keychain service name for storing this instance's API key.
     var keychainService: String {
-        "io.github.nanomuse.app.provider.\(id)"
+        "io.github.nanodot.app.provider.\(id)"
     }
 
     /// Whether this provider type's image-output models flow through OpenAIProvider

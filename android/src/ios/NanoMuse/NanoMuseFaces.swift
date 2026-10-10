@@ -1,6 +1,6 @@
 //
 //  NanoMuseFaces.swift
-//  nanoMuse
+//  Nanodot
 //
 //  The agent's face: the five moods, the dragon that every account starts
 //  with, and the look the user drew in the avatar studio (kept on disk and
@@ -234,9 +234,9 @@ final class NanoMuseFaceStore: ObservableObject {
     }
 }
 
-/// The face at a given size and mood. When the mood has a motion clip — a
-/// drawn face's `avatar/motion/<mood>.mp4`, or the bundled dragon's
-/// `dragon-<mood>.mp4` — it plays muted in a loop, clipped to the disc.
+/// The face at a given size and mood. When a custom face has a motion clip
+/// at `avatar/motion/<mood>.mp4`, it plays muted in a loop, clipped to the disc.
+/// Built-in Dot uses the bundled mood stills.
 /// Otherwise the still, with the small life the Android header gives it: a
 /// slow breath when idle, a quicker bob while working, a tilt while
 /// waiting, a pop when happy and a shake on error. Android: AgentAvatar.kt.
@@ -452,13 +452,22 @@ struct NanoMuseLoopingClipView: UIViewRepresentable {
 
 /// Android's MuseTones: a quiet grey palette for the shell.
 enum NanoMuseTones {
-    static let surface = Color(uiColor: UIColor { $0.userInterfaceStyle == .dark ? UIColor(red: 0.11, green: 0.11, blue: 0.118, alpha: 1) : .white })
-    static let fill = Color(uiColor: UIColor { $0.userInterfaceStyle == .dark ? UIColor(red: 0.165, green: 0.165, blue: 0.18, alpha: 1) : UIColor(red: 0.945, green: 0.945, blue: 0.957, alpha: 1) })
-    static let bubble = Color(uiColor: UIColor { $0.userInterfaceStyle == .dark ? UIColor(red: 0.149, green: 0.149, blue: 0.165, alpha: 1) : UIColor(red: 0.914, green: 0.918, blue: 0.925, alpha: 1) })
-    static let disc = Color(uiColor: UIColor { $0.userInterfaceStyle == .dark ? UIColor(red: 0.165, green: 0.165, blue: 0.18, alpha: 1) : UIColor(red: 0.945, green: 0.937, blue: 0.922, alpha: 1) })
-    static let hairline = Color(uiColor: UIColor { $0.userInterfaceStyle == .dark ? UIColor(red: 0.227, green: 0.227, blue: 0.235, alpha: 1) : UIColor(red: 0.898, green: 0.898, blue: 0.918, alpha: 1) })
-    static let canvas = Color(uiColor: UIColor { $0.userInterfaceStyle == .dark ? .black : UIColor(red: 0.953, green: 0.953, blue: 0.961, alpha: 1) })
-    static let action = Color(red: 0.039, green: 0.4, blue: 0.894)
+    private static func tone(_ light: UInt32, _ dark: UInt32) -> Color {
+        Color(uiColor: UIColor { traits in
+            let hex = traits.userInterfaceStyle == .dark ? dark : light
+            return UIColor(red: CGFloat((hex >> 16) & 255) / 255, green: CGFloat((hex >> 8) & 255) / 255, blue: CGFloat(hex & 255) / 255, alpha: 1)
+        })
+    }
+    static let surface = tone(0xFFFFFF, 0x182329)
+    static let fill = tone(0xE9EFF1, 0x233239)
+    static let bubble = tone(0xE9EFF1, 0x233239)
+    static let disc = tone(0xF4F7F8, 0x182329)
+    static let hairline = tone(0x687980, 0x8EABB5)
+    static let canvas = tone(0xF4F7F8, 0x10191D)
+    static let action = tone(0x136F63, 0x7DD6C5)
+    /// The profile's onPrimary color for labels and icons on an action fill.
+    static let onAction = tone(0xFFFFFF, 0x10191D)
+    static let care = tone(0x7057A3, 0xC7B4F7)
 }
 
 /// Whether the UI runs in Chinese right now (the in-app override wins).

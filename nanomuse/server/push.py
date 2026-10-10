@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from nanomuse.background import keep_task
+from nanomuse.brand import AGENT_NAME
 from nanomuse.logger import logger
 
 VAPID_FILE = "push-vapid.json"
@@ -220,7 +221,7 @@ class PushService:
                 logger.warning("push failed: {}", str(exc)[:200])
         return gone
 
-    async def test(self, name: str = "nanoMuse") -> dict[str, Any]:
+    async def test(self, name: str = AGENT_NAME) -> dict[str, Any]:
         if not self.enabled:
             return {"ok": False, "error": "push is not available on this server"}
         if not self.subscriptions:

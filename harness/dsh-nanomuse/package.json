@@ -1,11 +1,11 @@
 {
   "name": "dsh-nanomuse",
   "version": "1.0.1",
-  "description": "nanoMuse as a DeepSeek Harness bundle: the account, the face, the persona, Hands and Reach of a Muse-style personal agent, as plugins.",
+  "description": "Nanodot personal agent with Dot, based on nanoMuse; built on DeepSeek Harness.",
   "license": "GPL-3.0-or-later",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nano-muse/nanoMuse.git",
+    "url": "git+https://github.com/Mola-maker/nanodot.git",
     "directory": "harness/dsh-nanomuse"
   },
   "type": "module",

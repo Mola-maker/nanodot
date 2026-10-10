@@ -1,8 +1,8 @@
 //
 //  NanoMuseProfile.swift
-//  nanoMuse
+//  Nanodot
 //
-//  The relay side of the agent's look: pictures drawn through nanoMuse
+//  The relay side of the agent's look: pictures drawn through Nanodot
 //  Cloud (/v1/images/*), what a new face would cost (/v1/estimate), and
 //  the profile the account's devices share (/v1/me/profile). Android:
 //  cloud/ProfileSync.kt, cloud/FaceCost.kt, avatar/ImageGen.kt.
@@ -45,7 +45,7 @@ enum NanoMuseRelayMedia {
         request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
-        request.setValue("nanoMuse-iOS/\(version)", forHTTPHeaderField: "User-Agent")
+        request.setValue("Nanodot-iOS/\(version)", forHTTPHeaderField: "User-Agent")
         return request
     }
 

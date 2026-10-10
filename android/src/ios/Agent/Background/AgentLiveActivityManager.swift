@@ -287,7 +287,7 @@ final class AgentLiveActivityManager {
 
     static func currentSoulName() -> String {
         let name = SoulStore.cachedMetadata.name.trimmingCharacters(in: .whitespacesAndNewlines)
-        return name.isEmpty ? "nanoMuse" : name
+        return name.isEmpty ? "Nanodot" : name
     }
 
     /// SF Symbol for the most-recently-invoked tool across all active sessions,
@@ -774,7 +774,7 @@ final class AgentLiveActivityManager {
         s.privacyMode = true
         // [T-ios-live-activity-privacy-duration] soulName deliberately survives
         // redaction now: it is the user's chosen Soul persona (an identity
-        // label), not conversation content — forcing "nanoMuse" made Privacy Mode
+        // label), not conversation content — forcing "Nanodot" made Privacy Mode
         // gratuitously anonymous. The remaining redactions still strip
         // everything conversation-derived.
         // Neutral icon for the Dynamic Island trailing/expanded glyphs, and never

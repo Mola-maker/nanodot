@@ -1,6 +1,6 @@
 //
 //  NanoMuseNudges.swift
-//  nanoMuse
+//  Nanodot
 //
 //  When the app may ask for a star on GitHub (contract C1). The policy comes
 //  from the relay — `GET /v1/nudges`, public, also the `nudges` field of
@@ -40,7 +40,7 @@ struct NanoMuseNudgePolicy: Equatable, Sendable {
     /// The built-in fallback — identical on Android, iOS, desktop and web.
     static let defaults = NanoMuseNudgePolicy(
         enabled: true,
-        url: "https://github.com/nano-muse/nanoMuse",
+        url: "https://github.com/Mola-maker/nanodot",
         signedIn: true,
         tasks: [3, 10, 30],
         newLook: true,

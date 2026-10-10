@@ -4,8 +4,8 @@
 <dict>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>io.github.nanomuse.app.liveactivity-refresh</string>
-		<string>io.github.nanomuse.app.scheduler</string>
+		<string>io.github.nanodot.app.liveactivity-refresh</string>
+		<string>io.github.nanodot.app.scheduler</string>
 	</array>
 	<key>CFBundleDocumentTypes</key>
 	<array>
@@ -30,7 +30,7 @@
 			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>io.github.nanomuse.app.minisbak</string>
+				<string>io.github.nanodot.app.minisbak</string>
 			</array>
 		</dict>
 	</array>
@@ -154,7 +154,7 @@
 			<string>Claude OAuth Callback</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>io.github.nanomuse.app</string>
+				<string>io.github.nanodot.app</string>
 			</array>
 		</dict>
 		<dict>
@@ -163,7 +163,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<!-- nanoMuse: the system knows the app as nanomuse://, so a phone with OpenMinis too never has two apps on one scheme; inside, links stay minis:// (NanoMuseOwnScheme) -->
-				<string>nanomuse</string>
+				<string>nanodot</string>
 			</array>
 		</dict>
 		<dict>
@@ -171,7 +171,7 @@
 			<string>MCP OAuth Callback</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>nanomuse-mcp</string>
+				<string>nanodot-mcp</string>
 			</array>
 		</dict>
 	</array>
@@ -248,7 +248,7 @@
 			<key>UTTypeDescription</key>
 			<string>nanoMuse Backup</string>
 			<key>UTTypeIdentifier</key>
-			<string>io.github.nanomuse.app.minisbak</string>
+			<string>io.github.nanodot.app.minisbak</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>

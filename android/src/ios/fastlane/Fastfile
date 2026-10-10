@@ -1,4 +1,4 @@
-# nanoMuse iOS · fastlane
+# Nanodot iOS · fastlane
 #
 # One lane: `beta` archives the app for the App Store with manual signing — the team's Apple
 # Distribution certificate from the repository's secrets, the App Store provisioning profiles from
@@ -33,17 +33,17 @@ PROJECT = "Minis.xcodeproj".freeze
 SCHEME = "Minis".freeze
 # Every target the archive signs, with its bundle id; each has an App Store profile of its own.
 TARGETS = {
-  "Minis" => "io.github.nanomuse.app",
-  "MinisShare" => "io.github.nanomuse.app.ShareExtension",
-  "MinisFileProvider" => "io.github.nanomuse.app.FileProvider",
-  "AgentWidgetExtension" => "io.github.nanomuse.app.AgentWidget"
+  "Minis" => "io.github.nanodot.app",
+  "MinisShare" => "io.github.nanodot.app.ShareExtension",
+  "MinisFileProvider" => "io.github.nanodot.app.FileProvider",
+  "AgentWidgetExtension" => "io.github.nanodot.app.AgentWidget"
 }.freeze
 KEYCHAIN = "nanomuse-ci".freeze
 # The intermediates Apple issues its signing certificates under; the runner may lack them.
 WWDR = %w[AppleWWDRCAG3 AppleWWDRCAG4 AppleWWDRCAG5 AppleWWDRCAG6].freeze
 
 platform :ios do
-  desc "Archive nanoMuse for the App Store and upload it to TestFlight (internal testers)"
+  desc "Archive Nanodot for the App Store and upload it to TestFlight (internal testers)"
   lane :beta do
     key_id = ENV.fetch("APP_STORE_CONNECT_KEY_ID")
     issuer_id = ENV.fetch("APP_STORE_CONNECT_ISSUER_ID")
@@ -131,7 +131,7 @@ platform :ios do
       },
       xcargs: "CURRENT_PROJECT_VERSION=#{build_number}",
       output_directory: "build",
-      output_name: "nanoMuse.ipa",
+      output_name: "Nanodot.ipa",
       clean: false,
       include_symbols: true,
       include_bitcode: false
@@ -141,11 +141,11 @@ platform :ios do
     # no beta review. External groups do; see docs/ios.md.
     upload_to_testflight(
       api_key: api_key,
-      ipa: "build/nanoMuse.ipa",
+      ipa: "build/Nanodot.ipa",
       skip_waiting_for_build_processing: true,
       distribute_external: false,
       notify_external_testers: false
-    )
+    ) if ENV["NANODOT_UPLOAD_TESTFLIGHT"] == "1"
   ensure
     delete_keychain(name: KEYCHAIN) if File.exist?(File.expand_path("~/Library/Keychains/#{KEYCHAIN}-db"))
     FileUtils.rm_rf(scratch) if scratch

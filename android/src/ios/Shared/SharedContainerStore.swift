@@ -3,7 +3,7 @@ import Foundation
 /// Reads and writes PendingShare data to the App Group shared container.
 /// Compiled into both the main app target and the Share Extension target.
 enum SharedContainerStore {
-    static let appGroupID = "group.io.github.nanomuse.app"
+    static let appGroupID = "group.io.github.nanodot.app"
 
     private static let pendingShareKey = "pendingShare"
 

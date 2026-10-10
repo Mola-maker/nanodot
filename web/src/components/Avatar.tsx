@@ -4,16 +4,7 @@ import { useMood } from "../mood";
 import type { Profile, Status } from "../types";
 import { cx } from "../util";
 
-/**
- * The agent's face: the dragon (posed by what the agent is doing), a face drawn in the avatar
- * studio or an emoji on a colour. The dragon and a studio face play a short looping clip per
- * mood where there is one — a head shake at rest, headphones and a laptop while working, a
- * crystal ball while waiting, a star when pleased, the same clips the phone plays — and show
- * the still otherwise: small sizes, lists and pickers, a person who prefers reduced motion, a
- * face without clips, a clip that failed to load. Everything else moves as a whole — breathe
- * when idle, sway while working, hop when waiting. Tap it and it wiggles; the dragon is
- * pleased about it.
- */
+/** Dot uses offline mood stills. A studio face may play its own clips; emoji preferences are retained. */
 
 /** Below this the clip is not worth the bytes: the still shows. */
 const CLIP_MIN_PX = 44;
@@ -47,7 +38,7 @@ export function Avatar({
 
   const mood = useMood(status);
   const state = status?.state ?? "idle";
-  const color = profile?.color ?? "#0064d4";
+  const color = profile?.color ?? "#136F63";
   // the dragon is the default: no profile yet, or a profile that names it (or a retired face)
   const dragon = !profile || isDragon(profile.avatar);
   // a face from the studio: anything else that is not the emoji
@@ -67,7 +58,7 @@ export function Avatar({
           : "avatar-idle";
   const stillUrl = dragon ? dragonUrl(pose) : studio ? studioUrl(studio, pose) : "";
 
-  const label = `${profile?.name ?? "nanoMuse"} avatar`;
+  const label = `${profile?.name ?? "Dot"} avatar`;
   const box = cx("relative inline-block shrink-0 select-none rounded-full", className);
   const face = (
     <>
@@ -92,7 +83,10 @@ export function Avatar({
             className="h-full w-full object-cover"
           />
         ) : dragon || studio ? (
-          <img src={stillUrl} alt="" draggable={false} className="h-full w-full object-cover" />
+          <img src={stillUrl} onError={(event) => {
+            const fallback = dragonUrl(pose);
+            if (event.currentTarget.getAttribute("src") !== fallback) event.currentTarget.src = fallback;
+          }} alt="" draggable={false} className="h-full w-full object-cover" />
         ) : (
           <span className="flex h-full w-full items-center justify-center leading-none drop-shadow-sm" style={{ fontSize: size * 0.5 }}>
             {profile?.emoji ?? "✨"}

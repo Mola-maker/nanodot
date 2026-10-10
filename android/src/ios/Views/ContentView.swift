@@ -996,10 +996,10 @@ struct ContentView: View {
     /// when `sessions` changes (see .onChange below).
     @State private var sessionsByIdCache: [String: ChatSession] = [:]
     /// Soul name shown as the sidebar title. Sourced from SOUL.md, falls
-    /// back to "nanoMuse". Refreshed whenever SoulStore posts .soulMdChanged.
+    /// back to "Nanodot". Refreshed whenever SoulStore posts .soulMdChanged.
     @State private var soulName: String = SoulStore.cachedMetadata.name.isEmpty
-        ? "nanoMuse" : SoulStore.cachedMetadata.name
-    /// Subtitle state shown under the "nanoMuse" sidebar title. nil hides the
+        ? "Nanodot" : SoulStore.cachedMetadata.name
+    /// Subtitle state shown under the "Nanodot" sidebar title. nil hides the
     /// row; otherwise it renders as small capsules per type or a single
     /// status string. Refreshed by a 5s timer.
     @State private var migrationSubtitle: SyncSubtitleState?
@@ -2756,7 +2756,7 @@ struct ContentView: View {
         // and can't drop a .soulMdChanged notification arriving during reconstruction.
         .onReceive(NotificationCenter.default.publisher(for: .soulMdChanged)) { _ in
             let n = SoulStore.cachedMetadata.name
-            soulName = n.isEmpty ? "nanoMuse" : n
+            soulName = n.isEmpty ? "Nanodot" : n
         }
     }
 
@@ -3151,7 +3151,7 @@ struct ContentView: View {
                 if migrationSubtitle != next { migrationSubtitle = next }
             } else {
                 // No active sync work — hide the subtitle entirely so the
-                // "nanoMuse" title sits at its normal size.
+                // "Nanodot" title sits at its normal size.
                 if migrationSubtitle != nil { migrationSubtitle = nil }
             }
         }
@@ -3180,7 +3180,7 @@ struct ContentView: View {
             .map { (label: $0.0, count: $0.1) }
     }
 
-    /// Tiny indicator next to the "nanoMuse" title showing the sync state.
+    /// Tiny indicator next to the "Nanodot" title showing the sync state.
     @ViewBuilder
     private func titleSyncIndicator(for state: SyncSubtitleState?) -> some View {
         switch state {
@@ -3284,7 +3284,7 @@ struct ContentView: View {
                     if #available(iOS 17.0, *) { return SyncV2Bootstrap.isEnabled }
                     return false
                 }()
-                // Title text comes from SOUL.md (falls back to "nanoMuse"). The
+                // Title text comes from SOUL.md (falls back to "Nanodot"). The
                 // leading sync indicator floats as an overlay so it doesn't
                 // take layout space — title stays perfectly centered in the
                 // navigation bar regardless of whether the indicator is visible.
@@ -3934,7 +3934,7 @@ struct ContentView: View {
                 .padding(.bottom, 4)
 
             VStack(spacing: 8) {
-                Text("Welcome to nanoMuse")
+                Text("Welcome to Nanodot")
                     .font(.title2.bold())
                 Text("Your first On-Device Agent is almost ready.")
                     .font(.subheadline)
@@ -5553,7 +5553,7 @@ struct ContentView: View {
                 done += 1
                 if msg.isToolResultOnly { continue }
 
-                let role = msg.role == .user ? "User" : "nanoMuse"
+                let role = msg.role == .user ? "User" : "Nanodot"
                 let time = timeFmt.string(from: msg.createdAt)
                 var parts: [String] = []
                 for part in msg.parts {
@@ -7433,7 +7433,7 @@ private struct SettingsSheet: View {
                     NavigationLink {
                         NanoMuseSettingsHomeView()
                     } label: {
-                        Label("nanoMuse", systemImage: "sparkles")
+                        Label("Nanodot", systemImage: "sparkles")
                     }
                 }
                 } // nanoMuse:
@@ -7682,7 +7682,7 @@ private struct SettingsSheet: View {
                         AboutView()
                     } label: {
                         Label {
-                            Text("About nanoMuse")
+                            Text("About Nanodot")
                         } icon: {
                             Image(systemName: "info")
                                 .font(.system(size: 9))
@@ -7913,7 +7913,7 @@ private struct SettingsSheet: View {
         components.scheme = "mailto"
         components.path = "dev@openminis.app"
         components.queryItems = [
-            URLQueryItem(name: "subject", value: "nanoMuse Feedback"),
+            URLQueryItem(name: "subject", value: "Nanodot Feedback"),
             URLQueryItem(name: "body", value: body),
         ]
         return components.url
@@ -7941,7 +7941,7 @@ private struct SettingsSheet: View {
         |-------|-------|
         | Platform | iOS |
         | OS Version | iOS \(iosVersion) |
-        | nanoMuse Version | \(appVersion) (build \(build)) |
+        | Nanodot Version | \(appVersion) (build \(build)) |
         | Device Model | \(device) |
 
         ## 🔁 Steps to Reproduce

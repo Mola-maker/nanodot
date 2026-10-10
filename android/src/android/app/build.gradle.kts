@@ -35,16 +35,15 @@ android {
     // deps/build_proot.sh uses the same one through ANDROID_NDK_HOME.
     ndkVersion = "27.2.12479018"
 
-    // nanoMuse: release builds are signed with the project key when
-    // android/keystore.properties exists (storeFile / storePassword / keyAlias /
-    // keyPassword; git-ignored) and fall back to the debug key otherwise, so a
-    // release APK can be built by anyone. One key for every version.
+    // nanoMuse: Nanodot release builds require an explicit project key.
+    // Debug builds still use Android's debug key. Validation below fails
+    // before release compilation rather than silently using the debug key.
     signingConfigs {
         val keystoreProperties = rootProject.file("../../keystore.properties")
         if (keystoreProperties.isFile) {
             val props = Properties()
             keystoreProperties.inputStream().use { props.load(it) }
-            create("nanomuse") {
+            create("nanodot") {
                 storeFile = file(props.getProperty("storeFile"))
                 storePassword = props.getProperty("storePassword")
                 keyAlias = props.getProperty("keyAlias")
@@ -54,7 +53,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "io.github.nanomuse.app"
+        applicationId = "io.github.nanodot.app"
         minSdk = 26
         targetSdk = 35
         versionCode = 44
@@ -98,8 +97,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // nanoMuse: project key if present, debug key otherwise (see signingConfigs).
-            signingConfig = signingConfigs.findByName("nanomuse") ?: signingConfigs.getByName("debug")
+            // nanoMuse: release signing is explicit and never falls back to debug.
+            signingConfig = signingConfigs.findByName("nanodot")
         }
     }
 
@@ -148,6 +147,29 @@ android {
         checkReleaseBuilds = false
         disable += "NonNullableMutableLiveData"
     }
+}
+
+// nanoMuse: also enforce signing when Gradle is invoked without the build wrapper.
+val validateNanodotReleaseSigning by tasks.registering {
+    doLast {
+        val keystoreProperties = rootProject.file("../../keystore.properties")
+        check(keystoreProperties.isFile) {
+            "Nanodot release requires android/keystore.properties; no debug key fallback."
+        }
+        val props = Properties().apply {
+            keystoreProperties.inputStream().use { load(it) }
+        }
+        val requiredKeys = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
+        check(requiredKeys.all { !props.getProperty(it).isNullOrBlank() }) {
+            "Nanodot release signing configuration is incomplete."
+        }
+        check(file(props.getProperty("storeFile")).isFile) {
+            "Nanodot release keystore does not exist."
+        }
+    }
+}
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+    dependsOn(validateNanodotReleaseSigning)
 }
 
 // [T-android-downgrade-compat] Room needs an explicit output directory once

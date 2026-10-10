@@ -1,6 +1,6 @@
 //
 //  NanoMuseRelayRefusalCard.swift
-//  nanoMuse
+//  Nanodot
 //
 //  A turn nanoMuse Cloud refused (docs/parity.md, item 35): one plain sentence from
 //  `NanoMuseCloud.describe` and the button that fits — *New chat* for a message too large,
@@ -102,7 +102,7 @@ struct NanoMuseRelayRefusalCard: View {
 
     private func primary(_ label: String, action: @escaping () -> Void) -> some View {
         Button(label, action: action)
-            .buttonStyle(.borderedProminent).tint(NanoMuseTones.action).controlSize(.small)
+            .buttonStyle(.borderedProminent).tint(NanoMuseTones.action).foregroundStyle(NanoMuseTones.onAction).controlSize(.small)
     }
 
     @ViewBuilder
@@ -112,7 +112,7 @@ struct NanoMuseRelayRefusalCard: View {
         }
     }
 
-    /// Settings → nanoMuse Cloud is the first row of the nanoMuse settings home.
+    /// Settings → nanoMuse Cloud is the first row of the Nanodot settings home.
     private func openSettings() {
         NotificationCenter.default.post(name: .nanoMuseHomeAction, object: "settings")
     }

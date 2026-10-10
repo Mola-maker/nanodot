@@ -532,7 +532,7 @@ struct ToolLiveSheet: View {
                 // out to the step pill's trailing column (under the
                 // elapsed-duration "5s" text) so it lives next to where the
                 // user is already scanning timing info.
-                Text("nanoMuse Computer")
+                Text("Nanodot Computer")
                     .font(.system(size: 15, weight: .semibold))
 
                 Spacer()
@@ -1977,16 +1977,16 @@ struct ToolLiveSheet: View {
 
     private var toolTitle: String {
         switch block.kind {
-        case .shellTool: return "nanoMuse is using Shell"
-        case .fileReadTool: return "nanoMuse is reading File"
-        case .fileWriteTool: return "nanoMuse is using Editor"
-        case .fileEditTool: return "nanoMuse is editing File"
-        case .browserTool: return "nanoMuse is using Browser"
-        case .readImageTool: return "nanoMuse is reading Image"
-        case .memoryTool: return "nanoMuse is using Memory"
-        case .info: return "nanoMuse"
-        case .text: return "nanoMuse"
-        case .thinking: return "nanoMuse"
+        case .shellTool: return "Nanodot is using Shell"
+        case .fileReadTool: return "Nanodot is reading File"
+        case .fileWriteTool: return "Nanodot is using Editor"
+        case .fileEditTool: return "Nanodot is editing File"
+        case .browserTool: return "Nanodot is using Browser"
+        case .readImageTool: return "Nanodot is reading Image"
+        case .memoryTool: return "Nanodot is using Memory"
+        case .info: return "Nanodot"
+        case .text: return "Nanodot"
+        case .thinking: return "Nanodot"
         }
     }
 

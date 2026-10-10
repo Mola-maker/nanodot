@@ -1,6 +1,6 @@
 //
 //  NanoMuseNetworkView.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Settings → Network: the HTTP proxy for own providers and the ChatGPT plan (NanoMuseProxy)
 //  — one switch, host, port, an optional user name and password, saved as typed, and a Test

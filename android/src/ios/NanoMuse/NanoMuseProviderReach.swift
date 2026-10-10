@@ -1,6 +1,6 @@
 //
 //  NanoMuseProviderReach.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Why a provider did not answer, read off the error the model client raised, so the chat
 //  shows a card that says what happened and what helps instead of the transport's own words

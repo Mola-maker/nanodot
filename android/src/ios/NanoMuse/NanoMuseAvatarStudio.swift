@@ -1,6 +1,6 @@
 //
 //  NanoMuseAvatarStudio.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Describe a face → four candidates → pick one → the moods are posed
 //  from it → saved on this phone and in the account's profile. Pictures
@@ -505,7 +505,7 @@ struct NanoMuseAvatarStudioView: View {
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 7)
                                 .background(studio.style == style ? NanoMuseTones.action : NanoMuseTones.fill, in: Capsule())
-                                .foregroundStyle(studio.style == style ? Color.white : Color.primary)
+                                .foregroundStyle(studio.style == style ? NanoMuseTones.onAction : Color.primary)
                         }
                         .buttonStyle(.plain)
                     }
@@ -652,7 +652,7 @@ struct NanoMuseFaceCostSheet: View {
                     .padding(.vertical, 12)
             }
             .buttonStyle(.borderedProminent)
-            .tint(NanoMuseTones.action)
+            .tint(NanoMuseTones.action).foregroundStyle(NanoMuseTones.onAction)
             .disabled(studio.estimating)
             Button(AppLocalized("Not now")) { dismiss() }
                 .frame(maxWidth: .infinity)

@@ -1,6 +1,6 @@
 //
 //  NanoMuseChrome.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Muse's page furniture, shared by the home shell and the settings pages:
 //  the big-face header (face on a disc, the name in a white pill under the

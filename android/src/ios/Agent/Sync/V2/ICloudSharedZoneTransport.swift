@@ -27,7 +27,7 @@ final class ICloudSharedZoneTransport: NSObject, SyncTransport {
 
     // MARK: - Configuration
 
-    static let containerIdentifier = "iCloud.io.github.nanomuse.app"
+    static let containerIdentifier = "iCloud.io.github.nanodot.app"
 
     /// Fixed zone names. Never include device id.
     static let sharedZoneName  = "minis-shared"

@@ -1,6 +1,6 @@
 //
 //  NanoMuseRooms.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Two of the rooms next to the chat: Ideas (the bundled catalogue — one
 //  tap sends a prompt to a new chat, schedules a routine or starts a goal)
@@ -204,7 +204,7 @@ private struct NanoMuseIdeaSheet: View {
                     .padding(.vertical, 12)
             }
             .buttonStyle(.borderedProminent)
-            .tint(NanoMuseTones.action)
+            .tint(NanoMuseTones.action).foregroundStyle(NanoMuseTones.onAction)
             if idea.kind != .chat {
                 Button {
                     onAct(.chat)

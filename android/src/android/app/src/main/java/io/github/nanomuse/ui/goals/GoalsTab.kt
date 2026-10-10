@@ -272,7 +272,7 @@ fun GoalsTab(
                         onStartGoal(category)
                     },
                     shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(containerColor = io.github.nanomuse.ui.home.MuseTones.action, contentColor = Color.White),
+                    colors = ButtonDefaults.buttonColors(containerColor = io.github.nanomuse.ui.home.MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
                     modifier = Modifier.fillMaxWidth().height(50.dp),
                 ) {
                     Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null, modifier = Modifier.size(18.dp))

@@ -205,7 +205,7 @@ fun ProviderReachCard(reach: ProviderReach.Reach, onRetry: () -> Unit, modifier:
                             onClick = { if (plan) signInAgain(context) else ChatLinkResolver.dispatchDeepLink(context, "minis://settings/providers") },
                             shape = CircleShape,
                             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = Color.White),
+                            colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
                         ) {
                             Text(stringResource(if (plan) R.string.nm_reach_sign_in else R.string.nm_reach_open_provider), fontSize = 13.sp, fontWeight = FontWeight.Medium)
                         }
@@ -217,7 +217,7 @@ fun ProviderReachCard(reach: ProviderReach.Reach, onRetry: () -> Unit, modifier:
                             onClick = onRetry,
                             shape = CircleShape,
                             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = Color.White),
+                            colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
                         ) {
                             Text(stringResource(R.string.nm_reach_try_again), fontSize = 13.sp, fontWeight = FontWeight.Medium)
                         }
@@ -259,7 +259,7 @@ fun ProviderReachCard(reach: ProviderReach.Reach, onRetry: () -> Unit, modifier:
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier
                             .padding(top = 4.dp)
-                            .combinedClickable(onClick = {}, onLongClick = { clipboard.setPlainText("nanoMuse", reach.detail) }),
+                            .combinedClickable(onClick = {}, onLongClick = { clipboard.setPlainText("Nanodot", reach.detail) }),
                     )
                 }
             }

@@ -1,6 +1,6 @@
 //
 //  NanoMuseShell.swift
-//  nanoMuse
+//  Nanodot
 //
 //  The Muse shell on iPhone and iPad: one main chat pinned to the Chat tab,
 //  a bottom bar for Chat / Feed / Ideas / Goals / Library, and a side
@@ -365,10 +365,10 @@ struct NanoMuseHomeView: View {
     @State private var showDevices = false
     @State private var agentName = NanoMuseHomeView.currentAgentName()
 
-    /// The agent's name from SOUL.md, "nanoMuse" until it has one.
+    /// The agent's name from SOUL.md, "Dot" until it has one.
     static func currentAgentName() -> String {
         let n = SoulStore.cachedMetadata.name
-        return n.isEmpty ? "nanoMuse" : n
+        return n.isEmpty ? "Dot" : n
     }
 
     /// Hidden while the keyboard is up (Android's IME) and while the chat's voice panel is

@@ -1,6 +1,6 @@
 //
 //  NanoMuseChatRename.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Renaming a chat from the shell: the main chat's ••• menu and the drawer's
 //  long-press. The name is upstream's session title (ChatStore), so the

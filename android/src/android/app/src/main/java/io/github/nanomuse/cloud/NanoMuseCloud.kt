@@ -1087,7 +1087,7 @@ object NanoMuseCloud {
     private fun call(context: Context, method: String, path: String, body: JSONObject?, token: String?): JSONObject {
         val builder = Request.Builder().url(baseUrl(context) + path)
         if (token != null) builder.header("Authorization", "Bearer $token")
-        builder.header("User-Agent", "nanoMuse-Android/${BuildConfig.VERSION_NAME}")
+        builder.header("User-Agent", "Nanodot-Android/${BuildConfig.VERSION_NAME}")
         when (method) {
             "GET" -> builder.get()
             else -> builder.method(method, (body?.toString() ?: "{}").toRequestBody(json))

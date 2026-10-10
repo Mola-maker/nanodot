@@ -1,6 +1,6 @@
 //
 //  NanoMuseAvatarMotion.swift
-//  nanoMuse
+//  Nanodot
 //
 //  The face in motion: one short looping clip per mood, drawn from that
 //  mood's pose by the video model — Muse's fixed set: a head shake and a
@@ -58,9 +58,9 @@ final class NanoMuseAvatarMotion: ObservableObject {
         directory.appendingPathComponent("\(mood.rawValue).mp4")
     }
 
-    /// The bundled dragon's clip for a mood (`dragon-<mood>.mp4`), when the bundle has it.
+    /// Kept for existing callers; built-in Dot has no video clips.
     nonisolated static func dragonClip(_ mood: NanoMuseMood) -> URL? {
-        Bundle.main.url(forResource: "dragon-\(mood.rawValue)", withExtension: "mp4")
+        nil // Dot uses bundled stills; user-created clips are handled separately.
     }
 
     func rescan() {

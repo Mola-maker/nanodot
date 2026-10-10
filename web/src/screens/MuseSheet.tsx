@@ -59,7 +59,7 @@ export function MuseSheet({ open, onClose }: { open: boolean; onClose: () => voi
   const [pen, setPen] = useState(false);
   const [share, setShare] = useState(false);
   const [stopping, setStopping] = useState(false);
-  const name = state.profile?.name ?? "nanoMuse";
+  const name = state.profile?.name ?? "Dot";
   const pending = state.pendingApprovals.length;
   const t = useT();
 
@@ -235,7 +235,7 @@ function FileCard({ title, caption, foot, colors, onClick }: { title: string; ca
 // ------------------------------------------------------------------ approvals queue
 function ApprovalsView({ onDone }: { onDone: () => void }) {
   const { state, decide, openThread, toast } = useStore();
-  const name = state.profile?.name ?? "nanoMuse";
+  const name = state.profile?.name ?? "Dot";
   const t = useT();
   const list = [...state.pendingApprovals].sort((a, b) => a.ts.localeCompare(b.ts));
   const titleOf = (id: string) => {
@@ -283,7 +283,7 @@ function UpcomingView({ onSettings }: { onSettings: () => void }) {
   const [data, setData] = useState<UpcomingData | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const name = state.profile?.name ?? "nanoMuse";
+  const name = state.profile?.name ?? "Dot";
   const t = useT();
 
   const load = () =>
@@ -916,7 +916,7 @@ function ActivityView({ open }: { open: boolean }) {
   const [data, load, error] = useActivity(open);
   const { state } = useStore();
   const t = useT();
-  const name = state.profile?.name ?? "nanoMuse";
+  const name = state.profile?.name ?? "Dot";
   const entries = (data?.audit ?? []).filter((e) => e.event === "tool_call").reverse();
   const gui = entries.filter((e) => e.channel === "gui").length;
   return (
@@ -958,7 +958,7 @@ function PermissionsView({ open }: { open: boolean }) {
   const [data, reload] = useActivity(open);
 
   const reset = async () => {
-    if (!window.confirm(t("Forget every permission you granted? {name} will ask again next time.", { name: state.profile?.name ?? "nanoMuse" }))) return;
+    if (!window.confirm(t("Forget every permission you granted? {name} will ask again next time.", { name: state.profile?.name ?? "Dot" }))) return;
     try {
       await api.resetApprovals();
       await reload();

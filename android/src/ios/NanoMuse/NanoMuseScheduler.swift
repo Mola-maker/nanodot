@@ -1,6 +1,6 @@
 //
 //  NanoMuseScheduler.swift
-//  nanoMuse
+//  Nanodot
 //
 //  The iPhone's scheduler primitive: a due-list of routines (the daily
 //  feed, goal check-ins, the routines made from Ideas) kept in a JSON file,
@@ -10,7 +10,7 @@
 //  schedule while it sleeps: when a routine comes due and the app is not
 //  up, the phone shows "Check-in: <goal> — open to run it", and the run
 //  happens when the person opens the app. Android has WorkManager for this
-//  (io.github.nanomuse.app.scheduled.*); the words here say what the phone can
+//  (io.github.nanodot.app.scheduled.*); the words here say what the phone can
 //  and cannot do.
 //
 
@@ -122,7 +122,7 @@ final class NanoMuseScheduler: ObservableObject {
     static let shared = NanoMuseScheduler()
 
     /// Also listed under BGTaskSchedulerPermittedIdentifiers in Info.plist.
-    nonisolated static let backgroundTaskId = "io.github.nanomuse.app.scheduler"
+    nonisolated static let backgroundTaskId = "io.github.nanodot.app.scheduler"
     static let notificationCategory = "NANOMUSE_ROUTINE"
     private static let maxRunsKept = 10
 
@@ -340,7 +340,7 @@ final class NanoMuseScheduler: ObservableObject {
         } else {
             content.title = r.label.isEmpty ? AppLocalized("Routine") : r.label
         }
-        content.body = AppLocalized("Open nanoMuse to run it. The phone cannot run the agent while the app is asleep.")
+        content.body = AppLocalized("Open Nanodot to run it. The phone cannot run the agent while the app is asleep.")
         content.sound = .default
         content.categoryIdentifier = Self.notificationCategory
         var info: [String: Any] = ["nanomuse.routine": r.id]

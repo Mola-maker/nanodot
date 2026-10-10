@@ -31,7 +31,7 @@ const PALETTES: Palette[] = [
   { id: "green", background: "#D9F0DF", accent: "#2E7D4F", mood: "error" },
 ];
 
-const REPO = "github.com/nano-muse/nanoMuse";
+const REPO = "github.com/Mola-maker/nanodot";
 // the card, in CSS pixels; drawn at 2× for a crisp picture
 const W = 540;
 const H = 720;
@@ -166,12 +166,12 @@ export function AvatarShareSheet({ open, onClose }: { open: boolean; onClose: ()
   const { state, toast } = useStore();
   const t = useT();
   const profile = state.profile;
-  const name = profile?.name ?? "nanoMuse";
+  const name = profile?.name ?? "Dot";
   const [selected, setSelected] = useState(0);
   const [previews, setPreviews] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const alive = useRef(true);
-  const bubble = t("Hi, I'm {name}, a personal AI agent. Meet nanoMuse: open source, runs on your phone.", { name });
+  const bubble = t("Hi, I'm {name}, a personal AI agent. Meet Nanodot: open source, runs on your phone.", { name });
   const tagline = t("Your personal AI agent, open source · {repo}", { repo: REPO });
 
   useEffect(() => {

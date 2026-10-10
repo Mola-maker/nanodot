@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { join } from "node:path";
 
 /**
- * The client of "nanoMuse Computer Use.app" (mac/computer-use/), the small native app that
+ * The client of "Nanodot Computer Use.app" (mac/computer-use/), the small native app that
  * holds the hands' two macOS permissions and does the capture and the input.
  *
  * Why a separate app: macOS attributes a TCC request to the *responsible process* — the
@@ -17,7 +17,7 @@ import { join } from "node:path";
  * way, and Node cannot set it — so: `open`, never `spawn` of the binary.) Codex's "Codex
  * Computer Use.app" is the same arrangement.
  *
- * What that buys: the panes list *nanoMuse Computer Use*, granted and revoked on its own;
+ * What that buys: the panes list *Nanodot Computer Use*, granted and revoked on its own;
  * Screen Recording — which reaches freshly started processes only — takes effect after the
  * helper restarts, not the whole app; the picture comes from ScreenCaptureKit on macOS 14+
  * (CGDisplayCreateImage before — on macOS 26/27 that call returns nil even with the grant,
@@ -45,10 +45,10 @@ import { join } from "node:path";
  * Nothing here needs Electron: main.ts passes the paths in, and tests run it under Node.
  */
 
-export const HELPER_NAME = "nanoMuse Computer Use";
+export const HELPER_NAME = "Nanodot Computer Use";
 export const HELPER_BUNDLE_ID = "io.github.nanomuse.desktop.computer-use";
 /** The permission text when the helper is the one that needs the switch (no app restart involved). */
-export const HELPER_SCREEN_PERMISSION_TEXT = "macOS: switch on nanoMuse Computer Use under System Settings → Privacy & Security → Screen Recording. The helper restarts by itself; the app does not need to.";
+export const HELPER_SCREEN_PERMISSION_TEXT = "macOS: switch on Nanodot Computer Use under System Settings → Privacy & Security → Screen Recording. The helper restarts by itself; the app does not need to.";
 
 export type HelperScreenState = "granted" | "denied" | "unknown";
 
@@ -137,7 +137,7 @@ export interface QuarantineOutcome {
 }
 
 /** The text of a flag that could not be removed — the one case where the person has to act. */
-export const QUARANTINE_KEPT_TEXT = "the helper bundle carries macOS's quarantine flag and it could not be removed; move nanoMuse to the Applications folder and open it again";
+export const QUARANTINE_KEPT_TEXT = "the helper bundle carries macOS's quarantine flag and it could not be removed; move Nanodot to the Applications folder and open it again";
 
 /** A path under Gatekeeper's App Translocation: a read-only copy with a random name, different on every launch. */
 export function translocated(path: string): boolean {
@@ -326,7 +326,7 @@ export class MacHelper {
       // the app itself under App Translocation: the helper inside it is read-only and
       // quarantined too, and would start translocated in turn — grants to a path that changes
       // every launch are no grants; better the plain reason than a helper that half works
-      if (translocated(appPath)) throw new Error("nanoMuse is running from a temporary copy macOS made of it (App Translocation); move it to the Applications folder and open it again");
+      if (translocated(appPath)) throw new Error("Nanodot is running from a temporary copy macOS made of it (App Translocation); move it to the Applications folder and open it again");
       const quarantine = (this.options.quarantine ?? clearQuarantine)(appPath);
       if (quarantine.result === "removed") this.log("removed the quarantine flag from the bundled helper, so macOS starts it in place and the privacy panes list it");
       else if (quarantine.result === "kept") throw new Error(`${QUARANTINE_KEPT_TEXT}${quarantine.detail ? ` (${quarantine.detail})` : ""}`);

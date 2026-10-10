@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The macOS packages of nanoMuse Desktop, from the .app electron-builder left in harness/desktop/dist:
+# The macOS packages of Nanodot Desktop, from the .app electron-builder left in harness/desktop/dist:
 #
 #   scripts/desktop-app/package-mac.sh <arch>          # arm64 | x64
 #
@@ -18,9 +18,9 @@
 #                                                an App Store Connect API key (the .p8's text) for notarytool
 #      APPLE_TEAM_ID                              optional; checked against the certificate when set
 #    The certificate alone signs without notarizing (Gatekeeper then still asks once).
-# 2. nanoMuse-Desktop-<version>-mac-<arch>.zip — `ditto`, the way Finder makes archives, which
+# 2. Nanodot-Desktop-<version>-mac-<arch>.zip — `ditto`, the way Finder makes archives, which
 #    keeps symlinks, resource forks and permissions; unzip, drag to Applications.
-# 3. nanoMuse-Desktop-<version>-mac-<arch>.dmg — an APFS image made with `hdiutil` directly.
+# 3. Nanodot-Desktop-<version>-mac-<arch>.dmg — an APFS image made with `hdiutil` directly.
 #    electron-builder's HFS+ image copied with Finder error -36 on some Macs (0.1.20, 0.1.21).
 #
 # APP_DIR, APP_NAME and ARTIFACT name another app directory, bundle name and file prefix.
@@ -28,25 +28,33 @@
 # besides the runtime.
 set -euo pipefail
 arch="${1:?arch: arm64 | x64}"
+case "$arch" in
+  arm64) mac_dir=mac-arm64; native_arch=arm64 ;;
+  x64) mac_dir=mac; native_arch=x86_64 ;;
+  *) echo "unsupported macOS architecture: $arch" >&2; exit 1 ;;
+esac
 here="$(cd "$(dirname "$0")/../.." && pwd)"
 app_dir="${APP_DIR:-$here/harness/desktop}"
 case "$app_dir" in /*) ;; *) app_dir="$here/$app_dir" ;; esac
-app_name="${APP_NAME:-nanoMuse}"
-artifact="${ARTIFACT:-nanoMuse-Desktop}"
+app_name="${APP_NAME:-Nanodot}"
+artifact="${ARTIFACT:-Nanodot-Desktop}"
 version="$(node -p "require('$app_dir/package.json').version")"
-app="$(ls -d "$app_dir"/dist/mac*/"$app_name".app 2>/dev/null | head -1 || true)"
+# The runtime and staged native modules belong to this architecture only.
+bundle_dir="$app_dir/dist/$mac_dir"
+app="$bundle_dir/$app_name.app"
 if [ ! -d "$app" ]; then
   # electron-builder names the bundle after `executableName` when the config sets one
-  # (nanoMuse Desktop builds as nanomuse-desktop.app); what people drag into Applications
+  # (Nanodot Desktop builds as nanodot-desktop.app); what people drag into Applications
   # should carry the product's name, so the bundle is renamed before it is signed
-  found="$(ls -d "$app_dir"/dist/mac*/*.app 2>/dev/null | head -1 || true)"
-  if [ -d "$found" ]; then
-    app="$(dirname "$found")/$app_name.app"
-    mv "$found" "$app"
-    echo "renamed $(basename "$found") -> $app_name.app"
-  fi
+  shopt -s nullglob
+  candidates=("$bundle_dir"/*.app)
+  [ "${#candidates[@]}" = 1 ] || { echo "expected one .app under $bundle_dir" >&2; exit 1; }
+  mv "${candidates[0]}" "$app"
+  echo "renamed $(basename "${candidates[0]}") -> $app_name.app"
 fi
-[ -d "$app" ] || { echo "no $app_name.app under $app_dir/dist — run 'npm run dist:dir' first" >&2; exit 1; }
+executable="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Contents/Info.plist")"
+lipo -verify_arch "$native_arch" "$app/Contents/MacOS/$executable"
+lipo -verify_arch "$native_arch" "$app/Contents/Resources/runtime/nanomuse"
 out="$app_dir/dist"
 name="$artifact-$version-mac-$arch"
 
@@ -92,25 +100,33 @@ echo "== signature"
 # loose files under Resources, which --deep does not visit — unsigned, notarization refuses them
 for inner in runtime dsh app.asar.unpacked; do
   [ -d "$app/Contents/Resources/$inner" ] || continue
-  find "$app/Contents/Resources/$inner" -type f \( -perm -u+x -o -name "*.so" -o -name "*.dylib" -o -name "*.node" \) -print0 \
-    | xargs -0 -n 50 codesign --force --sign "$identity" "${sign_flags[@]}" 2>/dev/null || true
+  while IFS= read -r -d '' binary; do
+    # Shell/Python scripts are resources; every Mach-O signature must succeed.
+    if file -b "$binary" | grep -q '^Mach-O'; then
+      codesign --force --sign "$identity" "${sign_flags[@]}" "$binary"
+    fi
+  done < <(find "$app/Contents/Resources/$inner" -type f \
+    \( -perm -u+x -o -name "*.so" -o -name "*.dylib" -o -name "*.node" \) -print0)
 done
-# "nanoMuse Computer Use.app" (harness/desktop/mac/computer-use): the helper that holds Screen
+# "Nanodot Computer Use.app" (harness/desktop/mac/computer-use): the helper that holds Screen
 # Recording and Accessibility. Signed as a bundle of its own, before the outer app, with the
 # same identity and the hardened runtime but none of the app's entitlements (it is a plain
 # Foundation program: no JIT, no foreign libraries). Its identifier is what the privacy panes
 # remember: with a Developer ID the designated requirement is the same from build to build and
 # the grant survives updates; ad-hoc, it is keyed to this binary's hash and each build starts
 # over (docs/desktop.md "macOS permissions").
-helper="$app/Contents/Helpers/nanoMuse Computer Use.app"
+helper="$app/Contents/Helpers/Nanodot Computer Use.app"
 if [ -d "$helper" ]; then
+  lipo -verify_arch "$native_arch" "$helper/Contents/MacOS/Nanodot Computer Use"
   helper_flags=(--timestamp=none)
   [ "$identity" != "-" ] && helper_flags=(--timestamp --options runtime)
-  codesign --force --sign "$identity" "${helper_flags[@]}" --identifier io.github.nanomuse.desktop.computer-use "$helper"
-  codesign --verify --strict "$helper" && echo "helper signature ok"
+  codesign --force --sign "$identity" "${helper_flags[@]}" --identifier io.github.nanodot.desktop.computer-use "$helper"
+  codesign --verify --strict "$helper"
+  echo "helper signature ok"
 fi
 codesign --force --deep --sign "$identity" "${sign_flags[@]}" "$app"
-codesign --verify --deep --strict "$app" && echo "signature ok"
+codesign --verify --deep --strict "$app"
+echo "signature ok"
 
 # ---------------------------------------------------------------------------- notarization
 notarize() { # file — submits it, waits, and fails the build when Apple refuses
@@ -123,8 +139,11 @@ if [ "$identity" != "-" ] && [ -n "${APP_STORE_CONNECT_KEY_P8:-}" ]; then
   printf '%s\n' "$APP_STORE_CONNECT_KEY_P8" > "$work/AuthKey.p8"
   ditto -c -k --sequesterRsrc --keepParent "$app" "$work/for-notary.zip"
   notarize "$work/for-notary.zip"
-  xcrun stapler staple "$app" && echo "stapled"
+  xcrun stapler staple "$app"
+  echo "stapled"
   notarized=1
+elif [ "$identity" = "-" ]; then
+  echo "ad-hoc signed; no Developer ID certificate or notarization"
 elif [ "$identity" != "-" ]; then
   echo "signed, not notarized: no App Store Connect key in the environment"
 fi
@@ -140,13 +159,15 @@ ln -s /Applications "$stage/Applications"
 rm -f "$out/$name.dmg"
 hdiutil create -volname "$app_name $version" -srcfolder "$stage" -ov -fs APFS -format UDZO -quiet "$out/$name.dmg"
 rm -rf "$stage"
-hdiutil verify -quiet "$out/$name.dmg" && echo "dmg ok"
+hdiutil verify -quiet "$out/$name.dmg"
+echo "dmg ok"
 if [ "$identity" != "-" ]; then
   codesign --force --sign "$identity" --timestamp "$out/$name.dmg"
   if [ "$notarized" = 1 ]; then
     echo "== notarization (the dmg)"
     notarize "$out/$name.dmg"
-    xcrun stapler staple "$out/$name.dmg" && echo "dmg stapled"
+    xcrun stapler staple "$out/$name.dmg"
+    echo "dmg stapled"
   fi
 fi
 

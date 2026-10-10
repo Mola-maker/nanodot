@@ -5,7 +5,7 @@ import { test } from "node:test";
 import { navigationVerdict, ownPage, sameOrigin } from "../out/navigation.js";
 
 const HOST = "http://127.0.0.1:38421/?token=abc";
-const OWN = "file:///opt/nanoMuse/resources/app.asar/resources";
+const OWN = "file:///opt/Nanodot/resources/app.asar/resources";
 
 test("the Host's origin is a parsed origin, not a prefix of the address", () => {
   assert.equal(sameOrigin("http://127.0.0.1:38421/", HOST), true);

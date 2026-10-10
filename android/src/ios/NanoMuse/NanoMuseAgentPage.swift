@@ -1,6 +1,6 @@
 //
 //  NanoMuseAgentPage.swift
-//  nanoMuse
+//  Nanodot
 //
 //  What opens when the face is tapped: the agent's own page. The face,
 //  large, with a pen badge (Change avatar / Edit name / Avatar studio…),
@@ -42,7 +42,7 @@ struct NanoMuseAgentPage: View {
 
     private var name: String {
         let n = soulName.trimmingCharacters(in: .whitespaces)
-        return n.isEmpty ? "nanoMuse" : n
+        return n.isEmpty ? "Dot" : n
     }
 
     var body: some View {
@@ -558,7 +558,7 @@ struct NanoMuseShareCard: View {
         ZStack {
             palette.background
             VStack(spacing: 0) {
-                Text(String(format: AppLocalized("Hi, I'm %@, a personal AI agent. Meet nanoMuse: open source, runs on your phone."), agentName))
+                Text(String(format: AppLocalized("Hi, I'm %@, a personal AI agent. Meet Nanodot: open source, runs on your phone."), agentName))
                     .font(.system(size: 42))
                     .foregroundStyle(Color(red: 0.106, green: 0.106, blue: 0.122))
                     .multilineTextAlignment(.center)
@@ -585,8 +585,8 @@ struct NanoMuseShareCard: View {
             }
             VStack(alignment: .leading, spacing: 8) {
                 Spacer()
-                Text("nanoMuse").font(.system(size: 40, weight: .bold)).foregroundStyle(palette.accent)
-                Text(AppLocalized("Your personal AI agent, open source · github.com/nano-muse/nanoMuse"))
+                Text("Nanodot").font(.system(size: 40, weight: .bold)).foregroundStyle(palette.accent)
+                Text(AppLocalized("Your personal AI agent, open source · github.com/Mola-maker/nanodot"))
                     .font(.system(size: 28)).foregroundStyle(.black.opacity(0.6))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -660,7 +660,7 @@ struct NanoMuseAvatarShareSheet: View {
                     .padding(.vertical, 10)
             }
             .buttonStyle(.borderedProminent)
-            .tint(NanoMuseTones.action)
+            .tint(NanoMuseTones.action).foregroundStyle(NanoMuseTones.onAction)
             .disabled(previews == nil)
         }
         .padding(20)
@@ -701,7 +701,7 @@ struct NanoMuseAvatarDoneCard: View {
         .padding(12)
         .background(NanoMuseTones.surface, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .sheet(isPresented: $share) {
-            NanoMuseAvatarShareSheet(agentName: SoulStore.cachedMetadata.name.isEmpty ? "nanoMuse" : SoulStore.cachedMetadata.name)
+            NanoMuseAvatarShareSheet(agentName: SoulStore.cachedMetadata.name.isEmpty ? "Dot" : SoulStore.cachedMetadata.name)
         }
     }
 }

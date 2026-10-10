@@ -223,7 +223,7 @@ export function goalHomeNote(goal: { id: string; title: string; why: string; ste
   const cadence = goal.checkEveryHours > 0 ? `every ${goal.checkEveryHours} hour(s)` : `daily at ${goal.checkTime}`
   const steps = goal.steps.map((s, i) => `${i + 1}. ${s}`).join('\n') || '(none yet)'
   return [
-    `[This conversation tracks a goal (nanoMuse). Goal: ${goal.title}${goal.why ? `. Why: ${goal.why}` : ''}`,
+    `[This conversation tracks a goal (Nanodot). Goal: ${goal.title}${goal.why ? `. Why: ${goal.why}` : ''}`,
     `Steps:\n${steps}`,
     `Checks run ${cadence}.`,
     `When a message asks you to check on the goal: find out where it stands right now with your tools (shell, browser, connectors, memory) and take the next small step if it is safe and reversible. Never pay, send messages or delete anything without asking. Then write the person a short update in ${zh ? 'Chinese' : 'their language'} (at most six lines) and end with EXACTLY ONE fenced code block tagged \`${FENCE_GOAL_UPDATE}\` containing {"goal_id": "${goal.id}", "progress": <0-100>, "status": "on_track|attention|done", "note": "one line"}. In ordinary conversation here, answer normally and add that block only when the goal's progress actually changed.]`,

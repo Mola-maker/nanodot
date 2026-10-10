@@ -61,6 +61,20 @@ import com.openminis.app.i18n.uppercaseForDisplay
 @Composable
 fun CheckUpdateSection() {
     val context = LocalContext.current
+    // nanoMuse: manual release page only until a Nanodot channel is enabled.
+    if (!io.github.nanomuse.dot.DotBrand.UPDATES_ENABLED) {
+        SettingsSection(header = stringResource(R.string.check_update_section_header)) {
+            SettingsRow(
+                icon = Icons.Outlined.SystemUpdate,
+                iconColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                title = stringResource(R.string.nm_version_update),
+                subtitle = stringResource(R.string.nm_update_manual),
+                onClick = { com.openminis.app.ui.components.openExternalUrl(context, UpdateChecker.RELEASES_URL) },
+                showDivider = false,
+            )
+        }
+        return
+    }
     val scope = rememberCoroutineScope()
 
     var checking by remember { mutableStateOf(false) }
@@ -115,7 +129,7 @@ fun CheckUpdateSection() {
     ) {
         SettingsRow(
             icon = Icons.Outlined.SystemUpdate,
-            iconColor = Color(0xFF015CFB),
+            iconColor = Color(0xFF136F63),
             title = stringResource(
                 if (checking) R.string.check_update_checking
                 else R.string.check_update_check_button
@@ -133,6 +147,8 @@ fun CheckUpdateSection() {
                                 update = r
                                 statusMessage = null
                             }
+                            UpdateChecker.CheckResult.Disabled ->
+                                statusMessage = context.getString(R.string.nm_update_manual)
                             UpdateChecker.CheckResult.UpToDate ->
                                 statusMessage = context.getString(R.string.check_update_up_to_date)
                             UpdateChecker.CheckResult.NoReleaseAvailable ->

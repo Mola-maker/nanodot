@@ -1,6 +1,6 @@
 # AGENTS.md
 
-nanoMuse is an open-source personal agent for every device a person owns: a phone app (Android and iOS, built on OpenMinis), a desktop app (a DeepSeek Harness plugin in an Electron shell), a Python runtime for the hands, a web console, and the relay that signs people in and lets their devices talk. Everything is GPL-3.0-or-later; read [CONTRIBUTING.md](CONTRIBUTING.md) first and [docs/architecture.md](docs/architecture.md) before touching the runtime.
+Nanodot is an open-source personal agent based on nanoMuse and OpenMinis, with Dot as its default assistant: phone apps, a desktop shell, a Web console and the Python runtime. Existing internal packages, CLI names and nanoMuse Cloud service identity remain stable. Everything is GPL-3.0-or-later; read [CONTRIBUTING.md](CONTRIBUTING.md) first and [docs/architecture.md](docs/architecture.md) before touching the runtime.
 
 ## Repository layout
 
@@ -82,7 +82,7 @@ The three protocols are documented and versioned; change the doc in the same cha
 ## Platform notes
 
 - **iOS** targets iOS 16; use the `.nmOnChange(of:)` helper, not the two-parameter `onChange` (iOS 17+). The device build treats warnings in `NanoMuse/` as failures. Xcode and TestFlight details: [docs/ios.md](docs/ios.md).
-- **Android** builds with JDK 21, SDK CMake 3.22.1, NDK r27c, Go 1.25+; phone features are tested on real arm64 hardware (the emulator cannot run the APK).
+- **Android** builds with JDK 21, SDK CMake 3.22.1, NDK r27c, Go 1.26. Virtual Android with arm64 translation can check APK installation and UI; native sandbox, accessibility actions and performance still need separate arm64 validation. See [docs/build.md](docs/build.md).
 - **Desktop** is a dsh plugin: profile overlays in `cordis.patch.yml`, the relay URL in the plugin's `config.baseURL`; [docs/desktop.md](docs/desktop.md). The Electron shell and the plugin carry the same version.
 - **CI** uses Node 22 for every JavaScript job; keep `engines` and lock files compatible with it even when you develop on a newer Node.
 

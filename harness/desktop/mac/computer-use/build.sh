@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Build "nanoMuse Computer Use.app" — the helper that holds the hands' macOS permissions
+# Build "Nanodot Computer Use.app" — the helper that holds the hands' macOS permissions
 # (Sources/main.swift says what it does; docs/desktop.md "macOS permissions" says why).
 #
-#   harness/desktop/mac/computer-use/build.sh            → build/nanoMuse Computer Use.app
+#   harness/desktop/mac/computer-use/build.sh            → build/Nanodot Computer Use.app
 #
 # Plain swiftc, no Xcode project: one binary per architecture (arm64 and x86_64, or ARCHS
 # to pick), joined with lipo; the frameworks (AppKit, Network, CoreGraphics, ScreenCaptureKit)
@@ -10,7 +10,7 @@
 # app icon from resources/app-icon.png when iconutil is there (the panes show it); an ad-hoc
 # signature so the bundle runs at all — scripts/desktop-app/package-mac.sh signs it again
 # with the release identity before the outer app. electron-builder copies the result into
-# nanoMuse.app/Contents/Helpers (electron-builder.yml, mac.extraFiles).
+# Nanodot.app/Contents/Helpers (electron-builder.yml, mac.extraFiles).
 #
 #   VERSION                     the bundle's version (default: harness/desktop/package.json)
 #   ARCHS                       "arm64 x86_64" (default) — one of them for a quicker local build
@@ -28,7 +28,7 @@ set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 desktop="$(cd "$here/../.." && pwd)"
 out="${OUT_DIR:-$here/build}"
-name="nanoMuse Computer Use"
+name="Nanodot Computer Use"
 app="$out/$name.app"
 min="${MACOSX_DEPLOYMENT_TARGET:-12.3}"
 archs="${ARCHS:-arm64 x86_64}"
@@ -79,7 +79,7 @@ if command -v iconutil >/dev/null && command -v sips >/dev/null && [ -f "$icon" 
 fi
 
 echo "== ad-hoc signature"
-codesign --force --sign - --identifier io.github.nanomuse.desktop.computer-use "$app"
+codesign --force --sign - --identifier io.github.nanodot.desktop.computer-use "$app"
 codesign --verify --strict "$app" && echo "signature ok"
 "$app/Contents/MacOS/$name" --version
 lipo -info "$app/Contents/MacOS/$name" 2>/dev/null || true

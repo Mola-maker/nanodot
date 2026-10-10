@@ -253,7 +253,7 @@ struct NanoMuseStarAsk: Equatable, Identifiable {
 @MainActor
 final class NanoMuseStar: ObservableObject {
     static let shared = NanoMuseStar()
-    static let repoURL = URL(string: "https://github.com/nano-muse/nanoMuse")!
+    static let repoURL = URL(string: "https://github.com/Mola-maker/nanodot")!
 
     /// The moments by name, as the shell's card API has known them. `firstTask` / `tenthTask`
     /// are the names from before the policy; they read as `tasks` with that count.
@@ -374,25 +374,25 @@ final class NanoMuseStar: ObservableObject {
     static func builtInWords(for moment: NanoMuseStarMoment) -> String {
         switch moment {
         case .signedIn:
-            return AppLocalized("Welcome. nanoMuse is free, open source and non-profit, a personal agent for anyone who runs it. If that is worth something to you, a star on GitHub is how the next person finds it.")
+            return AppLocalized("Welcome. Nanodot is an open-source personal agent based on nanoMuse. A star on GitHub helps others find it.")
         case .tasks(let n) where n == 1:
-            return AppLocalized("One task done. If nanoMuse helped, a star on GitHub tells the people building it that it did.")
+            return AppLocalized("One task done. If Nanodot helped, a star on GitHub tells the people building it that it did.")
         case .tasks(let n):
-            return String(format: AppLocalized("%d tasks done. If nanoMuse is useful, a star on GitHub helps the next person find it."), n)
+            return String(format: AppLocalized("%d tasks done. If Nanodot is useful, a star on GitHub helps the next person find it."), n)
         case .newLook:
-            return AppLocalized("A new face, drawn for you. If you like where nanoMuse is going, a star on GitHub helps more people find it.")
+            return AppLocalized("A new face, drawn for you. If you like where Nanodot is going, a star on GitHub helps more people find it.")
         case .exhausted:
-            return AppLocalized("The free allowance is used up. Thank you for coming this far. If nanoMuse has earned it, a star on GitHub keeps the project in view for the next person.")
+            return AppLocalized("The free allowance is used up. Thank you for coming this far. If Nanodot has earned it, a star on GitHub keeps the project in view for the next person.")
         case .daysUsed(let n) where n == 1:
-            return AppLocalized("A day with nanoMuse. If it helped, a star on GitHub helps the next person find it.")
+            return AppLocalized("A day with Nanodot. If it helped, a star on GitHub helps the next person find it.")
         case .daysUsed(let n) where n == 7:
-            return AppLocalized("A week with nanoMuse. If it has earned a place in your day, a star on GitHub helps the next person find it.")
+            return AppLocalized("A week with Nanodot. If it has earned a place in your day, a star on GitHub helps the next person find it.")
         case .daysUsed(let n) where n == 30:
-            return AppLocalized("A month with nanoMuse. If it has become part of your routine, a star on GitHub tells others it is worth a try.")
+            return AppLocalized("A month with Nanodot. If it has become part of your routine, a star on GitHub tells others it is worth a try.")
         case .daysUsed(let n):
-            return String(format: AppLocalized("%d days with nanoMuse. If it has earned a place in your day, a star on GitHub helps the next person find it."), n)
+            return String(format: AppLocalized("%d days with Nanodot. If it has earned a place in your day, a star on GitHub helps the next person find it."), n)
         case .goalDone:
-            return AppLocalized("Goal reached. If nanoMuse helped you get there, a star on GitHub tells the people building it.")
+            return AppLocalized("Goal reached. If Nanodot helped you get there, a star on GitHub tells the people building it.")
         }
     }
 

@@ -262,7 +262,7 @@ final class ClaudeOAuthManager: NSObject, ObservableObject {
 
     // MARK: - Legacy singleton Keychain (for migration)
 
-    static let legacyKeychainService = "io.github.nanomuse.app.claude-oauth"
+    static let legacyKeychainService = "io.github.nanodot.app.claude-oauth"
     static let legacyKeychainAccount = "token"
 
     static func loadLegacyToken() -> ClaudeTokenStorage? {

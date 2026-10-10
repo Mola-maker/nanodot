@@ -189,7 +189,7 @@ final class CodexOAuthManager: NSObject, ObservableObject {
 
     // MARK: - Legacy singleton Keychain (for migration)
 
-    static let legacyKeychainService = "io.github.nanomuse.app.openai-oauth"
+    static let legacyKeychainService = "io.github.nanodot.app.openai-oauth"
     static let legacyKeychainAccount = "token"
 
     static func loadLegacyToken() -> CodexTokenStorage? {

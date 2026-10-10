@@ -1,6 +1,6 @@
 //
 //  NanoMuseVendorSheet.swift
-//  nanoMuse
+//  Nanodot
 //
 //  A provider of one's own from the catalogue (contract C11, docs/parity.md item 32): the
 //  sheet opens on one vendor — paste its key (*Get a key* opens the vendor's key page), or

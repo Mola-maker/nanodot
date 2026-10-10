@@ -7,7 +7,7 @@
     <string name="nm_about_upstream">Berasaskan OpenMinis 1.13</string>
     <string name="nm_about_upstream_detail">GPL-3.0 · diubah suai sejak 2026-09-24 · sumber di GitHub</string>
     <string name="nm_about_trademark">Tidak berkaitan dengan Meta</string>
-    <string name="nm_about_trademark_detail">Muse ialah tanda dagangan Meta Platforms, Inc. nanoMuse ialah projek perisian bebas yang berasingan.</string>
+    <string name="nm_about_trademark_detail">Muse ialah tanda dagangan Meta Platforms, Inc. Nanodot ialah projek perisian bebas yang berasingan.</string>
 
     <!-- Chat header -->
     <string name="nm_avatar_content_description">Ejen anda. Ketik untuk menukar nama, ikon atau gayanya.</string>
@@ -22,25 +22,25 @@
     <string name="nm_star_action">Beri bintang di GitHub</string>
     <string name="nm_star_later">Bukan sekarang</string>
     <string name="nm_star_done">Sudah saya beri bintang</string>
-    <string name="nm_star_signed_in">Selamat datang. nanoMuse percuma, sumber terbuka dan bukan untuk keuntungan: ejen peribadi untuk sesiapa yang menjalankannya. Jika ia bermakna bagi anda, bintang di GitHub ialah cara orang seterusnya menjumpainya.</string>
+    <string name="nm_star_signed_in">Nanodot ialah pembantu peribadi sumber terbuka berasaskan nanoMuse.</string>
     <plurals name="nm_star_tasks">
-        <item quantity="other">%1$d tugas selesai. Jika nanoMuse berguna, bintang di GitHub membantu orang seterusnya menjumpainya.</item>
+        <item quantity="other">%1$d tugas selesai. Jika Nanodot berguna, bintang di GitHub membantu orang seterusnya menjumpainya.</item>
     </plurals>
-    <string name="nm_star_days_used_week">Seminggu bersama nanoMuse. Jika ia sudah ada tempat dalam hari anda, bintang di GitHub membantu orang seterusnya menjumpainya.</string>
-    <string name="nm_star_days_used_month">Sebulan bersama nanoMuse. Jika ia sudah menjadi sebahagian daripada rutin anda, bintang di GitHub memberitahu orang lain bahawa ia patut dicuba.</string>
+    <string name="nm_star_days_used_week">Seminggu bersama Nanodot. Jika ia sudah ada tempat dalam hari anda, bintang di GitHub membantu orang seterusnya menjumpainya.</string>
+    <string name="nm_star_days_used_month">Sebulan bersama Nanodot. Jika ia sudah menjadi sebahagian daripada rutin anda, bintang di GitHub memberitahu orang lain bahawa ia patut dicuba.</string>
     <plurals name="nm_star_days_used">
-        <item quantity="other">%1$d hari bersama nanoMuse. Jika ia sudah ada tempat dalam hari anda, bintang di GitHub membantu orang seterusnya menjumpainya.</item>
+        <item quantity="other">%1$d hari bersama Nanodot. Jika ia sudah ada tempat dalam hari anda, bintang di GitHub membantu orang seterusnya menjumpainya.</item>
     </plurals>
-    <string name="nm_star_goal_done">Matlamat tercapai. Jika nanoMuse membantu anda sampai ke situ, bintang di GitHub memberitahu orang yang membinanya.</string>
-    <string name="nm_star_new_look">Wajah baharu, dilukis untuk anda. Jika anda suka hala tuju nanoMuse, bintang di GitHub membantu lebih ramai orang menjumpainya.</string>
-    <string name="nm_star_exhausted">Peruntukan percuma sudah habis. Terima kasih kerana sampai sejauh ini. Jika nanoMuse layak menerimanya, bintang di GitHub mengekalkan projek ini dalam pandangan orang seterusnya.</string>
+    <string name="nm_star_goal_done">Matlamat tercapai. Jika Nanodot membantu anda sampai ke situ, bintang di GitHub memberitahu orang yang membinanya.</string>
+    <string name="nm_star_new_look">Wajah baharu, dilukis untuk anda. Jika anda suka hala tuju Nanodot, bintang di GitHub membantu lebih ramai orang menjumpainya.</string>
+    <string name="nm_star_exhausted">Peruntukan percuma sudah habis. Terima kasih kerana sampai sejauh ini. Jika Nanodot layak menerimanya, bintang di GitHub mengekalkan projek ini dalam pandangan orang seterusnya.</string>
     <string name="nm_chat_menu_rename">Namakan semula sembang</string>
 
     <!-- Foreground-service notification title while no tool is running -->
     <string name="nm_notif_working">%1$s sedang bekerja</string>
 
     <!-- First conversation: the scripted opening (see io.github.nanomuse.onboarding) -->
-    <string name="nm_intro_hello">Hai, saya nanoMuse, pembantu yang tinggal di telefon anda. Biar saya ambil alih beberapa perkara daripada anda.</string>
+    <string name="nm_intro_hello">Hai, saya Dot, pembantu yang tinggal di telefon anda. Biar saya ambil alih beberapa perkara daripada anda.</string>
     <string name="nm_intro_how_i_work">Sedikit tentang cara saya bekerja:\n\n- Saya ada komputer sendiri (kotak pasir Linux dan pelayar), jadi saya boleh menjalankan perintah, membuka laman web dan mengisi borang.\n- Saya boleh membaca dan menyusun fail serta foto yang anda lekapkan untuk saya, dan menguruskan peringatan serta tugas berjadual.\n- Sebelum sebarang langkah yang penting, saya tanya anda dahulu.\n- Semuanya berjalan di telefon ini. Mesej anda pergi ke model yang anda tetapkan; dengan nanoMuse Cloud, perbualan ini turut mengikut anda ke peranti lain; boleh dimatikan di Kawalan data.</string>
     <string name="nm_intro_ask_name">Sebelum kita mula, apa patut saya panggil anda?</string>
 
@@ -191,7 +191,7 @@
     <string name="nm_risk_class_outbound">Hantar</string>
     <string name="nm_risk_class_money">Bayar</string>
     <string name="nm_risk_class_install">Pasang</string>
-    <string name="nm_grants_header">Kelulusan yang diingati nanoMuse</string>
+    <string name="nm_grants_header">Kelulusan yang diingati Nanodot</string>
     <string name="nm_grants_empty">Belum ada yang diingati</string>
     <string name="nm_grants_revoke">Batalkan</string>
     <string name="nm_grants_revoke_confirm">Batalkan kelulusan ini? Kali seterusnya ia muncul, anda akan ditanya semula.</string>
@@ -199,7 +199,7 @@
     <string name="nm_risk_remember_money_note">Disahkan dengan kunci skrin anda. Pembayaran dalam satu aplikasi atau laman ini kemudiannya berjalan tanpa kad; disenaraikan dahulu di bawah Tetapan → Kebenaran, tempat anda boleh membatalkannya bila-bila masa.</string>
     <string name="nm_risk_remember_money_needs_lock">Untuk mengingati pembayaran, tetapkan kunci skrin dahulu (Tetapan → Keselamatan): mengingati satu pembayaran disahkan dengannya.</string>
     <string name="nm_risk_lock_title">Sahkan bahawa ini anda</string>
-    <string name="nm_risk_lock_subtitle">nanoMuse akan mengingati kelulusan pembayaran untuk %1$s dan menjalankannya tanpa bertanya.</string>
+    <string name="nm_risk_lock_subtitle">Nanodot akan mengingati kelulusan pembayaran untuk %1$s dan menjalankannya tanpa bertanya.</string>
     <string name="nm_risk_remembered_toast">Diingati · lihat Tetapan → Kebenaran untuk membatalkan</string>
     <string name="nm_risk_tier_highest">Berjalan tanpa bertanya · pembayaran</string>
     <string name="nm_risk_tier_confirm">Diingati daripada kad · padam dan hantar</string>
@@ -270,7 +270,7 @@
     <string name="nm_sysfiles_open_memory">Buka memori</string>
     <string name="nm_sysfiles_footer">Fail-fail ini milik ejen: siapa dirinya, apa yang diketahuinya tentang anda, apa yang diingatinya, apa yang ditulisnya untuk anda dan bila ia bangun. Ia disimpan dalam storan telefon anda; ejen membaca dan menyuntingnya dari shellnya di bawah /var/minis/memory, dan anda boleh menyunting apa sahaja di sini.</string>
     <string name="nm_sysfile_about_lead">Tentang fail ini.</string>
-    <string name="nm_sysfile_about_soul">Ini persona ejen: nilai dan tabiat yang cuba dipegangnya dalam setiap perbualan, namanya, dan gaya jawapannya. Ia bermula daripada templat yang disertakan bersama nanoMuse; ejen mungkin memperhalusinya dari semasa ke semasa dan memberitahu anda apabila berbuat demikian. Anda boleh menyuntingnya bila-bila masa. Nota ini bukan sebahagian daripada fail.</string>
+    <string name="nm_sysfile_about_soul">Ini persona ejen: nilai dan tabiat yang cuba dipegangnya dalam setiap perbualan, namanya, dan gaya jawapannya. Ia bermula daripada templat yang disertakan bersama Nanodot; ejen mungkin memperhalusinya dari semasa ke semasa dan memberitahu anda apabila berbuat demikian. Anda boleh menyuntingnya bila-bila masa. Nota ini bukan sebahagian daripada fail.</string>
     <string name="nm_sysfile_about_user">Ejen menyimpan fail ini sebagai nota kerjanya tentang anda: nama anda, cara anda suka dipanggil, zon waktu anda, dan konteks yang diperlukannya untuk berguna, seperti apa yang sedang anda usahakan. Ia mengisinya dari semasa ke semasa daripada perbualan anda dan membacanya pada permulaan setiap perbualan. Ia mencerminkan pemahaman semasa ejen, jadi ia mungkin tidak lengkap atau lapuk. Anda boleh menyunting apa sahaja di sini, dan ejen akan mengikut apa yang anda tulis. Nota ini bukan sebahagian daripada fail.</string>
     <string name="nm_sysfile_about_memory">Nota kekal yang disimpan ejen merentas perbualan: perkara yang patut diingat, dalam kata-katanya sendiri, serta apa sahaja yang anda import daripada pembantu lain. Diari hari demi hari disimpan di sebelahnya dalam folder memori. Dibaca pada permulaan setiap perbualan apabila memori dihidupkan. Nota ini bukan sebahagian daripada fail.</string>
     <string name="nm_sysfile_about_feed">Satu perenggan yang mengemudi suapan: apa yang anda mahu lebih, apa yang perlu dilangkau, berapa panjang catatan sepatutnya. Rutin suapan harian membacanya sebelum menulis. Nota ini bukan sebahagian daripada fail.</string>
@@ -350,7 +350,7 @@
     <string name="nm_avatar_footer">Gambar disimpan di telefon ini di bawah minis-global/nanomuse/avatar. Setiap wajah memerlukan lima imej daripada penyedia anda: satu yang anda pilih dan empat ekspresi.</string>
 
     <!-- First run (Muse-style welcome; the steps are OpenMinis' provider and model screens) -->
-    <string name="nm_setup_title">Selamat datang ke nanoMuse</string>
+    <string name="nm_setup_title">Selamat datang ke Nanodot</string>
     <string name="nm_setup_step_models">Pilih model</string>
     <string name="nm_setup_step_models_sub">Model yang disediakan penyedia anda disenaraikan untuk anda; pilih sehingga tiga</string>
     <string name="nm_setup_step_start">Kenali %1$s</string>
@@ -366,7 +366,7 @@
     <string name="nm_settings_no_model">Belum ada model</string>
     <string name="nm_settings_no_model_sub">Tambah penyedia dan pilih modelnya</string>
     <string name="nm_settings_change_model">Tukar</string>
-    <string name="nm_settings_version">nanoMuse %1$s (%2$d)</string>
+    <string name="nm_settings_version">Nanodot %1$s (%2$d)</string>
     <string name="nm_version_title">Versi</string>
     <string name="nm_version_checking">Menyemak keluaran terkini…</string>
     <string name="nm_version_have">Terkini %1$s, anda sudah ada</string>
@@ -446,8 +446,8 @@
     <string name="nm_avatar_share_title">Kongsi avatar saya</string>
     <string name="nm_avatar_share_subtitle">Pilih satu kad. Ia dihantar melalui helaian kongsi sistem.</string>
     <string name="nm_avatar_share_system">Kongsi</string>
-    <string name="nm_avatar_share_bubble">Hai, saya %1$s, ejen AI peribadi. Kenali nanoMuse: sumber terbuka, berjalan di telefon anda.</string>
-    <string name="nm_avatar_share_tagline">Ejen AI peribadi anda, sumber terbuka · github.com/nano-muse/nanoMuse</string>
+    <string name="nm_avatar_share_bubble">Hai, saya %1$s, ejen AI peribadi. Kenali Nanodot: sumber terbuka, berjalan di telefon anda.</string>
+    <string name="nm_avatar_share_tagline">Ejen AI peribadi anda, sumber terbuka · github.com/nano-muse/Nanodot</string>
 
     <!-- 0.1.10 · Motion -->
     <string name="nm_media_title">Model imej &amp; video</string>
@@ -498,7 +498,7 @@
     <string name="nm_hands_section_needs">Apa yang diperlukannya</string>
     <string name="nm_hands_needs_footer">Perkhidmatan kebolehcapaian mengambil tangkapan skrin dan melakukan gerak isyarat; ia tidak membaca kandungan skrin. Melukis di atas aplikasi lain adalah untuk kapsul.</string>
     <string name="nm_hands_need_a11y">Perkhidmatan kebolehcapaian</string>
-    <string name="nm_hands_need_a11y_fix">Hidupkan nanoMuse di bawah Aplikasi dipasang dalam tetapan kebolehcapaian</string>
+    <string name="nm_hands_need_a11y_fix">Hidupkan Nanodot di bawah Aplikasi dipasang dalam tetapan kebolehcapaian</string>
     <string name="nm_hands_need_overlay">Paparkan di atas aplikasi lain</string>
     <string name="nm_hands_need_overlay_fix">Benarkan, supaya kapsul dengan Berhenti boleh dipaparkan</string>
     <string name="nm_hands_need_model">Model yang boleh melihat gambar</string>
@@ -536,7 +536,7 @@
     <string name="nm_hands_protected_screen">Skrin ini dilindungi dan tidak boleh dibaca. Selesaikan bahagian ini sendiri, kemudian ketik Teruskan.</string>
     <string name="nm_hands_secret_field">Medan kata laluan atau kod: sila isi sendiri, kemudian ketik Teruskan.</string>
     <string name="nm_hands_approval_title">Menunggu kelulusan anda</string>
-    <string name="nm_hands_approval_detail">Ketik “%1$s”: sahkan dalam nanoMuse (ia meminta kunci skrin anda).</string>
+    <string name="nm_hands_approval_detail">Ketik “%1$s”: sahkan dalam Nanodot (ia meminta kunci skrin anda).</string>
     <string name="nm_hands_approval_here">Ketik “%1$s”?</string>
     <string name="nm_hands_allow_once">Benarkan</string>
     <string name="nm_hands_deny">Tolak</string>
@@ -567,10 +567,10 @@
     <!-- Reach (0.1.13): the phone drives your computer -->
     <string name="nm_pc_title">Komputer</string>
     <string name="nm_pc_none_short">Tiada</string>
-    <string name="nm_pc_intro">Sebut di sini, dilakukan di komputer anda: perintah, fail, halaman dalam pelayarnya, pandangan skrinnya, atau satu tugas penuh untuk nanoMuse di sana. Telefon mengendalikan komputer, bukan sebaliknya; setiap kelulusan diputuskan di sini dahulu.</string>
-    <string name="nm_pc_hub_title">Cara mudah: nanoMuse Desktop, akaun yang sama</string>
-    <string name="nm_pc_hub_body">Pasang nanoMuse Desktop di komputer dan log masuk dengan akaun telefon ini; ia muncul di bawah Akaun → Peranti dalam beberapa saat.</string>
-    <string name="nm_pc_hub_download">Dapatkan nanoMuse Desktop</string>
+    <string name="nm_pc_intro">Sebut di sini, dilakukan di komputer anda: perintah, fail, halaman dalam pelayarnya, pandangan skrinnya, atau satu tugas penuh untuk Nanodot di sana. Telefon mengendalikan komputer, bukan sebaliknya; setiap kelulusan diputuskan di sini dahulu.</string>
+    <string name="nm_pc_hub_title">Cara mudah: Nanodot Desktop, akaun yang sama</string>
+    <string name="nm_pc_hub_body">Pasang Nanodot Desktop di komputer dan log masuk dengan akaun telefon ini; ia muncul di bawah Akaun → Peranti dalam beberapa saat.</string>
+    <string name="nm_pc_hub_download">Dapatkan Nanodot Desktop</string>
     <string name="nm_pc_hub_account">Akaun dan peranti</string>
     <string name="nm_pc_section_paired">Komputer pada akaun ini</string>
     <string name="nm_pc_none">Belum ada komputer</string>
@@ -583,7 +583,7 @@
     <string name="nm_pc_account_hint">Telefon ini log masuk sebagai %1$s; komputer mesti log masuk dengan akaun yang sama.</string>
     <string name="nm_pc_checking">Menyemak…</string>
     <string name="nm_pc_answering">%1$s menjawab</string>
-    <string name="nm_pc_not_answering">%1$s tidak menjawab. Adakah nanoMuse Desktop masih berjalan di sana?</string>
+    <string name="nm_pc_not_answering">%1$s tidak menjawab. Adakah Nanodot Desktop masih berjalan di sana?</string>
 
     <!-- the approval card -->
     <string name="nm_risk_desc_on_computer">Di komputer “%1$s”, bukan di telefon ini.</string>
@@ -604,7 +604,7 @@
     <string name="nm_setup_source_title">Model mana yang menjawab?</string>
     <string name="nm_setup_source_sub">Akaun anda sudah membawa satu. Anda juga boleh menambah kunci API anda sendiri dan bertukar bila-bila masa.</string>
     <string name="nm_setup_source_cloud">Guna model nanoMuse Cloud</string>
-    <string name="nm_setup_source_cloud_sub">DeepSeek untuk sembang dan Qwen untuk tangan, dengan peruntukan percuma setiap akaun yang dibayar oleh pembangun. Tiada apa-apa perlu ditetapkan.</string>
+    <string name="nm_setup_source_cloud_sub">Gunakan model sendiri atau sambungkan nanoMuse Cloud. Akses model dan kuota mengikut terma penyedia. Semak dasar privasi dan tetapan kawalan datanya.</string>
     <string name="nm_setup_source_own_sub">OpenAI, Anthropic, DeepSeek, Bailian dan titik akhir serasi OpenAI yang lain. Kunci kekal di telefon ini.</string>
     <string name="nm_setup_source_fine_print">Kedua-duanya tidak bersaing: model Cloud kekal tersedia, dan setiap kumpulan model memilih modelnya sendiri.</string>
     <string name="nm_setup_password_title">Tetapkan kata laluan</string>
@@ -616,8 +616,8 @@
     <string name="nm_welcome_feat_hands">Tangan: ia menggunakan telefon anda</string>
     <string name="nm_welcome_feat_hands_sub">Menempah kereta api, memesan makanan, mencari sesuatu dalam aplikasi; anda memerhati, dan boleh menghentikannya bila-bila masa</string>
     <string name="nm_welcome_feat_reach">Capaian: komputer anda, dari sini</string>
-    <string name="nm_welcome_feat_reach_sub">Pasang nanoMuse Desktop pada mesin Mac, Windows atau Linux, log masuk dengan akaun yang sama, dan beri ia kerja dari telefon</string>
-    <string name="nm_welcome_notice">nanoMuse ialah projek komuniti sumber terbuka bukan untuk keuntungan: percuma, selamanya. Model datang dengan peruntukan percuma yang dibayar oleh pembangun; selepas itu, kunci anda sendiri. Tiada apa-apa dijual; apa yang disimpan relay ada dalam dasar privasi, dan Tetapan → Kawalan data adalah milik anda.</string>
+    <string name="nm_welcome_feat_reach_sub">Pasang Nanodot Desktop pada mesin Mac, Windows atau Linux, log masuk dengan akaun yang sama, dan beri ia kerja dari telefon</string>
+    <string name="nm_welcome_notice">Nanodot ialah pembantu peribadi sumber terbuka berasaskan nanoMuse. Gunakan model sendiri atau sambungkan nanoMuse Cloud. Akses model dan kuota mengikut terma penyedia. Semak dasar privasi dan tetapan kawalan datanya.</string>
     <string name="nm_welcome_hands_title">Benarkan ia menggunakan telefon anda</string>
     <string name="nm_welcome_hands_sub">Dengan dua kebenaran, ia boleh membuka aplikasi, mengetik dan menaip untuk anda. Satu kapsul dengan setiap langkah dan butang Berhenti kekal di skrin; log masuk, kata laluan dan kod sentiasa milik anda.</string>
     <string name="nm_welcome_hands_turn_on">Hidupkan</string>
@@ -755,7 +755,7 @@
     <string name="nm_cloud_invite_share">Kongsi pautan</string>
     <string name="nm_cloud_invite_copy">Salin</string>
     <string name="nm_cloud_invite_copied">Disalin</string>
-    <string name="nm_cloud_invite_share_text">Cuba nanoMuse bersama saya: ejen peribadi sumber terbuka sepenuhnya, percuma digunakan. Daftar dengan kod saya %1$s: %2$s</string>
+    <string name="nm_cloud_invite_share_text">Cuba Nanodot bersama saya: ejen peribadi sumber terbuka sepenuhnya, percuma digunakan. Daftar dengan kod saya %1$s: %2$s</string>
     <string name="nm_cloud_invite_count">%1$d rakan menyertai</string>
     <string name="nm_cloud_invite_earned">¥%1$s ditambah melalui jemputan</string>
     <string name="nm_cloud_invite_have">Ada kod jemputan?</string>
@@ -855,7 +855,7 @@
     <!-- 0.1.20: the coding agents on the account's computers -->
     <string name="nm_coding_title">Ejen pengekodan</string>
     <string name="nm_coding_intro">Cursor, Codex dan Claude Code di komputer anda: sesi mereka, balasan terakhir mereka, dan mesej kepada mana-mana satu, dari sini. Tiada apa-apa milik mereka disalin ke telefon.</string>
-    <string name="nm_coding_no_computer">Tiada komputer dengan ejen pengekodan dalam talian. Jalankan nanoMuse di komputer tempat Cursor, Codex atau Claude Code dipasang, log masuk dengan akaun ini.</string>
+    <string name="nm_coding_no_computer">Tiada komputer dengan ejen pengekodan dalam talian. Jalankan Nanodot di komputer tempat Cursor, Codex atau Claude Code dipasang, log masuk dengan akaun ini.</string>
     <string name="nm_coding_account_hint">Telefon ini log masuk sebagai %1$s; komputer mesti menggunakan akaun yang sama.</string>
     <string name="nm_coding_refresh">Segarkan</string>
     <string name="nm_coding_all">Semua</string>
@@ -881,20 +881,20 @@
 
     <!-- nanoMuse: money on the account page, and the community notice -->
     <string name="nm_cloud_spend_member">Ahli · tiada had</string>
-    <string name="nm_cloud_spent_total">¥%1$s · $%2$s dibelanjakan kesemuanya, dibayar oleh pembangun</string>
+    <string name="nm_cloud_spent_total">nanoMuse Cloud: ¥%1$s · $%2$s</string>
     <string name="nm_cloud_allowance_used">Digunakan ¥%1$s · $%2$s</string>
     <string name="nm_cloud_allowance_of">daripada ¥%1$s · $%2$s, selama-lamanya</string>
     <string name="nm_cloud_allowance_left">¥%1$s · $%2$s berbaki</string>
     <string name="nm_cloud_allowance_why">¥%1$s untuk bermula, +¥%2$s bagi setiap rakan yang anda jemput, dan +¥%2$s untuk mereka; selepas itu, kunci anda sendiri yang meneruskan model.</string>
     <string name="nm_cloud_tokens_line">%1$s token kesemuanya · %2$s hari ini</string>
-    <string name="nm_cloud_notice_title">Percuma, sumber terbuka, bukan untuk keuntungan</string>
+    <string name="nm_cloud_notice_title">Nanodot · nanoMuse Cloud</string>
     <string name="nm_cloud_notice_closing">Jumpa pepijat, mahu ciri, ada tampalan? Repositori GitHub ialah tempatnya.</string>
-    <string name="nm_cloud_notice">nanoMuse ialah projek komuniti sumber terbuka bukan untuk keuntungan: percuma, selamanya. Model datang dengan peruntukan percuma yang dibayar oleh pembangun; selepas itu, kunci anda sendiri. Tiada apa-apa dijual; apa yang disimpan relay ada dalam dasar privasi, dan Tetapan → Kawalan data adalah milik anda. Padam akaun bila-bila anda suka.</string>
+    <string name="nm_cloud_notice">Nanodot ialah pembantu peribadi sumber terbuka berasaskan nanoMuse. Gunakan model sendiri atau sambungkan nanoMuse Cloud. Akses model dan kuota mengikut terma penyedia. Semak dasar privasi dan tetapan kawalan datanya.</string>
 
     <!-- nanoMuse: devices on the hub -->
     <string name="nm_hub_channel">Mesej daripada peranti anda</string>
     <string name="nm_hub_service_channel">Disambungkan ke peranti anda</string>
-    <string name="nm_hub_service_title">nanoMuse · boleh dicapai dari peranti anda</string>
+    <string name="nm_hub_service_title">Nanodot · boleh dicapai dari peranti anda</string>
     <string name="nm_hub_service_connecting">Menyambung ke nanoMuse Cloud…</string>
     <string name="nm_hub_service_alone">Tiada peranti lain dalam talian sekarang</string>
     <plurals name="nm_hub_service_devices">
@@ -915,7 +915,7 @@
     <string name="nm_devices_connected">Bersambung</string>
     <string name="nm_devices_connecting">Menyambung…</string>
     <string name="nm_devices_off">Mati</string>
-    <string name="nm_devices_none">Belum ada peranti lain. Di komputer anda, pasang nanoMuse Desktop dan log masuk dengan akaun yang sama; ia muncul di sini dalam beberapa saat.</string>
+    <string name="nm_devices_none">Belum ada peranti lain. Di komputer anda, pasang Nanodot Desktop dan log masuk dengan akaun yang sama; ia muncul di sini dalam beberapa saat.</string>
     <string name="nm_devices_online">dalam talian</string>
     <string name="nm_devices_offline">luar talian</string>
     <string name="nm_devices_web">Konsol web</string>
@@ -934,7 +934,7 @@
     <string name="nm_hub_err_not_controllable">Peranti itu tidak boleh diminta melakukan sesuatu.</string>
     <string name="nm_hub_err_unknown_agent">Ejen pengekodan itu tiada di komputer.</string>
     <string name="nm_hub_err_no_session">Sesi itu sudah tiada di komputer.</string>
-    <string name="nm_hub_err_unknown_action">Komputer menjalankan nanoMuse versi lama yang tidak mengenali tindakan ini.</string>
+    <string name="nm_hub_err_unknown_action">Komputer menjalankan Nanodot versi lama yang tidak mengenali tindakan ini.</string>
     <string name="nm_hub_err_bad_key">Log keluar di relay; log masuk semula.</string>
     <string name="nm_hub_err_generic">Komputer tidak dapat melakukannya.</string>
     <string name="nm_devices_refused">Ditolak oleh relay; log masuk semula</string>
@@ -953,7 +953,7 @@
     <string name="nm_connectors_sign_in">Log masuk</string>
     <string name="nm_connectors_disconnect">Putuskan</string>
     <string name="nm_connectors_docs">Halaman vendor tentang pelayan ini</string>
-    <string name="nm_connectors_how_oauth">Log masuk dengan akaun %1$s anda dalam pelayar; nanoMuse mendaftarkan dirinya dengan perkhidmatan itu, jadi tiada apa-apa perlu ditaip. Token kekal di telefon ini.</string>
+    <string name="nm_connectors_how_oauth">Log masuk dengan akaun %1$s anda dalam pelayar; Nanodot mendaftarkan dirinya dengan perkhidmatan itu, jadi tiada apa-apa perlu ditaip. Token kekal di telefon ini.</string>
     <string name="nm_connectors_how_key">Memerlukan kunci daripada perkhidmatan: %1$s. Ia disimpan dalam entri MCP di telefon ini sahaja.</string>
     <string name="nm_connectors_how_none">Terbuka kepada semua; tiada log masuk diperlukan.</string>
     <string name="nm_connectors_how_auto">Menyemak apa yang diperlukan pelayan dahulu: tiada, log masuk, atau kunci.</string>
@@ -1016,7 +1016,7 @@
     <string name="nm_devices_ask_hint">Ketik peranti yang dalam talian untuk menulis kepadanya dari sembang: mesej bermula dengan @ dan namanya, dan peranti itu yang melakukan kerja.</string>
     <string name="nm_reach_the_provider">penyedia</string>
     <string name="nm_reach_unreachable_title">%1$s tidak dapat dicapai dari rangkaian ini</string>
-    <string name="nm_reach_unreachable_body">Tiada jawapan daripada %1$s. Ini soal laluan dari telefon ini ke penyedia; pelayan nanoMuse sendiri tidak terlibat.</string>
+    <string name="nm_reach_unreachable_body">Tiada jawapan daripada %1$s. Ini soal laluan dari telefon ini ke penyedia; pelayan Nanodot sendiri tidak terlibat.</string>
     <string name="nm_reach_region_title">OpenAI tidak berkhidmat di wilayah ini</string>
     <string name="nm_reach_region_body">Permintaan sampai ke OpenAI, yang menjawab bahawa perkhidmatannya tidak ditawarkan di tempat asal sambungan ini.</string>
     <string name="nm_reach_signed_out_title">Log masuk ChatGPT tidak lagi sah</string>
@@ -1103,4 +1103,5 @@
     <string name="nm_models_search">Cari model</string>
     <string name="nm_models_search_clear">Kosongkan carian</string>
     <string name="nm_models_no_match">Tiada model yang sepadan</string>
+    <string name="nm_update_manual">Kemas kini automatik dimatikan. Buka halaman keluaran Nanodot untuk menyemak secara manual.</string>
 </resources>

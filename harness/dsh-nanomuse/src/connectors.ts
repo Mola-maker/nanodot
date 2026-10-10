@@ -5,7 +5,7 @@
  *
  * - **OAuth** where the service's MCP server speaks the MCP authorization flow:
  *   the server's protected-resource metadata names its authorization server, we
- *   register nanoMuse there as a client (dynamic client registration, RFC 7591),
+ *   register Nanodot there as a client (dynamic client registration, RFC 7591),
  *   send the person to the authorization page with PKCE, and take the code back
  *   on a loopback port of this host. Notion, Linear, GitHub, Slack, Stripe,
  *   Figma, Canva, Sentry, Vercel, Supabase … — the catalogue in
@@ -43,7 +43,7 @@ const PROXY_PORT = 38417
 const FLOW_TTL_MS = 10 * 60_000
 /** Refresh a token this long before it expires. */
 const REFRESH_SKEW_MS = 60_000
-const CLIENT_NAME = 'nanoMuse'
+const CLIENT_NAME = 'Nanodot'
 const CLIENT_URI = 'https://nanomuse.cn'
 const PROTOCOL = '2025-06-18'
 const REGISTRY = 'https://registry.modelcontextprotocol.io/v0/servers'
@@ -296,7 +296,7 @@ export default class NanomuseConnectors extends Service {
     const as = probe.as
     const redirectUri = `http://127.0.0.1:${this.port}/oauth/callback`
     const regKey = `${as.issuer}|${redirectUri}`
-    // a stored registration is reused — one "nanoMuse" in the person's list of authorized apps,
+    // a stored registration is reused — one "Nanodot" in the person's list of authorized apps,
     // not one per sign-in — unless it has lapsed or the person asked to start over (`fresh`)
     const stored = this.store.registrations[regKey]
     if (stored && (input.fresh || (stored.expiresAt && stored.expiresAt < Date.now()))) delete this.store.registrations[regKey]
@@ -539,7 +539,7 @@ export default class NanomuseConnectors extends Service {
     if (url.pathname === '/oauth/callback') return this.callback(url, res)
     const proxied = /^\/c\/([a-f0-9]{12})\/mcp$/.exec(url.pathname)
     if (proxied) return this.proxy(proxied[1]!, req, res)
-    res.writeHead(404, { 'content-type': 'text/plain' }).end('nanoMuse')
+    res.writeHead(404, { 'content-type': 'text/plain' }).end('Nanodot')
   }
 
   private async callback(url: URL, res: ServerResponse): Promise<void> {
@@ -549,7 +549,7 @@ export default class NanomuseConnectors extends Service {
     const lang = (this.ctx.get('nanomuseRooms') as { lang?: string } | undefined)?.lang ?? Intl.DateTimeFormat().resolvedOptions().locale
     const zh = lang.toLowerCase().startsWith('zh')
     if (!flow || Date.now() - flow.createdAt > FLOW_TTL_MS) {
-      return page(res, 400, zh ? '这次授权已经过期' : 'This authorization has expired', zh ? '回到 nanoMuse，再点一次「连接」。' : 'Go back to nanoMuse and press Connect again.')
+      return page(res, 400, zh ? '这次授权已经过期' : 'This authorization has expired', zh ? '回到 Nanodot，再点一次「连接」。' : 'Go back to Nanodot and press Connect again.')
     }
     const error = url.searchParams.get('error')
     if (error) {
@@ -578,7 +578,7 @@ export default class NanomuseConnectors extends Service {
       await this.finish(flow.base, auth)
       flow.status = 'done'
       this.changed()
-      return page(res, 200, zh ? `${flow.base.label} 已连接` : `${flow.base.label} is connected`, zh ? '可以关掉这一页，回到 nanoMuse 了。' : 'You can close this page and go back to nanoMuse.')
+      return page(res, 200, zh ? `${flow.base.label} 已连接` : `${flow.base.label} is connected`, zh ? '可以关掉这一页，回到 Nanodot 了。' : 'You can close this page and go back to Nanodot.')
     } catch (error) {
       flow.status = 'failed'
       flow.error = message(error)
@@ -619,7 +619,7 @@ export default class NanomuseConnectors extends Service {
       }
     }
     if (rpc?.method === 'tools/call' && rpc.params?.name && c.disabled.includes(rpc.params.name)) {
-      res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ jsonrpc: '2.0', id: rpc.id ?? null, result: { content: [{ type: 'text', text: `The tool "${rpc.params.name}" is switched off in nanoMuse's connector settings for ${c.label}.` }], isError: true } }))
+      res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ jsonrpc: '2.0', id: rpc.id ?? null, result: { content: [{ type: 'text', text: `The tool "${rpc.params.name}" is switched off in Nanodot's connector settings for ${c.label}.` }], isError: true } }))
       return
     }
     // read through a call: the refresh below may change it after the narrowing above
@@ -808,7 +808,7 @@ async function asMetadata(base: string): Promise<AsMeta | undefined> {
   return undefined
 }
 
-/** Register nanoMuse at the authorization server (RFC 7591); a public client first, whatever it answers otherwise. */
+/** Register Nanodot at the authorization server (RFC 7591); a public client first, whatever it answers otherwise. */
 async function register(as: AsMeta, redirectUri: string, scope: string | undefined): Promise<Registration> {
   const body: Record<string, unknown> = {
     client_name: CLIENT_NAME,
@@ -826,7 +826,7 @@ async function register(as: AsMeta, redirectUri: string, scope: string | undefin
     res = await fetch(as.registration_endpoint!, { method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(PROBE_TIMEOUT_MS) })
   }
   const text = await res.text()
-  if (!res.ok) throw new RelayError(502, 'registration', `The authorization server refused to register nanoMuse (${res.status}): ${text.slice(0, 200)}`)
+  if (!res.ok) throw new RelayError(502, 'registration', `The authorization server refused to register Nanodot (${res.status}): ${text.slice(0, 200)}`)
   const reg = JSON.parse(text) as { client_id?: string; client_secret?: string; token_endpoint_auth_method?: string; client_secret_expires_at?: number; client_id_expires_at?: number }
   if (!reg.client_id) throw new RelayError(502, 'registration', 'The authorization server returned no client id')
   const method = reg.token_endpoint_auth_method === 'client_secret_basic' ? 'client_secret_basic' : reg.client_secret ? 'client_secret_post' : 'none'
@@ -965,7 +965,7 @@ function slug(text: string): string {
 function page(res: ServerResponse, status: number, title: string, text: string): void {
   const esc = (s: string) => s.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]!)
   res.writeHead(status, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }).end(
-    `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${esc(title)} · nanoMuse</title>` +
+    `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${esc(title)} · Nanodot</title>` +
       `<style>body{font:16px/1.5 -apple-system,system-ui,sans-serif;color:#1d1d1f;background:#f5f4f0;display:grid;place-items:center;min-height:100vh;margin:0}main{background:#fff;border-radius:16px;padding:32px 36px;max-width:420px;box-shadow:0 8px 30px rgba(0,0,0,.06)}h1{font-size:20px;margin:0 0 8px}p{margin:0;color:#555}</style>` +
       `<main><h1>${esc(title)}</h1><p>${esc(text)}</p></main><script>setTimeout(function(){try{window.close()}catch(e){}},1500)</script>`,
   )

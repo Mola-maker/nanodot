@@ -80,7 +80,7 @@ final class Service {
 
     /// The refusal for a missing Screen Recording grant, with the capture layer's reason when it had one.
     private static func screenDenied(_ detail: String) -> HTTPResponse {
-        let base = "Screen Recording is off for nanoMuse Computer Use"
+        let base = "Screen Recording is off for Nanodot Computer Use"
         return Service.failure(403, "screen_denied", detail.isEmpty ? base : "\(base) (\(detail))")
     }
 
@@ -114,7 +114,7 @@ final class Service {
                 "capture": ScreenCapture.source,
             ])
         } catch Screenshot.Failure.black {
-            return Service.failure(403, "screen_denied", "the picture is black — Screen Recording is off for nanoMuse Computer Use")
+            return Service.failure(403, "screen_denied", "the picture is black — Screen Recording is off for Nanodot Computer Use")
         } catch {
             return Service.captureFailure(error)
         }
@@ -176,7 +176,7 @@ final class Service {
 
     private func execute(_ body: [String: Any]) -> HTTPResponse {
         guard Permissions.accessibilityGranted() else {
-            return Service.failure(403, "accessibility_denied", "Accessibility is off for nanoMuse Computer Use")
+            return Service.failure(403, "accessibility_denied", "Accessibility is off for Nanodot Computer Use")
         }
         do {
             try Input.perform(body)

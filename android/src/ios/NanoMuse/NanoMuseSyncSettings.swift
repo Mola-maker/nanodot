@@ -1,6 +1,6 @@
 //
 //  NanoMuseSyncSettings.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Contract C7, rule 6: the switch and the delete action for synced
 //  conversations, as a section of Data controls; C9: the per-device

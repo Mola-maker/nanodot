@@ -1,6 +1,6 @@
 /**
  * The one bridge between the harness's web client and the Electron shell. The
- * nanoMuse client bundle looks for `window.nanomuseHarness`; in a plain
+ * Nanodot client bundle looks for `window.nanomuseHarness`; in a plain
  * browser (dsh on its own) it is absent and the bundle shows nothing that
  * needs it. Everything here is a request to the main process — the renderer
  * stays sandboxed with no Node access of its own.
@@ -21,7 +21,7 @@ const bridge = {
   platform: process.platform,
   /** The app's version, its platform and arch; `appImage` when the Linux build runs from an AppImage (so an update is offered as one). */
   info: (): Promise<{ version: string; platform: string; arch: string; appImage: boolean }> => ipcRenderer.invoke("nanomuse:info"),
-  /** Where every permission the hands use stands right now; `helper` (0.1.38) when "nanoMuse Computer Use" holds them — the rows to switch on are its, and a grant needs no app restart. */
+  /** Where every permission the hands use stands right now; `helper` (0.1.38) when "Nanodot Computer Use" holds them — the rows to switch on are its, and a grant needs no app restart. */
   permissions: (): Promise<Record<PermissionKind, PermissionState> & { helper?: boolean }> => ipcRenderer.invoke("nanomuse:permissions"),
   /** Ask the system for one permission (its own dialog, or the Settings pane); the new state. */
   requestPermission: (kind: PermissionKind): Promise<PermissionState> => ipcRenderer.invoke("nanomuse:permissions:request", kind),
@@ -74,7 +74,7 @@ export interface DesktopPrefs {
   /** The combination in force, an Electron accelerator (`Alt+Space`); set it to change, to "" for the default. */
   quickChatKey: string;
   quickChatDefault: string;
-  /** Another app holds the combination, so nanoMuse did not get it. */
+  /** Another app holds the combination, so Nanodot did not get it. */
   quickChatTaken: boolean;
   // since 0.1.41: the proxy for the model providers
   /** The address as kept (`http://host:port`, `socks5://host:port`); "" for none. Set it to change, to "" to remove. */
@@ -93,7 +93,7 @@ export type NanomuseHarnessBridge = typeof bridge;
 contextBridge.exposeInMainWorld("nanomuseHarness", bridge);
 
 // The window has no title bar on macOS (the traffic lights sit over the rail, as in
-// Muse's window), so the page marks the platform on the document and the nanoMuse
+// Muse's window), so the page marks the platform on the document and the Nanodot
 // bundle adds the clearance and the drag regions; full screen drops the clearance.
 // (The harness's own `data-platform` is not used: it would expect the harness's
 // desktop keyboard bridge.)

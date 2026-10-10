@@ -32,7 +32,7 @@ export function AvatarStudioScreen() {
   const { state, setTab, toast, draft, refreshSettings } = useStore();
   const t = useT();
   const profile = state.profile;
-  const name = profile?.name ?? "nanoMuse";
+  const name = profile?.name ?? "Dot";
   const [view, setView] = useState<StudioView | null>(null);
   const [description, setDescription] = useState("");
   const [style, setStyle] = useState("muse");

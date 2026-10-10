@@ -24,7 +24,7 @@ export const AVATAR_STYLES: { id: string; label: string }[] = [
 ];
 
 /**
- * The dragon, a face drawn for you in the avatar studio (when the profile wears one), a tile
+ * Dot, a face drawn for you in the avatar studio (when the profile wears one), a tile
  * that opens the studio (when `onStudio` is given — Settings; setup has no model yet), plus
  * an emoji on a colour for anyone who would rather.
  */
@@ -49,12 +49,12 @@ export function AvatarPicker({
       <div className="flex flex-wrap gap-3">
         <button
           type="button"
-          aria-label={t("The dragon")}
-          aria-pressed={value.avatar === DRAGON}
+          aria-label={t("Dot")}
+          aria-pressed={isDragon(value.avatar)}
           onClick={() => onChange({ ...value, avatar: DRAGON })}
-          className={cx(tile, "bg-[#f1efeb]", value.avatar === DRAGON ? ring : "opacity-90 hover:opacity-100")}
+          className={cx(tile, "bg-[#f1efeb]", isDragon(value.avatar) ? ring : "opacity-90 hover:opacity-100")}
         >
-          <img src={dragonUrl(value.avatar === DRAGON ? "happy" : "idle")} alt="" draggable={false} className="h-full w-full object-cover" />
+          <img src={dragonUrl(isDragon(value.avatar) ? "happy" : "idle")} alt="" draggable={false} className="h-full w-full object-cover" />
         </button>
         {studio && (
           <button type="button" aria-label={t("The face drawn for you")} aria-pressed className={cx(tile, "bg-surface-2", ring)}>

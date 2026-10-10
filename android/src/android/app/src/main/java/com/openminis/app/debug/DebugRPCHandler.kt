@@ -926,6 +926,9 @@ class DebugRPCHandler(private val context: Context) {
     // be exercised before the production UI entry point lands.
     private suspend fun handleUpdateCheck(): JSONObject {
         return when (val r = com.openminis.app.data.UpdateChecker.check()) {
+            // nanoMuse: report Nanodot's disabled release channel without a network request.
+            com.openminis.app.data.UpdateChecker.CheckResult.Disabled ->
+                JSONObject().put("status", "disabled")
             is com.openminis.app.data.UpdateChecker.CheckResult.UpdateAvailable -> JSONObject()
                 .put("status", "update_available")
                 .put("tag_name", r.tagName)

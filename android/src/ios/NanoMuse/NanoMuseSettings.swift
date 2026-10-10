@@ -1,6 +1,6 @@
 //
 //  NanoMuseSettings.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Settings as Muse cards, in Android's order: the model, the agent, the
 //  phone, the app, about. Reached from the drawer, the ••• menus and the
@@ -183,7 +183,7 @@ struct NanoMuseSettingsHomeView: View {
 
     private var aboutCard: some View {
         NanoMuseCard {
-            NanoMuseLinkRow(title: AppLocalized("About nanoMuse")) { AboutView() }
+            NanoMuseLinkRow(title: AppLocalized("About Nanodot")) { AboutView() }
             NanoMuseRowDivider()
             NanoMuseActionRow(title: AppLocalized("Privacy Policy")) {
                 openURL(NanoMuseLinks.privacy)
@@ -237,7 +237,7 @@ enum NanoMuseLinks {
         let info = Bundle.main.infoDictionary
         let version = info?["CFBundleShortVersionString"] as? String ?? "?"
         let build = info?["CFBundleVersion"] as? String ?? "?"
-        var components = URLComponents(string: "https://github.com/nano-muse/nanoMuse/issues/new")!
+        var components = URLComponents(string: "https://github.com/Mola-maker/nanodot/issues/new")!
         components.queryItems = [
             URLQueryItem(name: "template", value: "bug_report.yml"),
             URLQueryItem(name: "labels", value: "bug,ios"),
@@ -245,7 +245,7 @@ enum NanoMuseLinks {
             URLQueryItem(name: "version", value: "\(version) (\(build))"),
             URLQueryItem(name: "os", value: "iOS \(UIDevice.current.systemVersion), \(UIDevice.current.model)"),
         ]
-        return components.url ?? URL(string: "https://github.com/nano-muse/nanoMuse/issues")!
+        return components.url ?? URL(string: "https://github.com/Mola-maker/nanodot/issues")!
     }
 }
 
@@ -315,7 +315,7 @@ struct NanoMuseRoutinesView: View {
                     Label(AppLocalized("Background App Refresh in iOS Settings"), systemImage: "arrow.clockwise")
                 }
             } footer: {
-                Text(AppLocalized("Reminders need notification permission; background runs need Background App Refresh for nanoMuse."))
+                Text(AppLocalized("Reminders need notification permission; background runs need Background App Refresh for Nanodot."))
             }
         }
         .navigationTitle(AppLocalized("Scheduled tasks"))
@@ -358,7 +358,7 @@ struct NanoMuseRoutinesView: View {
         .onTapGesture { editing = routine }
         .swipeActions(edge: .trailing) {
             Button(role: .destructive) { scheduler.delete(routine.id) } label: { Label(AppLocalized("Delete"), systemImage: "trash") }
-            Button { Task { @MainActor in await scheduler.run(routine.id) } } label: { Label(AppLocalized("Run now"), systemImage: "play") }
+            Button { Task { @MainActor in await scheduler.run(routine.id) } } label: { Label(AppLocalized("Run now"), systemImage: "play").foregroundStyle(NanoMuseTones.onAction) }
                 .tint(NanoMuseTones.action)
         }
     }

@@ -186,7 +186,7 @@ object OwnProviderProxy {
                 .callTimeout(15, TimeUnit.SECONDS)
                 .followRedirects(false)
                 .build()
-            client.newCall(Request.Builder().url(url).header("User-Agent", "nanoMuse").build()).execute().use { r ->
+            client.newCall(Request.Builder().url(url).header("User-Agent", "Nanodot").build()).execute().use { r ->
                 val body = if (r.code == 403) r.peekBody(4096).string() else ""
                 val reach = ProviderReach.fromHttp(r.code, body, host, oauth = false)
                 Probe(reach == null && r.code < 500, r.code, System.currentTimeMillis() - started, host, reach)

@@ -18,7 +18,7 @@
  * not come along, has `loaded === false` and main.ts keeps Electron's own `systemPreferences`
  * probes, as before 0.1.37. Nothing here runs off macOS.
  *
- * Since 0.1.38 the grants belong to the helper app, "nanoMuse Computer Use" (mac-helper.ts),
+ * Since 0.1.38 the grants belong to the helper app, "Nanodot Computer Use" (mac-helper.ts),
  * when it is running: `useHelper()` puts it first, and `status()`, `askScreen()` and
  * `askAccessibility()` then report and ask for *its* grants — the app's own, read by the
  * modules above, are what the panes show only in a build without the helper, or when it

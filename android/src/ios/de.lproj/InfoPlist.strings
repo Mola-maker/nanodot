@@ -1,26 +1,26 @@
 /* Info.plist permission strings — Deutsch */
 
-"NSLocationWhenInUseUsageDescription" = "nanoMuse verwendet Ihren Standort, um den Startort von Agent-Sitzungen in Ihrem Sitzungsverlauf aufzuzeichnen.";
-"NSLocationAlwaysAndWhenInUseUsageDescription" = "nanoMuse verwendet den Hintergrund-Standort, um Agent-Aufgaben im Hintergrund weiterlaufen zu lassen. Standortdaten werden nur zur Aufzeichnung des Sitzungsverlaufs verwendet.";
-"NSCalendarsUsageDescription" = "nanoMuse greift auf den Kalender zu, damit der KI-Agent Ihren Terminplan einsehen, Verfügbarkeiten prüfen und Termine in Ihrem Namen erstellen kann.";
-"NSCalendarsFullAccessUsageDescription" = "nanoMuse greift auf den Kalender zu, damit der KI-Agent Ihren Terminplan einsehen, Verfügbarkeiten prüfen und Termine in Ihrem Namen erstellen kann.";
-"NSRemindersUsageDescription" = "nanoMuse greift auf Erinnerungen zu, damit der KI-Agent Erinnerungen in Ihrem Namen suchen und erstellen kann.";
-"NSRemindersFullAccessUsageDescription" = "nanoMuse greift auf Erinnerungen zu, damit der KI-Agent Erinnerungen in Ihrem Namen suchen und erstellen kann.";
-"NSCameraUsageDescription" = "nanoMuse benötigt Kamerazugriff, um Fotos für KI-Unterhaltungen aufzunehmen.";
-"NSPhotoLibraryUsageDescription" = "nanoMuse benötigt Zugriff auf die Fotomediathek, um Bilder an KI-Unterhaltungen anzuhängen.";
-"NSPhotoLibraryAddUsageDescription" = "nanoMuse benötigt die Berechtigung, Videos und Bilder in Ihrer Fotomediathek zu speichern.";
-"NSHealthShareUsageDescription" = "nanoMuse greift auf HealthKit zu, damit der KI-Agent Gesundheitsdaten wie Schritte, Herzfrequenz, Schlaf und Workouts in Ihrem Namen lesen kann.";
-"NSHealthUpdateUsageDescription" = "nanoMuse greift schreibend auf HealthKit zu, damit der KI-Agent Gesundheitsdaten wie Schritte, Gewicht und Wasseraufnahme in Ihrem Namen aufzeichnen kann.";
-"NSContactsUsageDescription" = "nanoMuse greift auf Kontakte zu, damit der KI-Agent Ihre Kontakte in Ihrem Namen suchen, anzeigen und verwalten kann.";
-"NSAppleMusicUsageDescription" = "nanoMuse greift auf die Mediathek zu, damit der KI-Agent Ihre Musikbibliothek durchsuchen und die Wiedergabe steuern kann.";
-"NSMicrophoneUsageDescription" = "nanoMuse benötigt Mikrofonzugriff für die Spracheingabe im Chat.";
-"NSSpeechRecognitionUsageDescription" = "nanoMuse verwendet Spracherkennung, um Ihre Stimme in Textnachrichten umzuwandeln.";
-"NSHomeKitUsageDescription" = "nanoMuse greift auf HomeKit zu, damit der KI-Agent Ihre Smart-Home-Geräte in Ihrem Namen abfragen und steuern kann.";
-"NSAlarmKitUsageDescription" = "nanoMuse verwendet AlarmKit, damit der KI-Agent Wecker und Timer in Ihrem Namen stellen kann.";
-"NSLocalNetworkUsageDescription" = "nanoMuse nutzt das lokale Netzwerk für den Debug-Server und damit der KI-Agent Dienste in deinem eigenen Netzwerk erreichen kann."; /* nanoMuse: the app has no VM; the sentence matches Info.plist */
+"NSLocationWhenInUseUsageDescription" = "Nanodot verwendet Ihren Standort, um den Startort von Agent-Sitzungen in Ihrem Sitzungsverlauf aufzuzeichnen.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "Nanodot verwendet den Hintergrund-Standort, um Agent-Aufgaben im Hintergrund weiterlaufen zu lassen. Standortdaten werden nur zur Aufzeichnung des Sitzungsverlaufs verwendet.";
+"NSCalendarsUsageDescription" = "Nanodot greift auf den Kalender zu, damit der KI-Agent Ihren Terminplan einsehen, Verfügbarkeiten prüfen und Termine in Ihrem Namen erstellen kann.";
+"NSCalendarsFullAccessUsageDescription" = "Nanodot greift auf den Kalender zu, damit der KI-Agent Ihren Terminplan einsehen, Verfügbarkeiten prüfen und Termine in Ihrem Namen erstellen kann.";
+"NSRemindersUsageDescription" = "Nanodot greift auf Erinnerungen zu, damit der KI-Agent Erinnerungen in Ihrem Namen suchen und erstellen kann.";
+"NSRemindersFullAccessUsageDescription" = "Nanodot greift auf Erinnerungen zu, damit der KI-Agent Erinnerungen in Ihrem Namen suchen und erstellen kann.";
+"NSCameraUsageDescription" = "Nanodot benötigt Kamerazugriff, um Fotos für KI-Unterhaltungen aufzunehmen.";
+"NSPhotoLibraryUsageDescription" = "Nanodot benötigt Zugriff auf die Fotomediathek, um Bilder an KI-Unterhaltungen anzuhängen.";
+"NSPhotoLibraryAddUsageDescription" = "Nanodot benötigt die Berechtigung, Videos und Bilder in Ihrer Fotomediathek zu speichern.";
+"NSHealthShareUsageDescription" = "Nanodot greift auf HealthKit zu, damit der KI-Agent Gesundheitsdaten wie Schritte, Herzfrequenz, Schlaf und Workouts in Ihrem Namen lesen kann.";
+"NSHealthUpdateUsageDescription" = "Nanodot greift schreibend auf HealthKit zu, damit der KI-Agent Gesundheitsdaten wie Schritte, Gewicht und Wasseraufnahme in Ihrem Namen aufzeichnen kann.";
+"NSContactsUsageDescription" = "Nanodot greift auf Kontakte zu, damit der KI-Agent Ihre Kontakte in Ihrem Namen suchen, anzeigen und verwalten kann.";
+"NSAppleMusicUsageDescription" = "Nanodot greift auf die Mediathek zu, damit der KI-Agent Ihre Musikbibliothek durchsuchen und die Wiedergabe steuern kann.";
+"NSMicrophoneUsageDescription" = "Nanodot benötigt Mikrofonzugriff für die Spracheingabe im Chat.";
+"NSSpeechRecognitionUsageDescription" = "Nanodot verwendet Spracherkennung, um Ihre Stimme in Textnachrichten umzuwandeln.";
+"NSHomeKitUsageDescription" = "Nanodot greift auf HomeKit zu, damit der KI-Agent Ihre Smart-Home-Geräte in Ihrem Namen abfragen und steuern kann.";
+"NSAlarmKitUsageDescription" = "Nanodot verwendet AlarmKit, damit der KI-Agent Wecker und Timer in Ihrem Namen stellen kann.";
+"NSLocalNetworkUsageDescription" = "Nanodot nutzt das lokale Netzwerk für den Debug-Server und damit der KI-Agent Dienste in deinem eigenen Netzwerk erreichen kann."; /* nanoMuse: the app has no VM; the sentence matches Info.plist */
 
 /* nanoMuse: the keys Info.plist declares but this file lacked, so the prompt is in the person's language */
-"NFCReaderUsageDescription" = "nanoMuse nutzt NFC, damit der KI-Agent in deinem Auftrag NFC-Tags lesen und beschreiben kann.";
-"NSBluetoothAlwaysUsageDescription" = "nanoMuse nutzt Bluetooth, damit der KI-Agent in deinem Auftrag BLE-Geräte in der Nähe suchen, verbinden und mit ihnen kommunizieren kann.";
-"NSBluetoothPeripheralUsageDescription" = "nanoMuse nutzt Bluetooth, damit der KI-Agent in deinem Auftrag BLE-Geräte in der Nähe suchen, verbinden und mit ihnen kommunizieren kann.";
-"NSFaceIDUsageDescription" = "nanoMuse nutzt Face ID, um gesperrte Chat-Sitzungen zu schützen, damit nur du ihren Inhalt sehen kannst.";
+"NFCReaderUsageDescription" = "Nanodot nutzt NFC, damit der KI-Agent in deinem Auftrag NFC-Tags lesen und beschreiben kann.";
+"NSBluetoothAlwaysUsageDescription" = "Nanodot nutzt Bluetooth, damit der KI-Agent in deinem Auftrag BLE-Geräte in der Nähe suchen, verbinden und mit ihnen kommunizieren kann.";
+"NSBluetoothPeripheralUsageDescription" = "Nanodot nutzt Bluetooth, damit der KI-Agent in deinem Auftrag BLE-Geräte in der Nähe suchen, verbinden und mit ihnen kommunizieren kann.";
+"NSFaceIDUsageDescription" = "Nanodot nutzt Face ID, um gesperrte Chat-Sitzungen zu schützen, damit nur du ihren Inhalt sehen kannst.";

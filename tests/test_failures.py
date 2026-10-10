@@ -234,6 +234,10 @@ def test_update_check_versions_and_opt_out(monkeypatch):
     assert not update.newer_than("nightly", "0.1.20")
     monkeypatch.delenv("NANOMUSE_CLOUD_KEY", raising=False)
     monkeypatch.delenv("NANOMUSE_NO_UPDATE_CHECK", raising=False)
+    monkeypatch.setattr(update.brand, "UPDATES_ENABLED", True)
+    monkeypatch.setattr(
+        update.brand, "UPDATE_REPOSITORY_URL", "https://github.com/Mola-maker/nanodot"
+    )
     assert update.enabled(True) and not update.enabled(False)
     monkeypatch.setenv("NANOMUSE_NO_UPDATE_CHECK", "1")
     assert not update.enabled(True)
@@ -252,6 +256,10 @@ def test_update_check_caches_and_survives_failures(monkeypatch):
 
     monkeypatch.delenv("NANOMUSE_CLOUD_KEY", raising=False)
     monkeypatch.delenv("NANOMUSE_NO_UPDATE_CHECK", raising=False)
+    monkeypatch.setattr(update.brand, "UPDATES_ENABLED", True)
+    monkeypatch.setattr(
+        update.brand, "UPDATE_REPOSITORY_URL", "https://github.com/Mola-maker/nanodot"
+    )
     calls = 0
     real_check = update.UpdateCheck._check
 
@@ -260,7 +268,7 @@ def test_update_check_caches_and_survives_failures(monkeypatch):
         calls += 1
         self.checked_at = time.monotonic()
         self.latest = "0.1.21"
-        self.url = "https://github.com/nano-muse/nanoMuse/releases/tag/v0.1.21"
+        self.url = "https://github.com/Mola-maker/nanodot/releases/tag/v0.1.21"
 
     monkeypatch.setattr(update.UpdateCheck, "_check", fake_check)
     check = update.UpdateCheck(True, current="0.1.20")

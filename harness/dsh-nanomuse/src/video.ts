@@ -13,7 +13,7 @@
  *  4. the MP4 is downloaded from the `video_url` the task ends with.
  *
  * `host` is Model Studio itself (`https://dashscope.aliyuncs.com`) with the person's own
- * key, or the nanoMuse relay (`https://cloud.nanomuse.cn`), which serves the same
+ * key, or the Nanodot relay (`https://cloud.nanomuse.cn`), which serves the same
  * `/api/v1/…` paths next to its OpenAI-shaped `/v1` and pays from the account's allowance.
  *
  * The two model families take different bodies: MiniMax wants `media[first_frame]`,
@@ -332,7 +332,7 @@ export function failureMessage(output: Record<string, unknown>): string {
   return `Video task ${status}`
 }
 
-/** DashScope puts the message at the top; the nanoMuse relay answers OpenAI-shaped (`error.message`, e.g. the clip allowance). */
+/** DashScope puts the message at the top; the Nanodot relay answers OpenAI-shaped (`error.message`, e.g. the clip allowance). */
 export function apiMessage(text: string): string {
   try {
     const json = JSON.parse(text) as { message?: unknown; error?: { message?: unknown } }

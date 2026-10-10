@@ -422,12 +422,12 @@ struct BackupSettingsView: View {
                     if localCopyRemoved {
                         Text("Delivered to all \(deliveryResults.count) destination(s) and verified. The copy on this iPhone was removed to save space.")
                     } else if deliveryResults.isEmpty {
-                        Text("Saved in nanoMuse ▸ Backups. Use Save to Files to copy it to iCloud Drive, a connected server, or another cloud provider.")
+                        Text("Saved in Nanodot ▸ Backups. Use Save to Files to copy it to iCloud Drive, a connected server, or another cloud provider.")
                     } else {
                         let ok = deliveryResults.filter(\.succeeded).count
                         // The local copy is stated explicitly so a user whose
                         // NAS was offline can see the backup still exists.
-                        Text("Saved in nanoMuse ▸ Backups, and copied to \(ok) of \(deliveryResults.count) selected folder(s).")
+                        Text("Saved in Nanodot ▸ Backups, and copied to \(ok) of \(deliveryResults.count) selected folder(s).")
                     }
                 }
             }

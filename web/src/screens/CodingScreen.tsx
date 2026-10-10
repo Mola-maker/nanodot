@@ -191,7 +191,7 @@ export function CodingScreen() {
         {/* past runs sent from here */}
         {runs.filter((r) => r.status !== "running").length > 0 && (
           <section className="space-y-2">
-            <h2 className="px-1 text-[12px] font-semibold uppercase tracking-wide text-muted">{t("Sent through nanoMuse")}</h2>
+            <h2 className="px-1 text-[12px] font-semibold uppercase tracking-wide text-muted">{t("Sent through Nanodot")}</h2>
             <ul className="divide-y divide-border/60 overflow-hidden rounded-3xl border border-border/70 bg-surface">
               {runs
                 .filter((r) => r.status !== "running")
@@ -394,7 +394,7 @@ function LiveRun({ live, agent, hideFinishedText }: { live: CodingLive; agent: s
   const meta = AGENT_META[agent];
   return (
     <>
-      <Bubble who="you" agent={agent} badge={t("via nanoMuse")}>
+      <Bubble who="you" agent={agent} badge={t("via Nanodot")}>
         <span className="whitespace-pre-wrap">{run.text}</span>
       </Bubble>
       {(tools.length > 0 || run.status === "running") && (
@@ -511,7 +511,7 @@ function NewChatSheet({ agent: initial, agents, device, onClose, onStarted }: { 
           <label className="text-[12px] text-muted">{t("What to do")}</label>
           <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} autoFocus placeholder={t("Add tests for the parser and run them")} className={cx(inputCls, "mt-1 resize-none")} />
         </div>
-        <p className="text-[12px] text-muted">{t("The agent runs on that computer with its own permissions; nanoMuse only carries the message and brings the answer back.")}</p>
+        <p className="text-[12px] text-muted">{t("The agent runs on that computer with its own permissions; Nanodot only carries the message and brings the answer back.")}</p>
         <button type="button" onClick={onClose} className={cx(secondaryBtn, "w-full")}>
           {t("Cancel")}
         </button>

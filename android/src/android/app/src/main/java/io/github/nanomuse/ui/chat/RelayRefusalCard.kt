@@ -132,7 +132,7 @@ private fun Primary(label: String, onClick: () -> Unit) {
         onClick = onClick,
         shape = CircleShape,
         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = Color.White),
+        colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
     ) {
         Text(label, fontSize = 13.sp, fontWeight = FontWeight.Medium)
     }

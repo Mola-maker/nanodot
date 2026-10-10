@@ -1,6 +1,6 @@
 //
 //  NanoMuseFirstRun.swift
-//  nanoMuse
+//  Nanodot
 //
 //  The first run, the way Android does it (ui/onboarding/FirstRunSetup.kt):
 //  Welcome (the account) → Password (only after a sign-in that created the
@@ -158,20 +158,20 @@ struct NanoMuseFirstRunView: View {
     private var welcomePage: some View {
         NanoMuseSetupPage(
             hero: { NanoMuseBrandMark(size: 96) },
-            title: AppLocalized("Welcome to nanoMuse"),
+            title: AppLocalized("Welcome to Nanodot"),
             subtitle: AppLocalized("An open-source personal agent for every device you own."),
             primaryLabel: AppLocalized("Sign in · free"),
             onPrimary: { showSignIn = true },
             secondaryLabel: AppLocalized("Use your own API key instead"),
             onSecondary: { NanoMuseFirstRun.markSourceChosen(); sourceChosen = true; showOwnKey = true },
-            finePrint: AppLocalized("One account keeps your devices together and carries the free model use; nothing is charged. Your own API key can be added right after."),
-            learnMore: URL(string: "https://github.com/nano-muse/nanoMuse/blob/main/docs/cloud.md")
+            finePrint: AppLocalized("Use your own model API key or connect to nanoMuse Cloud. Usage and allowances follow the provider's terms."),
+            learnMore: URL(string: "https://github.com/Mola-maker/nanodot/blob/main/docs/cloud.md")
         ) {
             NanoMuseFeatureRow(symbol: "bubble.left.and.bubble.right", title: AppLocalized("Chat, pictures, video"), subtitle: AppLocalized("A capable model, image and video generation, tools, skills and memory, on your phone"))
             NanoMuseFeatureRow(symbol: "desktopcomputer", title: AppLocalized("Reach: your computers, from here"), subtitle: AppLocalized("Pair a Mac, Windows or Linux machine and give it work from the phone"))
             // Android's third row is Hands (it uses the phone); the iPhone has no such service, so: goals and the feed.
             NanoMuseFeatureRow(symbol: "calendar.badge.clock", title: AppLocalized("Goals and a daily feed"), subtitle: AppLocalized("It checks in on what you are working towards and writes you a short post every morning"))
-            NanoMuseNoticeCard(title: AppLocalized("Free, open source, non-profit"), body: AppLocalized("nanoMuse is a non-profit open-source community project, free, forever. The model comes with a free allowance paid by the developer; after that, your own key. Nothing is sold; what the relay keeps is in the privacy policy, and Settings → Data controls is yours."))
+            NanoMuseNoticeCard(title: AppLocalized("An open-source personal agent"), body: AppLocalized("Nanodot is an open-source personal agent based on nanoMuse. Use your own model API key or connect to nanoMuse Cloud. Model usage and allowances follow the provider's terms. The provider's privacy policy explains what its relay stores; Settings → Data controls manages your account data."))
                 .padding(.top, 8)
         }
     }
@@ -188,7 +188,7 @@ struct NanoMuseFirstRunView: View {
             onSecondary: { NanoMuseFirstRun.markSourceChosen(); sourceChosen = true; showOwnKey = true },
             finePrint: AppLocalized("The two do not compete: the Cloud model stays available, and each model group picks its own.")
         ) {
-            NanoMuseFeatureRow(symbol: "cloud", title: AppLocalized("Use the nanoMuse Cloud model"), subtitle: AppLocalized("DeepSeek for chat, with pictures and clips too, and a free allowance per account paid by the developer. Nothing to configure."))
+            NanoMuseFeatureRow(symbol: "cloud", title: AppLocalized("Use the nanoMuse Cloud model"), subtitle: AppLocalized("Connect to nanoMuse Cloud. Available models, usage and allowances follow its terms."))
             NanoMuseFeatureRow(symbol: "key", title: AppLocalized("I have my own API key"), subtitle: AppLocalized("Alibaba Cloud Bailian, OpenRouter, OpenAI, Anthropic, DeepSeek and other OpenAI-compatible endpoints. The key stays on this phone."))
         }
     }
@@ -293,7 +293,7 @@ struct NanoMuseNotificationsPage: View {
             onPrimary: { if granted { onDone() } else { ask() } },
             secondaryLabel: granted ? nil : AppLocalized("Skip for now"),
             onSecondary: onDone,
-            finePrint: AppLocalized("Everything else works without it. It lives under iOS Settings → nanoMuse whenever you want it."),
+            finePrint: AppLocalized("Everything else works without it. It lives under iOS Settings → Nanodot whenever you want it."),
             busy: busy
         ) {
             NanoMuseFeatureRow(symbol: "clock", title: AppLocalized("Routines"), subtitle: AppLocalized("A message the agent sends itself at a set time: the feed every morning, anything you schedule."))
@@ -370,14 +370,14 @@ struct NanoMuseSetupPage<Hero: View, Content: View>: View {
             VStack(spacing: 10) {
                 Button(action: onPrimary) {
                     HStack {
-                        if busy { ProgressView().tint(.white) }
+                        if busy { ProgressView().tint(NanoMuseTones.onAction) }
                         Text(primaryLabel).font(.headline)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 6)
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(NanoMuseTones.action)
+                .tint(NanoMuseTones.action).foregroundStyle(NanoMuseTones.onAction)
                 .controlSize(.large)
                 .disabled(busy)
                 if let secondaryLabel, let onSecondary {
@@ -557,7 +557,7 @@ final class NanoMuseFirstConversation: ObservableObject {
     /// The three opening paragraphs, in the app's language.
     func intro() -> [String] {
         [
-            AppLocalized("Hi, I'm nanoMuse, the assistant that lives on your phone. Let me take a few things off your plate."),
+            AppLocalized("Hi, I'm Dot, the assistant that lives on your phone. Let me take a few things off your plate."),
             AppLocalized("A bit about how I work:\n\n- I have my own computer, a Linux sandbox and a browser, so I can run commands, open websites and fill in forms.\n- I can read and organise the files and photos you share with me, and take care of reminders and scheduled tasks.\n- Before any step that matters, I ask you first.\n- Everything runs on this phone. Your messages go to the model you configured; signed in to nanoMuse Cloud, this conversation also follows you to your other devices. Data controls switches that off."),
             AppLocalized("Before we start, what should I call you?"),
         ]

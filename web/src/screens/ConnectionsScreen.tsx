@@ -61,7 +61,7 @@ export function ConnectionsScreen() {
   const { state } = useStore();
   const [data, setData] = useState<ConnectionsData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const name = state.profile?.name ?? "nanoMuse";
+  const name = state.profile?.name ?? "Dot";
   const t = useT();
 
   const load = useCallback(async () => {
@@ -1833,7 +1833,7 @@ const CALENDAR_HINTS: Array<{ id: string; label: string; hint: string }> = [
   {
     id: "file",
     label: ".ics file",
-    hint: "A path on the machine where nanoMuse runs, for example ~/calendar.ics",
+    hint: "A path on the machine where Nanodot runs, for example ~/calendar.ics",
   },
 ];
 
@@ -2049,7 +2049,7 @@ export function CalendarCard({
                     .replace(/^_+|_+$/g, "") || "NAME",
               }) +
               " " +
-              t("nanoMuse fetches whatever address you put here, from this machine; only paste links you trust.")
+              t("Nanodot fetches whatever address you put here, from this machine; only paste links you trust.")
             }
           >
             <input
@@ -2411,7 +2411,7 @@ export function ContactsCard({
                     .replace(/^_+|_+$/g, "") || "NAME",
               }) +
               " " +
-              t("nanoMuse fetches whatever address you put here, from this machine; only paste links you trust.")
+              t("Nanodot fetches whatever address you put here, from this machine; only paste links you trust.")
             }
           >
             <input
@@ -2741,7 +2741,7 @@ function PhoneCard({
             <>
               <div className="text-muted">
                 {t(
-                  "Turn on the nanoMuse accessibility service; that is how it sees the screen and taps for you, only while a task runs, with a Stop button on screen.",
+                  "Turn on the Nanodot accessibility service; that is how it sees the screen and taps for you, only while a task runs, with a Stop button on screen.",
                 )}
               </div>
               <div className="flex flex-wrap gap-2 pt-0.5">

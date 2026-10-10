@@ -1,596 +1,843 @@
 #!/usr/bin/env python3
-"""Turn the OpenMinis tree in android/ into nanoMuse. Idempotent; re-run after every
-upstream pull (CONTRIBUTING.md), then scripts/gen-android-icons.py.
+"""Apply the checked brand profile after an upstream pull; safe to import, idempotent.
 
-What it changes, and only this:
-
-- Gradle: applicationId, versionCode / versionName (the Kotlin package and namespace stay).
-- The places that hard-code the package id (shortcuts, the accessibility service id).
-- The product name: "Minis" -> "nanoMuse" in the 17 strings.xml and in Kotlin string
-  literals (never in identifiers, paths such as /var/minis, or MinisSkills).
-- The Soul defaults (agent name and header emoji).
-- Links: update source, GitHub repository, issues, privacy policy.
-- Colours: the iOS blues and the teal Material scheme -> the brand palette (docs/brand.md).
-- Notification small icons: the launcher icon -> the flat status-bar mark; every
-  notification also carries the agent's face as its large icon (Muse: the agent
-  is the sender).
-- "<name> is browsing": the browser banner string takes the Soul name (%1$s).
-- A handful of first-run / notification strings reworded in nanoMuse's voice
-  (COPY below, en + zh + zh-rTW; the other locales keep the upstream text).
-
-- iOS (android/src/ios, when present): the bundle ids (com.openminis.app* → io.github.nanomuse.app*,
-  including the app group and iCloud container), the display names, MARKETING_VERSION /
-  CURRENT_PROJECT_VERSION, "Minis" -> "nanoMuse" in Swift string literals and in
-  Localizable.xcstrings (keys renamed, every translation updated), the About links, the
-  Soul emoji, the accent colour. Icons: scripts/gen-ios-icons.py.
-
-Anything else is a hand edit marked `// nanoMuse:` in the file.
+External identity changes; Kotlin namespaces, sandbox paths, protocol headers and
+saved internal minis:// links stay stable. Service names and attribution stay honest.
+Version constants remain the release-bump.sh interface, not a P0 version bump.
 """
 
 from __future__ import annotations
 
+import argparse
+import html
 import json
 import re
-import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-ANDROID = ROOT / "android" / "src" / "android"
-APP = ANDROID / "app"
-MAIN = APP / "src" / "main"
-JAVA = MAIN / "java" / "com" / "openminis" / "app"
-RES = MAIN / "res"
-IOS = ROOT / "android" / "src" / "ios"
+if __package__:
+    from .brand_profile import BrandProfile, load_brand
+else:
+    from brand_profile import BrandProfile, load_brand
 
-APP_ID = "io.github.nanomuse.app"
-NAME = "nanoMuse"
+ROOT = Path(__file__).resolve().parents[1]
 VERSION_NAME = "1.0.1"
 VERSION_CODE = 44
-REPO = "nano-muse/nanoMuse"
-REPO_URL = f"https://github.com/{REPO}"
-PRIVACY_URL = f"{REPO_URL}/blob/main/docs/privacy.md"
-
-# X-Minis-Token is a protocol header; MinisSkills is a path. The tail is an ASCII
-# lookahead rather than \b so that "Minis가" (Korean particle) is still caught.
-WORD = re.compile(r"(?<!X-)\bMinis(?!Skills)(?![A-Za-z0-9_])")
-changed: list[str] = []
+_LITERAL = re.compile(r'"""[\s\S]*?"""|"(?:[^"\\\n]|\\.)*"')
+_PRODUCT = re.compile(r"(?<!X-)(?<![A-Za-z0-9_])(?:Minis|nanoMuse)(?!Skills)(?![A-Za-z0-9_])")
+_IDENTITY = re.compile(r"(?<![A-Za-z0-9_])(?:Minis|nanoMuse|Nanodot|Dot)(?![A-Za-z0-9_])")
 
 
-def edit(path: Path, subs: list[tuple[str, str]], count: int = 0) -> None:
-    text = path.read_text(encoding="utf-8")
-    new = text
-    for pattern, repl in subs:
-        new = re.sub(pattern, repl, new, count=count, flags=re.M)
-    if new != text:
-        path.write_text(new, encoding="utf-8")
-        changed.append(str(path.relative_to(ROOT)))
+def _display(text: str, brand: BrandProfile) -> str:
+    """Only display prose: never service names, legal credits or protocol/path literals."""
+    if re.fullmatch(r'"?(?:nanoMuse|Nanodot)\.[A-Za-z0-9_.-]+"?', text):
+        return text.replace("Nanodot.", "nanoMuse.")
+    if "Help improve" in text and "AI models" in text:
+        return _IDENTITY.sub("nanoMuse", text)
+    if "the assistant that lives on your phone" in text:
+        return _IDENTITY.sub(brand.agentName, text)
+    if any(
+        word in text.lower()
+        for word in (
+            "attribution",
+            "based on",
+            "built on",
+            "powered by",
+            "openminis",
+            "gpl",
+            "copyright",
+        )
+    ):
+        return text
+    if "://" in text or "/var/" in text or "minis-global" in text or "X-Minis-" in text:
+        return text
+    return _PRODUCT.sub(
+        lambda match: (
+            match.group(0) if text[match.end() :].startswith(" Cloud") else brand.displayName
+        ),
+        text,
+    )
 
 
-def gradle() -> None:
+def apply_brand(root: Path, brand: BrandProfile) -> list[Path]:
+    """Write only known product fields and return paths actually changed (empty on rerun)."""
+    root = root.resolve()
+    app = root / "android/src/android/app"
+    main = app / "src/main"
+    java = main / "java"
+    upstream = java / "com/openminis/app"
+    res = main / "res"
+    changed: list[Path] = []
+
+    def write(path: Path, text: str) -> None:
+        old = path.read_text(encoding="utf-8") if path.exists() else None
+        if old != text:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+            if path not in changed:
+                changed.append(path)
+
+    def edit(path: Path, rules: list[tuple[str, str]]) -> None:
+        if not path.exists():
+            return
+        text = path.read_text(encoding="utf-8")
+        for pattern, replacement in rules:
+            text = re.sub(pattern, replacement, text, flags=re.M)
+        write(path, text)
+
+    # The wheel and bundled desktop runtime carry this contract without importing scripts.
+    write(
+        root / "nanomuse/brand.py",
+        '"""Generated by scripts/rebrand.py from config/brand.nanodot.json."""\n\n'
+        f"DISPLAY_NAME = {json.dumps(brand.displayName)}\n"
+        f"AGENT_NAME = {json.dumps(brand.agentName)}\n"
+        f"DEFAULT_AVATAR = {json.dumps(brand.defaultAvatar)}\n"
+        f"DEFAULT_COLOR = {json.dumps(brand.themeColors['light']['primary'])}\n"
+        f"REPOSITORY_URL = {json.dumps(brand.repositoryUrl)}\n"
+        f"UPDATES_ENABLED = {brand.updates.enabled!r}\n"
+        f"UPDATE_REPOSITORY_URL: str | None = {json.dumps(brand.updates.repositoryUrl) if brand.updates.repositoryUrl else 'None'}\n",
+    )
+
     edit(
-        APP / "build.gradle.kts",
+        app / "build.gradle.kts",
         [
-            (r'applicationId = "[^"]+"', f'applicationId = "{APP_ID}"'),
+            (r'applicationId = "[^"]+"', f'applicationId = "{brand.androidApplicationId}"'),
             (r"versionCode = \d+", f"versionCode = {VERSION_CODE}"),
             (r'versionName = "[^"]+"', f'versionName = "{VERSION_NAME}"'),
         ],
     )
-
-
-def package_ids() -> None:
     edit(
-        RES / "xml" / "shortcuts.xml",
+        res / "xml/shortcuts.xml",
         [
-            (r'android:targetPackage="[^"]+"', f'android:targetPackage="{APP_ID}"'),
+            (
+                r'android:targetPackage="[^"]+"',
+                f'android:targetPackage="{brand.androidApplicationId}"',
+            )
         ],
     )
-    a11y = JAVA / "accessibility" / "MinisAccessibilityService.kt"
+    a11y = upstream / "accessibility/MinisAccessibilityService.kt"
     edit(
         a11y,
         [
             (
                 r'const val SERVICE_ID = "com\.openminis\.app/\.accessibility\.MinisAccessibilityService"',
                 'val SERVICE_ID = "${BuildConfig.APPLICATION_ID}/com.openminis.app.accessibility.'
-                'MinisAccessibilityService" // nanoMuse: the applicationId is not the package',
-            ),
+                'MinisAccessibilityService" // nanoMuse: applicationId differs from namespace',
+            )
         ],
     )
-    text = a11y.read_text(encoding="utf-8")
-    if "import com.openminis.app.BuildConfig" not in text:
-        text = text.replace("\nimport ", "\nimport com.openminis.app.BuildConfig\nimport ", 1)
-        a11y.write_text(text, encoding="utf-8")
-
-
-def product_name() -> None:
-    for path in sorted(RES.glob("values*/strings.xml")):
-        text = path.read_text(encoding="utf-8")
-        new = WORD.sub(NAME, text)
-        if new != text:
-            ET.fromstring(new.encode("utf-8"))
-            path.write_text(new, encoding="utf-8")
-            changed.append(str(path.relative_to(ROOT)))
-    literal = re.compile(r'"""[\s\S]*?"""|"(?:[^"\\\n]|\\.)*"')
-    for path in sorted(JAVA.rglob("*.kt")):
-        text = path.read_text(encoding="utf-8")
-        new = literal.sub(lambda m: WORD.sub(NAME, m.group(0)), text)
-        if new != text:
-            path.write_text(new, encoding="utf-8")
-            changed.append(str(path.relative_to(ROOT)))
-
-
-def soul_defaults() -> None:
+    if a11y.exists():
+        text = a11y.read_text(encoding="utf-8")
+        if (
+            "BuildConfig.APPLICATION_ID" in text
+            and "import com.openminis.app.BuildConfig" not in text
+        ):
+            write(
+                a11y,
+                text.replace("\nimport ", "\nimport com.openminis.app.BuildConfig\nimport ", 1),
+            )
     edit(
-        JAVA / "agent" / "SoulStore.kt",
+        main / "AndroidManifest.xml",
         [
-            (r'const val DISPLAY_EMOJI = "✨"', 'const val DISPLAY_EMOJI = "🐾"'),
-        ],
-    )
-
-
-def links() -> None:
-    edit(
-        JAVA / "data" / "UpdateChecker.kt",
-        [
-            (r'private const val OWNER = "[^"]+"', 'private const val OWNER = "nano-muse"'),
-            (r'private const val REPO = "[^"]+"', 'private const val REPO = "nanoMuse"'),
             (
-                r'const val RELEASES_URL: String = "[^"]+"',
-                f'const val RELEASES_URL: String = "{REPO_URL}/releases"',
+                r'<data android:scheme="(?:minis|nanomuse|nanodot)"\s*/>',
+                f'<data android:scheme="{brand.externalScheme}" />',
+            )
+        ],
+    )
+    edit(
+        java / "io/github/nanomuse/deeplink/OwnScheme.kt",
+        [
+            (r'const val SYSTEM = "[^"]+"', f'const val SYSTEM = "{brand.externalScheme}"'),
+        ],
+    )
+    # Resource text is rebranded, not XML identifiers or shared sandbox vocabulary.
+    for path in sorted(res.glob("values*/*strings.xml")):
+        text = path.read_text(encoding="utf-8")
+        text = re.sub(
+            r"(<string\b[^>]*>)([\s\S]*?)(</string>)",
+            lambda m: (
+                m[1]
+                + (
+                    _display(m[2], brand)
+                    if not any(
+                        word in m[1].lower()
+                        for word in ("attribution", "upstream", "license", "copyright")
+                    )
+                    else m[2]
+                )
+                + m[3]
+            ),
+            text,
+        )
+        text = re.sub(
+            r'(<string name="nm_intro_hello">)([\s\S]*?)(</string>)',
+            lambda m: m[1] + _IDENTITY.sub(brand.agentName, m[2]) + m[3],
+            text,
+        )
+        text = re.sub(
+            r'(<string name="nm_data_improve">)([\s\S]*?)(</string>)',
+            lambda m: m[1] + _IDENTITY.sub("nanoMuse", m[2]) + m[3],
+            text,
+        )
+        text = re.sub(
+            r'(<plurals name="nm_star_(?:tasks|days_used)">)([\s\S]*?)(</plurals>)',
+            lambda m: m[1] + _display(m[2], brand) + m[3],
+            text,
+        )
+        if path.name == "nm_strings.xml":
+            notices = json.loads(
+                (ROOT / "config/brand.android-copy.json").read_text(encoding="utf-8")
+            )
+            if path.parent.name in notices:
+                intro, provider = notices[path.parent.name]
+                intro = intro.format(product=brand.displayName)
+                replacements = {
+                    "nm_star_signed_in": intro,
+                    "nm_welcome_notice": f"{intro} {provider}",
+                    "nm_cloud_notice": f"{intro} {provider}",
+                    "nm_cloud_notice_title": f"{brand.displayName} · nanoMuse Cloud",
+                    "nm_setup_source_cloud_sub": provider,
+                    "nm_cloud_spent_total": "nanoMuse Cloud: ¥%1$s · $%2$s",
+                }
+                for key, value in replacements.items():
+                    # Android XML string apostrophes need escaping even in text nodes.
+                    escaped = html.escape(value, quote=False).replace("'", "\\'")
+                    text = re.sub(
+                        rf'(<string name="{key}">)([\s\S]*?)(</string>)',
+                        lambda m, value=escaped: m[1] + value + m[3],
+                        text,
+                    )
+        ET.fromstring(text)
+        write(path, text)
+    for path in sorted(java.rglob("*.kt")):
+        if path.name in {"SoulStore.kt", "DotDefaults.kt", "DotBrand.kt"}:
+            continue
+        text = path.read_text(encoding="utf-8")
+        text = _LITERAL.sub(lambda m: _display(m[0], brand), text)
+        # Preserve resources' legacy names while using the monochrome notification mark.
+        text = re.sub(
+            r"setSmallIcon\(R\.mipmap\.ic_launcher\)",
+            "setSmallIcon(R.drawable.ic_stat_nanomuse) // nanoMuse: monochrome mark",
+            text,
+        )
+        write(path, text)
+    edit(
+        upstream / "agent/SoulStore.kt",
+        [
+            (r'name = "(?:Minis|nanoMuse|Nanodot|Dot)"', f'name = "{brand.agentName}"'),
+            (r'^name: "(?:Minis|nanoMuse|Nanodot|Dot)"', f'name: "{brand.agentName}"'),
+            (r'const val DISPLAY_EMOJI = "(?:✨|🐾)"', 'const val DISPLAY_EMOJI = "●"'),
+            (
+                r'\.ifEmpty \{ "(?:nanoMuse|Nanodot|Minis|Dot)" \}',
+                f'.ifEmpty {{ "{brand.agentName}" }}',
             ),
         ],
     )
-    edit(
-        JAVA / "ui" / "settings" / "AboutScreen.kt",
-        [
-            (r'"https://github\.com/OpenMinis/OpenMinis"\)', f'"{REPO_URL}")'),
-        ],
+
+    # A checked, generated Kotlin contract: consumers never have to hard-code the profile.
+    kotlin = (
+        "package io.github.nanomuse.dot\n\n"
+        "// Generated by scripts/rebrand.py from the validated brand profile.\n"
+        "object DotBrand {\n"
+        f'    const val AGENT_NAME = "{brand.agentName}"\n'
+        f'    const val DEFAULT_AVATAR = "{brand.defaultAvatar}"\n'
+        f'    const val DEFAULT_THEME = "{brand.theme}"\n'
+        f'    const val REPOSITORY_URL = "{brand.repositoryUrl}"\n'
+        f"    const val UPDATES_ENABLED = {str(brand.updates.enabled).lower()}\n"
+        "}\n"
     )
-    edit(
-        JAVA / "ui" / "settings" / "SettingsScreen.kt",
-        [
-            (r'"https://openminis\.github\.io/privacy-policy\.html"', f'"{PRIVACY_URL}"'),
-            (r'"https://github\.com/OpenMinis/OpenMinis/issues/new"', f'"{REPO_URL}/issues/new"'),
-        ],
-    )
-
-
-SYSTEM_SCHEME = "nanomuse"  # what the system knows the app by; inside, links stay minis://
-
-
-def schemes() -> None:
-    """The scheme registered with the system is ours, so a phone with OpenMinis installed too
-    never has two apps claiming `minis://`; the in-app vocabulary (`minis://…`) does not change."""
-    edit(
-        MAIN / "AndroidManifest.xml",
-        [(r'<data android:scheme="minis" />', f'<data android:scheme="{SYSTEM_SCHEME}" />')],
-    )
-
-
-# (pattern, replacement); applied to Theme.kt only.
-THEME_MAP = [
-    ("0xFF528AD2", "0xFF015CFB"),  # primary
-    ("0xFFB2DFDB", "0xFFE5F0FF"),  # primaryContainer
-    ("0xFF00332F", "0xFF012F80"),  # onPrimaryContainer
-    ("0xFF4A6360", "0xFF4F5B6E"),  # secondary
-    ("0xFFCCE8E4", "0xFFDCE6F5"),  # secondaryContainer
-    ("0xFF05201D", "0xFF101C2E"),  # onSecondaryContainer
-    ("0xFFF5FAFA", "0xFFF2F2F7"),  # background / surface (overridden by the neutrals)
-    ("0xFF171D1C", "0xFF1C1C1E"),  # onBackground / onSurface
-    ("0xFFDAE5E2", "0xFFE5E5EA"),  # surfaceVariant
-    ("0xFF3F4947", "0xFF3C3C43"),  # onSurfaceVariant (light) / surfaceVariant (dark)
-    ("0xFF6F7977", "0xFF6E6E73"),  # outline
-    ("0xFF6A94CE", "0xFF58A6FF"),  # dark primary
-    ("0xFF003737", "0xFF00224D"),  # dark onPrimary
-    ("0xFF1A6B6B", "0xFF1A2B4A"),  # dark primaryContainer
-    ("0xFFB1CCC8", "0xFFB8C6DA"),  # dark secondary
-    ("0xFF1C3532", "0xFF22304A"),  # dark onSecondary
-    ("0xFF334B48", "0xFF334159"),  # dark secondaryContainer
-    ("0xFF0E1514", "0xFF000000"),  # dark background / surface
-    ("0xFFDEE4E2", "0xFFE5E5EA"),  # dark onBackground / onSurface
-    ("0xFFBEC9C6", "0xFFC7C7CC"),  # dark onSurfaceVariant
-    ("0xFF899390", "0xFF8E8E93"),  # dark outline
-]
-
-# Applied to ChatColors.kt only; light palette first, then dark.
-CHAT_MAP = [
-    ("userBubble = Color(0x1E787880)", "userBubble = Color(0xFFE5F0FF)"),
-    ("sendButton = Color(0xFF000000)", "sendButton = Color(0xFF015CFB)"),
-    ("codeBlockText = Color(0xFF34C759)", "codeBlockText = Color(0xFFE5E5EA)"),
-    ("inlineCodeText = Color(0xFFFF9500)", "inlineCodeText = Color(0xFF015CFB)"),
-    ("blockquoteBar = Color(0x80FF9500)", "blockquoteBar = Color(0x80015CFB)"),
-    ("fabAccent = Color(0xFFB7AF96)", "fabAccent = Color(0xFF015CFB)"),
-    ("userBubble = Color(0xFF2F3A5C)", "userBubble = Color(0xFF1A2B4A)"),
-    ("sendButton = Color(0xFFFFFFFF)", "sendButton = Color(0xFF58A6FF)"),
-    ("codeBlockText = Color(0xFF8CF38C)", "codeBlockText = Color(0xFFE5E5EA)"),
-    ("inlineCodeText = Color(0xFFFF9F0A)", "inlineCodeText = Color(0xFF58A6FF)"),
-    ("blockquoteBar = Color(0x80FF9F0A)", "blockquoteBar = Color(0x8058A6FF)"),
-    ("fabAccent = Color(0xFF504C42)", "fabAccent = Color(0xFF58A6FF)"),
-]
-
-# The iOS system blues, wherever they are hard-coded (any alpha).
-GLOBAL_MAP = [
-    (r"0x([0-9A-Fa-f]{2})007AFF", r"0x\g<1>015CFB"),
-    (r"0x([0-9A-Fa-f]{2})0A84FF", r"0x\g<1>58A6FF"),
-    (r"#007AFF\b", "#015CFB"),
-    (r"#0A84FF\b", "#58A6FF"),
-]
-
-
-def colours() -> None:
-    edit(JAVA / "ui" / "theme" / "Theme.kt", [(re.escape(a), b) for a, b in THEME_MAP])
-    edit(JAVA / "ui" / "theme" / "ChatColors.kt", [(re.escape(a), b) for a, b in CHAT_MAP], count=1)
-    for path in sorted(JAVA.rglob("*.kt")) + sorted(RES.rglob("*.xml")):
-        edit(path, GLOBAL_MAP)
-    edit(RES / "values" / "colors.xml", [(r'(<color name="seed">)#[0-9A-Fa-f]+', r"\g<1>#015CFB")])
-
-
-def notification_icons() -> None:
-    for path in sorted(JAVA.rglob("*.kt")):
+    write(java / "io/github/nanomuse/dot/DotBrand.kt", kotlin)
+    # Known app-owned public links only. Cloud endpoints and upstream credit links are untouched.
+    repo = brand.repositoryUrl
+    public_paths = [
+        upstream / "ui/settings/AboutScreen.kt",
+        upstream / "ui/settings/SettingsScreen.kt",
+    ]
+    public_paths += list((java / "io/github/nanomuse/ui/settings").glob("*.kt"))
+    for path in public_paths:
         edit(
             path,
             [
+                (r'https://github\.com/nano-muse/nanoMuse(?=[/"\s])', repo),
+                (r'https://github\.com/OpenMinis/OpenMinis(?=[/"\s])', repo),
                 (
-                    r"setSmallIcon\(R\.mipmap\.ic_launcher\)",
-                    "setSmallIcon(R.drawable.ic_stat_nanomuse) // nanoMuse: flat status-bar mark",
+                    r"https://openminis\.github\.io/privacy-policy\.html",
+                    f"{repo}/blob/main/docs/privacy.md",
+                ),
+                (r'https://nanomuse\.cn/docs/?(?=["\s])', f"{repo}/tree/main/docs"),
+                (r'https://nanomuse\.cn/dl/?(?=["\s])', f"{repo}/releases"),
+                (r'https://nanomuse\.cn/?(?=["\s])', repo),
+                (
+                    r'(title = stringResource\(R.string.nm_about_upstream\)[\s\S]*?openExternalUrl\(context, ")[^"]+',
+                    lambda m: m[1] + brand.upstreamSourceUrl,
                 ),
             ],
         )
-
-
-FACE = re.compile(
-    r"(Notification(?:Compat)?\.Builder\((\w+), [^\n]*\)\n(\s*)\.setSmallIcon\([^\n]*\n)"
-    r"(?!\s*\.setLargeIcon)"
-)
-
-
-def notification_faces() -> None:
-    """Every notification the agent sends shows its face as the large icon."""
-
-    def add(m: re.Match[str]) -> str:
-        ctx, indent = m.group(2), m.group(3)
-        return (
-            f"{m.group(1)}{indent}.setLargeIcon(io.github.nanomuse.identity.NanoMuseIdentity"
-            f".face({ctx})) // nanoMuse: the agent is the sender\n"
-        )
-
-    for path in sorted(JAVA.rglob("*.kt")):
-        text = path.read_text(encoding="utf-8")
-        new = FACE.sub(add, text)
-        if new != text:
-            path.write_text(new, encoding="utf-8")
-            changed.append(str(path.relative_to(ROOT)))
-
-
-# Reworded in nanoMuse's voice. Locale dir -> string name -> text.
-COPY: dict[str, dict[str, str]] = {
-    "values": {
-        "sessionlist_welcome_subtitle": "Three steps, and you have an assistant that lives on your phone.",
-        "about_minis_tagline": "An open-source personal agent for every device you own. On this phone today; everything runs here, with your own model.",
-        "onboarding_welcome_subtitle": "An AI assistant with its own terminal and browser, running on this phone.",
-        "bg_service_notification_title": "nanoMuse is working",
-    },
-    "values-zh": {
-        "sessionlist_welcome_subtitle": "三步之后，你就有一个住在手机里的助理。",
-        "about_minis_tagline": "一个开源的个人智能体，面向你的所有设备。目前在这台手机上：一切都在本机运行，模型由你自己带。",
-        "onboarding_welcome_subtitle": "有自己的终端和浏览器、能用这台手机的 AI 助理。",
-        "bg_service_notification_title": "nanoMuse 正在工作",
-    },
-    "values-zh-rTW": {
-        "sessionlist_welcome_subtitle": "三步之後，你就有一個住在手機裡的助理。",
-        "about_minis_tagline": "一個開源的個人智慧體，面向你的所有裝置。目前在這支手機上：一切都在本機執行，模型由你自己帶。",
-        "onboarding_welcome_subtitle": "有自己的終端機和瀏覽器、能用這支手機的 AI 助理。",
-        "bg_service_notification_title": "nanoMuse 正在工作",
-    },
-}
-
-
-def reword() -> None:
-    for folder, strings in COPY.items():
-        subs = [
-            (rf'(<string name="{name}">)[^<]*(</string>)', rf"\g<1>{text}\g<2>")
-            for name, text in strings.items()
-        ]
-        edit(RES / folder / "strings.xml", subs)
-    # "<name> is browsing": the product name becomes a placeholder in every locale.
-    for path in sorted(RES.glob("values*/strings.xml")):
-        edit(
-            path,
-            [
-                (
-                    rf'(<string name="browser_minis_browsing">[^<]*?){NAME}([^<]*</string>)',
-                    r"\g<1>%1$s\g<2>",
-                )
-            ],
-        )
-
-
-# --- iOS -------------------------------------------------------------------------------------
-
-IOS_ID_RULES = [
-    (r"com\.openminis\.app", APP_ID),
-    (r"com\.openminis\.MinisTests", "io.github.nanomuse.MinisTests"),
-    (r"com\.openminis\.MinisUITests", "io.github.nanomuse.MinisUITests"),
-]
-
-
-def ios_files(*suffixes: str) -> list[Path]:
-    out: list[Path] = []
-    for path in sorted(IOS.rglob("*")):
-        if path.is_file() and path.suffix in suffixes and "Vendor" not in path.parts:
-            out.append(path)
-    return out
-
-
-def ios_ids() -> None:
-    """Bundle ids, app group, iCloud container, BGTask / URL-scheme / keychain ids: the iOS side
-    has no fixed package name, so the whole family moves to ours."""
-    for path in ios_files(
-        ".swift", ".plist", ".entitlements", ".pbxproj", ".xcscheme", ".xcprivacy"
-    ):
-        edit(path, IOS_ID_RULES)
-    # Stale File Provider domains are matched by prefix; ours now start with our id.
     edit(
-        IOS / "MinisApp.swift",
-        [(r'contains\("com\.openminis"\)', 'contains("io.github.nanomuse")')],
-    )
-
-
-def ios_schemes() -> None:
-    """Same as `schemes()` for the phone's other half: Info.plist registers `nanomuse` and
-    `nanomuse-mcp`, the share extension opens `nanomuse://share`; `minis://` stays in-app."""
-    edit(
-        IOS / "Info.plist",
+        java / "io/github/nanomuse/community/StarPrompt.kt",
         [
-            (r"<string>minis</string>", f"<string>{SYSTEM_SCHEME}</string>"),
-            (r"<string>minis-mcp</string>", f"<string>{SYSTEM_SCHEME}-mcp</string>"),
+            (r'const val REPO_URL = "[^"]+"', f'const val REPO_URL = "{repo}"'),
+        ],
+    )
+    update_repo = brand.updates.repositoryUrl or repo
+    owner, repository = update_repo.removeprefix("https://github.com/").split("/")
+    edit(
+        upstream / "data/UpdateChecker.kt",
+        [
+            (r'private const val OWNER = "[^"]+"', f'private const val OWNER = "{owner}"'),
+            (r'private const val REPO = "[^"]+"', f'private const val REPO = "{repository}"'),
+            (
+                r'const val RELEASES_URL: String = "[^"]+"',
+                f'const val RELEASES_URL: String = "{update_repo}/releases"',
+            ),
         ],
     )
     edit(
-        IOS / "ShareExtension" / "ShareViewController.swift",
-        [(r"minis://share", f"{SYSTEM_SCHEME}://share")],
+        java / "io/github/nanomuse/community/UpdateCheck.kt",
+        [
+            (
+                r'const val DOWNLOAD_URL = "[^"]+"',
+                f'const val DOWNLOAD_URL = "{update_repo}/releases"',
+            ),
+            (r'const val INDEX_URL = "[^"]+"', f'const val INDEX_URL = "{update_repo}/releases"'),
+            (
+                r'const val GITHUB_LATEST_URL = "[^"]+"',
+                f'const val GITHUB_LATEST_URL = "https://api.github.com/repos/{owner}/{repository}/releases/latest"',
+            ),
+        ],
+    )
+    _manual_update_strings(res, write)
+    _android_colors(java, res, brand, edit, write)
+    _ios_brand(root / "android/src/ios", brand, edit, write)
+    _cross_platform_brand(root, brand, edit, write)
+    return sorted(changed)
+
+
+def _manual_update_strings(res, write) -> None:
+    translations = {
+        "values": "Automatic updates are off. Open the Nanodot releases page to check manually.",
+        "values-zh": "自动更新已关闭。打开 Nanodot 发布页手动查看更新。",
+        "values-zh-rTW": "自動更新已關閉。開啟 Nanodot 發布頁手動查看更新。",
+        "values-de": "Automatische Updates sind aus. Auf der Nanodot-Release-Seite manuell nachsehen.",
+        "values-es": "Las actualizaciones automáticas están desactivadas. Consulta la página de versiones de Nanodot.",
+        "values-fil": "Naka-off ang awtomatikong update. Buksan ang release page ng Nanodot para tingnan nang manu-mano.",
+        "values-fr": "Les mises à jour automatiques sont désactivées. Consultez la page des versions de Nanodot.",
+        "values-in": "Pembaruan otomatis nonaktif. Buka halaman rilis Nanodot untuk memeriksa secara manual.",
+        "values-ja": "自動更新はオフです。Nanodot のリリースページで手動で確認してください。",
+        "values-ko": "자동 업데이트가 꺼져 있습니다. Nanodot 릴리스 페이지에서 직접 확인하세요.",
+        "values-ms": "Kemas kini automatik dimatikan. Buka halaman keluaran Nanodot untuk menyemak secara manual.",
+        "values-pl": "Aktualizacje automatyczne są wyłączone. Sprawdź ręcznie stronę wydań Nanodot.",
+        "values-pt-rBR": "Atualizações automáticas desativadas. Confira a página de versões do Nanodot.",
+        "values-ro": "Actualizările automate sunt dezactivate. Verifică manual pagina de versiuni Nanodot.",
+        "values-ru": "Автоматические обновления отключены. Проверьте страницу выпусков Nanodot вручную.",
+        "values-th": "ปิดการอัปเดตอัตโนมัติแล้ว เปิดหน้ารุ่นของ Nanodot เพื่อตรวจสอบด้วยตนเอง",
+        "values-tr": "Otomatik güncellemeler kapalı. Nanodot sürüm sayfasını elle kontrol edin.",
+    }
+    for path in sorted(res.glob("values*/nm_strings.xml")):
+        text = path.read_text(encoding="utf-8")
+        value = translations[path.parent.name]
+        line = f'    <string name="nm_update_manual">{value}</string>\n'
+        if 'name="nm_update_manual"' in text:
+            text = re.sub(r'    <string name="nm_update_manual">[^<]*</string>\n', line, text)
+        else:
+            text = text.replace("</resources>", line + "</resources>")
+        ET.fromstring(text)
+        write(path, text)
+
+
+def _android_colors(java, res, brand, edit, write) -> None:
+    light, dark = brand.themeColors["light"], brand.themeColors["dark"]
+    upstream = java / "com/openminis/app"
+    theme = upstream / "ui/theme/Theme.kt"
+    if theme.exists():
+        text = theme.read_text(encoding="utf-8")
+        # The upstream dark scheme omitted its tertiary slots. Keep these four
+        # declarations beside the other dark tokens and bind only that scheme.
+        if "private val TealDarkTertiary = " not in text:
+            declarations = "".join(
+                f"private val TealDark{name} = Color(0xFF{dark[token][1:]})\n"
+                for name, token in (
+                    ("Tertiary", "care"),
+                    ("OnTertiary", "onPrimary"),
+                    ("TertiaryContainer", "background"),
+                    ("OnTertiaryContainer", "text"),
+                )
+            )
+            text = text.replace(
+                "private val TealDarkBackground = ",
+                declarations + "private val TealDarkBackground = ",
+                1,
+            )
+
+        def dark_tertiary(match):
+            body = match[0]
+            if not re.search(r"^\s*tertiary =", body, re.M):
+                body = body.replace(
+                    "    background = ",
+                    "    tertiary = TealDarkTertiary, // nanoMuse: profile care accent\n"
+                    "    onTertiary = TealDarkOnTertiary,\n"
+                    "    tertiaryContainer = TealDarkTertiaryContainer,\n"
+                    "    onTertiaryContainer = TealDarkOnTertiaryContainer,\n"
+                    "    background = ",
+                    1,
+                )
+            return body
+
+        text = re.sub(
+            r"private val DarkColorScheme = darkColorScheme\([\s\S]*?\n\)", dark_tertiary, text
+        )
+        write(theme, text)
+    rules = []
+    # Set semantic tokens by variable name so current nanoMuse and OpenMinis inputs converge.
+    mapping = {
+        "Primary": "primary",
+        "OnPrimary": "onPrimary",
+        "PrimaryContainer": "background",
+        "OnPrimaryContainer": "text",
+        "Secondary": "primary",
+        "OnSecondary": "onPrimary",
+        "SecondaryContainer": "background",
+        "OnSecondaryContainer": "text",
+        "Tertiary": "care",
+        "OnTertiary": "onPrimary",
+        "TertiaryContainer": "background",
+        "OnTertiaryContainer": "text",
+        "Background": "background",
+        "OnBackground": "text",
+        "Surface": "surface",
+        "OnSurface": "text",
+        "SurfaceVariant": "background",
+        "OnSurfaceVariant": "text",
+        "Outline": "outline",
+    }
+    for prefix, palette in (("Teal", light), ("TealDark", dark)):
+        for name, token in mapping.items():
+            rules.append(
+                (
+                    rf"(private val {prefix}{name} = Color\()0x[0-9A-Fa-f]+",
+                    rf"\g<1>0xFF{palette[token][1:]}",
+                )
+            )
+    for prefix, palette in (("Neutral", light), ("NeutralDark", dark)):
+        for name, token in {
+            "GroupedBg": "background",
+            "GroupedCard": "surface",
+            "GroupedCardElevated": "surface",
+            "Outline": "outline",
+        }.items():
+            rules.append(
+                (
+                    rf"(private val {prefix}{name} = Color\()0x[0-9A-Fa-f]+",
+                    rf"\g<1>0xFF{palette[token][1:]}",
+                )
+            )
+    edit(theme, rules)
+    chat = upstream / "ui/theme/ChatColors.kt"
+    if chat.exists():
+        chat_text = chat.read_text(encoding="utf-8")
+        fields = {
+            "background": "background",
+            "secondaryBg": "surface",
+            "inputBg": "surface",
+            "inputIconBg": "surface",
+            "primaryText": "text",
+            "secondaryText": "outline",
+            "tertiaryText": "outline",
+            "disabledText": "outline",
+            "userBubble": "surface",
+            "toolBg": "surface",
+            "toolCapsuleBg": "surface",
+            "sheetHeaderBg": "surface",
+            "inlineCodeBg": "surface",
+            "inlineCodeText": "primary",
+            "link": "primary",
+            "sendButton": "primary",
+            "fabAccent": "primary",
+            "thinking": "primary",
+            "codeBlockBg": "surface",
+            "codeBlockText": "text",
+            "warningText": "text",
+        }
+
+        def palette_match(match):
+            palette = light if match[1] == "Light" else dark
+            body = match[0]
+            for field, token in fields.items():
+                body = re.sub(
+                    rf"({field} = )Color(?:\(0x[0-9A-Fa-f]+\)|\.White|\.Black)",
+                    rf"\g<1>Color(0xFF{palette[token][1:]})",
+                    body,
+                )
+            return body
+
+        chat_text = re.sub(
+            r"val (Light|Dark)ChatPalette = ChatPalette\([\s\S]*?\n\)", palette_match, chat_text
+        )
+        write(chat, chat_text)
+    tones = java / "io/github/nanomuse/ui/home/MuseTones.kt"
+    tone_rules = []
+    for field, token in {
+        "surface": "Surface",
+        "fill": "Surface",
+        "bubble": "Surface",
+        "disc": "Background",
+        "hairline": "Outline",
+        "canvas": "Background",
+    }.items():
+        tone_rules.append(
+            (
+                rf"(val {field}: Color\s*\n\s*@Composable @ReadOnlyComposable get\(\) = )[^\n]+",
+                rf"\g<1>if (dark) io.github.nanomuse.dot.DotColors.Dark{token} else io.github.nanomuse.dot.DotColors.Light{token}",
+            )
+        )
+    tone_rules.append(
+        (
+            r"val action: Color(?: = Color\(0x[0-9A-Fa-f]+\)|\s*\n\s*@Composable @ReadOnlyComposable get\(\) = [^\n]+)",
+            "val action: Color\n        @Composable @ReadOnlyComposable get() = if (dark) io.github.nanomuse.dot.DotColors.DarkPrimary else io.github.nanomuse.dot.DotColors.LightPrimary",
+        )
+    )
+    edit(tones, tone_rules)
+    # Migrate hardcoded old brand blue in source and non-image XML, including alpha variants.
+    accents = [
+        ("007AFF", light["primary"]),
+        ("015CFB", light["primary"]),
+        ("0A84FF", dark["primary"]),
+        ("58A6FF", dark["primary"]),
+    ]
+    color_rules = []
+    for old, new in accents:
+        color_rules += [(rf"0x([0-9A-Fa-f]{{2}}){old}", rf"0x\g<1>{new[1:]}"), (rf"#{old}\b", new)]
+    paths = sorted(java.rglob("*.kt")) + sorted(res.glob("values*/*.xml"))
+    for path in paths:
+        if path.name == "DotBrand.kt":
+            continue
+        edit(path, color_rules)
+        # Dark primary is mint: action buttons must use the corresponding dark
+        # foreground, while white labels on unrelated brand/media surfaces stay.
+        if path.suffix == ".kt":
+            edit(
+                path,
+                [
+                    (
+                        r"(containerColor = (?:io\.github\.nanomuse\.ui\.home\.)?MuseTones\.action,\s*contentColor = )Color\.White",
+                        r"\g<1>androidx.compose.material3.MaterialTheme.colorScheme.onPrimary",
+                    )
+                ],
+            )
+    edit(
+        res / "values/colors.xml",
+        [(r'(<color name="seed">)#[0-9A-Fa-f]+', rf"\g<1>{light['primary']}")],
+    )
+    # Care is already in the real Material tertiary slot; expose both modes for future overlays.
+    write(
+        java / "io/github/nanomuse/dot/DotColors.kt",
+        "package io.github.nanomuse.dot\n\nimport androidx.compose.ui.graphics.Color\n\n"
+        "// Generated from brand.nanodot.json; Material tertiary carries the care accent.\n"
+        "object DotColors {\n"
+        + "".join(
+            f"    val {mode.title()}{token[0].upper() + token[1:]} = Color(0xFF{value[1:]})\n"
+            for mode, palette in brand.themeColors.items()
+            for token, value in palette.items()
+        )
+        + "}\n",
     )
 
 
-def ios_project() -> None:
-    pbx = IOS / "Minis.xcodeproj" / "project.pbxproj"
+def _ios_brand(ios, brand, edit, write) -> None:
+    """External iOS ids and display strings; internal nanomuse/minis routes stay stable."""
+    if not ios.is_dir():
+        return
+    app_id = brand.androidApplicationId
+    for path in sorted(ios.rglob("*")):
+        if not path.is_file() or "Vendor" in path.parts:
+            continue
+        if path.suffix in {
+            ".swift",
+            ".plist",
+            ".entitlements",
+            ".pbxproj",
+            ".xcscheme",
+            ".strings",
+        }:
+            edit(
+                path,
+                [
+                    (r"(?:com\.openminis\.app|io\.github\.nanomuse\.app)", app_id),
+                    (r"io\.github\.nanomuse\.(MinisTests|MinisUITests)", r"io.github.nanodot.\1"),
+                ],
+            )
+            if path.suffix in {".swift", ".strings"} and not any(
+                p in path.parts for p in ("MinisTests", "MinisUITests")
+            ):
+                text = path.read_text(encoding="utf-8")
+                write(path, _LITERAL.sub(lambda m: _display(m[0], brand), text))
     edit(
-        pbx,
+        ios / "Info.plist",
         [
-            # upstream's `1.13` and every version of ours before this one
+            (
+                r"<string>(?:minis|nanomuse|nanodot)(-mcp)?</string>",
+                rf"<string>{brand.externalScheme}\1</string>",
+            )
+        ],
+    )
+    edit(
+        ios / "ShareExtension/ShareViewController.swift",
+        [(r"(?:minis|nanomuse|nanodot)://share", f"{brand.externalScheme}://share")],
+    )
+    edit(
+        ios / "Minis.xcodeproj/project.pbxproj",
+        [
             (r"MARKETING_VERSION = \d+(?:\.\d+)+;", f"MARKETING_VERSION = {VERSION_NAME};"),
             (r"CURRENT_PROJECT_VERSION = \d+;", f"CURRENT_PROJECT_VERSION = {VERSION_CODE};"),
             (
-                r'INFOPLIST_KEY_CFBundleDisplayName = "Share to Minis";',
-                f'INFOPLIST_KEY_CFBundleDisplayName = "Share to {NAME}";',
-            ),
-            (
-                r'INFOPLIST_KEY_CFBundleDisplayName = "Minis Files";',
-                f'INFOPLIST_KEY_CFBundleDisplayName = "{NAME} Files";',
-            ),
-            # The app target has no display name of its own (PRODUCT_NAME is the target, "Minis").
-            (
-                r'(INFOPLIST_FILE = "\$\(SRCROOT\)/Info\.plist";\n)(?!\t*INFOPLIST_KEY_CFBundleDisplayName)',
-                f"\\g<1>\t\t\t\tINFOPLIST_KEY_CFBundleDisplayName = {NAME};\n",
-            ),
-            # The launch screen: upstream's "Open Minis — … is starting" storyboard is left in
-            # place; the app shows NanoMuse/NanoMuseLaunch.storyboard (the mark, no words).
-            (
-                r'INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";',
-                "INFOPLIST_KEY_UILaunchStoryboardName = NanoMuseLaunch;",
+                r'INFOPLIST_KEY_CFBundleDisplayName = (?:"(?:Share to )?(?:Minis|nanoMuse|Nanodot)(?: Files)?"|(?:Minis|nanoMuse|Nanodot));',
+                lambda m: (
+                    f'INFOPLIST_KEY_CFBundleDisplayName = "Share to {brand.displayName}";'
+                    if "Share to" in m[0]
+                    else (
+                        f'INFOPLIST_KEY_CFBundleDisplayName = "{brand.displayName} Files";'
+                        if "Files" in m[0]
+                        else f"INFOPLIST_KEY_CFBundleDisplayName = {brand.displayName};"
+                    )
+                ),
             ),
         ],
     )
-
-
-def ios_product_name() -> None:
-    literal = re.compile(r'"""[\s\S]*?"""|"(?:[^"\\\n]|\\.)*"')
-    for path in ios_files(".swift"):
-        if "MinisTests" in path.parts or "MinisUITests" in path.parts:
-            continue
-        text = path.read_text(encoding="utf-8")
-        new = literal.sub(lambda m: WORD.sub(NAME, m.group(0)), text)
-        if new != text:
-            path.write_text(new, encoding="utf-8")
-            changed.append(str(path.relative_to(ROOT)))
-    # Info.plist usage descriptions ("Minis uses HealthKit so…") and their per-language
-    # InfoPlist.strings / AppShortcuts.strings; the ids in the plists were handled by ios_ids.
-    for path in ios_files(".plist", ".strings"):
-        if "Vendor" in path.parts or path.name == "PrivacyInfo.xcprivacy":
-            continue
-        text = path.read_text(encoding="utf-8")
-        new = WORD.sub(NAME, text)
-        if new != text:
-            path.write_text(new, encoding="utf-8")
-            changed.append(str(path.relative_to(ROOT)))
-    # Localizable.xcstrings: the English text is the key, so keys move with the literals and
-    # every translation's "Minis" moves too (the other languages keep their wording).
-    xc = IOS / "Localizable.xcstrings"
-    if not xc.exists():
-        return
-    raw = xc.read_text(encoding="utf-8")
-    data = json.loads(raw)
-
-    def walk(node: object) -> object:
-        if isinstance(node, dict):
-            return {
-                k: (WORD.sub(NAME, v) if k == "value" and isinstance(v, str) else walk(v))
-                for k, v in node.items()
-            }
-        if isinstance(node, list):
-            return [walk(v) for v in node]
-        return node
-
-    strings = data.get("strings", {})
-    renamed: dict[str, object] = {}
-    for key, entry in strings.items():
-        new_key = WORD.sub(NAME, key)
-        if new_key in renamed and new_key != key:
-            continue  # upstream already has the nanoMuse spelling; keep theirs
-        renamed[new_key] = walk(entry)
-    if renamed != strings:
-        data["strings"] = renamed
-        xc.write_text(xcstrings_dumps(data, raw), encoding="utf-8")
-        changed.append(str(xc.relative_to(ROOT)))
-
-
-def xcstrings_dumps(data: object, like: str) -> str:
-    """Xcode's own layout (2-space indent, ` : `, empty objects spread over three lines, trailing
-    newline only if the file had one), keys in the order they were read, so the diff stays at the
-    renamed entries."""
-    out = json.dumps(data, ensure_ascii=False, indent=2, separators=(",", " : "))
-    out = re.sub(
-        r"^([ ]*)(.*)\{\}",
-        lambda m: f"{m.group(1)}{m.group(2)}{{\n\n{m.group(1)}}}",
-        out,
-        flags=re.M,
-    )
-    return out + ("\n" if like.endswith("\n") else "")
-
-
-def ios_links() -> None:
     edit(
-        IOS / "Views" / "Settings" / "AboutView.swift",
+        ios / "Agent/Session/SoulStore.swift",
         [
-            (r'"https://github\.com/OpenMinis"\)', f'"{REPO_URL}")'),
-            (r'"https://github\.com/OpenMinis/OpenMinis/issues"\)', f'"{REPO_URL}/issues")'),
+            (r'name: "(?:Minis|nanoMuse|Nanodot|Dot)"', f'name: "{brand.agentName}"'),
+            (r'^name: "(?:Minis|nanoMuse|Nanodot|Dot)"', f'name: "{brand.agentName}"'),
+            (r'(isEmpty\s*\?\s*)"(?:Minis|nanoMuse|Nanodot|Dot)"', rf'\g<1>"{brand.agentName}"'),
+        ],
+    )
+    edit(
+        ios / "NanoMuse/NanoMuseUpdateCheck.swift",
+        [
             (
-                r'"(?:(?:Minis|nanoMuse) is Your Fully Local, Fully Private On-Device Agent'
-                r'|A fully open-source, Muse-style personal agent for every device you own)\."',
-                '"An open-source personal agent for every device you own."',
+                r"private static let updatesEnabled = (?:true|false)",
+                f"private static let updatesEnabled = {str(brand.updates.enabled).lower()}",
+            ),
+        ],
+    )
+    xc = ios / "Localizable.xcstrings"
+    if xc.exists():
+        raw = xc.read_text(encoding="utf-8")
+        data = json.loads(raw)
+
+        def walk(node):
+            if isinstance(node, dict):
+                return {
+                    k: (_display(v, brand) if k == "value" and isinstance(v, str) else walk(v))
+                    for k, v in node.items()
+                }
+            if isinstance(node, list):
+                return [walk(v) for v in node]
+            return node
+
+        def entry_walk(node, name):
+            if isinstance(node, dict):
+                return {
+                    k: (
+                        _IDENTITY.sub(name, v)
+                        if k == "value" and isinstance(v, str)
+                        else entry_walk(v, name)
+                    )
+                    for k, v in node.items()
+                }
+            if isinstance(node, list):
+                return [entry_walk(v, name) for v in node]
+            return node
+
+        converted = {}
+        for key, entry in data.get("strings", {}).items():
+            if "Help improve" in key and "AI models" in key:
+                converted[_IDENTITY.sub("nanoMuse", key)] = entry_walk(entry, "nanoMuse")
+            elif "the assistant that lives on your phone" in key:
+                converted[_IDENTITY.sub(brand.agentName, key)] = entry_walk(entry, brand.agentName)
+            else:
+                converted[_display(key, brand)] = walk(entry)
+        data["strings"] = converted
+        new = json.dumps(data, ensure_ascii=False, indent=2, separators=(",", " : "))
+        new = re.sub(r"^([ ]*)(.*)\{\}", lambda m: f"{m[1]}{m[2]}{{\n\n{m[1]}}}", new, flags=re.M)
+        write(xc, new + ("\n" if raw.endswith("\n") else ""))
+
+
+def _cross_platform_brand(root, brand, edit, write) -> None:
+    """Only named build-time fields; personal choices and unrelated source stay intact."""
+    light, dark = brand.themeColors["light"], brand.themeColors["dark"]
+    update_repo = brand.updates.repositoryUrl or brand.repositoryUrl
+    slug = update_repo.removeprefix("https://github.com/")
+    api = f"https://api.github.com/repos/{slug}/releases/latest"
+    edit(
+        root / "android/src/ios/NanoMuse/NanoMuseUpdateCheck.swift",
+        [
+            (r'(nonisolated static let githubURL = )"[^"]+"', rf'\g<1>"{api}"'),
+            (
+                r'(nonisolated static let fallbackReleasePage = )"[^"]+"',
+                rf'\g<1>"{update_repo}/releases/latest"',
             ),
         ],
     )
     edit(
-        IOS / "Views" / "ContentView.swift",
+        root / "harness/dsh-nanomuse/src/desk.ts",
         [
-            (r'"https://openminis\.github\.io/privacy-policy\.html"', f'"{PRIVACY_URL}"'),
-            (r'"https://github\.com/OpenMinis/OpenMinis/issues/new"', f'"{REPO_URL}/issues/new"'),
+            (r"export const RELEASES_API = [^\n]+", f"export const RELEASES_API = '{api}'"),
+            (
+                r"export const RELEASES_PAGE = [^\n]+",
+                f"export const RELEASES_PAGE = '{update_repo}/releases'",
+            ),
+            (
+                r"export const UPDATE_CHECKS_ENABLED = [^\n]+",
+                f"export const UPDATE_CHECKS_ENABLED = {str(brand.updates.enabled).lower()}",
+            ),
         ],
     )
     edit(
-        IOS / "Views" / "Providers" / "AddProviderView.swift",
-        [(r'"https://openminis\.github\.io/privacy-policy\.html"', f'"{PRIVACY_URL}"')],
+        root / "harness/desktop/src/main.ts",
+        [
+            (r'(const RELEASES_PAGE = )"[^"]+"', rf'\g<1>"{update_repo}/releases/latest"'),
+            (r'(const BASE_LIGHT = )"#[0-9A-Fa-f]{6}"', rf'\g<1>"{light["background"]}"'),
+            (r'(const BASE_DARK = )"#[0-9A-Fa-f]{6}"', rf'\g<1>"{dark["background"]}"'),
+        ],
     )
-
-
-def ios_soul_defaults() -> None:
-    edit(
-        IOS / "Agent" / "Session" / "SoulStore.swift",
-        [(r'var displayEmoji: String \{ "✨" \}', 'var displayEmoji: String { "🐾" }')],
-    )
-
-
-def ios_colours() -> None:
-    """AccentColor: the iOS system blues -> the brand blue (light) and its dark-mode tint."""
-    path = IOS / "Assets.xcassets" / "AccentColor.colorset" / "Contents.json"
-    if not path.exists():
-        return
-    raw = path.read_text(encoding="utf-8")
-    data = json.loads(raw)
-    want = {
-        None: ("0.004", "0.361", "0.984"),  # #015CFB
-        "dark": ("0.345", "0.651", "1.000"),  # #58A6FF
+    tones = root / "android/src/ios/NanoMuse/NanoMuseFaces.swift"
+    mapping = {
+        "surface": ("surface", "surface"),
+        "disc": ("background", "surface"),
+        "hairline": ("outline", "outline"),
+        "canvas": ("background", "background"),
+        "action": ("primary", "primary"),
+        "onAction": ("onPrimary", "onPrimary"),
+        "care": ("care", "care"),
     }
-    touched = False
-    for entry in data.get("colors", []):
-        appearance = None
-        for a in entry.get("appearances", []):
-            if a.get("appearance") == "luminosity":
-                appearance = a.get("value")
-        r, g, b = want.get(appearance, want[None])
-        comps = entry.setdefault("color", {}).setdefault("components", {})
-        new = {"red": r, "green": g, "blue": b, "alpha": comps.get("alpha", "1.000")}
-        if comps != new:
-            comps.clear()
-            comps.update(new)
-            touched = True
-    if touched:
-        path.write_text(xcstrings_dumps(data, raw), encoding="utf-8")
-        changed.append(str(path.relative_to(ROOT)))
-
-
-def ios() -> None:
-    if not IOS.is_dir():
-        return
-    ios_ids()
-    ios_schemes()
-    ios_project()
-    ios_product_name()
-    ios_links()
-    ios_soul_defaults()
-    ios_colours()
-
-
-def ios_check() -> int:
-    if not IOS.is_dir():
-        return 0
-    problems = 0
-    leftovers = re.compile(
-        r"com\.openminis\.(app|Minis)|openminis\.github\.io|MARKETING_VERSION = (?!"
-        + re.escape(VERSION_NAME)
-        + r";)"
+    edit(
+        tones,
+        [
+            (
+                rf"(static let {field} = tone\()0x[0-9A-Fa-f]+, 0x[0-9A-Fa-f]+",
+                rf"\g<1>0x{light[a][1:]}, 0x{dark[b][1:]}",
+            )
+            for field, (a, b) in mapping.items()
+        ],
     )
-    for path in ios_files(".swift", ".plist", ".entitlements", ".pbxproj"):
-        for i, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-            if leftovers.search(line):
-                print(f"  ! {path.relative_to(ROOT)}:{i}: {line.strip()[:80]}")
-                problems += 1
-    for path in ios_files(".plist", ".strings"):
-        if path.name != "PrivacyInfo.xcprivacy" and WORD.search(path.read_text(encoding="utf-8")):
-            print(f"  ! Minis left in {path.relative_to(ROOT)}")
-            problems += 1
-    plist = (IOS / "Info.plist").read_text(encoding="utf-8")
-    if re.search(r"<string>minis(-mcp)?</string>", plist):
-        print("  ! Info.plist still registers upstream's URL scheme")
-        problems += 1
-    share = (IOS / "ShareExtension" / "ShareViewController.swift").read_text(encoding="utf-8")
-    if "minis://share" in share:
-        print("  ! the share extension still opens minis://share")
-        problems += 1
-    return problems
+    accent = root / "android/src/ios/Assets.xcassets/AccentColor.colorset/Contents.json"
+    if accent.exists():
+        raw = accent.read_text(encoding="utf-8")
+        data = json.loads(raw)
+        for entry in data.get("colors", []):
+            is_dark = any(
+                item.get("appearance") == "luminosity" and item.get("value") == "dark"
+                for item in entry.get("appearances", [])
+            )
+            primary = (dark if is_dark else light)["primary"].lstrip("#")
+            components = entry["color"]["components"]
+            for field, offset in (("red", 0), ("green", 2), ("blue", 4)):
+                components[field] = f"{int(primary[offset : offset + 2], 16) / 255:.6f}"
+        write(
+            accent,
+            json.dumps(data, indent=2, separators=(",", " : "))
+            + ("\n" if raw.endswith("\n") else ""),
+        )
 
+    def css_tokens(path, selectors):
+        if not path.exists():
+            return
+        text = path.read_text(encoding="utf-8")
+        for selector, palette, tokens in selectors:
 
-def check() -> int:
-    problems = 0
-    for path in sorted(RES.glob("values*/strings.xml")):
-        if WORD.search(path.read_text(encoding="utf-8")):
-            print(f"  ! Minis left in {path.relative_to(ROOT)}")
-            problems += 1
-    leftovers = re.compile(
-        r"0x[0-9A-Fa-f]{2}(007AFF|0A84FF|528AD2|6A94CE)|#007AFF|#0A84FF|nanoMuseSkills"
+            def block(match, palette=palette, tokens=tokens):
+                body = match[2]
+                for prop, token in tokens.items():
+                    body = re.sub(
+                        rf"(^\s*{re.escape(prop)}:\s*)[^;]+;",
+                        lambda m, value=palette[token]: m[1] + value + ";",
+                        body,
+                        flags=re.M,
+                    )
+                return match[1] + body + match[3]
+
+            text = re.sub(rf"(^\s*{re.escape(selector)} \{{)([^}}]+)(\}})", block, text, flags=re.M)
+        write(path, text)
+
+    web_tokens = {
+        "--om-bg": "background",
+        "--om-surface": "surface",
+        "--om-fg": "text",
+        "--om-muted": "outline",
+        "--om-accent": "primary",
+        "--om-accent-fg": "onPrimary",
+        "--om-care": "care",
+    }
+    css_tokens(
+        root / "web/src/index.css",
+        [(":root", light, web_tokens), ('html[data-theme="dark"]', dark, web_tokens)],
     )
-    for path in sorted(JAVA.rglob("*.kt")) + sorted(RES.rglob("*.xml")):
-        for i, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-            if leftovers.search(line):
-                print(f"  ! {path.relative_to(ROOT)}:{i}: {line.strip()[:80]}")
-                problems += 1
-    if 'android:scheme="minis"' in (MAIN / "AndroidManifest.xml").read_text(encoding="utf-8"):
-        print("  ! AndroidManifest.xml still registers upstream's URL scheme")
-        problems += 1
-    return problems
+    accents = {
+        "--nm-accent": "primary",
+        "--nm-blue": "primary",
+        "--nm-care": "care",
+        "--nm-on-primary": "onPrimary",
+    }
+    surfaces = {
+        "--nm-base": "background",
+        "--nm-field": "surface",
+        "--nm-card": "surface",
+        "--dsw-alias-bg-base": "background",
+        "--dsw-specific-sidebar-fill": "background",
+        "--dsw-specific-input-major": "surface",
+    }
+    css_tokens(
+        root / "harness/dsh-nanomuse/src/client/styles.ts",
+        [
+            ("html[data-nanomuse]", light, accents),
+            ("html[data-nanomuse] body", light, surfaces),
+            ("html[data-nanomuse] body[data-ds-dark-theme]", dark, {**accents, **surfaces}),
+        ],
+    )
+    edit(
+        root / "web/src/theme.ts",
+        [
+            (
+                r"const COLORS: Record<Theme, string> = \{[^\n]+",
+                f'const COLORS: Record<Theme, string> = {{ light: "{light["background"]}", dark: "{dark["background"]}" }};',
+            )
+        ],
+    )
+    edit(
+        root / "web/index.html",
+        [
+            (
+                r'(<meta name="theme-color" content=")#[0-9A-Fa-f]{6}',
+                rf"\g<1>{light['background']}",
+            ),
+            (r'("content", ")#[0-9A-Fa-f]{6}("\))', rf"\g<1>{dark['background']}\2"),
+        ],
+    )
+    manifest = root / "web/public/manifest.webmanifest"
+    if manifest.exists():
+        text = manifest.read_text(encoding="utf-8")
+        for field in ("theme_color", "background_color"):
+            text = re.sub(
+                rf'("{field}":\s*")#[0-9A-Fa-f]{{6}}', rf"\g<1>{light['background']}", text
+            )
+        write(manifest, text)
 
 
 def main() -> int:
-    if not APP.is_dir():
-        sys.exit(f"{APP} not found")
-    gradle()
-    package_ids()
-    product_name()
-    soul_defaults()
-    links()
-    schemes()
-    colours()
-    notification_icons()
-    notification_faces()
-    reword()
-    ios()
-    for path in sorted(set(changed)):
-        print(f"  edited {path}")
-    print(f"{len(set(changed))} files changed")
-    problems = check() + ios_check()
-    print("clean" if problems == 0 else f"{problems} leftovers")
-    return 1 if problems else 0
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--brand-config", type=Path, default=ROOT / "config/brand.nanodot.json")
+    parser.add_argument("--root", type=Path, default=ROOT)
+    args = parser.parse_args()
+    brand = load_brand(args.brand_config)
+    if not (args.root / "android/src/android/app").is_dir():
+        parser.error("root has no Android app")
+    changed = apply_brand(args.root, brand)
+    for path in changed:
+        print(f"  edited {path.relative_to(args.root.resolve())}")
+    print(f"{len(changed)} files changed" if changed else "clean")
+    return 0
 
 
 if __name__ == "__main__":

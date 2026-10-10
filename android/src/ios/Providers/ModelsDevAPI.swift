@@ -541,7 +541,7 @@ enum ModelsDevAPI {
 
     private static var cacheFileURL: URL {
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
-        return caches.appendingPathComponent("io.github.nanomuse.app.models-dev-cache").appendingPathComponent("api.json")
+        return caches.appendingPathComponent("io.github.nanodot.app.models-dev-cache").appendingPathComponent("api.json")
     }
 
     private static func loadDiskCache() -> (Data, Date)? {

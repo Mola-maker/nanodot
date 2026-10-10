@@ -266,7 +266,7 @@ fun AvatarStudioScreen(onBack: () -> Unit, onOpenSoul: () -> Unit, onOpenMediaMo
                         enabled = !generating,
                         modifier = Modifier.fillMaxWidth().height(48.dp),
                         shape = CircleShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = Color.White, disabledContainerColor = MuseTones.action.copy(alpha = 0.5f), disabledContentColor = Color.White),
+                        colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary, disabledContainerColor = MuseTones.action.copy(alpha = 0.5f), disabledContentColor = Color.White),
                     ) {
                         if (generating) {
                             CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = Color.White)
@@ -336,7 +336,7 @@ fun AvatarStudioScreen(onBack: () -> Unit, onOpenSoul: () -> Unit, onOpenMediaMo
                                     onClick = { selected?.let { AvatarStudio.adopt(context, it) } },
                                     modifier = Modifier.fillMaxWidth().height(48.dp),
                                     shape = CircleShape,
-                                    colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = Color.White),
+                                    colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
                                 ) {
                                     Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(18.dp))
                                     Spacer(Modifier.width(8.dp))

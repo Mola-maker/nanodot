@@ -171,7 +171,7 @@ struct RetryRunIntent: AppIntent {
         if sendCompletionNotification {
             ShortcutNotification.post(
                 id: "shortcut-retry-\(sid)",
-                title: AppLocalized("nanoMuse: Retrying"),
+                title: AppLocalized("Nanodot: Retrying"),
                 body: "\(modelName): \(promptPreview)\(targetMessage.content.count > 50 ? "…" : "")",
                 sessionId: sid
             )
@@ -192,7 +192,7 @@ struct RetryRunIntent: AppIntent {
             if sendCompletionNotification {
                 ShortcutNotification.post(
                     id: "shortcut-retry-done-\(sid)",
-                    title: AppLocalized("nanoMuse: Retry Done"),
+                    title: AppLocalized("Nanodot: Retry Done"),
                     body: "\(modelName): \(String(responseText.prefix(200)))",
                     sessionId: sid
                 )
@@ -227,7 +227,7 @@ struct RetryRunIntent: AppIntent {
             if capturedSendCompletionNotification {
                 ShortcutNotification.post(
                     id: "shortcut-retry-done-\(capturedSid)",
-                    title: AppLocalized("nanoMuse: Retry Done"),
+                    title: AppLocalized("Nanodot: Retry Done"),
                     body: "\(capturedModelName): \(summary)",
                     sessionId: capturedSid
                 )

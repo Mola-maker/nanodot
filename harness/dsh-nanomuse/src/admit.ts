@@ -8,7 +8,7 @@
  * `connection` service, and only to the routes that ask. A route registered
  * raw answers any local process and any page open in any browser — for the
  * account's routes and the connectors' that is a sign-out, a connection to a
- * stranger's server or a spent allowance away. So every nanoMuse route goes
+ * stranger's server or a spent allowance away. So every Nanodot route goes
  * through here, and a request the harness would turn away from `/api` is
  * turned away from `/nanomuse/*` with the same status.
  */

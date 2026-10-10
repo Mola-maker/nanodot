@@ -68,7 +68,7 @@ struct ThinkingRuleEditorView: View {
             case .qwenRootOnly:
                 return AppLocalized("Qwen on a third-party gateway: a bare root-level enable_thinking, with no extra_body wrapper and no thinking_budget. Relays commonly reject both of those with a 400, so this is the safe choice for self-hosted vLLM/SGLang and OpenAI-compatible relays serving qwen models.")
             case .customPath:
-                return AppLocalized("Advanced: write a value at a dotted field path. Not validated by nanoMuse.")
+                return AppLocalized("Advanced: write a value at a dotted field path. Not validated by Nanodot.")
             }
         }
     }

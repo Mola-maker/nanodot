@@ -167,7 +167,7 @@ struct MinisApp: App {
         Bundle.setLanguage(lang.isEmpty ? nil : lang)
         // [T-ios-soul-name-sidebar-stale] Pre-load cachedMetadata synchronously so
         // ContentView's `@State soulName` gets the real SOUL.md name on its very
-        // first render instead of the `.default` stub ("nanoMuse"). Without this the
+        // first render instead of the `.default` stub ("Nanodot"). Without this the
         // @State initializer (evaluated at ContentView instantiation, before any
         // .onAppear refresh) locks the sidebar title to the default even when the
         // user set a custom name. refreshCache() only reads the tiny SOUL.md file.
@@ -664,8 +664,8 @@ struct MinisApp: App {
     // MARK: - FileProvider
 
     private static let fileProviderDomain = NSFileProviderDomain(
-        identifier: NSFileProviderDomainIdentifier("io.github.nanomuse.app.files"),
-        displayName: "nanoMuse"
+        identifier: NSFileProviderDomainIdentifier("io.github.nanodot.app.files"),
+        displayName: "Nanodot"
     )
 
     /// Bumped when we need to force-rebuild the FileProvider domain on next launch
@@ -705,7 +705,7 @@ struct MinisApp: App {
         guard previous != current else { return }
         UserDefaults.standard.set(current, forKey: key)
 
-        guard let container = fm.containerURL(forSecurityApplicationGroupIdentifier: "group.io.github.nanomuse.app") else { return }
+        guard let container = fm.containerURL(forSecurityApplicationGroupIdentifier: "group.io.github.nanodot.app") else { return }
         let dir = container.appendingPathComponent("MinisConfig", isDirectory: true)
         try? fm.createDirectory(at: dir, withIntermediateDirectories: true)
         let url = dir.appendingPathComponent("fp-sync-trace.log")
@@ -1053,7 +1053,7 @@ struct MinisApp: App {
     private static func migrateSharedDirToAppGroup() {
         let fm = FileManager.default
         let library = fm.urls(for: .libraryDirectory, in: .userDomainMask).first!
-        let container = fm.containerURL(forSecurityApplicationGroupIdentifier: "group.io.github.nanomuse.app")!
+        let container = fm.containerURL(forSecurityApplicationGroupIdentifier: "group.io.github.nanodot.app")!
 
         let migrations: [(source: URL, dest: URL, label: String)] = [
             // Legacy Library/MinisChat/shared → new shared
@@ -1094,7 +1094,7 @@ struct MinisApp: App {
     /// targets logged during MOUNT setup.
     private static func logFPSyncTracePaths() {
         let fm = FileManager.default
-        let groupID = "group.io.github.nanomuse.app"
+        let groupID = "group.io.github.nanodot.app"
         let containerURL = fm.containerURL(forSecurityApplicationGroupIdentifier: groupID)
         let containerPath = containerURL?.path ?? "<nil>"
         let resolvedContainer = containerURL?.resolvingSymlinksInPath().path ?? "<nil>"

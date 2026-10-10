@@ -60,7 +60,7 @@ export interface Account {
     used: number
     remaining: number
   }
-  /** Data controls — "Help improve nanoMuse's AI models" (relay 0.9); absent on an older relay. */
+  /** Data controls — "Help improve Nanodot's AI models" (relay 0.9); absent on an older relay. */
   contribute?: DataControls
   /** The pool in yuan (relay 0.5+): what was granted, spent and is left, and the ways on. */
   spend?: Spend
@@ -528,7 +528,7 @@ export class Relay {
   }
 
   /**
-   * Data controls: flip "Help improve nanoMuse's AI models". While on, the relay keeps the
+   * Data controls: flip "Help improve Nanodot's AI models". While on, the relay keeps the
    * account's chat turns (what was written, what was answered, the tool calls) for the
    * community's own model; the allowance is not touched.
    */

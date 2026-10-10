@@ -108,7 +108,7 @@ export function AllowanceWays({
     }
   };
   const share = async () => {
-    const text = t("Try nanoMuse with me, a fully open-source personal agent, free to use. Sign up with my link: {link}", { link });
+    const text = t("Try Nanodot with me, a fully open-source personal agent, free to use. Sign up with my link: {link}", { link });
     const nav = navigator as Navigator & { share?: (data: { text: string }) => Promise<void> };
     if (nav.share) {
       try {

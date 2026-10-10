@@ -76,7 +76,7 @@ function Drawer({ t, stop, openSchedules, useSessions, useSessionStatus }: Profi
   }, [])
   useEffect(() => { panel.current?.focus() }, [])
 
-  const name = live.profile.name || t('brand')
+  const name = live.profile.name || 'Dot'
   // the status line under the name follows what the agent is doing right now
   const running = rooms.activity.find((r) => r.status === 'running' || r.status === 'waiting')
   // "online" as on the phone: the agent answers here; the account's state is a matter for Settings

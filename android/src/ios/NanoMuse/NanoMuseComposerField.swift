@@ -1,6 +1,6 @@
 //
 //  NanoMuseComposerField.swift
-//  nanoMuse
+//  Nanodot
 //
 //  The text field inside Muse's pill, SwiftUI's own. Three rounds of the
 //  composer disappearing (0.1.36 the pill, 0.1.37 the watchdog, this one)

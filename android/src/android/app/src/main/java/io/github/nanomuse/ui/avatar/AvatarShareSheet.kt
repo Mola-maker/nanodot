@@ -137,7 +137,7 @@ fun AvatarShareSheet(onDismiss: () -> Unit) {
                     onClick = { AvatarShare.share(context, AvatarShare.palettes[selected], name) },
                     enabled = previews != null,
                     shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = Color.White),
+                    colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                 ) {
                     Icon(Icons.Outlined.Share, contentDescription = null, modifier = Modifier.size(18.dp))

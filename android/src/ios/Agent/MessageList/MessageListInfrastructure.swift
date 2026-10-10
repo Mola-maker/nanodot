@@ -21,7 +21,7 @@ import UIKit
 enum MessageListItem: Hashable {
     /// A complete user message, compact divider, or system info message.
     case wholeMessage(UUID)
-    /// The "sparkles nanoMuse" label row at the top of an assistant turn.
+    /// The "sparkles Nanodot" label row at the top of an assistant turn.
     case assistantHeader(UUID)
     /// A single AssistantBlock within an assistant turn.
     case assistantBlock(UUID, UUID)  // (messageId, blockId)
@@ -792,7 +792,7 @@ final class NoAnimationCollectionView: UICollectionView {
             // `frame.y − contentOffset.y`. If BOTH the frame AND the offset
             // animate (the naive `UIView.animate { super.layoutSubviews() }`),
             // they interpolate on independent CA timings, so cells above the
-            // streaming one (the "nanoMuse" header) drift — the header↔body spacing
+            // streaming one (the "Nanodot" header) drift — the header↔body spacing
             // jitter. Animating ONLY the offset means there is a single moving
             // quantity: every cell, header included, slides up together in
             // lock-step as the viewport eases to the bottom. No relative drift.

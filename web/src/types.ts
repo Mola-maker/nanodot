@@ -5,7 +5,7 @@ interface BaseEvent {
   ts: string;
   thread: string;
   updated_ts?: string;
-  /** "user" for things you said; "goal" / "background" for work your nanoMuse did on its own. */
+  /** "user" for things you said; "goal" / "background" for work your Nanodot did on its own. */
   source?: string;
   /** For background events: the short label of the work being done. */
   about?: string;
@@ -607,7 +607,7 @@ export interface CodingSession {
   runs?: CodingRun[];
 }
 
-/** A message sent into a coding agent through nanoMuse, and how it went. */
+/** A message sent into a coding agent through Nanodot, and how it went. */
 export interface CodingRun {
   id: string;
   agent: string;

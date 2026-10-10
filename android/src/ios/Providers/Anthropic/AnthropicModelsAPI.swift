@@ -147,7 +147,7 @@ private enum ModelsCache {
 
     private static var cacheDir: URL {
         FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("io.github.nanomuse.app.models-cache", isDirectory: true)
+            .appendingPathComponent("io.github.nanodot.app.models-cache", isDirectory: true)
     }
 
     /// SHA-256 hash of the credential — irreversible.

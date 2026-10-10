@@ -299,7 +299,7 @@ final class AIChatViewModel: ObservableObject, SpeechControlling {
             // [T-deferred-sync-reload] If a send is in flight, don't
             // reload mid-stream — that would re-snapshot messages and
             // could clobber the streaming assistant block / hide the
-            // "nanoMuse is thinking" indicator. Flip a flag instead; the
+            // "Nanodot is thinking" indicator. Flip a flag instead; the
             // $isProcessing observer below picks it up and replays one
             // reload as soon as the send completes. This avoids waiting
             // the full sync-timer cycle (~60s) for the next refresh.
@@ -1217,7 +1217,7 @@ final class AIChatViewModel: ObservableObject, SpeechControlling {
     /// for the [SuspendState] transition trace.
     private static func shortFrame(_ raw: String) -> String {
         // Raw frame looks like:
-        // "3   nanoMuse   0x0000000104abcd12 $s5Minis... mangled ... + 40"
+        // "3   Nanodot   0x0000000104abcd12 $s5Minis... mangled ... + 40"
         // Prefer the human name after the mangled symbol if present, else the
         // whitespace-collapsed tail.
         let parts = raw.split(separator: " ", omittingEmptySubsequences: true)
@@ -1901,7 +1901,7 @@ final class AIChatViewModel: ObservableObject, SpeechControlling {
             + "- shell_execute supports multi-line commands directly — quoting and special characters are handled automatically. "
             + "However, commands MUST NOT exceed 1000 characters. If longer, write a script file with file_write first, then run it.\n"
             + "- The default shell is BusyBox ash. `**` recursive glob (globstar) is not supported — use `find <dir> -name '*.ext'` for recursive search, piped to `xargs` for tools like `wc`. "
-            + "You do NOT need to hand-rewrite bash-specific syntax to POSIX: when a command uses bashisms (arrays arr=(...)/${arr[@]}, [[ ]], (( )), brace ranges {1..9}, process substitution, etc.), nanoMuse automatically installs and runs it under bash. Write the script naturally in whichever shell dialect is clearest; only globstar has no automatic fallback.\n"
+            + "You do NOT need to hand-rewrite bash-specific syntax to POSIX: when a command uses bashisms (arrays arr=(...)/${arr[@]}, [[ ]], (( )), brace ranges {1..9}, process substitution, etc.), Nanodot automatically installs and runs it under bash. Write the script naturally in whichever shell dialect is clearest; only globstar has no automatic fallback.\n"
             + "- Python packages: many PyPI packages (numpy, pandas, scipy, pillow, etc.) lack musllinux_aarch64 wheels and will fail to build from source. "
             + "Use Alpine's native packages instead: `apk search py3-<name>` then `apk add py3-numpy py3-pandas py3-matplotlib py3-pillow py3-scipy py3-requests`. "
             + "Only fall back to `pip install` for pure-Python packages not available via apk. "
@@ -1963,7 +1963,7 @@ final class AIChatViewModel: ObservableObject, SpeechControlling {
             + "The optional init_command parameter pre-fills (NOT executes) a command; it MUST be fully percent-encoded (spaces → %20, & → %26, | → %7C, etc.). "
             + "Only use this for genuinely interactive sessions — for everything else, use shell_execute. "
             + "Examples: [Open Terminal](minis://open_terminal), [Login to SSH](minis://open_terminal?init_command=ssh%20user%40host).\n\n"
-            + "minis-config: read or change nanoMuse settings programmatically. Run `minis-config --help` to see subcommands and `minis-config topic-help <topic>` for details on a specific area. For array-valued fields (e.g. `models`, `groups`, `envvars`, `defaults.agentLoopEntries`) the `get` subcommand accepts `--filter <keywords>` (whitespace-AND, case-insensitive substring match against each element's JSON) and `--page <N> --page-size <N>` (default 20, max 100) — use these instead of dumping the full list when you only need a subset, and check the response's `pagination` / `agent_hint` fields for the next-page command. Every write triggers a confirmation sheet in-app and is logged to a revertable audit (1000-entry rolling log). After a successful change the response includes a `user_message` field — relay it (or paraphrase) so the user knows how to review or revert via Logs → Config Changes. If the call returns `permission_denied`, the user has disabled minis-config in Settings → Permissions; relay that message and don't retry. You CAN add a provider (`add providers` with providerType + label, optional customBaseURL/appendV1Suffix/imageEndpointMode) and write its API key — set `providers.<id>.apiKey` (or include `apiKey` in the add payload) with either a literal key or a `$$ENV_VAR` reference resolved from the user's environment variables. Secrets are write-only: `get` never echoes an API key, and reading `providers.<id>.apiKey` / `.oauthToken` still returns permission_denied. Do not try to read API keys/OAuth tokens, or to set OAuth tokens (minted by the in-app login), permission levels, or environment-variable values — those stay locked.\n\n"
+            + "minis-config: read or change Nanodot settings programmatically. Run `minis-config --help` to see subcommands and `minis-config topic-help <topic>` for details on a specific area. For array-valued fields (e.g. `models`, `groups`, `envvars`, `defaults.agentLoopEntries`) the `get` subcommand accepts `--filter <keywords>` (whitespace-AND, case-insensitive substring match against each element's JSON) and `--page <N> --page-size <N>` (default 20, max 100) — use these instead of dumping the full list when you only need a subset, and check the response's `pagination` / `agent_hint` fields for the next-page command. Every write triggers a confirmation sheet in-app and is logged to a revertable audit (1000-entry rolling log). After a successful change the response includes a `user_message` field — relay it (or paraphrase) so the user knows how to review or revert via Logs → Config Changes. If the call returns `permission_denied`, the user has disabled minis-config in Settings → Permissions; relay that message and don't retry. You CAN add a provider (`add providers` with providerType + label, optional customBaseURL/appendV1Suffix/imageEndpointMode) and write its API key — set `providers.<id>.apiKey` (or include `apiKey` in the add payload) with either a literal key or a `$$ENV_VAR` reference resolved from the user's environment variables. Secrets are write-only: `get` never echoes an API key, and reading `providers.<id>.apiKey` / `.oauthToken` still returns permission_denied. Do not try to read API keys/OAuth tokens, or to set OAuth tokens (minted by the in-app login), permission levels, or environment-variable values — those stay locked.\n\n"
             + "Environment variables:\n"
             + "- Shell environment variables may contain sensitive API keys, tokens, or passwords. "
             + "NEVER echo, print, cat, or otherwise output their values to stdout/stderr. "
@@ -4560,7 +4560,7 @@ final class AIChatViewModel: ObservableObject, SpeechControlling {
             // content, no committed prior iteration, and history does not
             // end with a tool_result (would mean Case 1 owns it). The
             // placeholder ChatMessage runAgentLoop pushed would otherwise
-            // render as a bare "nanoMuse" header bubble with the typing
+            // render as a bare "Nanodot" header bubble with the typing
             // indicator hosted on it. Drop the placeholder so the UI snaps
             // back to idle. Boundary against #566/#569 8bb0bf83: a candidate
             // with any non-empty text block or any tool_use block is kept

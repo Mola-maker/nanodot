@@ -1,4 +1,4 @@
-# nanoMuse in a container. The agent sees two mounts: /data (memory, goals,
+# Nanodot in a container. The agent sees two mounts: /data (memory, goals,
 # vault, audit log, threads) and /workspace (its files). config/config.toml is
 # mounted read-only — run `nanomuse config init` on the host first.
 #
@@ -11,7 +11,7 @@
 services:
   muse:
     build: .
-    image: nanomuse:latest
+    image: nanodot:latest
     env_file:
       - path: .env
         required: false

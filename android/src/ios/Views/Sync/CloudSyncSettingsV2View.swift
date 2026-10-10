@@ -178,7 +178,7 @@ struct CloudSyncSettingsV2View: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Friendly name shown to your other nanoMuse devices.")
+            Text("Friendly name shown to your other Nanodot devices.")
         }
     }
 

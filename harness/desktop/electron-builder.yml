@@ -1,4 +1,4 @@
-# electron-builder: the installers of nanoMuse Desktop — the desktop built on DeepSeek
+# electron-builder: the installers of Nanodot Desktop — the desktop built on DeepSeek
 # Harness. `npm run dist` here after scripts/prepare-dsh.mjs has staged dsh/ (and, for the
 # hands, after scripts/desktop-app/build-runtime.py --target harness/desktop/runtime has put
 # the runtime at runtime/); .github/workflows/desktop-app.yml does all of it per platform.
@@ -6,13 +6,12 @@
 # environment: Windows asks for "Run anyway"; on macOS the workflow runs `--dir` and
 # scripts/desktop-app/package-mac.sh, which ad-hoc signs (or signs and notarizes) the
 # # bundle and writes the zip and an APFS dmg (docs/desktop.md).
-# The appId is the one the previous desktop app (desktop/app, retired in 0.1.30) carried, so
-# this one installs over it and keeps its place in the system's permission lists.
-appId: io.github.nanomuse.desktop
-productName: nanoMuse
-executableName: nanomuse-desktop
-copyright: GPL-3.0-or-later · the nanoMuse community · built on DeepSeek Harness (MIT)
-artifactName: nanoMuse-Desktop-${version}-${os}-${arch}.${ext}
+# Nanodot has its own install identity; the internal runtime and profile paths stay compatible.
+appId: io.github.nanodot.desktop
+productName: Nanodot
+executableName: nanodot-desktop
+copyright: GPL-3.0-or-later · nanoMuse and Nanodot contributors · built on DeepSeek Harness (MIT)
+artifactName: Nanodot-Desktop-${version}-${os}-${arch}.${ext}
 directories:
   output: dist
   buildResources: resources
@@ -45,6 +44,9 @@ compression: normal
 npmRebuild: false
 nodeGypRebuild: false
 publish: null
+protocols:
+  - name: Nanodot
+    schemes: [nanodot]
 linux:
   target:
     - target: AppImage
@@ -53,10 +55,10 @@ linux:
       arch: [x64]
     # the same unpacked app as an archive: for machines where the AppImage cannot mount
     # (no FUSE, or fusermount not permitted — `--appimage-extract-and-run` is the other way)
-    # and the .deb does not apply; unpack anywhere and run ./nanomuse-desktop (docs/desktop.md)
+    # and the .deb does not apply; unpack anywhere and run ./nanodot-desktop (docs/desktop.md)
     - target: tar.gz
       arch: [x64]
-  artifactName: nanoMuse-Desktop-${version}-linux-x64.${ext}
+  artifactName: Nanodot-Desktop-${version}-linux-x64.${ext}
   category: Utility
   # the icon set, one PNG per size (resources/icons/<n>x<n>.png, made from app-icon.png): the deb
   # installs each under /usr/share/icons/hicolor/<n>x<n>/apps/. A single 1024px PNG landed only in
@@ -65,19 +67,20 @@ linux:
   synopsis: an open-source personal agent for every device you own; the desktop built on DeepSeek Harness
   desktop:
     entry:
-      StartupWMClass: nanomuse-desktop
+      StartupWMClass: nanodot-desktop
 deb:
+  packageName: nanodot-desktop
   depends: ["libgtk-3-0", "libnotify4", "libnss3", "libxss1", "libxtst6", "xdg-utils", "libatspi2.0-0", "libuuid1", "libsecret-1-0", "xdotool"]
 win:
   target:
     - target: nsis
       arch: [x64]
-  icon: resources/app-icon.png
+  icon: resources/app-icon.ico
 nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
-  shortcutName: nanoMuse
+  shortcutName: Nanodot
   # electron-builder keeps files with these extensions out of the installer's 7z archive and
   # writes them into the installer one by one instead, and when it does it skips every
   # node_modules folder. The default list has .mp4, so the face's clips under
@@ -85,7 +88,7 @@ nsis:
   # had no dragon-*.mp4 and the face above the chat stood still (1.0.0; Linux and macOS, which
   # do not go through NSIS, had them). Nothing here is big enough to be worth the exception:
   # everything goes into the archive. tests/installer.test.mjs keeps this line, and the
-  # workflow checks the installer for the clips.
+  # workflow checks the installer for Dot's offline stills.
   preCompressedFileExtensions: []
 mac:
   # the zip and dmg come from scripts/desktop-app/package-mac.sh; `npm run dist` alone leaves
@@ -93,17 +96,17 @@ mac:
   target:
     - target: dir
       arch: [arm64, x64]
-  icon: resources/app-icon.png
+  icon: resources/app-icon.icns
   category: public.app-category.productivity
   hardenedRuntime: false
   gatekeeperAssess: false
   identity: null
-  # "nanoMuse Computer Use.app" — the helper that holds Screen Recording and Accessibility and
+  # "Nanodot Computer Use.app" — the helper that holds Screen Recording and Accessibility and
   # takes the screenshots and moves the mouse (mac/computer-use/, built by its build.sh in the
   # workflow before electron-builder runs). extraFiles land under Contents/; a bundle in
   # Contents/Helpers is nested code, which package-mac.sh signs before the outer app.
   # Nothing is signed here (identity: null), so the helper arrives as build.sh left it.
   extraFiles:
-    - from: mac/computer-use/build/nanoMuse Computer Use.app
-      to: Helpers/nanoMuse Computer Use.app
+    - from: mac/computer-use/build/Nanodot Computer Use.app
+      to: Helpers/Nanodot Computer Use.app
       filter: ["**/*"]

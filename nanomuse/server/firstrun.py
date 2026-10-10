@@ -22,6 +22,7 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Literal
 
+from nanomuse.brand import AGENT_NAME
 from nanomuse.fences import FENCE_NAMING, MAX_NAME, parse_naming_block
 from nanomuse.logger import logger
 
@@ -98,12 +99,12 @@ def is_zh(lang: str) -> bool:
     return lang.lower().startswith("zh")
 
 
-def intro_lines(lang: str) -> list[str]:
+def intro_lines(lang: str, name: str = AGENT_NAME) -> list[str]:
     """The three opening paragraphs, in the person's language; the phone's words, with the
     computer in the phone's place (the web runs against a runtime on a computer)."""
     if is_zh(lang):
         return [
-            "你好，我是 nanoMuse，住在你电脑里的私人助理。让我替你分担几件事。",
+            f"你好，我是 {name}，住在你电脑里的私人助理。让我替你分担几件事。",
             "先说说我怎么工作：\n\n"
             "- 我就在这台电脑上工作，能跑命令、打开网页、填表单。\n"
             "- 你指给我的文件和文件夹，我能读、能整理；提醒和定时任务也可以交给我。\n"
@@ -112,7 +113,7 @@ def intro_lines(lang: str) -> list[str]:
             "开始之前，我该怎么称呼你？",
         ]
     return [
-        "Hi, I'm nanoMuse, the assistant that lives on your computer. "
+        f"Hi, I'm {name}, the assistant that lives on your computer. "
         "Let me take a few things off your plate.",
         "A bit about how I work:\n\n"
         "- I work on this computer: I can run commands, open websites and fill in forms.\n"
@@ -278,7 +279,9 @@ def prompt_addendum(state: FirstRunState, lang: str, agent_name: str) -> str | N
         else ""
     )
     if state.phase == "ask_user_name":
-        lines = "\n".join("  > " + line.replace("\n", "\n  > ") for line in intro_lines(lang))
+        lines = "\n".join(
+            "  > " + line.replace("\n", "\n  > ") for line in intro_lines(lang, agent_name)
+        )
         return "\n".join(
             [
                 "First conversation. The app already showed the user this opening on your behalf:",

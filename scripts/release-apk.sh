@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build, sign, name and (optionally) publish a nanoMuse release APK.
+# Build, sign, name and (optionally) publish a Nanodot release APK.
 #
 #   scripts/release-apk.sh <version> [--publish] [--publish-only] [--target COMMIT]
 #                          [--notes FILE] [--allow-debug-key] [--prerelease]
@@ -9,7 +9,7 @@
 # 2. makes sure the native artifacts and rclone.aar exist (scripts/android/build-natives.sh),
 # 3. ./gradlew :app:assembleRelease — signed with android/keystore.properties when present,
 # 4. verifies the signature and refuses the debug key unless --allow-debug-key,
-# 5. writes dist/nanoMuse-<version>-arm64.apk and .sha256,
+# 5. writes dist/Nanodot-<version>-arm64.apk and .sha256,
 # 6. with --publish: tags v<version> (annotated, at --target or HEAD, unless the tag already
 #    exists), pushes the tag, then gh release create v<version> --latest with the APK, the
 #    checksum and the notes (default docs/releases/v<version>.md, with What's Changed / New
@@ -42,7 +42,7 @@ done
 build_tools="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
 # macOS has no sha256sum; shasum writes and checks the same lines
 command -v sha256sum >/dev/null 2>&1 || sha256sum() { shasum -a 256 "$@"; }
-out="$NM_ROOT/dist/nanoMuse-$version-arm64.apk"
+out="$NM_ROOT/dist/Nanodot-$version-arm64.apk"
 
 # Every part of the release carries the same version: the runtime, the desktop app, the web
 # app (the APK is checked by badging below). Packages are named after
@@ -108,6 +108,11 @@ else
 fi
 
 if [ $publish = 1 ]; then
+  remote_url="$(git -C "$NM_ROOT" remote get-url origin)"
+  case "$remote_url" in
+    https://github.com/Mola-maker/nanodot.git|git@github.com:Mola-maker/nanodot.git) ;;
+    *) echo "publishing requires origin to be Mola-maker/nanodot; found $remote_url" >&2; exit 1 ;;
+  esac
   notes="${notes:-$NM_ROOT/docs/releases/v$version.md}"
   [ -f "$notes" ] || { echo "release notes not found: $notes (see docs/release-notes-template.md)" >&2; exit 1; }
   title="$(head -1 "$notes" | sed 's/^# *//')"
@@ -121,11 +126,11 @@ if [ $publish = 1 ]; then
   else
     target="${target:-HEAD}"
     echo "== tag $tag -> $(git rev-parse --short "$target^{commit}")"
-    git tag -a "$tag" "$target" -m "nanoMuse $version"
+    git tag -a "$tag" "$target" -m "Nanodot $version"
   fi
   git push origin "refs/tags/$tag"
 
-  if gh release view "$tag" >/dev/null 2>&1; then
+  if gh release view "$tag" -R Mola-maker/nanodot >/dev/null 2>&1; then
     echo "release $tag already exists on GitHub — nothing published" >&2
     exit 1
   fi
@@ -139,6 +144,6 @@ if [ $publish = 1 ]; then
     cp "$notes" "$body"
   fi
   echo "== gh release create $tag $kind"
-  gh release create "$tag" "$out" "$out.sha256" --verify-tag $kind --title "$title" --notes-file "$body"
+  gh release create "$tag" -R Mola-maker/nanodot "$out" "$out.sha256" --verify-tag $kind --title "$title" --notes-file "$body"
   rm -f "$body"
 fi

@@ -1,8 +1,8 @@
-name: Android
+name: Nanodot Android
 
 # A debug APK (arm64-v8a) for every push and pull request that touches the
 # Android tree. Debug-signed only: no keystore and no secrets are involved;
-# release builds happen on a developer machine with scripts/release-apk.sh.
+# release builds happen locally with scripts/build-nanodot-apk.sh release.
 
 on:
   push:
@@ -40,7 +40,11 @@ jobs:
               - "android/**"
               - "scripts/android/**"
               - "scripts/rebrand.py"
+              - "scripts/brand_profile.py"
+              - "scripts/build-nanodot-apk.sh"
               - "scripts/gen-android-icons.py"
+              - "config/brand.nanodot.json"
+              - "assets/brand/**"
               - ".github/workflows/android.yml"
 
   debug-apk:
@@ -51,8 +55,13 @@ jobs:
     timeout-minutes: 75
     steps:
       - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v6
         with:
-          submodules: recursive # android/deps/proot (our fork)
+          python-version: "3.12"
+
+      - name: Brand renderer dependencies
+        run: python -m pip install pillow cairosvg
 
       - uses: actions/setup-java@v6
         with:
@@ -72,20 +81,14 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
-      - name: Native artifacts (proot, Alpine rootfs, rclone.aar)
+      - name: Nanodot debug APK and inspection
         env:
           GOTOOLCHAIN: auto
         run: |
           export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/$NDK_VERSION"
           export GOROOT="$(go env GOROOT)" GOPATH="$(go env GOPATH)"
           export PATH="$GOPATH/bin:$PATH" # gomobile / gobind land there
-          bash scripts/android/build-natives.sh
-
-      - name: assembleDebug
-        working-directory: android/src/android
-        run: |
-          export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/$NDK_VERSION"
-          ./gradlew :app:assembleDebug --console=plain --no-daemon
+          bash scripts/build-nanodot-apk.sh debug
 
       # Our unit tests (io.github.nanomuse.*: the guards, the hub client, the sandbox paths, the
       # strings' parity). Same Gradle invocation as AGENTS.md; the compiled classes are warm.
@@ -95,14 +98,9 @@ jobs:
           export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/$NDK_VERSION"
           ./gradlew :app:testDebugUnitTest --tests 'io.github.nanomuse.*' --console=plain --no-daemon
 
-      - name: Badging
-        run: |
-          bt="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
-          "$bt/aapt" dump badging android/src/android/app/build/outputs/apk/debug/app-debug.apk | grep -E "^package:|application-label:|native-code"
-
       - uses: actions/upload-artifact@v7
         with:
-          name: nanoMuse-debug-apk
-          path: android/src/android/app/build/outputs/apk/debug/app-debug.apk
+          name: Nanodot-debug-arm64
+          path: dist/nanodot/
           retention-days: 14
           if-no-files-found: error

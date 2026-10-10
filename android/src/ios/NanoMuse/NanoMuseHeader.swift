@@ -1,6 +1,6 @@
 //
 //  NanoMuseHeader.swift
-//  nanoMuse
+//  Nanodot
 //
 //  The Muse header in the chat's navigation bar: the agent's face, its
 //  name and one status line that says what it is doing right now. The

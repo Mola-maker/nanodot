@@ -405,7 +405,7 @@ private fun FeedbackSheetItem(
  * triage instead of asking the user to fill in environment details.
  *
  * URL shape:
- *   https://github.com/OpenMinis/OpenMinis/issues/new
+ *   https://github.com/Mola-maker/nanodot/issues/new
  *     ?template=bug_report.md
  *     &title=[Bug]
  *     &body=<percent-encoded markdown>
@@ -439,7 +439,7 @@ private fun buildBugReportUrl(): String {
         |-------|-------|
         | Platform | Android |
         | OS Version | Android $osVersion (API $sdkInt) |
-        | nanoMuse Version | $versionName (build $versionCode) |
+        | Nanodot Version | $versionName (build $versionCode) |
         | Device Model | $manufacturer $model |
 
         ## 🔁 Steps to Reproduce
@@ -472,7 +472,7 @@ private fun buildBugReportUrl(): String {
     // takes its fields as query parameters; `body` is ignored by forms.
     val version = java.net.URLEncoder.encode("$versionName ($versionCode)", "UTF-8")
     val device = java.net.URLEncoder.encode("Android $osVersion (API $sdkInt), $manufacturer $model", "UTF-8")
-    return "https://github.com/nano-muse/nanoMuse/issues/new" +
+    return "https://github.com/Mola-maker/nanodot/issues/new" +
         "?template=app_bug_report.yml" +
         "&title=$title" +
         "&version=$version" +
@@ -497,7 +497,7 @@ private fun buildFeedbackMailto(): String {
 
         Screenshot (optional): Please attach a screenshot if relevant.
     """.trimIndent()
-    val subject = java.net.URLEncoder.encode("nanoMuse Feedback", "UTF-8")
+    val subject = java.net.URLEncoder.encode("Nanodot Feedback", "UTF-8")
     val encodedBody = java.net.URLEncoder.encode(body, "UTF-8")
     return "mailto:dev@openminis.app?subject=$subject&body=$encodedBody"
 }

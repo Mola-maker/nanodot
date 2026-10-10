@@ -179,16 +179,12 @@ def test_api_nudges_serves_the_policy_and_the_sign_in_copy(server, monkeypatch):
 
 
 # ----------------------------------------------------------------------------- release check
-def test_release_check_asks_the_mirror_first_and_github_second(monkeypatch):
+def test_release_check_uses_only_explicit_repository(monkeypatch):
     asked: list[str] = []
-    index = {
-        "repo": "nano-muse/nanoMuse",
-        "releases": [
-            {"tag": "v0.1.40", "name": "0.1.40", "published_at": "2026-10-01", "assets": []},
-            {"tag": "v0.1.39", "name": "0.1.39", "published_at": "2026-09-20", "assets": []},
-        ],
-    }
-    mirror_ok = True
+    repo = "https://github.com/Mola-maker/nanodot"
+    api = "https://api.github.com/repos/Mola-maker/nanodot/releases/latest"
+    monkeypatch.setattr(update.brand, "UPDATES_ENABLED", True)
+    monkeypatch.setattr(update.brand, "UPDATE_REPOSITORY_URL", repo)
 
     class Client:
         def __init__(self, *a, **k): ...
@@ -201,42 +197,28 @@ def test_release_check_asks_the_mirror_first_and_github_second(monkeypatch):
 
         async def get(self, url, **kwargs):  # noqa: ANN001
             asked.append(url)
-            if url == update.INDEX_URL:
-                assert kwargs["timeout"] == update.INDEX_TIMEOUT_S
-                if not mirror_ok:
-                    raise update.httpx.ConnectError("mirror down")
-                return httpx.Response(200, json=index, request=httpx.Request("GET", url))
             return httpx.Response(
                 200,
                 json={
                     "tag_name": "v0.1.41",
+                    # An upstream URL in metadata must never be offered as a Nanodot update.
                     "html_url": "https://github.com/nano-muse/nanoMuse/releases/tag/v0.1.41",
                 },
                 request=httpx.Request("GET", url),
             )
 
     monkeypatch.setattr(update.httpx, "AsyncClient", Client)
-    monkeypatch.delenv("NANOMUSE_CLOUD_KEY", raising=False)
-    monkeypatch.delenv("NANOMUSE_NO_UPDATE_CHECK", raising=False)
-
     check = update.UpdateCheck(True, current="0.1.35")
     view = asyncio.run(check.view())
-    assert asked == [update.INDEX_URL]  # the mirror answered: GitHub is not asked
-    assert view["latest"] == "0.1.40" and view["newer"] is True and view["source"] == "nanomuse.cn"
-    assert view["url"].endswith("/releases/tag/v0.1.40")
-    assert view["download_url"] == update.DOWNLOAD_PAGE
+    assert asked == [api]
+    assert view["latest"] == "0.1.41" and view["newer"] is True and view["source"] == "github"
+    assert view["url"] == f"{repo}/releases/tag/v0.1.41"
+    assert view["download_url"] == f"{repo}/releases"
     assert view["checked_at"] and datetime.fromisoformat(view["checked_at"]).tzinfo is not None
-    # the cache holds for a day; "check now" asks again
     asyncio.run(check.view())
     assert len(asked) == 1
-    mirror_ok = False
-    view = asyncio.run(check.view(force=True))
-    assert asked[1:] == [update.INDEX_URL, update.RELEASES_API]
-    assert view["latest"] == "0.1.41" and view["source"] == "github" and view["error"] is None
-    assert update.latest_from_index({"releases": [{"tag": "nightly"}]}) == ""
-    assert (
-        update.latest_from_index({"releases": [{"tag": "v0.1.2"}, {"tag": "v0.1.10"}]}) == "v0.1.10"
-    )
+    asyncio.run(check.view(force=True))
+    assert asked == [api, api]
 
 
 def test_api_update_check_now(server, monkeypatch):

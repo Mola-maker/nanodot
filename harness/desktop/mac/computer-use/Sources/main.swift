@@ -1,9 +1,9 @@
-// nanoMuse Computer Use — the small macOS app that holds the hands' two permissions.
+// Nanodot Computer Use — the small macOS app that holds the hands' two permissions.
 //
 // macOS grants Screen Recording and Accessibility to the *responsible process*: whatever
 // LaunchServices started. A child process the desktop app spawns is attributed to the app;
 // this bundle, started through `open`, is responsible for itself, so the panes list
-// "nanoMuse Computer Use" and the app itself never holds either grant. (Qt's write-up "The
+// "Nanodot Computer Use" and the app itself never holds either grant. (Qt's write-up "The
 // Curious Case of the Responsible Process" explains the attribution; the same arrangement
 // is what Codex's "Codex Computer Use.app" does.)
 //
@@ -56,7 +56,7 @@ if let tokenFile = argument("--token-file"), let text = try? String(contentsOfFi
     token = text.trimmingCharacters(in: .whitespacesAndNewlines)
 }
 if token.isEmpty {
-    FileHandle.standardError.write(Data("nanoMuse Computer Use: --token-file <path> with a non-empty token is required\n".utf8))
+    FileHandle.standardError.write(Data("Nanodot Computer Use: --token-file <path> with a non-empty token is required\n".utf8))
     exit(2)
 }
 
@@ -66,7 +66,7 @@ func makeServer() -> HTTPServer {
     do {
         return try HTTPServer(queue: queue) { request in service.handle(request) }
     } catch {
-        FileHandle.standardError.write(Data("nanoMuse Computer Use: no listener: \(error)\n".utf8))
+        FileHandle.standardError.write(Data("Nanodot Computer Use: no listener: \(error)\n".utf8))
         exit(1)
     }
 }
@@ -79,14 +79,14 @@ server.onReady = { port in
             // atomic, so the shell never reads a half-written file
             try Data((line + "\n").utf8).write(to: URL(fileURLWithPath: portFile), options: .atomic)
         } catch {
-            FileHandle.standardError.write(Data("nanoMuse Computer Use: could not write \(portFile): \(error)\n".utf8))
+            FileHandle.standardError.write(Data("Nanodot Computer Use: could not write \(portFile): \(error)\n".utf8))
         }
     }
     print(line)
     fflush(stdout)
 }
 server.onFailure = { message in
-    FileHandle.standardError.write(Data("nanoMuse Computer Use: \(message)\n".utf8))
+    FileHandle.standardError.write(Data("Nanodot Computer Use: \(message)\n".utf8))
     exit(1)
 }
 server.start()

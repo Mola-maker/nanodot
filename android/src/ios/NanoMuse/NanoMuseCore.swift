@@ -1,8 +1,8 @@
 //
 //  NanoMuseCore.swift
-//  nanoMuse
+//  Nanodot
 //
-//  Small shared pieces the nanoMuse files lean on: where our data lives,
+//  Small shared pieces the Nanodot files lean on: where our data lives,
 //  day keys, the fenced blocks the agent writes for the app
 //  (```nanomuse-…```), and the per-session system-prompt addenda. Android:
 //  io.github.nanomuse.chat.SessionAddenda and the helpers next to it.

@@ -1,26 +1,26 @@
 /* Info.plist permission strings — Russian */
 
-"NSLocationWhenInUseUsageDescription" = "nanoMuse использует вашу геопозицию, чтобы записывать в истории сессий, где были начаты сессии агента.";
-"NSLocationAlwaysAndWhenInUseUsageDescription" = "nanoMuse использует геопозицию в фоновом режиме, чтобы задачи агента продолжали выполняться, когда приложение свёрнуто. Данные о местоположении используются только для записи истории подключений сессий.";
-"NSCalendarsUsageDescription" = "nanoMuse использует доступ к календарю, чтобы ИИ-агент мог просматривать ваше расписание, проверять свободное время и создавать события от вашего имени.";
-"NSCalendarsFullAccessUsageDescription" = "nanoMuse использует доступ к календарю, чтобы ИИ-агент мог просматривать ваше расписание, проверять свободное время и создавать события от вашего имени.";
-"NSRemindersUsageDescription" = "nanoMuse использует доступ к напоминаниям, чтобы ИИ-агент мог просматривать и создавать их от вашего имени.";
-"NSRemindersFullAccessUsageDescription" = "nanoMuse использует доступ к напоминаниям, чтобы ИИ-агент мог просматривать и создавать их от вашего имени.";
-"NSCameraUsageDescription" = "nanoMuse требуется доступ к камере, чтобы делать снимки для диалогов с ИИ.";
-"NSPhotoLibraryUsageDescription" = "nanoMuse требуется доступ к медиатеке, чтобы прикреплять изображения к диалогам с ИИ.";
-"NSPhotoLibraryAddUsageDescription" = "nanoMuse требуется разрешение, чтобы сохранять видео и изображения в вашу медиатеку.";
-"NSHealthShareUsageDescription" = "nanoMuse использует доступ к HealthKit, чтобы ИИ-агент мог читать ваши данные о здоровье — шаги, пульс, сон и тренировки — от вашего имени.";
-"NSHealthUpdateUsageDescription" = "nanoMuse использует доступ к записи в HealthKit, чтобы ИИ-агент мог сохранять данные о здоровье — шаги, вес и потребление воды — от вашего имени.";
-"NSContactsUsageDescription" = "nanoMuse использует доступ к контактам, чтобы ИИ-агент мог искать, просматривать и управлять ими от вашего имени.";
-"NSAppleMusicUsageDescription" = "nanoMuse использует доступ к медиатеке, чтобы ИИ-агент мог искать музыку и управлять воспроизведением от вашего имени.";
-"NSMicrophoneUsageDescription" = "nanoMuse требуется доступ к микрофону для голосового ввода текста в чате.";
-"NSSpeechRecognitionUsageDescription" = "nanoMuse использует распознавание речи, чтобы преобразовывать вашу речь в текстовые сообщения.";
-"NSHomeKitUsageDescription" = "nanoMuse использует доступ к HomeKit, чтобы ИИ-агент мог просматривать и управлять аксессуарами вашего умного дома от вашего имени.";
-"NSAlarmKitUsageDescription" = "nanoMuse использует AlarmKit, чтобы ИИ-агент мог устанавливать будильники и таймеры от вашего имени.";
-"NSLocalNetworkUsageDescription" = "nanoMuse использует локальную сеть для отладочного сервера и чтобы ИИ-агент мог обращаться к сервисам в вашей собственной сети."; /* nanoMuse: the app has no VM; the sentence matches Info.plist */
+"NSLocationWhenInUseUsageDescription" = "Nanodot использует вашу геопозицию, чтобы записывать в истории сессий, где были начаты сессии агента.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "Nanodot использует геопозицию в фоновом режиме, чтобы задачи агента продолжали выполняться, когда приложение свёрнуто. Данные о местоположении используются только для записи истории подключений сессий.";
+"NSCalendarsUsageDescription" = "Nanodot использует доступ к календарю, чтобы ИИ-агент мог просматривать ваше расписание, проверять свободное время и создавать события от вашего имени.";
+"NSCalendarsFullAccessUsageDescription" = "Nanodot использует доступ к календарю, чтобы ИИ-агент мог просматривать ваше расписание, проверять свободное время и создавать события от вашего имени.";
+"NSRemindersUsageDescription" = "Nanodot использует доступ к напоминаниям, чтобы ИИ-агент мог просматривать и создавать их от вашего имени.";
+"NSRemindersFullAccessUsageDescription" = "Nanodot использует доступ к напоминаниям, чтобы ИИ-агент мог просматривать и создавать их от вашего имени.";
+"NSCameraUsageDescription" = "Nanodot требуется доступ к камере, чтобы делать снимки для диалогов с ИИ.";
+"NSPhotoLibraryUsageDescription" = "Nanodot требуется доступ к медиатеке, чтобы прикреплять изображения к диалогам с ИИ.";
+"NSPhotoLibraryAddUsageDescription" = "Nanodot требуется разрешение, чтобы сохранять видео и изображения в вашу медиатеку.";
+"NSHealthShareUsageDescription" = "Nanodot использует доступ к HealthKit, чтобы ИИ-агент мог читать ваши данные о здоровье — шаги, пульс, сон и тренировки — от вашего имени.";
+"NSHealthUpdateUsageDescription" = "Nanodot использует доступ к записи в HealthKit, чтобы ИИ-агент мог сохранять данные о здоровье — шаги, вес и потребление воды — от вашего имени.";
+"NSContactsUsageDescription" = "Nanodot использует доступ к контактам, чтобы ИИ-агент мог искать, просматривать и управлять ими от вашего имени.";
+"NSAppleMusicUsageDescription" = "Nanodot использует доступ к медиатеке, чтобы ИИ-агент мог искать музыку и управлять воспроизведением от вашего имени.";
+"NSMicrophoneUsageDescription" = "Nanodot требуется доступ к микрофону для голосового ввода текста в чате.";
+"NSSpeechRecognitionUsageDescription" = "Nanodot использует распознавание речи, чтобы преобразовывать вашу речь в текстовые сообщения.";
+"NSHomeKitUsageDescription" = "Nanodot использует доступ к HomeKit, чтобы ИИ-агент мог просматривать и управлять аксессуарами вашего умного дома от вашего имени.";
+"NSAlarmKitUsageDescription" = "Nanodot использует AlarmKit, чтобы ИИ-агент мог устанавливать будильники и таймеры от вашего имени.";
+"NSLocalNetworkUsageDescription" = "Nanodot использует локальную сеть для отладочного сервера и чтобы ИИ-агент мог обращаться к сервисам в вашей собственной сети."; /* nanoMuse: the app has no VM; the sentence matches Info.plist */
 
 /* nanoMuse: the keys Info.plist declares but this file lacked, so the prompt is in the person's language */
-"NFCReaderUsageDescription" = "nanoMuse использует NFC, чтобы ИИ-агент мог читать и записывать NFC-метки от вашего имени.";
-"NSBluetoothAlwaysUsageDescription" = "nanoMuse использует Bluetooth, чтобы ИИ-агент мог искать ближайшие BLE-устройства, подключаться к ним и обмениваться данными от вашего имени.";
-"NSBluetoothPeripheralUsageDescription" = "nanoMuse использует Bluetooth, чтобы ИИ-агент мог искать ближайшие BLE-устройства, подключаться к ним и обмениваться данными от вашего имени.";
-"NSFaceIDUsageDescription" = "nanoMuse использует Face ID для защиты заблокированных чатов, чтобы только вы могли видеть их содержимое.";
+"NFCReaderUsageDescription" = "Nanodot использует NFC, чтобы ИИ-агент мог читать и записывать NFC-метки от вашего имени.";
+"NSBluetoothAlwaysUsageDescription" = "Nanodot использует Bluetooth, чтобы ИИ-агент мог искать ближайшие BLE-устройства, подключаться к ним и обмениваться данными от вашего имени.";
+"NSBluetoothPeripheralUsageDescription" = "Nanodot использует Bluetooth, чтобы ИИ-агент мог искать ближайшие BLE-устройства, подключаться к ним и обмениваться данными от вашего имени.";
+"NSFaceIDUsageDescription" = "Nanodot использует Face ID для защиты заблокированных чатов, чтобы только вы могли видеть их содержимое.";

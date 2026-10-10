@@ -141,7 +141,7 @@ class WebSearchProvider:
                 query, max_results, region
             ), f"{self.label} failed ({reason}); results from DuckDuckGo"
 
-    async def probe(self, query: str = "nanoMuse personal agent") -> dict[str, Any]:
+    async def probe(self, query: str = "Nanodot personal agent") -> dict[str, Any]:
         """One search against the configured provider, no fallback — for the test button."""
         loop = asyncio.get_running_loop()
         started = loop.time()

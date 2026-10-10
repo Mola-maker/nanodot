@@ -1078,7 +1078,7 @@ fun ChatScreen(
         // [T-android-overlay-hide-camera] Suppress the floating bg-overlay
         // BEFORE handing off to the system camera. The camera Activity
         // takes foreground, which by #451's rule would otherwise satisfy
-        // "nanoMuse backgrounded → show overlay" and the capsule would draw
+        // "Nanodot backgrounded → show overlay" and the capsule would draw
         // on top of the viewfinder. Cleared in the ActivityResult callback.
         com.openminis.app.service.SessionActivityTracker.setCameraSuppressActive(true)
         runCatching { cameraLauncher.launch(intent) }
@@ -2606,7 +2606,7 @@ fun ChatScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    // iOS-style centered layout: "nanoMuse" + group row + provider·model row
+                    // iOS-style centered layout: "Nanodot" + group row + provider·model row
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center,
@@ -3446,7 +3446,7 @@ fun ChatScreen(
                 // in-flight tool is invisible to this predicate → reserve
                 // collapsed to 20dp while a 65dp+6dp floating bar covered
                 // the bottom of the LazyColumn. The new arrivals (status
-                // pill, "nanoMuse is thinking" indicator, inline retry banner) landed
+                // pill, "Nanodot is thinking" indicator, inline retry banner) landed
                 // behind the bar with no way to scroll them into view.
                 //
                 // Fix: also subscribe to streamingById so the predicate
@@ -4137,7 +4137,7 @@ fun ChatScreen(
                                 viewModel.resume()
                                 // T282: same dual-scroll trick as the regular
                                 // send paths (T281). Resume kicks off a fresh
-                                // stream, so the "nanoMuse is thinking" indicator
+                                // stream, so the "Nanodot is thinking" indicator
                                 // mounts a frame or two later — pin once now,
                                 // then again after 100ms so the indicator
                                 // doesn't land below the fold.
@@ -5918,7 +5918,7 @@ fun ChatScreen(
                     // on its own row (upstream layout) or between the buttons
                     // (the pill — see nmPill above).
                     val nmTextField: @Composable (Modifier) -> Unit = { nmFieldModifier ->
-                    // Text field (iOS: placeholder "Message nanoMuse", no border)
+                    // Text field (iOS: placeholder "Message Nanodot", no border)
                     run {
                         val interactionSource = remember { MutableInteractionSource() }
                         // [T-android-composer-placeholder-rotation] Which entry

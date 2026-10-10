@@ -345,7 +345,7 @@ fun SystemFileScreen(kind: SystemFiles, onBack: () -> Unit, onOpenMemory: () -> 
                             Toast.makeText(context, R.string.nm_sysfile_saved, Toast.LENGTH_SHORT).show()
                         },
                         shape = CircleShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = Color.White),
+                        colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
                     ) { Text(stringResource(R.string.nm_save), fontWeight = FontWeight.SemiBold) }
                 }
             }
@@ -435,7 +435,7 @@ fun MemoryImportScreen(onBack: () -> Unit) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                         Surface(
                             onClick = {
-                                clipboard.setPlainText("nanoMuse", prompt)
+                                clipboard.setPlainText("Nanodot", prompt)
                                 Toast.makeText(context, R.string.nm_sysfile_copied, Toast.LENGTH_SHORT).show()
                             },
                             shape = CircleShape,
@@ -480,7 +480,7 @@ fun MemoryImportScreen(onBack: () -> Unit) {
                 },
                 enabled = pasted.isNotBlank(),
                 shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = Color.White),
+                colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
                 modifier = Modifier.fillMaxWidth().height(46.dp),
             ) { Text(stringResource(R.string.nm_import_append), fontSize = 15.sp, fontWeight = FontWeight.SemiBold) }
             Spacer(Modifier.height(10.dp))

@@ -1,6 +1,6 @@
 name: Docker image
 
-# Publishes ghcr.io/nano-muse/nanomuse for linux/amd64 and linux/arm64:
+# Builds Nanodot for linux/amd64 and linux/arm64; publication is an explicit manual input.
 #   main            -> :edge
 #   tag vX.Y.Z      -> :X.Y.Z, :X.Y, :latest
 # Pull requests build the amd64 image without pushing (the CI workflow smoke-tests it).
@@ -10,6 +10,11 @@ on:
     branches: [main]
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish images to this repository owner on GHCR"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -21,7 +26,7 @@ concurrency:
 
 jobs:
   publish:
-    name: build and push
+    name: build images
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -30,6 +35,7 @@ jobs:
       - uses: docker/setup-buildx-action@v4
 
       - name: Log in to GHCR
+        if: github.repository == 'Mola-maker/nanodot' && github.event_name == 'workflow_dispatch' && inputs.publish
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -40,8 +46,8 @@ jobs:
         id: meta
         uses: docker/metadata-action@v6
         with:
-          images: ghcr.io/${{ github.repository_owner }}/nanomuse
-          # lower-case is required by GHCR; the owner is nano-muse
+          images: ghcr.io/${{ github.repository_owner }}/nanodot
+          # metadata-action normalizes GHCR image names to lower-case
           flavor: latest=false
           tags: |
             type=edge,branch=main
@@ -49,8 +55,8 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
           labels: |
-            org.opencontainers.image.title=nanoMuse
-            org.opencontainers.image.description=Open-source version of Meta's Muse personal agent: phone app, Sentinel gatekeeper, credential vault, memory and goals. Bring your own model.
+            org.opencontainers.image.title=Nanodot
+            org.opencontainers.image.description=Nanodot personal agent with Dot, based on nanoMuse, with memory, goals and approvals. Bring your own model.
             org.opencontainers.image.licenses=GPL-3.0-or-later
 
       - name: Build and push
@@ -58,7 +64,7 @@ jobs:
         with:
           context: .
           platforms: linux/amd64,linux/arm64
-          push: true
+          push: ${{ github.repository == 'Mola-maker/nanodot' && github.event_name == 'workflow_dispatch' && inputs.publish }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
@@ -72,7 +78,7 @@ jobs:
         id: meta_browser
         uses: docker/metadata-action@v6
         with:
-          images: ghcr.io/${{ github.repository_owner }}/nanomuse
+          images: ghcr.io/${{ github.repository_owner }}/nanodot
           flavor: |
             latest=false
             suffix=-browser
@@ -82,8 +88,8 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
           labels: |
-            org.opencontainers.image.title=nanoMuse (with browser)
-            org.opencontainers.image.description=nanoMuse with Chromium bundled for the browser tool.
+            org.opencontainers.image.title=Nanodot (with browser)
+            org.opencontainers.image.description=Nanodot with Chromium bundled for the browser tool.
             org.opencontainers.image.licenses=GPL-3.0-or-later
 
       - name: Build and push (browser)
@@ -92,7 +98,7 @@ jobs:
           context: .
           platforms: linux/amd64
           build-args: WITH_BROWSER=1
-          push: true
+          push: ${{ github.repository == 'Mola-maker/nanodot' && github.event_name == 'workflow_dispatch' && inputs.publish }}
           tags: ${{ steps.meta_browser.outputs.tags }}
           labels: ${{ steps.meta_browser.outputs.labels }}
           cache-from: type=gha

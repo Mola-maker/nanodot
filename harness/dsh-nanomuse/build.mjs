@@ -21,6 +21,7 @@ import { readFileSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
 
+const brand = JSON.parse(readFileSync(new URL('../../config/brand.nanodot.json', import.meta.url), 'utf8'))
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'))
 
 /** The page's frozen module table (PLATFORM_MODULES in the harness's web client). */
@@ -51,7 +52,7 @@ await build({
   // compares with the latest release and what the device tells the hub. Left to the
   // environment, nothing set it in the packaged app and every install ran as 0.0.0, so every
   // release read as newer (0.1.41).
-  define: { 'process.env.NANOMUSE_VERSION': JSON.stringify(pkg.version) },
+  define: { 'process.env.NANOMUSE_VERSION': JSON.stringify(pkg.version), 'process.env.NANODOT_UPDATE_CHECKS_ENABLED': JSON.stringify(String(brand.updates.enabled)) },
   logLevel: 'warning',
 })
 
@@ -66,7 +67,7 @@ await build({
   sourcemap: true,
   external: PLATFORM_MODULES,
   jsx: 'automatic',
-  define: { 'process.env.NODE_ENV': '"production"', 'process.env.NANOMUSE_VERSION': JSON.stringify(pkg.version) },
+  define: { 'process.env.NODE_ENV': '"production"', 'process.env.NANOMUSE_VERSION': JSON.stringify(pkg.version), 'process.env.NANODOT_UPDATE_CHECKS_ENABLED': JSON.stringify(String(brand.updates.enabled)) },
   banner: { js: `window.__ModuleLoader__.load({ id: ${JSON.stringify(pkg.name)}, factory: (require) => {\nvar module = { exports: {} }; var exports = module.exports;` },
   footer: { js: 'return module.exports; } });' },
   logLevel: 'warning',

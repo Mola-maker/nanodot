@@ -70,8 +70,8 @@ class ShareViewController: UIViewController {
 
     private func redirectToHostApp() {
         // nanoMuse: the scheme the system knows the app by (Info.plist); inside, the app reads it as its minis:// form
-        guard let url = URL(string: "nanomuse://share") else {
-            NSLog("[ShareExt] ERROR: Failed to create nanomuse://share URL")
+        guard let url = URL(string: "nanodot://share") else {
+            NSLog("[ShareExt] ERROR: Failed to create nanodot://share URL")
             return
         }
 

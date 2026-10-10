@@ -449,7 +449,7 @@ export default class NanomuseRooms extends Service {
   }
 
   /**
-   * Start was pressed: the main chat, opened on the agent's own folder (`~/nanoMuse`,
+   * Start was pressed: the main chat, opened on the agent's own folder (`~/Nanodot`,
    * registered as a workspace so the composer is live at once), bound as the first
    * conversation. The app speaks first there, from the browser, at no cost in tokens; the
    * model only hears from the person. A second Start lands in the same chat while it lives.
@@ -471,11 +471,11 @@ export default class NanomuseRooms extends Service {
       await this.saveFirstRun()
       return { sessionId: synced }
     }
-    const folder = join(homeDir(), 'nanoMuse')
+    const folder = join(homeDir(), 'Nanodot')
     await mkdir(folder, { recursive: true })
     let workspaceId: string | undefined
     try {
-      workspaceId = (await (this.ctx.get('workspaceRegistry') as RegistryLike | undefined)?.create(folder, 'nanoMuse'))?.id
+      workspaceId = (await (this.ctx.get('workspaceRegistry') as RegistryLike | undefined)?.create(folder, 'Nanodot'))?.id
     } catch (error) {
       this.warn('home workspace', error)
     }
@@ -941,7 +941,7 @@ export default class NanomuseRooms extends Service {
     const home = dshHome()
     const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
     const folder = await downloadsDir()
-    const out = join(folder, `nanoMuse-data-${stamp}.zip`)
+    const out = join(folder, `Nanodot-data-${stamp}.zip`)
     await mkdir(folder, { recursive: true })
     const entries: ZipEntry[] = []
     const add = async (folder: string, under: string, skip: (name: string) => boolean = () => false) => {
@@ -964,7 +964,7 @@ export default class NanomuseRooms extends Service {
     await add(join(home, 'sessions'), 'sessions/')
     const prefs = join(home, 'desktop.json')
     if (await stat(prefs).catch(() => null)) entries.push({ name: 'desktop.json', data: await readFile(prefs), at: new Date() })
-    entries.push({ name: 'README.txt', at: new Date(), data: Buffer.from(['Your nanoMuse data, exported ' + new Date().toISOString(), '', 'nanomuse/cloud.json    the account snapshot (no sign-in token)', 'nanomuse/profile.json  the agent’s name and look; faces/ its pictures', 'nanomuse/rooms.json    feed, ideas, goals, the library index and memory', 'sessions/              the chats, as DeepSeek Harness keeps them (zstd-compressed JSON lines)', ''].join('\n'))})
+    entries.push({ name: 'README.txt', at: new Date(), data: Buffer.from(['Your Nanodot data, exported ' + new Date().toISOString(), '', 'nanomuse/cloud.json    the account snapshot (no sign-in token)', 'nanomuse/profile.json  the agent’s name and look; faces/ its pictures', 'nanomuse/rooms.json    feed, ideas, goals, the library index and memory', 'sessions/              the chats, as DeepSeek Harness keeps them (zstd-compressed JSON lines)', ''].join('\n'))})
     await writeFile(out, zip(entries), { mode: 0o600 })
     const sc = this.ctx.get('sessionController')
     if (sc) await sc.openWorkspacePath({ path: out, action: 'reveal' }, new AbortController().signal).catch(() => undefined)
@@ -1362,9 +1362,9 @@ export default class NanomuseRooms extends Service {
     return created.sessionId
   }
 
-  /** Where the room's own creations go: `~/nanoMuse/Library` (`~/nanoMuse/构件` in Chinese). */
+  /** Where the room's own creations go: `~/Nanodot/Library` (`~/Nanodot/构件` in Chinese). */
   libraryFolder(): string {
-    return join(homeDir(), 'nanoMuse', this.lang.startsWith('zh') ? '构件' : 'Library')
+    return join(homeDir(), 'Nanodot', this.lang.startsWith('zh') ? '构件' : 'Library')
   }
 
   // ---- the agent's sessions -------------------------------------------------------------

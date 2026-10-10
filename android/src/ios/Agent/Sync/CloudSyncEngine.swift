@@ -225,7 +225,7 @@ final class PendingRecordChanges: @unchecked Sendable {
 final class CloudSyncEngine: ObservableObject {
     static let shared = CloudSyncEngine()
 
-    private lazy var container = CKContainer(identifier: "iCloud.io.github.nanomuse.app")
+    private lazy var container = CKContainer(identifier: "iCloud.io.github.nanodot.app")
     private let devicesZoneName = "devices"
 
     private var syncEngine: CKSyncEngine?

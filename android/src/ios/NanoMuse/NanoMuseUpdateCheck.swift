@@ -1,6 +1,6 @@
 //
 //  NanoMuseUpdateCheck.swift
-//  nanoMuse
+//  Nanodot
 //
 //  The version row in Settings (contract C2): what is installed, what the latest
 //  release is, and a link to it when it is newer. The download index on nanomuse.cn
@@ -16,12 +16,14 @@ import Foundation
 @MainActor
 final class NanoMuseUpdateCheck: ObservableObject {
     static let shared = NanoMuseUpdateCheck()
+    // config/brand.nanodot.json: no Nanodot update source has been enabled for P0.
+    private static let updatesEnabled = false
 
-    nonisolated static let indexURL = "https://nanomuse.cn/dl/index.json"
-    nonisolated static let githubURL = "https://api.github.com/repos/nano-muse/nanoMuse/releases/latest"
-    nonisolated static let fallbackReleasePage = "https://github.com/nano-muse/nanoMuse/releases/latest"
+    nonisolated static let indexURL = githubURL
+    nonisolated static let githubURL = "https://api.github.com/repos/Mola-maker/nanodot/releases/latest"
+    nonisolated static let fallbackReleasePage = "https://github.com/Mola-maker/nanodot/releases/latest"
     /// The download page on nanomuse.cn, where a release found through the index leads (Android's `DOWNLOAD_URL`).
-    nonisolated static let downloadPage = "https://nanomuse.cn/dl/"
+    nonisolated static let downloadPage = fallbackReleasePage
 
     private enum Keys {
         static let latest = "nm.update.latest"
@@ -40,8 +42,8 @@ final class NanoMuseUpdateCheck: ObservableObject {
 
     private init() {
         let d = UserDefaults.standard
-        latest = d.string(forKey: Keys.latest)
-        page = d.string(forKey: Keys.page)
+        latest = Self.updatesEnabled ? d.string(forKey: Keys.latest) : nil
+        page = Self.updatesEnabled ? d.string(forKey: Keys.page) : nil
         let at = d.double(forKey: Keys.checkedAt)
         checkedAt = at > 0 ? Date(timeIntervalSince1970: at) : nil
     }
@@ -68,6 +70,7 @@ final class NanoMuseUpdateCheck: ObservableObject {
     /// The row's second line (Android `nm_version_*`): "Checking for the latest release…", "1.5.0
     /// is out — tap to update", "Latest 1.4.0 — you have it", or "Could not check. Tap to try again".
     var latestLine: String {
+        if !Self.updatesEnabled { return installedLine }
         if checking { return AppLocalized("Checking for the latest release…") }
         guard let latest else { return AppLocalized("Could not check. Tap to try again") }
         let shown = Self.normalize(latest)
@@ -91,7 +94,7 @@ final class NanoMuseUpdateCheck: ObservableObject {
 
     /// A check now, from the row. Returns when it is over; a second call while one runs does nothing.
     func checkNow() async {
-        guard !checking else { return }
+        guard Self.updatesEnabled, !checking else { return }
         checking = true
         defer { checking = false }
         guard let found = await Self.fetchLatest() else { return }
@@ -106,6 +109,7 @@ final class NanoMuseUpdateCheck: ObservableObject {
 
     /// A check in the background when the last one is older than a day.
     func checkIfStale() {
+        guard Self.updatesEnabled else { return }
         if let checkedAt, Date().timeIntervalSince(checkedAt) < Self.ttl { return }
         Task { @MainActor [self] in await checkNow() }
     }
@@ -117,9 +121,6 @@ final class NanoMuseUpdateCheck: ObservableObject {
 
     /// The download index first, GitHub second. Nil when neither answered usefully.
     private static func fetchLatest() async -> Found? {
-        if let json = await fetchJSON(indexURL), let found = parseIndex(json) {
-            return found
-        }
         if let json = await fetchJSON(githubURL), let found = parseGitHubLatest(json) {
             return found
         }
@@ -157,7 +158,7 @@ final class NanoMuseUpdateCheck: ObservableObject {
         var request = URLRequest(url: url)
         request.timeoutInterval = 10
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.setValue("nanoMuse-iOS/\(installed)", forHTTPHeaderField: "User-Agent")
+        request.setValue("Nanodot-iOS/\(installed)", forHTTPHeaderField: "User-Agent")
         guard let result = try? await URLSession.shared.data(for: request) else { return nil }
         let (data, response) = result
         guard (200..<300).contains((response as? HTTPURLResponse)?.statusCode ?? 0) else { return nil }

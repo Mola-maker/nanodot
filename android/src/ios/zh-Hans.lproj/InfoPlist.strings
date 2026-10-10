@@ -1,26 +1,26 @@
 /* Info.plist permission strings — 简体中文 */
 
-"NSLocationWhenInUseUsageDescription" = "nanoMuse 使用您的位置信息来记录 AI 会话的发起地点。";
-"NSLocationAlwaysAndWhenInUseUsageDescription" = "nanoMuse 使用后台定位来保持 AI 任务在后台持续运行。位置数据仅用于记录会话连接历史。";
-"NSCalendarsUsageDescription" = "nanoMuse 需要访问日历，以便 AI 智能体查询您的日程、检查空闲时间并代您创建日程。";
-"NSCalendarsFullAccessUsageDescription" = "nanoMuse 需要访问日历，以便 AI 智能体查询您的日程、检查空闲时间并代您创建日程。";
-"NSRemindersUsageDescription" = "nanoMuse 需要访问提醒事项，以便 AI 智能体代您查询和创建提醒。";
-"NSRemindersFullAccessUsageDescription" = "nanoMuse 需要访问提醒事项，以便 AI 智能体代您查询和创建提醒。";
-"NSCameraUsageDescription" = "nanoMuse 需要使用相机来拍摄照片用于 AI 对话。";
-"NSPhotoLibraryUsageDescription" = "nanoMuse 需要访问相册以将图片添加到 AI 对话中。";
-"NSPhotoLibraryAddUsageDescription" = "nanoMuse 需要权限来将视频和图片保存到您的相册。";
-"NSHealthShareUsageDescription" = "nanoMuse 需要访问健康数据，以便 AI 智能体代您读取步数、心率、睡眠和运动等数据。";
-"NSHealthUpdateUsageDescription" = "nanoMuse 需要写入健康数据的权限，以便 AI 智能体代您记录步数、体重和饮水量等数据。";
-"NSContactsUsageDescription" = "nanoMuse 需要访问通讯录，以便 AI 智能体代您搜索、查看和管理联系人。";
-"NSAppleMusicUsageDescription" = "nanoMuse 需要访问媒体资料库，以便 AI 智能体搜索音乐并代您控制播放。";
-"NSMicrophoneUsageDescription" = "nanoMuse 需要使用麦克风进行语音转文字输入。";
-"NSSpeechRecognitionUsageDescription" = "nanoMuse 使用语音识别将您的语音转换为文字消息。";
-"NSHomeKitUsageDescription" = "nanoMuse 需要访问 HomeKit，以便 AI 智能体代您查询和控制智能家居设备。";
-"NSAlarmKitUsageDescription" = "nanoMuse 使用闹钟功能，以便 AI 智能体代您设置闹钟和计时器。";
-"NSLocalNetworkUsageDescription" = "nanoMuse 使用本地网络运行调试服务器，并让 AI 智能体访问您自己网络中的服务。"; /* nanoMuse: the app has no VM; the sentence matches Info.plist */
+"NSLocationWhenInUseUsageDescription" = "Nanodot 使用您的位置信息来记录 AI 会话的发起地点。";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "Nanodot 使用后台定位来保持 AI 任务在后台持续运行。位置数据仅用于记录会话连接历史。";
+"NSCalendarsUsageDescription" = "Nanodot 需要访问日历，以便 AI 智能体查询您的日程、检查空闲时间并代您创建日程。";
+"NSCalendarsFullAccessUsageDescription" = "Nanodot 需要访问日历，以便 AI 智能体查询您的日程、检查空闲时间并代您创建日程。";
+"NSRemindersUsageDescription" = "Nanodot 需要访问提醒事项，以便 AI 智能体代您查询和创建提醒。";
+"NSRemindersFullAccessUsageDescription" = "Nanodot 需要访问提醒事项，以便 AI 智能体代您查询和创建提醒。";
+"NSCameraUsageDescription" = "Nanodot 需要使用相机来拍摄照片用于 AI 对话。";
+"NSPhotoLibraryUsageDescription" = "Nanodot 需要访问相册以将图片添加到 AI 对话中。";
+"NSPhotoLibraryAddUsageDescription" = "Nanodot 需要权限来将视频和图片保存到您的相册。";
+"NSHealthShareUsageDescription" = "Nanodot 需要访问健康数据，以便 AI 智能体代您读取步数、心率、睡眠和运动等数据。";
+"NSHealthUpdateUsageDescription" = "Nanodot 需要写入健康数据的权限，以便 AI 智能体代您记录步数、体重和饮水量等数据。";
+"NSContactsUsageDescription" = "Nanodot 需要访问通讯录，以便 AI 智能体代您搜索、查看和管理联系人。";
+"NSAppleMusicUsageDescription" = "Nanodot 需要访问媒体资料库，以便 AI 智能体搜索音乐并代您控制播放。";
+"NSMicrophoneUsageDescription" = "Nanodot 需要使用麦克风进行语音转文字输入。";
+"NSSpeechRecognitionUsageDescription" = "Nanodot 使用语音识别将您的语音转换为文字消息。";
+"NSHomeKitUsageDescription" = "Nanodot 需要访问 HomeKit，以便 AI 智能体代您查询和控制智能家居设备。";
+"NSAlarmKitUsageDescription" = "Nanodot 使用闹钟功能，以便 AI 智能体代您设置闹钟和计时器。";
+"NSLocalNetworkUsageDescription" = "Nanodot 使用本地网络运行调试服务器，并让 AI 智能体访问您自己网络中的服务。"; /* nanoMuse: the app has no VM; the sentence matches Info.plist */
 
 /* nanoMuse: the keys Info.plist declares but this file lacked, so the prompt is in the person's language */
-"NFCReaderUsageDescription" = "nanoMuse 使用 NFC，以便 AI 智能体代您读写 NFC 标签。";
-"NSBluetoothAlwaysUsageDescription" = "nanoMuse 使用蓝牙，以便 AI 智能体代您扫描、连接附近的 BLE 设备并与之通信。";
-"NSBluetoothPeripheralUsageDescription" = "nanoMuse 使用蓝牙，以便 AI 智能体代您扫描、连接附近的 BLE 设备并与之通信。";
-"NSFaceIDUsageDescription" = "nanoMuse 使用面容 ID 保护已锁定的聊天会话，只有您能查看其内容。";
+"NFCReaderUsageDescription" = "Nanodot 使用 NFC，以便 AI 智能体代您读写 NFC 标签。";
+"NSBluetoothAlwaysUsageDescription" = "Nanodot 使用蓝牙，以便 AI 智能体代您扫描、连接附近的 BLE 设备并与之通信。";
+"NSBluetoothPeripheralUsageDescription" = "Nanodot 使用蓝牙，以便 AI 智能体代您扫描、连接附近的 BLE 设备并与之通信。";
+"NSFaceIDUsageDescription" = "Nanodot 使用面容 ID 保护已锁定的聊天会话，只有您能查看其内容。";

@@ -118,7 +118,7 @@ object ProfileSync {
             // it is the plain default (nothing worth telling the other devices) — and so do
             // its connections, if it has any
             val name = SoulStore.load(context)?.metadata?.name.orEmpty()
-            if (AvatarStore.current.value != null || (name.isNotBlank() && name != "nanoMuse") || SharedConnectors.mine(context).length() > 0) push(context)
+            if (AvatarStore.current.value != null || (name.isNotBlank() && name != "Nanodot") || SharedConnectors.mine(context).length() > 0) push(context)
             return
         }
         if (rev <= known) {
@@ -214,7 +214,7 @@ object ProfileSync {
     private fun connectorsStamp(context: Context): String = SharedConnectors.mine(context).toString()
 
     private fun push(context: Context) {
-        val name = SoulStore.load(context)?.metadata?.name?.takeIf { it.isNotBlank() } ?: "nanoMuse"
+        val name = SoulStore.load(context)?.metadata?.name?.takeIf { it.isNotBlank() } ?: "Nanodot"
         val p = prefs(context)
         val stamp = faceStamp()
         val sameFace = stamp == p.getString(KEY_PUSHED_FACE, null)

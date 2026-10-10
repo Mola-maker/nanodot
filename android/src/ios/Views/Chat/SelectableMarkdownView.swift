@@ -8311,7 +8311,7 @@ struct SelectableMarkdownView: UIViewRepresentable {
         // fixed-height attachments (tool capsules, code/shell blocks, images):
         // those blocks don't grow with character count, so the estimate came
         // out too short and the NEXT cell overlapped the tail of a finished
-        // message (user report, macOS, "nanoMuse Feedback Review" — the shell
+        // message (user report, macOS, "Nanodot Feedback Review" — the shell
         // preview + tool capsule covered the body text of the last message).
         // Gate it back off so every streaming sizeThatFits takes a real
         // measurement; the hang de4d3df6 fixed is the tradeoff to revisit with

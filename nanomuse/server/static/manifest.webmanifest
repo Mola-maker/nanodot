@@ -1,13 +1,13 @@
 {
-  "name": "nanoMuse",
-  "short_name": "nanoMuse",
+  "name": "Nanodot",
+  "short_name": "Nanodot",
   "description": "An open-source personal AI agent: it does things for you, keeps working while the app is closed, and asks before anything you could not undo.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#fcfcfc",
-  "theme_color": "#0a66e4",
+  "background_color": "#F4F7F8",
+  "theme_color": "#F4F7F8",
   "icons": [
     {
       "src": "/icon.svg",

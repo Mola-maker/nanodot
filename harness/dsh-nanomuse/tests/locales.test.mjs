@@ -19,6 +19,7 @@ let zh
 const SAME_ON_PURPOSE = new Set([
   'nav',
   'brand',
+  'lookDragon', // Dot is the proper name of the built-in avatar in both locales.
   'railLabel',
   'navHarness',
   'handsAct',

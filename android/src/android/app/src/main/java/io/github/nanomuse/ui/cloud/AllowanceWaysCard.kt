@@ -175,7 +175,7 @@ fun AllowanceWaysCard(
                         onClick = { openPreset(context, first.id) },
                         shape = CircleShape,
                         contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = Color.White),
+                        colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
                     ) {
                         Text(stringResource(R.string.nm_ways_add_named, first.displayName(chinese)), fontSize = 13.sp, fontWeight = FontWeight.Medium)
                     }
@@ -253,7 +253,7 @@ fun AllowanceWaysCard(
                     Spacer(Modifier.width(5.dp))
                     Text(stringResource(R.string.nm_ways_invite_share), fontSize = 13.sp, color = MuseTones.action)
                 }
-                TextButton(onClick = { clipboard.setPlainText("nanoMuse", link); copied = true }) {
+                TextButton(onClick = { clipboard.setPlainText("Nanodot", link); copied = true }) {
                     Icon(Icons.Outlined.ContentCopy, contentDescription = null, modifier = Modifier.size(15.dp), tint = MuseTones.action)
                     Spacer(Modifier.width(5.dp))
                     Text(stringResource(if (copied) R.string.nm_cloud_invite_copied else R.string.nm_ways_invite_copy), fontSize = 13.sp, color = MuseTones.action)

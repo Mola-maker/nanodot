@@ -1114,7 +1114,7 @@ class FileBrowserViewModel: ObservableObject {
         }
         guard let targetID = parentID else { return }
 
-        let domainIdentifier = NSFileProviderDomainIdentifier("io.github.nanomuse.app.files")
+        let domainIdentifier = NSFileProviderDomainIdentifier("io.github.nanodot.app.files")
         NSFileProviderManager.getDomainsWithCompletionHandler { domains, _ in
             guard let domain = domains.first(where: { $0.identifier == domainIdentifier }) else {
                 return

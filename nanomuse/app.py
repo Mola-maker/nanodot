@@ -11,6 +11,7 @@ from nanomuse import prompts
 from nanomuse.agent import MuseAgent
 from nanomuse.agent.holds import Holds
 from nanomuse.background import spawn
+from nanomuse.brand import AGENT_NAME
 from nanomuse.calendar import CalendarFeeds
 from nanomuse.cloud import CLOUD_KEY, DEFAULT_GUI_MODEL, model_url
 from nanomuse.computer.link import ComputerLink
@@ -403,7 +404,7 @@ class NanoMuseApp:
 
         async def app_gate(app_id: str, label: str) -> bool:
             # "Let <Muse> use <App>?" — the agent's name as the person set it
-            muse = str(self.settings.agent.name or "nanoMuse")
+            muse = str(self.settings.agent.name or AGENT_NAME)
             return await self.sentinel.allow_app(app_id, label, muse)
 
         act = ComputerAct(link=self.computer, gui=gui, holds=self.holds, app_gate=app_gate)

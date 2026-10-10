@@ -49,7 +49,7 @@ final class VoiceActivityDetector: NSObject {
 
     private let logger = AppLogger(category: "VAD")
     private let audioEngine = AVAudioEngine()
-    private let vadQueue = DispatchQueue(label: "io.github.nanomuse.app.vad", qos: .userInteractive)
+    private let vadQueue = DispatchQueue(label: "io.github.nanodot.app.vad", qos: .userInteractive)
     private var vad: VADWrapper?
 
     // MARK: - Adaptive gain (noise-aware AGC)

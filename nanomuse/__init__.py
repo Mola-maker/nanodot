@@ -1,4 +1,4 @@
-"""nanoMuse: an open-source personal AI agent inspired by Meta's Muse.
+"""Nanodot: an open-source personal AI agent based on nanoMuse, inspired by Meta's Muse.
 
 One agent that does the work — search, browse, files, code, mail, MCP servers and
 command-line tools, long-running goals, and, when you turn it on, the apps on your phone

@@ -1,12 +1,7 @@
 name: Website
 
-# Publishes site/ to GitHub Pages: https://nano-muse.github.io/nanoMuse/
-# Since 0.1.6 the homepage lives in nano-muse/nano-muse.github.io, served at nanomuse.cn; this
-# project page is a redirect to it, with the earlier page kept at legacy.html (its generated parts —
-# the dragon's five moods, icons, fonts, screenshots — are copied from web/ and docs/ below).
-# Since 0.1.38 the docs site (website/, VitePress over docs/) is built into site/docs/ and
-# published alongside: https://nano-muse.github.io/nanoMuse/docs/. The same build with
-# DOCS_BASE=/docs/ is what nanomuse.cn/docs/ serves.
+# Builds site/ and the documentation for this fork. Deployment is an explicit manual input.
+# The public Pages path is /nanodot/; upstream assets retain compatibility filenames.
 
 on:
   push:
@@ -22,6 +17,11 @@ on:
       - "docs/cover.png"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Publish this site to this repository GitHub Pages"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -66,7 +66,7 @@ jobs:
       - name: Build the docs site into site/docs/
         working-directory: website
         env:
-          DOCS_BASE: /nanoMuse/docs/
+          DOCS_BASE: /nanodot/docs/
         run: |
           npm ci
           npm run docs:build
@@ -79,6 +79,7 @@ jobs:
           path: site
 
   deploy:
+    if: github.repository == 'Mola-maker/nanodot' && github.event_name == 'workflow_dispatch' && inputs.deploy
     needs: build
     runs-on: ubuntu-latest
     environment:

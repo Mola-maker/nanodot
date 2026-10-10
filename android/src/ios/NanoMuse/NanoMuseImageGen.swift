@@ -1,6 +1,6 @@
 //
 //  NanoMuseImageGen.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Where the pictures for the face come from. With an Alibaba Cloud Bailian
 //  key on this phone (an OpenAI-compatible provider whose base URL is on

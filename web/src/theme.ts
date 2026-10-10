@@ -1,6 +1,6 @@
 /**
- * Light or dark — a device setting like the locale. Light is the default whatever the
- * system prefers; dark only when chosen here (or "system" to follow it). index.html applies
+ * System appearance is the default; a chosen light or dark setting is retained.
+ * index.html applies
  * the stored choice before the first paint; this module keeps <html data-theme> and the
  * theme-color meta in step afterwards.
  */
@@ -10,16 +10,16 @@ export type ThemeSetting = "light" | "dark" | "system";
 export type Theme = "light" | "dark";
 
 const STORAGE_KEY = "nanomuse_theme";
-const COLORS: Record<Theme, string> = { light: "#fcfcfc", dark: "#181819" };
+const COLORS: Record<Theme, string> = { light: "#F4F7F8", dark: "#10191D" };
 
 function load(): ThemeSetting {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
     if (v === "light" || v === "dark" || v === "system") return v;
   } catch {
-    // no storage: light
+    // no storage: follow the system
   }
-  return "light";
+  return "system";
 }
 
 let setting: ThemeSetting = load();

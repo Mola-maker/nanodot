@@ -1,6 +1,6 @@
 //
 //  NanoMuseCatalogue.swift
-//  nanoMuse
+//  Nanodot
 //
 //  The own-key catalogue on the phone (contract C11, docs/parity.md items 32–34): the vendors
 //  a person can bring a key of their own from, what each key covers (chat · screen · pictures ·

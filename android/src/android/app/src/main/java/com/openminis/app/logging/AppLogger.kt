@@ -181,7 +181,7 @@ object AppLogger {
         val parenIdx = if (slashIdx >= 0) rawLine.indexOf('(', slashIdx) else -1
         if (slashIdx >= 0 && parenIdx > slashIdx) {
             val tag = rawLine.substring(slashIdx + 1, parenIdx).trim()
-            if (tag.startsWith("nanoMuse.") || tag == "AppLogger") return
+            if (tag.startsWith("Nanodot.") || tag == "AppLogger") return
         }
         try {
             val now = Date()
@@ -306,7 +306,7 @@ object AppLogger {
         val timestamp = timestampFormat.format(now)
 
         // Also output to logcat
-        val logcatTag = "nanoMuse.$category"
+        val logcatTag = "Nanodot.$category"
         when (level) {
             "ERROR" -> Log.e(logcatTag, message)
             "WARN" -> Log.w(logcatTag, message)

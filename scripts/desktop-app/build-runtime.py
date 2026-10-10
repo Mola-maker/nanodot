@@ -18,8 +18,10 @@ import argparse
 import json
 import os
 import shutil
+import socket
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.request
 from pathlib import Path
@@ -70,7 +72,9 @@ def check(exe: Path) -> None:
     under that data directory (0.1.20/0.1.21 on Windows created ``./workspace`` wherever the
     shell happened to start it and died when that was not writable).
     """
-    port = 8765
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = probe.getsockname()[1]
     home = ROOT / "build" / "runtime-check-home"
     cwd = ROOT / "build" / "runtime-check-cwd"
     for d in (home, cwd):
@@ -85,11 +89,14 @@ def check(exe: Path) -> None:
         "NANOMUSE_WORKSPACE",
     ):
         env.pop(key, None)
+    # A verbose startup must not fill an unread pipe, and a live failed startup
+    # must not block the timeout handler while it waits for EOF.
+    log = tempfile.TemporaryFile(mode="w+t", encoding="utf-8", errors="replace")
     proc = subprocess.Popen(
         [str(exe), "serve", "--no-qr", "--no-auth", "--port", str(port)],
         cwd=cwd,
         env=env,
-        stdout=subprocess.PIPE,
+        stdout=log,
         stderr=subprocess.STDOUT,
         text=True,
     )
@@ -116,7 +123,8 @@ def check(exe: Path) -> None:
                 if proc.poll() is not None:
                     break
                 time.sleep(0.5)
-        out = proc.stdout.read() if proc.stdout else ""
+        log.seek(0)
+        out = log.read()
         raise SystemExit(f"the bundled runtime did not come up:\n{out[-4000:]}")
     finally:
         proc.terminate()
@@ -124,6 +132,8 @@ def check(exe: Path) -> None:
             proc.wait(10)
         except subprocess.TimeoutExpired:
             proc.kill()
+            proc.wait(10)
+        log.close()
         for d in (home, cwd):
             shutil.rmtree(d, ignore_errors=True)
 

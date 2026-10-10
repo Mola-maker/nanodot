@@ -9,7 +9,7 @@ import { Operator, OperatorError, type OperatorAction, type ScreenshotRequest } 
  * routes, and nothing a browser could use by accident (no CORS, no GET with effects):
  *
  *   GET  /info        → { available, reason, platform, display: { width, height, scaleFactor, logical }, helper? }
- *                     helper (macOS): { present, running, pid?, version?, capture?, reason } — "nanoMuse Computer Use"
+ *                     helper (macOS): { present, running, pid?, version?, capture?, reason } — "Nanodot Computer Use"
  *   POST /screenshot  { width?, height?, format?: "png"|"jpeg", quality?, max_pixels? }
  *                     → { base64, mime, width, height, screen: { width, height }, scaleFactor, display: { id, bounds } }
  *                     width×height is the picture asked for; without them the screen's size, capped at

@@ -1,6 +1,6 @@
 //
 //  NanoMuseGoals.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Goals, Muse style: shaped in the chat (three short questions), handed
 //  over by the model as a ```nanomuse-goal``` block, turned into a goal
@@ -221,7 +221,7 @@ enum NanoMuseGoalFlow {
 
     static func creationAddendum(_ category: NanoMuseGoalCategory) -> String {
         """
-        ## Creating a goal (nanoMuse)
+        ## Creating a goal (Nanodot)
         The user just chose to create a goal in the "\(category.rawValue)" category from the Goals tab.
         Shape it together, like Muse does: ask at most three short questions, ONE message at a time,
         in the user's language: (1) what exactly they want to achieve, (2) why it matters and by
@@ -313,7 +313,7 @@ enum NanoMuseGoalFlow {
         guard let goal = NanoMuseGoalStore.shared.forSession(session) else { return nil }
         let cadence = goal.checkEveryHours > 0 ? "every \(goal.checkEveryHours) hour(s)" : "daily at \(NanoMuseDay.clock(hour: goal.checkHour, minute: goal.checkMinute))"
         let steps = goal.steps.isEmpty ? "(none yet)" : goal.steps.enumerated().map { "\($0.offset + 1). \($0.element.text)" }.joined(separator: "\n")
-        var s = "## This conversation tracks a goal (nanoMuse)\n"
+        var s = "## This conversation tracks a goal (Nanodot)\n"
         s += "Goal: \(goal.title)\n"
         if !goal.why.isEmpty { s += "Why: \(goal.why)\n" }
         s += "Steps:\n\(steps)\n"
@@ -656,7 +656,7 @@ struct NanoMuseGoalCategorySheet: View {
                     .padding(.vertical, 12)
             }
             .buttonStyle(.borderedProminent)
-            .tint(NanoMuseTones.action)
+            .tint(NanoMuseTones.action).foregroundStyle(NanoMuseTones.onAction)
         }
         .padding(22)
     }

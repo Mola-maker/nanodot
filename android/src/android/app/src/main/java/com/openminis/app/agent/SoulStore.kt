@@ -72,10 +72,10 @@ data class SoulMetadata(
 
     companion object {
         /** Locked identity emoji shown in every UI surface. */
-        const val DISPLAY_EMOJI = "🐾"
+        const val DISPLAY_EMOJI = "●"
 
         val DEFAULT = SoulMetadata(
-            name = "nanoMuse",
+            name = "Dot",
             // Default emoji is intentionally empty — UI uses the fixed
             // [displayEmoji] sparkle and [SoulMDParser.serialize] no longer
             // writes the `emoji:` line. The field is kept on the struct only
@@ -318,7 +318,7 @@ object SoulStore {
      * `SoulStore.defaultContent` byte-for-byte (74c0daf).
      */
     val DEFAULT_CONTENT: String = """---
-name: "nanoMuse"
+name: "Dot"
 style: ""
 lang: "auto"
 ---
@@ -484,7 +484,7 @@ object SystemPromptBuilder {
         val file = SoulStore.load(context)
         val name = (file?.metadata?.name ?: SoulMetadata.DEFAULT.name)
             .trim()
-            .ifEmpty { "nanoMuse" }
+            .ifEmpty { "Dot" }
 
         val style = (file?.metadata?.style ?: "").trim()
 

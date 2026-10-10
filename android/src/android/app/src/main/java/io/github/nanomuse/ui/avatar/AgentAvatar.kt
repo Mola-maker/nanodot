@@ -42,18 +42,12 @@ import com.openminis.app.service.ToolOutcome
 import io.github.nanomuse.avatar.AvatarStore
 import kotlinx.coroutines.delay
 
-/**
- * What the face is doing. The built-in character — a small pale-yellow dragon, drawn and posed
- * with qwen-image-3.0-pro and animated with MiniMax-H3 (the 0.1.21 defaults; a user's own face now
- * comes from qwen-image-3.0 and wan2.2-i2v-flash, the same way) —
- * has a still per mood and a 4-second looping clip for the four moods that last long enough
- * to move; a custom face has a picture per mood when the image model could pose it.
- */
+/** Dot has five offline stills. Custom avatar motion stays available when the user adds it. */
 enum class AgentMood(@DrawableRes val drawable: Int, @RawRes val motion: Int?) {
-    IDLE(R.drawable.nm_avatar_idle, R.raw.nm_motion_idle),
-    WORKING(R.drawable.nm_avatar_working, R.raw.nm_motion_working),
-    WAITING(R.drawable.nm_avatar_waiting, R.raw.nm_motion_waiting),
-    HAPPY(R.drawable.nm_avatar_happy, R.raw.nm_motion_happy),
+    IDLE(R.drawable.nm_avatar_idle, null),
+    WORKING(R.drawable.nm_avatar_working, null),
+    WAITING(R.drawable.nm_avatar_waiting, null),
+    HAPPY(R.drawable.nm_avatar_happy, null),
     ERROR(R.drawable.nm_avatar_error, null),
 }
 

@@ -34,13 +34,13 @@ import java.util.concurrent.TimeUnit
 object UpdateChecker {
 
     private const val TAG = "UpdateChecker"
-    private const val OWNER = "nano-muse"
+    private const val OWNER = "Mola-maker"
     // T133: the public repo is OpenMinis/OpenMinis (org + repo share a name).
     // Previously pointed at OpenMinis/MinisApp, which is the private dev
     // mirror — every API call 404'd, which we mistranslated as "no release
     // published". The 0.1-preview release is published as a prerelease on
     // OpenMinis/OpenMinis with a MinisApp-*.apk asset attached.
-    private const val REPO = "nanoMuse"
+    private const val REPO = "nanodot"
     private const val DOWNLOAD_FILENAME = "minis-update.apk"
     /**
      * Sub-directory of `filesDir` where we stage downloaded update APKs. We
@@ -62,6 +62,8 @@ object UpdateChecker {
             val apkUrl: String,
             val apkSizeBytes: Long,
         ) : CheckResult()
+        // nanoMuse: no upstream APK checks while Nanodot has no release channel.
+        data object Disabled : CheckResult()
         data object UpToDate : CheckResult()
         // The repo has zero non-draft releases (or 404'd entirely).
         data object NoReleaseAvailable : CheckResult()
@@ -103,6 +105,8 @@ object UpdateChecker {
      * coroutine scope.
      */
     suspend fun check(): CheckResult = withContext(Dispatchers.IO) {
+        // nanoMuse: the brand profile owns update eligibility.
+        if (!io.github.nanomuse.dot.DotBrand.UPDATES_ENABLED) return@withContext CheckResult.Disabled
         val url = "https://api.github.com/repos/$OWNER/$REPO/releases?per_page=30"
         AppLogger.info(TAG, "GET $url (local=${BuildConfig.VERSION_NAME})")
         try {
@@ -258,7 +262,7 @@ object UpdateChecker {
     }
 
     /** Public so UI can deep-link users to manual download when GitHub is blocked. */
-    const val RELEASES_URL: String = "https://github.com/nano-muse/nanoMuse/releases"
+    const val RELEASES_URL: String = "https://github.com/Mola-maker/nanodot/releases"
 
     /** Returns (downloadUrl, sizeBytes) for the first .apk asset, or (null, 0). */
     private fun findApkAsset(assets: JSONArray?): Pair<String?, Long> {

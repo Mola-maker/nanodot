@@ -92,7 +92,7 @@ const TIER_WORDS: Record<GrantTier, { title: Words; sub: Words }> = {
  */
 function StandingGrants({ t, live }: { t: Translate; live: Live }): ReactNode {
   const [busy, setBusy] = useState<string | undefined>()
-  const name = live.profile.name || t('brand')
+  const name = live.profile.name || 'Dot'
   const groups = groupGrants(standingGrants({ grants: live.grants, trusted: live.hub.trusted, remoteControl: live.hub.remoteControl }))
   if (groups.length === 0) return h(Fragment, null, h('p', null, t('sgLead')), h('p', null, t('sgEmpty')))
   const revoke = (id: string) => {

@@ -8,6 +8,8 @@ import androidx.core.graphics.drawable.toBitmap
 import com.openminis.app.R
 import com.openminis.app.agent.SoulMetadata
 import com.openminis.app.agent.SoulStore
+import io.github.nanomuse.avatar.AvatarStore
+import java.io.File
 
 /**
  * The agent's name and face, for every surface outside the chat screen.
@@ -31,11 +33,14 @@ object NanoMuseIdentity {
     @Volatile private var cachedFace: Bitmap? = null
 
     /**
-     * The idle built-in face rasterised for `setLargeIcon`; null if the drawable cannot be inflated.
-     * Rasterised once per process: the foreground service rebuilds its notification on every
+     * The chosen custom face, or the offline Dot idle face if missing or unreadable.
+     * The built-in face is rasterised once per process: notifications rebuild on every
      * tool change. Any [Context] will do since the drawable is not themed.
      */
     fun face(context: Context): Bitmap? {
+        // Read independently of AvatarStore.init so a cold notification respects the saved face.
+        AvatarStore.decodeBitmap(File(context.filesDir, "minis-global/nanomuse/avatar/base.png"))
+            ?.let { return it }
         cachedFace?.let { return it }
         val bitmap = runCatching {
             ContextCompat.getDrawable(context.applicationContext, R.drawable.nm_avatar_idle)

@@ -136,7 +136,7 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
     res = await fetch(path, { ...init, headers });
   } catch {
     // the browser's "Failed to fetch": the runtime is down or the network is
-    throw new Error("Cannot reach your nanoMuse right now.");
+    throw new Error("Cannot reach your Nanodot right now.");
   }
   if (res.status === 401) throw new AuthError();
   if (!res.ok) {

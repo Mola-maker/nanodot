@@ -1,6 +1,6 @@
 //
 //  NanoMuseFeed.swift
-//  nanoMuse
+//  Nanodot
 //
 //  The Feed, Muse style: short posts the agent writes for the person, from
 //  what it remembers (GLOBAL.md, the last week of diary, USER.md, goals).
@@ -367,7 +367,7 @@ enum NanoMuseFeedFlow {
         guard isFeedSession(session) else { return nil }
         let store = NanoMuseFeedStore.shared
         let recent = store.posts.prefix(24).map(\.title)
-        var s = "## This conversation writes the user's feed (nanoMuse)\n"
+        var s = "## This conversation writes the user's feed (Nanodot)\n"
         s += "The Feed tab shows short posts you write for the user, like Muse's feed. The user's standing instruction for it:\n"
         s += "> " + store.preferences.replacingOccurrences(of: "\n", with: "\n> ") + "\n\n"
         s += "What you know about them right now (from GLOBAL.md, the diary of the last seven days, USER.md and their goals):\n"
@@ -513,7 +513,7 @@ struct NanoMuseFeedRoom: View {
                     .buttonStyle(.plain)
                     Button(AppLocalized("Got it")) { acknowledgeIntro() }
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(NanoMuseTones.onAction)
                         .padding(.horizontal, 22).padding(.vertical, 10)
                         .background(NanoMuseTones.action, in: Capsule())
                         .buttonStyle(.plain)
@@ -548,7 +548,7 @@ struct NanoMuseFeedRoom: View {
                 } else {
                     Button(AppLocalized("Write it now")) { NanoMuseFeedFlow.generateNow() }
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(NanoMuseTones.onAction)
                         .padding(.horizontal, 26).padding(.vertical, 11)
                         .background(NanoMuseTones.action, in: Capsule())
                         .buttonStyle(.plain)
@@ -674,7 +674,7 @@ struct NanoMusePostDetail: View {
                         Label(AppLocalized("Discuss"), systemImage: "bubble.left").frame(maxWidth: .infinity).padding(.vertical, 8)
                     }
                     .buttonStyle(.borderedProminent)
-                    .tint(NanoMuseTones.action)
+                    .tint(NanoMuseTones.action).foregroundStyle(NanoMuseTones.onAction)
                 }
                 .padding(20)
             }

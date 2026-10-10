@@ -1,6 +1,6 @@
 //
 //  NanoMuseAllowanceCard.swift
-//  nanoMuse
+//  Nanodot
 //
 //  The ways on when the free allowance is spent, paused by the operator, or today's share is
 //  used (contract C11, docs/parity.md item 33): one's own key — the vendors as the relay lists
@@ -99,7 +99,7 @@ struct NanoMuseWaysList: View {
                     .font(.caption.weight(.medium)).buttonStyle(.plain).foregroundStyle(NanoMuseTones.action)
             }
             Button(AppLocalized("Add")) { onPick(NanoMuseVendorPick(vendor: v, auth: nil)) }
-                .buttonStyle(.borderedProminent).tint(NanoMuseTones.action).controlSize(.mini)
+                .buttonStyle(.borderedProminent).tint(NanoMuseTones.action).foregroundStyle(NanoMuseTones.onAction).controlSize(.mini)
         }
         .padding(.leading, 28)
     }
@@ -113,7 +113,7 @@ struct NanoMuseWaysList: View {
                 }
                 Spacer(minLength: 6)
                 Button(AppLocalized("Sign in")) { onPick(NanoMuseVendorPick(vendor: s.vendor, auth: s.auth)) }
-                    .buttonStyle(.borderedProminent).tint(NanoMuseTones.action).controlSize(.mini)
+                    .buttonStyle(.borderedProminent).tint(NanoMuseTones.action).foregroundStyle(NanoMuseTones.onAction).controlSize(.mini)
             }
             if s.auth == NanoMuseCatalogue.authChatGPT {
                 // the honest line about the ChatGPT sign-in: the relay's when it sent one, else ours
@@ -177,7 +177,7 @@ struct NanoMuseAllowanceCard: View {
             ) { pick = $0 }
             HStack(spacing: 10) {
                 Button(AppLocalized("Try again"), action: onTryAgain)
-                    .buttonStyle(.borderedProminent).tint(NanoMuseTones.action).controlSize(.small)
+                    .buttonStyle(.borderedProminent).tint(NanoMuseTones.action).foregroundStyle(NanoMuseTones.onAction).controlSize(.small)
                 Button(AppLocalized("Open Settings")) { NotificationCenter.default.post(name: .nanoMuseHomeAction, object: "settings") }
                     .buttonStyle(.plain).font(.footnote).foregroundStyle(NanoMuseTones.action)
             }

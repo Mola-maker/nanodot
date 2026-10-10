@@ -1,9 +1,9 @@
-# nanoMuse Desktop — the desktop built on DeepSeek Harness (harness/desktop, Electron), with
-# dsh and the nanoMuse bundle staged inside and the runtime for the hands bundled:
+# Nanodot Desktop — the desktop built on DeepSeek Harness (harness/desktop, Electron), with
+# dsh and the Nanodot bundle staged inside and the runtime for the hands bundled:
 #
-#   Windows  nanoMuse-Desktop-<v>-win-x64.exe        (NSIS installer)
-#   macOS    nanoMuse-Desktop-<v>-mac-arm64.dmg / -x64.dmg  (+ .zip)
-#   Linux    nanoMuse-Desktop-<v>-linux-x64.AppImage / .deb / .tar.gz
+#   Windows  Nanodot-Desktop-<v>-win-x64.exe        (NSIS installer)
+#   macOS    Nanodot-Desktop-<v>-mac-arm64.dmg / -x64.dmg  (+ .zip)
+#   Linux    Nanodot-Desktop-<v>-linux-x64.AppImage / .deb / .tar.gz
 #
 # Each platform builds the bundle (harness/dsh-nanomuse: pnpm build, test, pack), stages dsh
 # next to it with npm (scripts/prepare-dsh.mjs — the platform's own native prebuilds), builds
@@ -11,14 +11,14 @@
 # PyInstaller build), wraps it all with electron-builder, and
 # then boots the unpacked app's harness once in Node mode (scripts/smoke.mjs) to see the Host
 # come up with the bundle's rows. On macOS the Swift helper that holds the hands' permissions
-# (harness/desktop/mac/computer-use/build.sh → "nanoMuse Computer Use.app") is built first and
+# (harness/desktop/mac/computer-use/build.sh → "Nanodot Computer Use.app") is built first and
 # electron-builder lays out the .app with it inside;
 # scripts/desktop-app/package-mac.sh ad-hoc signs it (or signs and notarizes with the Apple
 # secrets; docs/desktop.md says how they are made) and writes the zip and an APFS dmg.
 # No Windows certificate: Windows asks for "Run anyway"; without the Apple secrets the macOS
 # bundle is ad-hoc signed and macOS asks for Open Anyway in System Settings → Privacy & Security.
-# A push that touches harness/desktop builds Linux only; "Run workflow" and the release tags
-# `v*` build all four, and a tag uploads the installers to the release of the same name — the
+# Default and nanodot/* branches, manual runs and release tags build all four.
+# Other branches build Linux only. A manual run with release_tag uploads the installers to that release — the
 # one scripts/release-apk.sh creates with the APK — retrying until it exists. "Run workflow"
 # with a release tag does the same for a release that already exists (a platform fixed afterwards).
 name: desktop app
@@ -26,7 +26,7 @@ name: desktop app
 on:
   push:
     branches: ["**"]
-    paths: ["harness/**", "scripts/desktop-app/**", ".github/workflows/desktop-app.yml"]
+    paths: ["config/brand.nanodot.json", "scripts/brand_profile.py", "scripts/rebrand.py", "harness/**", "nanomuse/**", "pyproject.toml", "scripts/desktop-app/**", ".github/workflows/desktop-app.yml"]
     tags: ["v*"]
   workflow_dispatch:
     inputs:
@@ -55,16 +55,20 @@ jobs:
       - id: pick
         shell: bash
         env:
-          FULL: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v') }}
+          FULL: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/heads/nanodot/') || github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         run: |
-          LINUX='{"os":"ubuntu-22.04","label":"linux-x64"}'
-          ALL="[{\"os\":\"windows-latest\",\"label\":\"windows-x64\"},{\"os\":\"macos-latest\",\"label\":\"macos-arm64\"},{\"os\":\"macos-15-intel\",\"label\":\"macos-x64\"},$LINUX]"
+          LINUX='{"os":"ubuntu-22.04","label":"linux-x64","arch":"x64"}'
+          ALL="[{\"os\":\"windows-latest\",\"label\":\"windows-x64\",\"arch\":\"x64\"},{\"os\":\"macos-15\",\"label\":\"macos-arm64\",\"arch\":\"arm64\"},{\"os\":\"macos-15-intel\",\"label\":\"macos-x64\",\"arch\":\"x64\"},$LINUX]"
           if [ "$FULL" = "true" ]; then echo "matrix=$ALL" >> "$GITHUB_OUTPUT"; else echo "matrix=[$LINUX]" >> "$GITHUB_OUTPUT"; fi
 
   build:
     name: ${{ matrix.label }}
     needs: plan
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    env:
+      npm_config_registry: https://registry.npmjs.org/
+      PIP_INDEX_URL: https://pypi.org/simple
     strategy:
       fail-fast: false
       matrix:
@@ -97,6 +101,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends xdotool libfuse2 rpm
+      - name: Apply Nanodot branding
+        shell: bash
+        run: python scripts/rebrand.py
+      - name: Runtime and packaging regression checks
+        shell: bash
+        run: python -m unittest discover -s scripts/desktop-app/tests -v
       - name: The bundle
         working-directory: harness/dsh-nanomuse
         shell: bash
@@ -124,7 +134,7 @@ jobs:
           # OpenSSL, which PyInstaller then mixes up with Python's own. The last universal2
           # wheel carries its OpenSSL inside.
           if [ "${{ matrix.label }}" = "macos-x64" ]; then python -m pip install "cryptography<49"; fi
-          python -m pip install -e ".[hands]" pyinstaller
+          python -m pip install -e ".[hands]" pyinstaller tzdata
           python scripts/desktop-app/build-runtime.py --check --target harness/desktop/runtime
       - name: The runtime for the hands (Linux — inside Debian 11, so it runs on glibc 2.31 and newer)
         if: runner.os == 'Linux'
@@ -132,7 +142,7 @@ jobs:
         run: |
           docker run --rm -v "$PWD:/src" -w /src -e HOME=/tmp/home python:3.12-bullseye bash -euo pipefail -c '
             python -m pip install --upgrade pip
-            python -m pip install -e ".[hands]" pyinstaller
+            python -m pip install -e ".[hands]" pyinstaller tzdata
             python scripts/desktop-app/build-runtime.py --check --target harness/desktop/runtime
             chown -R '"$(id -u):$(id -g)"' harness/desktop/runtime build *.egg-info 2>/dev/null || true
           '
@@ -144,12 +154,17 @@ jobs:
         run: |
           npm ci
           npm run typecheck
-          npm run dist
-      - name: The helper that holds the hands' permissions (macOS — nanoMuse Computer Use.app, Swift)
+          npm test
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            npm run dist -- --win --x64 --publish never
+          else
+            npm run dist -- --linux --x64 --publish never
+          fi
+      - name: The helper that holds the hands' permissions (macOS — Nanodot Computer Use.app, Swift)
         if: runner.os == 'macOS'
         shell: bash
         # a universal bundle (arm64 + x86_64) under harness/desktop/mac/computer-use/build/,
-        # which electron-builder.yml copies into nanoMuse.app/Contents/Helpers
+        # which electron-builder.yml copies into Nanodot.app/Contents/Helpers
         run: harness/desktop/mac/computer-use/build.sh
       - name: The app (macOS — signed and notarized with the Apple secrets, ad-hoc without; zip and APFS dmg by hand)
         if: runner.os == 'macOS'
@@ -162,27 +177,42 @@ jobs:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_P8: ${{ secrets.APP_STORE_CONNECT_KEY_P8 }}
           APP_DIR: harness/desktop
-          APP_NAME: nanoMuse
-          ARTIFACT: nanoMuse-Desktop
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+          APP_NAME: Nanodot
+          ARTIFACT: Nanodot-Desktop
         run: |
           npm ci
           npm run typecheck
-          npm run dist:dir
-          ../../scripts/desktop-app/package-mac.sh "${{ matrix.label == 'macos-arm64' && 'arm64' || 'x64' }}"
+          npm test
+          npm run dist:dir -- --mac --${{ matrix.arch }} --publish never
+          ../../scripts/desktop-app/package-mac.sh "${{ matrix.arch }}"
       - name: Boot the packaged harness once
         working-directory: harness/desktop
         shell: bash
         run: |
           case "${{ runner.os }}" in
-            macOS) node scripts/smoke.mjs --app "$(ls -d dist/mac*/ | head -1)" ;;
+            macOS)
+              if [ "${{ matrix.arch }}" = "arm64" ]; then MAC_DIR=dist/mac-arm64; else MAC_DIR=dist/mac; fi
+              node scripts/smoke.mjs --app "$MAC_DIR/Nanodot.app" ;;
             Windows) node scripts/smoke.mjs --app dist/win-unpacked ;;
             *) node scripts/smoke.mjs --app dist/linux-unpacked ;;
           esac
+      - name: Boot the packaged Python runtime once
+        shell: bash
+        run: |
+          case "${{ runner.os }}" in
+            macOS)
+              if [ "${{ matrix.arch }}" = "arm64" ]; then MAC_DIR=mac-arm64; else MAC_DIR=mac; fi
+              RUNTIME="harness/desktop/dist/$MAC_DIR/Nanodot.app/Contents/Resources/runtime" ;;
+            Windows) RUNTIME=harness/desktop/dist/win-unpacked/resources/runtime ;;
+            *) RUNTIME=harness/desktop/dist/linux-unpacked/resources/runtime ;;
+          esac
+          python scripts/desktop-app/build-runtime.py --check-only --target "$RUNTIME"
       # The unpacked app is complete whatever the installer does; the installer is what
       # people get. electron-builder's NSIS target used to leave the face's clips out of it
       # (electron-builder.yml, nsis.preCompressedFileExtensions); the archive inside the
-      # installer must list them.
-      - name: The installer carries the face's clips (Windows)
+      # installer must contain the offline Dot stills used by this build.
+      - name: The installer carries Dot stills (Windows)
         if: runner.os == 'Windows'
         working-directory: harness/desktop
         shell: bash
@@ -192,17 +222,25 @@ jobs:
           # so the artifact upload does not see it)
           7z e -y -r -onsis-check dist/*.exe app-64.7z > /dev/null
           7z l nsis-check/app-64.7z > nsis-check/list.txt
-          for mood in idle working waiting happy; do
-            grep -Eq "dsh-nanomuse[/\\\\]assets[/\\\\]dragon-$mood\.mp4" nsis-check/list.txt || { echo "the installer's archive lacks dsh-nanomuse/assets/dragon-$mood.mp4" >&2; exit 1; }
+          for mood in idle working waiting happy error; do
+            grep -Eq "dsh-nanomuse[/\\\\]assets[/\\\\]dragon-$mood\.webp" nsis-check/list.txt || { echo "the installer's archive lacks dsh-nanomuse/assets/dragon-$mood.webp" >&2; exit 1; }
           done
-          echo "the installer's archive carries the four clips"
+          echo "the installer's archive carries the Dot stills"
+      - name: Package checksums and signing information
+        shell: bash
+        env:
+          MAC_SIGNING_CONFIGURED: ${{ secrets.MAC_CERT_P12_BASE64 != '' }}
+          MAC_NOTARIZATION_CONFIGURED: ${{ secrets.APP_STORE_CONNECT_KEY_P8 != '' }}
+        run: |
+          python scripts/desktop-app/artifact-manifest.py --directory harness/desktop/dist --platform "${{ matrix.label }}" --commit "${{ github.sha }}"
+          cat harness/desktop/dist/BUILD-INFO-${{ matrix.label }}.txt >> "$GITHUB_STEP_SUMMARY"
       - name: What was built
         shell: bash
         working-directory: harness/desktop
         run: ls -la dist | grep -Ev "^total|builder-|\.blockmap|\.yml$" || true
       - uses: actions/upload-artifact@v7
         with:
-          name: nanomuse-desktop-${{ matrix.label }}
+          name: nanodot-desktop-${{ matrix.label }}
           path: |
             harness/desktop/dist/*.AppImage
             harness/desktop/dist/*.deb
@@ -210,10 +248,12 @@ jobs:
             harness/desktop/dist/*.exe
             harness/desktop/dist/*.dmg
             harness/desktop/dist/*.zip
+            harness/desktop/dist/SHA256SUMS-*.txt
+            harness/desktop/dist/BUILD-INFO-*.txt
           if-no-files-found: error
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != ''
+    if: github.repository == 'Mola-maker/nanodot' && github.event_name == 'workflow_dispatch' && inputs.release_tag != ''
     needs: build
     runs-on: ubuntu-latest
     permissions:

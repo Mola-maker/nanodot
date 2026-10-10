@@ -38,8 +38,8 @@ export interface Permissions {
   /** Quit and start again (the desktop shell — the helper alone when it is in use), or nothing elsewhere. */
   relaunch(): void
   /**
-   * The shell's helper app, "nanoMuse Computer Use", holds the grants (macOS, 0.1.38+): the
-   * panes list it, not nanoMuse Desktop, and the shell restarts it by itself when Screen
+   * The shell's helper app, "Nanodot Computer Use", holds the grants (macOS, 0.1.38+): the
+   * panes list it, not Nanodot Desktop, and the shell restarts it by itself when Screen
    * Recording lands — so `needsRelaunch` stays false.
    */
   helper: boolean

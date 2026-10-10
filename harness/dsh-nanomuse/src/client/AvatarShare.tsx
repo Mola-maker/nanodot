@@ -1,7 +1,7 @@
 /**
  * "Share my avatar", the phone's sheet (android …/ui/avatar/AvatarShareSheet.kt) on a
  * desktop: two cards drawn on a canvas — the face with its name and a line about
- * nanoMuse, and the face alone — saved as a PNG or copied to the clipboard, since
+ * Nanodot, and the face alone — saved as a PNG or copied to the clipboard, since
  * a computer has no system share sheet to hand them to.
  */
 import { createElement as h, useEffect, useRef, useState, type ReactNode } from 'react'
@@ -34,7 +34,7 @@ export function AvatarShareSheet({ t, name, onClose }: { t: Translate; name: str
       const url = URL.createObjectURL(await blob())
       const a = document.createElement('a')
       a.href = url
-      a.download = `${name || 'nanoMuse'}-avatar.png`
+      a.download = `${name || 'Dot'}-avatar.png`
       a.click()
       window.setTimeout(() => URL.revokeObjectURL(url), 5000)
       setState('saved')

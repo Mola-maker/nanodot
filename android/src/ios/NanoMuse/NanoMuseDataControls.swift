@@ -1,6 +1,6 @@
 //
 //  NanoMuseDataControls.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Data controls for a nanoMuse Cloud account: whether the text of chats
 //  with the Cloud models is kept to train the community's model, how many

@@ -1,8 +1,8 @@
 //
 //  NanoMuseChatGlue.swift
-//  nanoMuse
+//  Nanodot
 //
-//  The few places the upstream chat pipeline hands control to nanoMuse —
+//  The few places the upstream chat pipeline hands control to Nanodot —
 //  one `// nanoMuse:` line each in AIChatViewModel: before a send, after a
 //  turn, while the system prompt is assembled. Everything else lives here.
 //  Android: the same hooks in ChatViewModel for AvatarFlow, GoalFlow,
@@ -42,7 +42,7 @@ extension AIChatViewModel {
 
     // MARK: Hooks
 
-    /// Before the model sees a message. True when nanoMuse handled the text itself (the
+    /// Before the model sees a message. True when Nanodot handled the text itself (the
     /// composer is cleared, nothing is sent); false to carry on as usual.
     func nmInterceptSend(_ text: String) -> Bool {
         guard !text.isEmpty else { return false }

@@ -206,7 +206,7 @@ enum DebugMethodRegistry {
                 ParamSpec(name: "passphrase", type: "string", required: false, default: nil,
                           description: "Encrypt the package (minisbak-enc/1). REQUIRED when credentials are included."),
                 ParamSpec(name: "deliver", type: "boolean", required: false, default: false,
-                          description: "Move the package into Files-visible shared storage (nanoMuse ▸ Backups), the path the Backup UI uses."),
+                          description: "Move the package into Files-visible shared storage (Nanodot ▸ Backups), the path the Backup UI uses."),
             ],
             returns: "{backupId, path, bytes, durationMs, categories, skippedFiles, skippedBytes, skippedPaths}",
             example: ["keep": true]

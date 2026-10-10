@@ -7,7 +7,7 @@
     <string name="nm_about_upstream">На основе OpenMinis 1.13</string>
     <string name="nm_about_upstream_detail">GPL-3.0 · изменено с 2026-09-24 · исходный код на GitHub</string>
     <string name="nm_about_trademark">Не связано с Meta</string>
-    <string name="nm_about_trademark_detail">Muse является товарным знаком Meta Platforms, Inc. nanoMuse является независимым проектом свободного ПО.</string>
+    <string name="nm_about_trademark_detail">Muse является товарным знаком Meta Platforms, Inc. Nanodot является независимым проектом свободного ПО.</string>
 
     <!-- Chat header -->
     <string name="nm_avatar_content_description">Ваш агент. Нажмите, чтобы сменить имя, значок или стиль.</string>
@@ -22,31 +22,31 @@
     <string name="nm_star_action">Поставить звезду на GitHub</string>
     <string name="nm_star_later">Не сейчас</string>
     <string name="nm_star_done">Звезда уже стоит</string>
-    <string name="nm_star_signed_in">Добро пожаловать. nanoMuse бесплатен, открыт и некоммерческий: личный агент для каждого, кто его запустит. Если для вас это что-то значит, звезда на GitHub поможет следующему человеку его найти.</string>
+    <string name="nm_star_signed_in">Nanodot: персональный помощник с открытым исходным кодом на основе nanoMuse.</string>
     <plurals name="nm_star_tasks">
-        <item quantity="one">%1$d задача выполнена. Если nanoMuse помог, звезда на GitHub скажет об этом тем, кто его делает.</item>
-        <item quantity="few">%1$d задачи выполнены. Если nanoMuse полезен, звезда на GitHub поможет следующему человеку его найти.</item>
-        <item quantity="many">%1$d задач выполнено. Если nanoMuse полезен, звезда на GitHub поможет следующему человеку его найти.</item>
-        <item quantity="other">%1$d задачи выполнено. Если nanoMuse полезен, звезда на GitHub поможет следующему человеку его найти.</item>
+        <item quantity="one">%1$d задача выполнена. Если Nanodot помог, звезда на GitHub скажет об этом тем, кто его делает.</item>
+        <item quantity="few">%1$d задачи выполнены. Если Nanodot полезен, звезда на GitHub поможет следующему человеку его найти.</item>
+        <item quantity="many">%1$d задач выполнено. Если Nanodot полезен, звезда на GitHub поможет следующему человеку его найти.</item>
+        <item quantity="other">%1$d задачи выполнено. Если Nanodot полезен, звезда на GitHub поможет следующему человеку его найти.</item>
     </plurals>
-    <string name="nm_star_days_used_week">Неделя с nanoMuse. Если он нашёл место в вашем дне, звезда на GitHub поможет следующему человеку его найти.</string>
-    <string name="nm_star_days_used_month">Месяц с nanoMuse. Если он стал частью вашего распорядка, звезда на GitHub подскажет другим, что его стоит попробовать.</string>
+    <string name="nm_star_days_used_week">Неделя с Nanodot. Если он нашёл место в вашем дне, звезда на GitHub поможет следующему человеку его найти.</string>
+    <string name="nm_star_days_used_month">Месяц с Nanodot. Если он стал частью вашего распорядка, звезда на GitHub подскажет другим, что его стоит попробовать.</string>
     <plurals name="nm_star_days_used">
-        <item quantity="one">%1$d день с nanoMuse. Если он помог, звезда на GitHub поможет следующему человеку его найти.</item>
-        <item quantity="few">%1$d дня с nanoMuse. Если он нашёл место в вашем дне, звезда на GitHub поможет следующему человеку его найти.</item>
-        <item quantity="many">%1$d дней с nanoMuse. Если он нашёл место в вашем дне, звезда на GitHub поможет следующему человеку его найти.</item>
-        <item quantity="other">%1$d дня с nanoMuse. Если он нашёл место в вашем дне, звезда на GitHub поможет следующему человеку его найти.</item>
+        <item quantity="one">%1$d день с Nanodot. Если он помог, звезда на GitHub поможет следующему человеку его найти.</item>
+        <item quantity="few">%1$d дня с Nanodot. Если он нашёл место в вашем дне, звезда на GitHub поможет следующему человеку его найти.</item>
+        <item quantity="many">%1$d дней с Nanodot. Если он нашёл место в вашем дне, звезда на GitHub поможет следующему человеку его найти.</item>
+        <item quantity="other">%1$d дня с Nanodot. Если он нашёл место в вашем дне, звезда на GitHub поможет следующему человеку его найти.</item>
     </plurals>
-    <string name="nm_star_goal_done">Цель достигнута. Если nanoMuse помог вам дойти до неё, звезда на GitHub скажет об этом тем, кто его делает.</string>
-    <string name="nm_star_new_look">Новый образ, нарисованный для вас. Если вам нравится, куда идёт nanoMuse, звезда на GitHub поможет большему числу людей его найти.</string>
-    <string name="nm_star_exhausted">Бесплатный лимит исчерпан. Спасибо, что дошли до этого места. Если nanoMuse это заслужил, звезда на GitHub поможет следующему человеку его заметить.</string>
+    <string name="nm_star_goal_done">Цель достигнута. Если Nanodot помог вам дойти до неё, звезда на GitHub скажет об этом тем, кто его делает.</string>
+    <string name="nm_star_new_look">Новый образ, нарисованный для вас. Если вам нравится, куда идёт Nanodot, звезда на GitHub поможет большему числу людей его найти.</string>
+    <string name="nm_star_exhausted">Бесплатный лимит исчерпан. Спасибо, что дошли до этого места. Если Nanodot это заслужил, звезда на GitHub поможет следующему человеку его заметить.</string>
     <string name="nm_chat_menu_rename">Переименовать чат</string>
 
     <!-- Foreground-service notification title while no tool is running -->
     <string name="nm_notif_working">%1$s работает</string>
 
     <!-- First conversation: the scripted opening (see io.github.nanomuse.onboarding) -->
-    <string name="nm_intro_hello">Привет, я nanoMuse, помощник, который живёт у вас в телефоне. Позвольте снять с вас часть забот.</string>
+    <string name="nm_intro_hello">Привет, я Dot, помощник, который живёт у вас в телефоне. Позвольте снять с вас часть забот.</string>
     <string name="nm_intro_how_i_work">Немного о том, как я работаю:\n\n- У меня есть свой компьютер (песочница Linux и браузер,), так что я могу выполнять команды, открывать сайты и заполнять формы.\n- Я могу читать и раскладывать файлы и фото, которые вы мне подключили, и следить за напоминаниями и задачами по расписанию.\n- Перед любым важным шагом я сначала спрашиваю вас.\n- Всё работает на этом телефоне. Ваши сообщения уходят той модели, которую вы настроили; с nanoMuse Cloud этот разговор следует за вами и на другие устройства; отключить это можно в «Управлении данными».</string>
     <string name="nm_intro_ask_name">Прежде чем начать, как мне к вам обращаться?</string>
 
@@ -200,7 +200,7 @@
     <string name="nm_risk_class_outbound">Отправка</string>
     <string name="nm_risk_class_money">Оплата</string>
     <string name="nm_risk_class_install">Установка</string>
-    <string name="nm_grants_header">Запомненные разрешения nanoMuse</string>
+    <string name="nm_grants_header">Запомненные разрешения Nanodot</string>
     <string name="nm_grants_empty">Пока ничего не запомнено</string>
     <string name="nm_grants_revoke">Отозвать</string>
     <string name="nm_grants_revoke_confirm">Отозвать это разрешение? В следующий раз вас спросят снова.</string>
@@ -208,7 +208,7 @@
     <string name="nm_risk_remember_money_note">Подтверждается блокировкой экрана. Платежи в этом одном приложении или на сайте затем будут проходить без карточки; они перечислены первыми в Настройки → Разрешения, где их можно отозвать в любой момент.</string>
     <string name="nm_risk_remember_money_needs_lock">Чтобы запоминать платежи, сначала задайте блокировку экрана (Настройки → Безопасность): запоминание подтверждается ею.</string>
     <string name="nm_risk_lock_title">Подтвердите, что это вы</string>
-    <string name="nm_risk_lock_subtitle">nanoMuse запомнит разрешение на платежи для %1$s и будет выполнять их без вопросов.</string>
+    <string name="nm_risk_lock_subtitle">Nanodot запомнит разрешение на платежи для %1$s и будет выполнять их без вопросов.</string>
     <string name="nm_risk_remembered_toast">Запомнено · отозвать можно в Настройки → Разрешения</string>
     <string name="nm_risk_tier_highest">Выполняется без вопросов · платежи</string>
     <string name="nm_risk_tier_confirm">Запомнено с карточки · удаление и отправка</string>
@@ -279,7 +279,7 @@
     <string name="nm_sysfiles_open_memory">Открыть память</string>
     <string name="nm_sysfiles_footer">Это файлы агента: кто он, что знает о вас, что помнит, что пишет для вас и когда просыпается. Они лежат в памяти телефона; агент читает и правит их из своей оболочки в /var/minis/memory, а вы можете править всё здесь.</string>
     <string name="nm_sysfile_about_lead">Об этом файле.</string>
-    <string name="nm_sysfile_about_soul">Это личность агента: ценности и привычки, которых он старается держаться в каждом разговоре, его имя и стиль ответов. Начинается с шаблона, который поставляется с nanoMuse; со временем агент может его уточнять и сообщает вам об этом. Вы можете править его в любой момент. Эта заметка не является частью файла.</string>
+    <string name="nm_sysfile_about_soul">Это личность агента: ценности и привычки, которых он старается держаться в каждом разговоре, его имя и стиль ответов. Начинается с шаблона, который поставляется с Nanodot; со временем агент может его уточнять и сообщает вам об этом. Вы можете править его в любой момент. Эта заметка не является частью файла.</string>
     <string name="nm_sysfile_about_user">Агент ведёт этот файл как рабочие заметки о вас: ваше имя, как к вам обращаться, ваш часовой пояс и контекст, который нужен ему, чтобы быть полезным, например над чем вы работаете. Он заполняет его постепенно из ваших разговоров и читает в начале каждого. Файл отражает текущее понимание агента, поэтому может быть неполным или устаревшим. Вы можете править здесь что угодно, и агент будет следовать написанному. Эта заметка не является частью файла.</string>
     <string name="nm_sysfile_about_memory">Долгие заметки, которые агент хранит между разговорами: то, что стоит помнить, его собственными словами, плюс всё, что вы импортировали из другого помощника. Дневник по дням лежит рядом в папке памяти. Читается в начале каждого разговора, когда память включена. Эта заметка не является частью файла.</string>
     <string name="nm_sysfile_about_feed">Один абзац, который направляет ленту: чего вы хотите больше, что пропускать, какой длины должны быть посты. Ежедневная рутина ленты читает его перед тем, как писать. Эта заметка не является частью файла.</string>
@@ -359,7 +359,7 @@
     <string name="nm_avatar_footer">Картинки хранятся на этом телефоне в minis-global/nanomuse/avatar. Каждый образ стоит пять изображений у вашего провайдера: одно выбранное плюс четыре настроения.</string>
 
     <!-- First run (Muse-style welcome; the steps are OpenMinis' provider and model screens) -->
-    <string name="nm_setup_title">Добро пожаловать в nanoMuse</string>
+    <string name="nm_setup_title">Добро пожаловать в Nanodot</string>
     <string name="nm_setup_step_models">Выберите модели</string>
     <string name="nm_setup_step_models_sub">Модели вашего провайдера показаны списком; выберите до трёх</string>
     <string name="nm_setup_step_start">Знакомьтесь: %1$s</string>
@@ -375,7 +375,7 @@
     <string name="nm_settings_no_model">Модели пока нет</string>
     <string name="nm_settings_no_model_sub">Добавьте провайдера и выберите его модели</string>
     <string name="nm_settings_change_model">Сменить</string>
-    <string name="nm_settings_version">nanoMuse %1$s (%2$d)</string>
+    <string name="nm_settings_version">Nanodot %1$s (%2$d)</string>
     <string name="nm_version_title">Версия</string>
     <string name="nm_version_checking">Проверяем последний выпуск…</string>
     <string name="nm_version_have">Последняя %1$s, она у вас</string>
@@ -455,8 +455,8 @@
     <string name="nm_avatar_share_title">Поделиться моим аватаром</string>
     <string name="nm_avatar_share_subtitle">Выберите карточку. Она уйдёт через системное меню «Поделиться».</string>
     <string name="nm_avatar_share_system">Поделиться</string>
-    <string name="nm_avatar_share_bubble">Привет, я %1$s, личный ИИ-агент. Знакомьтесь с nanoMuse: открытый код, работает на вашем телефоне.</string>
-    <string name="nm_avatar_share_tagline">Ваш личный ИИ-агент с открытым кодом · github.com/nano-muse/nanoMuse</string>
+    <string name="nm_avatar_share_bubble">Привет, я %1$s, личный ИИ-агент. Знакомьтесь с Nanodot: открытый код, работает на вашем телефоне.</string>
+    <string name="nm_avatar_share_tagline">Ваш личный ИИ-агент с открытым кодом · github.com/nano-muse/Nanodot</string>
 
     <!-- 0.1.10 · Motion -->
     <string name="nm_media_title">Модели изображений и видео</string>
@@ -507,7 +507,7 @@
     <string name="nm_hands_section_needs">Что нужно</string>
     <string name="nm_hands_needs_footer">Служба специальных возможностей делает снимок экрана и выполняет жесты; содержимое экрана она не читает. Показ поверх других приложений нужен для капсулы.</string>
     <string name="nm_hands_need_a11y">Служба специальных возможностей</string>
-    <string name="nm_hands_need_a11y_fix">Включите nanoMuse в разделе «Установленные приложения» настроек специальных возможностей</string>
+    <string name="nm_hands_need_a11y_fix">Включите Nanodot в разделе «Установленные приложения» настроек специальных возможностей</string>
     <string name="nm_hands_need_overlay">Поверх других приложений</string>
     <string name="nm_hands_need_overlay_fix">Разрешите, чтобы можно было показать капсулу с кнопкой «Стоп»</string>
     <string name="nm_hands_need_model">Модель, которая видит картинки</string>
@@ -545,7 +545,7 @@
     <string name="nm_hands_protected_screen">Этот экран защищён, и его нельзя прочитать. Закончите эту часть сами, затем нажмите «Продолжить».</string>
     <string name="nm_hands_secret_field">Поле пароля или кода: заполните его сами, затем нажмите «Продолжить».</string>
     <string name="nm_hands_approval_title">Ждёт вашего подтверждения</string>
-    <string name="nm_hands_approval_detail">Нажать «%1$s»: подтвердите в nanoMuse (он попросит блокировку экрана).</string>
+    <string name="nm_hands_approval_detail">Нажать «%1$s»: подтвердите в Nanodot (он попросит блокировку экрана).</string>
     <string name="nm_hands_approval_here">Нажать «%1$s»?</string>
     <string name="nm_hands_allow_once">Разрешить</string>
     <string name="nm_hands_deny">Отклонить</string>
@@ -576,10 +576,10 @@
     <!-- Reach (0.1.13): the phone drives your computer -->
     <string name="nm_pc_title">Компьютеры</string>
     <string name="nm_pc_none_short">Нет</string>
-    <string name="nm_pc_intro">Скажите здесь, и это сделано на вашем компьютере: команда, файл, страница в его браузере, взгляд на его экран или целая задача для тамошнего nanoMuse. Телефон управляет компьютером, никогда наоборот; каждое подтверждение сначала решается здесь.</string>
-    <string name="nm_pc_hub_title">Простой путь: nanoMuse Desktop, тот же аккаунт</string>
-    <string name="nm_pc_hub_body">Установите nanoMuse Desktop на компьютер и войдите с аккаунтом этого телефона; он появится в Аккаунт → Устройства за несколько секунд.</string>
-    <string name="nm_pc_hub_download">Скачать nanoMuse Desktop</string>
+    <string name="nm_pc_intro">Скажите здесь, и это сделано на вашем компьютере: команда, файл, страница в его браузере, взгляд на его экран или целая задача для тамошнего Nanodot. Телефон управляет компьютером, никогда наоборот; каждое подтверждение сначала решается здесь.</string>
+    <string name="nm_pc_hub_title">Простой путь: Nanodot Desktop, тот же аккаунт</string>
+    <string name="nm_pc_hub_body">Установите Nanodot Desktop на компьютер и войдите с аккаунтом этого телефона; он появится в Аккаунт → Устройства за несколько секунд.</string>
+    <string name="nm_pc_hub_download">Скачать Nanodot Desktop</string>
     <string name="nm_pc_hub_account">Аккаунт и устройства</string>
     <string name="nm_pc_section_paired">Компьютеры на этом аккаунте</string>
     <string name="nm_pc_none">Компьютеров пока нет</string>
@@ -592,7 +592,7 @@
     <string name="nm_pc_account_hint">Этот телефон вошёл как %1$s; компьютер должен войти с тем же аккаунтом.</string>
     <string name="nm_pc_checking">Проверяем…</string>
     <string name="nm_pc_answering">%1$s отвечает</string>
-    <string name="nm_pc_not_answering">%1$s не отвечает. nanoMuse Desktop там ещё запущен?</string>
+    <string name="nm_pc_not_answering">%1$s не отвечает. Nanodot Desktop там ещё запущен?</string>
 
     <!-- the approval card -->
     <string name="nm_risk_desc_on_computer">На компьютере «%1$s», не на этом телефоне.</string>
@@ -613,7 +613,7 @@
     <string name="nm_setup_source_title">Какая модель отвечает?</string>
     <string name="nm_setup_source_sub">Ваш аккаунт уже даёт одну. Можно добавить и свой API-ключ и переключаться в любой момент.</string>
     <string name="nm_setup_source_cloud">Использовать модель nanoMuse Cloud</string>
-    <string name="nm_setup_source_cloud_sub">DeepSeek для чата и Qwen для рук, с бесплатным лимитом на аккаунт, который оплачивает разработчик. Настраивать нечего.</string>
+    <string name="nm_setup_source_cloud_sub">Используйте свою модель или подключите nanoMuse Cloud. Доступ и лимиты определяются условиями поставщика. Ознакомьтесь с его политикой конфиденциальности и настройками данных.</string>
     <string name="nm_setup_source_own_sub">OpenAI, Anthropic, DeepSeek, Bailian и другие OpenAI-совместимые эндпоинты. Ключ остаётся на этом телефоне.</string>
     <string name="nm_setup_source_fine_print">Они не конкурируют: модель Cloud остаётся доступной, а каждая группа моделей выбирает свою.</string>
     <string name="nm_setup_password_title">Задайте пароль</string>
@@ -625,8 +625,8 @@
     <string name="nm_welcome_feat_hands">Руки: он пользуется вашим телефоном</string>
     <string name="nm_welcome_feat_hands_sub">Берёт билет на поезд, заказывает еду, ищет что-то в приложении; вы смотрите и можете остановить в любой момент</string>
     <string name="nm_welcome_feat_reach">Связь: ваши компьютеры, отсюда</string>
-    <string name="nm_welcome_feat_reach_sub">Установите nanoMuse Desktop на Mac, Windows или Linux, войдите с той же учётной записью и давайте ему работу с телефона</string>
-    <string name="nm_welcome_notice">nanoMuse является некоммерческим проектом сообщества с открытым кодом, бесплатным навсегда. Модель идёт с бесплатным лимитом, который оплачивает разработчик; дальше нужен ваш собственный ключ. Ничего не продаётся; что хранит релей, написано в политике конфиденциальности, а Настройки → Управление данными в ваших руках.</string>
+    <string name="nm_welcome_feat_reach_sub">Установите Nanodot Desktop на Mac, Windows или Linux, войдите с той же учётной записью и давайте ему работу с телефона</string>
+    <string name="nm_welcome_notice">Nanodot: персональный помощник с открытым исходным кодом на основе nanoMuse. Используйте свою модель или подключите nanoMuse Cloud. Доступ и лимиты определяются условиями поставщика. Ознакомьтесь с его политикой конфиденциальности и настройками данных.</string>
     <string name="nm_welcome_hands_title">Разрешите ему пользоваться телефоном</string>
     <string name="nm_welcome_hands_sub">С двумя разрешениями он может открывать приложения, нажимать и печатать за вас. Капсула с каждым шагом и кнопкой «Стоп» остаётся на экране; входы, пароли и коды всегда за вами.</string>
     <string name="nm_welcome_hands_turn_on">Включить</string>
@@ -764,7 +764,7 @@
     <string name="nm_cloud_invite_share">Поделиться ссылкой</string>
     <string name="nm_cloud_invite_copy">Копировать</string>
     <string name="nm_cloud_invite_copied">Скопировано</string>
-    <string name="nm_cloud_invite_share_text">Попробуйте nanoMuse вместе со мной: полностью открытый личный агент, бесплатный. Регистрируйтесь с моим кодом %1$s: %2$s</string>
+    <string name="nm_cloud_invite_share_text">Попробуйте Nanodot вместе со мной: полностью открытый личный агент, бесплатный. Регистрируйтесь с моим кодом %1$s: %2$s</string>
     <string name="nm_cloud_invite_count">Присоединилось друзей: %1$d</string>
     <string name="nm_cloud_invite_earned">¥%1$s добавлено за приглашения</string>
     <string name="nm_cloud_invite_have">Есть код приглашения?</string>
@@ -864,7 +864,7 @@
     <!-- 0.1.20: the coding agents on the account's computers -->
     <string name="nm_coding_title">Агенты для кода</string>
     <string name="nm_coding_intro">Cursor, Codex и Claude Code на ваших компьютерах: их сессии, их последний ответ и сообщение любому из них, отсюда. Ничего их на телефон не копируется.</string>
-    <string name="nm_coding_no_computer">Ни один компьютер с агентом для кода не в сети. Запустите nanoMuse на компьютере, где установлен Cursor, Codex или Claude Code, войдя с этим аккаунтом.</string>
+    <string name="nm_coding_no_computer">Ни один компьютер с агентом для кода не в сети. Запустите Nanodot на компьютере, где установлен Cursor, Codex или Claude Code, войдя с этим аккаунтом.</string>
     <string name="nm_coding_account_hint">Этот телефон вошёл как %1$s; компьютер должен использовать тот же аккаунт.</string>
     <string name="nm_coding_refresh">Обновить</string>
     <string name="nm_coding_all">Все</string>
@@ -890,20 +890,20 @@
 
     <!-- nanoMuse: money on the account page, and the community notice -->
     <string name="nm_cloud_spend_member">Участник · без ограничений</string>
-    <string name="nm_cloud_spent_total">¥%1$s · $%2$s потрачено всего, оплачено разработчиком</string>
+    <string name="nm_cloud_spent_total">nanoMuse Cloud: ¥%1$s · $%2$s</string>
     <string name="nm_cloud_allowance_used">Использовано ¥%1$s · $%2$s</string>
     <string name="nm_cloud_allowance_of">из ¥%1$s · $%2$s, навсегда</string>
     <string name="nm_cloud_allowance_left">Осталось ¥%1$s · $%2$s</string>
     <string name="nm_cloud_allowance_why">¥%1$s на старте, +¥%2$s за каждого приглашённого друга, и +¥%2$s ему; дальше модель работает на вашем собственном ключе.</string>
     <string name="nm_cloud_tokens_line">Токенов всего: %1$s · сегодня: %2$s</string>
-    <string name="nm_cloud_notice_title">Бесплатно, открытый код, некоммерческий</string>
+    <string name="nm_cloud_notice_title">Nanodot · nanoMuse Cloud</string>
     <string name="nm_cloud_notice_closing">Нашли ошибку, хотите функцию, есть патч? Репозиторий на GitHub и есть то самое место.</string>
-    <string name="nm_cloud_notice">nanoMuse является некоммерческим проектом сообщества с открытым кодом, бесплатным навсегда. Модель идёт с бесплатным лимитом, который оплачивает разработчик; дальше нужен ваш собственный ключ. Ничего не продаётся; что хранит релей, написано в политике конфиденциальности, а Настройки → Управление данными в ваших руках. Удалить аккаунт можно когда угодно.</string>
+    <string name="nm_cloud_notice">Nanodot: персональный помощник с открытым исходным кодом на основе nanoMuse. Используйте свою модель или подключите nanoMuse Cloud. Доступ и лимиты определяются условиями поставщика. Ознакомьтесь с его политикой конфиденциальности и настройками данных.</string>
 
     <!-- nanoMuse: devices on the hub -->
     <string name="nm_hub_channel">Сообщения от ваших устройств</string>
     <string name="nm_hub_service_channel">Связь с вашими устройствами</string>
-    <string name="nm_hub_service_title">nanoMuse · доступен с ваших устройств</string>
+    <string name="nm_hub_service_title">Nanodot · доступен с ваших устройств</string>
     <string name="nm_hub_service_connecting">Подключаемся к nanoMuse Cloud…</string>
     <string name="nm_hub_service_alone">Других устройств в сети сейчас нет</string>
     <plurals name="nm_hub_service_devices">
@@ -927,7 +927,7 @@
     <string name="nm_devices_connected">Подключено</string>
     <string name="nm_devices_connecting">Подключаемся…</string>
     <string name="nm_devices_off">Выкл.</string>
-    <string name="nm_devices_none">Других устройств пока нет. Установите на компьютер nanoMuse Desktop и войдите с тем же аккаунтом; он появится здесь за несколько секунд.</string>
+    <string name="nm_devices_none">Других устройств пока нет. Установите на компьютер Nanodot Desktop и войдите с тем же аккаунтом; он появится здесь за несколько секунд.</string>
     <string name="nm_devices_online">в сети</string>
     <string name="nm_devices_offline">не в сети</string>
     <string name="nm_devices_web">Веб-консоль</string>
@@ -946,7 +946,7 @@
     <string name="nm_hub_err_not_controllable">Это устройство нельзя просить что-то делать.</string>
     <string name="nm_hub_err_unknown_agent">Этого агента для кода нет на компьютере.</string>
     <string name="nm_hub_err_no_session">Этой сессии больше нет на компьютере.</string>
-    <string name="nm_hub_err_unknown_action">На компьютере более старый nanoMuse, которому это действие незнакомо.</string>
+    <string name="nm_hub_err_unknown_action">На компьютере более старый Nanodot, которому это действие незнакомо.</string>
     <string name="nm_hub_err_bad_key">Выход выполнен на релее; войдите снова.</string>
     <string name="nm_hub_err_generic">Компьютер не смог это сделать.</string>
     <string name="nm_devices_refused">Релей отказал; войдите снова</string>
@@ -965,7 +965,7 @@
     <string name="nm_connectors_sign_in">Войти</string>
     <string name="nm_connectors_disconnect">Отключить</string>
     <string name="nm_connectors_docs">Страница поставщика об этом сервере</string>
-    <string name="nm_connectors_how_oauth">Входит с вашим аккаунтом %1$s в браузере; nanoMuse регистрируется в сервисе сам, так что вводить ничего не нужно. Токен остаётся на этом телефоне.</string>
+    <string name="nm_connectors_how_oauth">Входит с вашим аккаунтом %1$s в браузере; Nanodot регистрируется в сервисе сам, так что вводить ничего не нужно. Токен остаётся на этом телефоне.</string>
     <string name="nm_connectors_how_key">Нужен ключ от сервиса: %1$s. Он хранится в записи MCP только на этом телефоне.</string>
     <string name="nm_connectors_how_none">Открыт для всех; вход не нужен.</string>
     <string name="nm_connectors_how_auto">Сначала проверяет, что нужно серверу: ничего, вход или ключ.</string>
@@ -1028,7 +1028,7 @@
     <string name="nm_devices_ask_hint">Нажмите на устройство в сети, чтобы написать ему из чата: сообщение начинается с @ и его имени, и работу делает это устройство.</string>
     <string name="nm_reach_the_provider">провайдер</string>
     <string name="nm_reach_unreachable_title">%1$s недоступен из этой сети</string>
-    <string name="nm_reach_unreachable_body">От %1$s не было ответа. Дело в пути от этого телефона до провайдера; серверы nanoMuse здесь ни при чём.</string>
+    <string name="nm_reach_unreachable_body">От %1$s не было ответа. Дело в пути от этого телефона до провайдера; серверы Nanodot здесь ни при чём.</string>
     <string name="nm_reach_region_title">OpenAI не обслуживает этот регион</string>
     <string name="nm_reach_region_body">Запрос дошёл до OpenAI, и тот ответил, что не предоставляет сервис там, откуда идёт это соединение.</string>
     <string name="nm_reach_signed_out_title">Вход в ChatGPT больше не действует</string>
@@ -1115,4 +1115,5 @@
     <string name="nm_models_search">Поиск моделей</string>
     <string name="nm_models_search_clear">Очистить поиск</string>
     <string name="nm_models_no_match">Ни одна модель не подходит</string>
+    <string name="nm_update_manual">Автоматические обновления отключены. Проверьте страницу выпусков Nanodot вручную.</string>
 </resources>

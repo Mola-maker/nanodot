@@ -7,7 +7,7 @@
  * The runtime speaks MCP over stdio (one JSON-RPC message per line); this is the small
  * client for two calls: `computer_screen` and `computer_act {action: "move"}`. The result
  * tells the settings page what the person needs to do next: a black capture means Screen
- * Recording for nanoMuse Desktop (and a relaunch), a refused move means Accessibility.
+ * Recording for Nanodot Desktop (and a relaunch), a refused move means Accessibility.
  */
 import { spawn as nodeSpawn, type ChildProcess } from 'node:child_process'
 import { access, constants } from 'node:fs/promises'

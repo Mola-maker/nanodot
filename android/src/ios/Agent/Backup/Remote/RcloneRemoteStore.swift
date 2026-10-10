@@ -147,7 +147,7 @@ enum RcloneRemoteStore {
 
     // MARK: - Secrets
 
-    private static let keychainService = "io.github.nanomuse.app.rclone"
+    private static let keychainService = "io.github.nanodot.app.rclone"
 
     private static func storeSecret(_ secret: String, for name: String) {
         let account = name

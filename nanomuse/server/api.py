@@ -45,7 +45,7 @@
     GET|PUT /api/sync/state {enabled}     conversations synced between the account's devices: the switch, the cursor, the relay's counts
     POST /api/sync/delete                 delete what the relay stores for the account (the switch stays)
     POST /api/sync/pull                   pull the other devices' changes now
-    GET  /api/update (?refresh=1)         installed and latest release (nanomuse.cn/dl first, GitHub second; a day's cache)
+    GET  /api/update (?refresh=1)         installed and configured release (disabled until a brand channel is enabled)
     GET  /api/avatar                      the avatar studio: can a face be drawn, the session under way
     POST /api/avatar/begin {description, style?}  a session: the card with the cost in the chat
     POST /api/avatar/start|choose|cancel {session, index?}   draw (or redraw) the four, pick one, stop
@@ -77,6 +77,7 @@ from fastapi.responses import FileResponse, JSONResponse, Response
 from pydantic import BaseModel, Field
 
 from nanomuse.avatar.studio import StudioError
+from nanomuse.brand import DISPLAY_NAME
 from nanomuse.bridge.server import BridgeError
 from nanomuse.cloud import CloudError
 from nanomuse.coding.service import CodingError
@@ -444,7 +445,7 @@ def create_app(settings: Settings, service: MuseService | None = None) -> FastAP
             await svc.stop()
 
     app = FastAPI(
-        title="nanoMuse",
+        title=DISPLAY_NAME,
         version=svc.settings_view()["version"],
         lifespan=lifespan,
         docs_url=None,
@@ -516,7 +517,7 @@ def create_app(settings: Settings, service: MuseService | None = None) -> FastAP
 
     @app.get("/api/update", dependencies=dep)
     async def update_status(refresh: bool = False) -> dict[str, Any]:
-        """The installed and the latest release (nanomuse.cn/dl first, GitHub second; a day's
+        """The installed and configured release (brand channel required; a day's
         cache, ``?refresh=1`` asks now; see ``server.update_check``)."""
         return await update_check.view(force=refresh)
 
@@ -1951,7 +1952,7 @@ def create_app(settings: Settings, service: MuseService | None = None) -> FastAP
         async def no_frontend() -> Response:
             return JSONResponse(
                 {
-                    "message": "nanoMuse API is running, but the web app is not built. "
+                    "message": f"{DISPLAY_NAME} API is running, but the web app is not built. "
                     "Run `cd web && npm install && npm run build` or use the CLI (`nanomuse chat`).",
                 }
             )

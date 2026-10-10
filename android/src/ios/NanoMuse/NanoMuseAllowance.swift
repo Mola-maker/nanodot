@@ -1,6 +1,6 @@
 //
 //  NanoMuseAllowance.swift
-//  nanoMuse
+//  Nanodot
 //
 //  The free allowance as the chat sees it (docs/parity.md, item 33). Two things, kept here
 //  so the shell and the composer can show them without a link of their own on

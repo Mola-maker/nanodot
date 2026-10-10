@@ -9,13 +9,13 @@ import org.junit.Test
 
 class NudgesPolicyTest {
 
-    /** The relay's shipped default, verbatim from the shared contract (C1). */
+    /** Nanodot's local policy keeps the shared moments and uses its own repository. */
     private val contractDefault = """
         {
           "version": 1,
           "star": {
             "enabled": true,
-            "url": "https://github.com/nano-muse/nanoMuse",
+            "url": "https://github.com/Mola-maker/nanodot",
             "moments": {
               "signed_in": true,
               "tasks": [3, 10, 30],

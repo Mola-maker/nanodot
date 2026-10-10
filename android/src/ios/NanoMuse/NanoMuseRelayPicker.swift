@@ -1,6 +1,6 @@
 //
 //  NanoMuseRelayPicker.swift
-//  nanoMuse
+//  Nanodot
 //
 //  "Use a different server": anyone can run the relay in `cloud/`, and the
 //  app can sign in against it. The sheet takes an address, checks it against
@@ -40,7 +40,7 @@ struct NanoMuseRelayPickerSheet: View {
                     Text(AppLocalized("Server address"))
                 } footer: {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(AppLocalized("Anyone can run the nanoMuse relay. https is required unless the server is on your own network."))
+                        Text(AppLocalized("Anyone can run the Nanodot relay. https is required unless the server is on your own network."))
                         if let verdict {
                             Text(verdict.text).foregroundStyle(verdict.ok ? Color.secondary : Color.red)
                         }
@@ -101,7 +101,7 @@ struct NanoMuseRelayPickerSheet: View {
         defer { checking = false }
         do {
             try await NanoMuseCloud.checkRelay(base)
-            verdict = (true, String(format: AppLocalized("%@ answers as a nanoMuse relay."), URL(string: base)?.host ?? base))
+            verdict = (true, String(format: AppLocalized("%@ answers as a Nanodot relay."), URL(string: base)?.host ?? base))
             checkedBase = base
         } catch {
             verdict = (false, NanoMuseCloud.describe(error))

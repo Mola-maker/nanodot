@@ -1,44 +1,47 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/nano-muse/nanoMuse/main/assets/brand/nanomuse-cover.png" alt="nanoMuse: agen pribadi sumber terbuka untuk setiap perangkat yang kamu miliki">
-</p>
+# Nanodot
 
-<p align="center">
-  <a href="https://github.com/nano-muse/nanoMuse/blob/main/README.md">English</a> |
-  <a href="https://github.com/nano-muse/nanoMuse/blob/main/docs/readme/README_zh.md">简体中文</a> |
-  <a href="https://github.com/nano-muse/nanoMuse/blob/main/docs/readme/README_zh-TW.md">繁體中文</a> |
-  <a href="https://github.com/nano-muse/nanoMuse/blob/main/docs/readme/README_es.md">Español</a> |
-  <a href="https://github.com/nano-muse/nanoMuse/blob/main/docs/readme/README_fr.md">Français</a> |
-  <a href="https://github.com/nano-muse/nanoMuse/blob/main/docs/readme/README_id.md">Bahasa Indonesia</a> |
-  <a href="https://github.com/nano-muse/nanoMuse/blob/main/docs/readme/README_ja.md">日本語</a> |
-  <a href="https://github.com/nano-muse/nanoMuse/blob/main/docs/readme/README_ko.md">한국어</a> |
-  <a href="https://github.com/nano-muse/nanoMuse/blob/main/docs/readme/README_ru.md">Русский</a> |
-  <a href="https://github.com/nano-muse/nanoMuse/blob/main/docs/readme/README_vi.md">Tiếng Việt</a>
-</p>
-<p align="center">
-  <a href="https://trendshift.io/repositories/286894?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-286894" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/286894/daily?language=Swift" alt="nano-muse%2FnanoMuse | Trendshift" width="250" height="55"/></a>
-</p>
-<p align="center">
-  <a href="https://github.com/nano-muse/nanoMuse/stargazers"><img src="https://img.shields.io/github/stars/nano-muse/nanoMuse?style=flat&label=stars" alt="Bintang GitHub"></a>
-  <a href="https://github.com/nano-muse/nanoMuse/releases"><img src="https://img.shields.io/github/downloads/nano-muse/nanoMuse/total?label=downloads" alt="Unduhan"></a>
-  <a href="https://github.com/nano-muse/nanoMuse/actions/workflows/ci.yml"><img src="https://github.com/nano-muse/nanoMuse/actions/workflows/ci.yml/badge.svg?branch=main" alt="Test Suite"></a>
-  <a href="https://demo.nanomuse.dev/"><img src="https://img.shields.io/badge/Coba-demo.nanomuse.dev-0a66e4" alt="Coba di browser"></a>
-  <a href="https://nanomuse.cn/"><img src="https://img.shields.io/badge/Situs_web-nanomuse.cn-0a66e4" alt="Situs web"></a>
-  <a href="https://arxiv.org/abs/2610.08699"><img src="https://img.shields.io/badge/arXiv-2610.08699-b31b1b" alt="Makalah di arXiv"></a>
-  <a href="https://github.com/nano-muse/nanoMuse/blob/main/LICENSE"><img src="https://img.shields.io/github/license/nano-muse/nanoMuse?label=license" alt="GPL-3.0-or-later"></a>
-  <a href="https://discord.gg/bkTySmm28X"><img src="https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
-</p>
+<p align="center"><img src="../../assets/brand/nanodot-mark.svg" alt="Nanodot · Dot" width="112" height="112"></p>
 
-**nanoMuse adalah agen pribadi sumber terbuka untuk setiap perangkat yang kamu miliki.** Satu agen dengan nama dan rupa sendiri, seperti [Muse](https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/) dari Meta: ia mengerjakan sesuatu alih-alih sekadar menjawab pertanyaan, terus bekerja saat aplikasinya ditutup, mengingatmu, dan berhenti untuk bertanya sebelum melakukan apa pun yang tidak bisa kamu batalkan.
+[English](https://github.com/Mola-maker/nanodot/blob/main/README.md) | [简体中文](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_zh.md) | [繁體中文](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_zh-TW.md) | [Español](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_es.md) | [Français](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_fr.md) | [Bahasa Indonesia](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_id.md) | [日本語](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_ja.md) | [한국어](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_ko.md) | [Русский](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_ru.md) | [Tiếng Việt](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_vi.md)
 
-*nano* berarti satu paket lengkap yang cukup kecil untuk kamu jalankan dan pasang sendiri: aplikasi ponsel, aplikasi desktop, konsol web, dan relay yang menghubungkan semuanya ada di repositori ini, di bawah GPL-3.0-or-later. **[Gratis, sumber terbuka, nirlaba. Mari bangun bersama.](../../CONTRIBUTING.md)** Masuk dan kamu mendapat jatah gratis pemakaian model di relay komunitas (pengembang yang membayarnya); kalau habis, [pakai kunci sendiri](../own-key.md). Relay yang sama bisa berjalan di servermu, jadi tidak ada data yang harus keluar dari rumahmu. Versi terbaru: **1.0.1 Ballast**, [catatan rilis](https://github.com/nano-muse/nanoMuse/releases/tag/v1.0.1) · [coba di browser](https://demo.nanomuse.dev/).
+Nanodot adalah agen pribadi sumber terbuka turunan [nanoMuse](https://github.com/nano-muse/nanoMuse), yang aplikasi ponselnya berbasis [OpenMinis 1.13](https://github.com/OpenMinis/OpenMinis). Asisten bawaannya bernama **Dot**. Repositori ini memuat Android, iOS, aplikasi desktop, konsol Web dan runtime Python.
 
-https://github.com/user-attachments/assets/c7694d5a-9450-4f99-9254-5d70560d7565
+## Cakupan P0
 
-<p align="center"><a href="https://nanomuse.cn/media/film/nanomuse-film-en-web.mp4">English</a> · <a href="https://nanomuse.cn/media/film/nanomuse-film-zh-web.mp4">中文</a> · <a href="https://nanomuse.cn/#film">nanomuse.cn</a></p>
+P0 menetapkan identitas Nanodot, konfigurasi merek bersama, gambar Dot luring dan pengaturan bawaan. Bola mengambang baru dan mode perhatian ada di tahap berikutnya; preferensinya tidak mengaktifkan fitur atau memberikan izin aksesibilitas.
 
-> ### nanoMuse terus berkembang
->
-> Agen pribadi seharusnya tidak hanya hidup di cloud milik orang lain, maka nanoMuse menjadi alternatif sumber terbuka yang murah: berjalan di perangkatmu sendiri, dengan model pilihanmu dan relay yang bisa kamu pasang sendiri. Kami ingin membangunnya bersama pengembang dan pengguna di seluruh dunia, supaya setiap orang benar-benar memiliki agen pribadinya sendiri. Buka sebuah [issue](https://github.com/nano-muse/nanoMuse/issues/new/choose) atau kirim [pull request](../../CONTRIBUTING.md); keduanya membantu nanoMuse menjadi lebih baik.
+Tema mengikuti sistem. Dot memiliki lima ekspresi statis bawaan. Nama, SOUL.md, avatar, animasi, model dan preferensi khusus tetap disimpan. Suara berkelanjutan dan pembaruan otomatis mati secara bawaan; periksa rilis repositori ini secara manual.
+
+Versi warisan tetap **1.0.1**, Android versionCode **44**. Konfigurasi lintas platform telah diselaraskan. Instalasi dan peningkatan pada perangkat nyata masih perlu diuji; Linux tidak membuktikan build Xcode atau paket native Windows/macOS.
+
+## Build dan instalasi
+
+Build Android secara lokal dari checkout ini. Paket debug dan release terpisah; release memerlukan kunci penandatanganan khusus dan tidak beralih ke kunci debug. Skrip tidak menerbitkan, mengunggah atau membuat tag.
+
+```sh
+bash scripts/build-nanodot-apk.sh debug
+# Dedicated local signing configuration is required for release.
+bash scripts/build-nanodot-apk.sh release
+```
+
+Baca [panduan build](../build.md), [kontrak merek](../brand.md) dan [dokumentasi](../index.md). Paket Nanodot yang diterbitkan akan ada di [halaman rilis Nanodot](https://github.com/Mola-maker/nanodot/releases). Unduhan dan TestFlight nanoMuse merupakan produk lain.
+
+Android memakai `io.github.nanodot.app` dan `nanodot://`. Paket internal `com.openminis.app` dan `io.github.nanomuse.*`, rute `minis://` dan jalur sandbox tetap sama. ID baru memiliki penyimpanan privat terpisah; data nanoMuse perlu ekspor/impor eksplisit.
+
+## Model dan layanan
+
+Gunakan penyedia model sendiri atau konfigurasi integrasi relay yang ada. **nanoMuse Cloud** tetap memakai nama dan endpoint layanan asal. Nanodot tidak mengklaim mengoperasikannya atau menjanjikan kuota gratis; akun dan kebijakan data menjadi tanggung jawab penyedia layanan.
+
+## Kontribusi dan lisensi
+
+Laporkan masalah fork ini di [issues Nanodot](https://github.com/Mola-maker/nanodot/issues). Baca [CONTRIBUTING.md](../../CONTRIBUTING.md) dan [AGENTS.md](../../AGENTS.md); commit memerlukan sign-off DCO. Lisensi: [GPL-3.0-or-later](../../LICENSE), dengan atribusi di [NOTICE](../../NOTICE) dan [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md). Nanodot tidak terkait dengan Meta atau merek Muse.
+
+## Riwayat dan atribusi proyek asal
+
+Berita, sitasi, kartu pemelihara dan kontributor serta ucapan terima kasih berikut adalah arsip nanoMuse. Tanggal, nama dan tautannya merujuk proyek asal, bukan rilis atau pemelihara Nanodot.
+
+<details>
+<summary>nanoMuse</summary>
 
 ## 🗞️ Kabar
 
@@ -48,73 +51,6 @@ https://github.com/user-attachments/assets/c7694d5a-9450-4f99-9254-5d70560d7565
 - `2026-09-25` 🎉 nanoMuse dirilis di GitHub di bawah GPL-3.0-or-later: aplikasi Android yang dibangun di atas OpenMinis 1.13; relay, aplikasi desktop, dan aplikasi iPhone menyusul dalam beberapa hari berikutnya.
 
 Semua versi: [releases](https://github.com/nano-muse/nanoMuse/releases).
-
-## Pemasangan
-
-| | |
-|---|---|
-| **Browser** | [demo.nanomuse.dev](https://demo.nanomuse.dev/): sebuah nanoMuse di ponsel simulasi, setelah masuk. Ini demo; aplikasi di bawah inilah yang sebenarnya |
-| **Android** 8.0+, arm64 | [nanoMuse-1.0.1-arm64.apk](https://github.com/nano-muse/nanoMuse/releases/download/v1.0.1/nanoMuse-1.0.1-arm64.apk): setiap versi ditandatangani dengan kunci yang sama dan dipasang menimpa versi sebelumnya |
-| **iPhone / iPad** | [TestFlight](https://testflight.apple.com/join/ZHexbDqc): versi beta yang sudah lolos tinjauan beta Apple; pasang dari tautan ini · [iOS](../ios.md) |
-| **macOS** 12+ | [Apple Silicon](https://github.com/nano-muse/nanoMuse/releases/download/v1.0.1/nanoMuse-Desktop-1.0.1-mac-arm64.dmg) · [Intel](https://github.com/nano-muse/nanoMuse/releases/download/v1.0.1/nanoMuse-Desktop-1.0.1-mac-x64.dmg): belum dinotarisasi: klik kanan → *Open* saat pertama kali |
-| **Windows** 10+ | [nanoMuse-Desktop-1.0.1-win-x64.exe](https://github.com/nano-muse/nanoMuse/releases/download/v1.0.1/nanoMuse-Desktop-1.0.1-win-x64.exe): klik *Run anyway* sekali |
-| **Linux** x64 | [AppImage](https://github.com/nano-muse/nanoMuse/releases/download/v1.0.1/nanoMuse-Desktop-1.0.1-linux-x64.AppImage) · [.deb](https://github.com/nano-muse/nanoMuse/releases/download/v1.0.1/nanoMuse-Desktop-1.0.1-linux-x64.deb) · [tar.gz](https://github.com/nano-muse/nanoMuse/releases/download/v1.0.1/nanoMuse-Desktop-1.0.1-linux-x64.tar.gz) |
-| **Docker** | `bash scripts/self-host.sh --local` untuk relay sendiri; `docker compose up -d app` untuk aplikasi web di servermu; lihat [self-hosting](../self-hosting.md) |
-
-Semua unduhan berasal dari [rilis terbaru](https://github.com/nano-muse/nanoMuse/releases/latest); berkas yang sama ada di [nanomuse.cn/dl](https://nanomuse.cn/dl/) kalau GitHub lambat di tempatmu. Buka aplikasinya, masuk dengan e-mail atau nomor ponsel Tiongkok daratan, dan agen langsung punya model untuk berpikir. Ponsel, desktop, dan web memakai satu akun dan menampilkan percakapan yang sama.
-
-## Apa yang dilakukannya
-
-<table>
-  <tr>
-    <td width="50%" valign="top"><b>Mengerjakan sesuatu.</b><br>Shell Linux, browser, server MCP, dan skill, dan, dengan <i>Hands</i> menyala, aplikasi di ponselmu dan jendela di komputermu lewat layarnya, untuk segala hal yang tidak pernah punya API.</td>
-    <td width="50%" valign="top"><b>Bertanya dulu.</b><br>Ia berhenti sebelum menghapus, mengirim, atau membayar, dan mengingat jawabanmu untuk sekali ini, untuk obrolan ini, atau untuk selamanya; kata sandi dan kode tetap kamu yang mengetik. Login atau CAPTCHA diserahkan kepadamu; <i>Done</i> melanjutkan.</td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top"><b>Menjangkau perangkatmu yang lain.</b><br>Ucapkan di ponsel, dijalankan di PC-mu; <code>@Mac …</code> di awal pesan mengirim tugas ke sana. Persetujuan kembali ke perangkat di tanganmu.</td>
-    <td width="50%" valign="top"><b>Terus berjalan.</b><br>Tujuan diperiksa sesuai jadwal, rutinitas berjalan saat aplikasi ditutup, feed ditulis untukmu setiap pagi.</td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top"><b>Mengingatmu.</b><br>Siapa dirinya, apa yang ia tahu tentangmu, dan kapan ia bangun adalah berkas Markdown yang bisa kamu baca dan ubah.</td>
-    <td width="50%" valign="top"><b>Hidup di aplikasi chat-mu.</b><br>Ia menjawab di 飞书, 钉钉, 企业微信, dan Telegram.</td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top"><b>Rupa sendiri.</b><br>Gambarkan rupa yang kamu mau, model gambarmu melukisnya, model video membuatnya bergerak. Seekor naga kecil sebagai bawaan.</td>
-    <td width="50%" valign="top"><b>Model apa saja.</b><br>Kuota relay, kunci milikmu sendiri di salah satu dari sembilan belas penyedia (Bailian, OpenRouter, OpenAI, Gemini, DeepSeek, dan lainnya), atau paket yang sudah kamu bayar: ChatGPT, Claude, Kimi. Kalau penyedia tidak punya model gambar atau video, dua fitur itu dimatikan, dan aplikasi memberi tahu.</td>
-  </tr>
-</table>
-
-## Cara kerjanya
-
-Setiap perangkat menjalankan agennya sendiri: ponsel di dalam APK (Alpine Linux di bawah proot, shell, browser, MCP), komputer di dalam nanoMuse Desktop (DeepSeek Harness dengan runtime Python untuk tangannya). Setelah masuk, mereka bertemu di relay dan bisa saling meminta sesuatu; teks percakapan lewat relay, berkas dan tangkapan layar tetap di tempat dibuatnya.
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/nano-muse/nanoMuse/main/assets/brand/devices-loop.png" alt="Android, desktop (Mac, Windows, Linux), iPhone dan iPad, serta aplikasi web di sekitar satu akun: relay memproses masuknya perangkat ke akun dan membawa percakapan di antaranya" width="92%">
-</p>
-
-[docs/every-device.md](../every-device.md) menjelaskan perangkat-perangkatnya, [docs/hub.md](../hub.md) frame-nya, [docs/cloud.md](../cloud.md) relay-nya, [docs/privacy.md](../privacy.md) apa yang disimpannya.
-
-## Dibandingkan dengan Muse dan OpenMinis
-
-| | Meta Muse | OpenMinis | nanoMuse |
-|---|---|---|---|
-| Di mana agen berjalan | Satu VM cloud per pengguna | Ponsel tempat ia dipasang | Ponselmu, komputermu, atau servermu, satu akun untuk semuanya |
-| Aplikasi tanpa API | Di luar jangkauan; VM tidak pernah menyentuh perangkatmu | CLI aksesibilitas di Android | Layar sebagai tangan di ponsel dan komputer: tangkapan layar, API dicoba dulu, kamu mengambil alih saat login. Tidak di iOS, karena sistemnya tidak mengizinkan |
-| Perangkat lain | Klien dari satu VM | Hanya yang terpasang | Perangkat saling meminta lewat hub, persetujuan di tempatmu berada |
-| Model | Milik Meta | Bawa sendiri | Jatah gratis dari relay, atau milikmu |
-| Lisensi | Tertutup | GPL-3.0 | GPL-3.0-or-later, dibangun di atas OpenMinis |
-
-## Dokumentasi
-
-[nanomuse.cn/docs](https://nanomuse.cn/docs/): pemasangan per platform, setiap perangkat, tangan, konektor, memori, self-hosting, protokol. Sumbernya ada di [docs/](../); apa yang berubah di tiap versi ada di [CHANGELOG](../../CHANGELOG.md) dan [docs/releases/](../releases/).
-
-## Self-hosting
-
-Satu VPS, satu jam: [docs/self-hosting.md](../self-hosting.md). Tiga jalan: tanpa server sama sekali dengan kunci sendiri; relay sendiri dengan `scripts/self-host.sh`; atau runtime sendiri untuk aplikasi web.
-
-## Berkontribusi
-
-Pakai untuk tugas nyata, laporkan apa yang rusak, lalu pilih sesuatu yang terfokus: [CONTRIBUTING.md](../../CONTRIBUTING.md) berisi penyiapan dan konvensinya, [AGENTS.md](../../AGENTS.md) aturan yang diikuti agen pemrograman di repositori ini, dan [peta jalan](../roadmap.md) menunjukkan dari mana memulai. [Issues](https://github.com/nano-muse/nanoMuse/issues) · [Discussions](https://github.com/nano-muse/nanoMuse/discussions) · [Discord](https://discord.gg/bkTySmm28X).
 
 ## Pemelihara
 
@@ -162,15 +98,6 @@ nanoMuse berdiri di atas karya orang lain; [THIRD_PARTY_NOTICES.md](../../THIRD_
 - [UI-TARS-desktop](https://github.com/bytedance/UI-TARS-desktop) (ByteDance): operator tangan di desktop adalah porting dari milik mereka, dan penanda di panggung mengikuti ScreenMarker mereka.
 - [MobileGym](https://github.com/Purewhiter/mobilegym), [MemGUI-Bench](https://github.com/lgy0404/MemGUI-Bench), [PhoneHarness](https://github.com/PhoneHarness/PhoneHarness), [CopilotKit/OpenMuse](https://github.com/CopilotKit/OpenMuse), [Open-AutoGLM](https://github.com/zai-org/Open-AutoGLM), [ClawGUI](https://github.com/ZJU-REAL/ClawGUI): operator ponsel, jejak, dan gagasan produknya.
 
-## Penafian
+</details>
 
-nanoMuse adalah proyek komunitas independen, tidak berafiliasi dengan atau didukung oleh Meta Platforms, Inc.; Muse adalah merek dagang mereka. Naganya milik proyek ini.
-
-## Lisensi
-
-[GPL-3.0-or-later](../../LICENSE). Aplikasi ponsel berbasis OpenMinis 1.13 (GPL-3.0), dimodifikasi sejak 2026-09-24; lihat [NOTICE](../../NOTICE). Versi lebih awal dari jalur Python berlisensi MIT (tag `pre-openminis`).
-
-<p align="center">
-  <em>Terima kasih sudah berkunjung ✨ nanoMuse!</em><br><br>
-  <img src="https://visitor-badge.laobi.icu/badge?page_id=nano-muse.nanoMuse&left_text=visitors&left_color=%23555&right_color=%230a66e4" alt="Visitors">
-</p>
+<p align="center"><img src="https://visitor-badge.laobi.icu/badge?page_id=Mola-maker.nanodot&amp;left_text=visitors" alt="Nanodot visitors"></p>

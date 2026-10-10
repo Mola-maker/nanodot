@@ -37,7 +37,7 @@ import com.openminis.app.ui.components.openExternalUrl
 @Composable
 fun AboutScreen(onBack: () -> Unit) {
     val context = LocalContext.current
-    val tileBlue = Color(0xFF015CFB)
+    val tileBlue = Color(0xFF136F63)
 
     SettingsScaffold(title = stringResource(R.string.about_title), onBack = onBack) {
         Column(
@@ -99,7 +99,7 @@ fun AboutScreen(onBack: () -> Unit) {
                 // LocalInAppBrowserLauncher ambient defaults to a no-op when
                 // no InAppBrowserHost is in the tree above this screen — and
                 // nothing wraps Settings, so the row used to be a dead tap.
-                onClick = { openExternalUrl(context, "https://github.com/nano-muse/nanoMuse") },
+                onClick = { openExternalUrl(context, "https://github.com/Mola-maker/nanodot") },
                 trailing = { ExternalLinkIcon() },
                 showDivider = false,
             )
@@ -113,7 +113,7 @@ fun AboutScreen(onBack: () -> Unit) {
                 iconColor = tileBlue,
                 title = stringResource(R.string.nm_about_license),
                 subtitle = "GPL-3.0-or-later",
-                onClick = { openExternalUrl(context, "https://github.com/nano-muse/nanoMuse/blob/main/LICENSE") },
+                onClick = { openExternalUrl(context, "https://github.com/Mola-maker/nanodot/blob/main/LICENSE") },
                 trailing = { ExternalLinkIcon() },
                 minHeight = 72.dp,
             )

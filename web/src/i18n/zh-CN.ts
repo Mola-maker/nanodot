@@ -12,13 +12,13 @@ const zhCN: Record<string, string> = {
   Library: "资源库",
   "Main chat": "主要聊天",
   "Side chat": "旁聊",
-  "Reconnecting to your nanoMuse…": "正在重新连接你的 nanoMuse…",
+  "Reconnecting to your Nanodot…": "正在重新连接你的 Nanodot…",
   "This demo has ended.": "这次体验已经结束。",
-  "This nanoMuse has stopped. Reload the page once it is running again.": "这个 nanoMuse 已停止。等它重新运行后，刷新页面即可。",
+  "This Nanodot has stopped. Reload the page once it is running again.": "这个 Nanodot 已停止。等它重新运行后，刷新页面即可。",
   "Reconnecting…": "重新连接中…",
-  "Connect to your nanoMuse": "连接到你的 nanoMuse",
-  "This app talks to the nanoMuse server you run yourself. Scan the QR code printed by":
-    "这个应用连接的是你自己运行的 nanoMuse 服务器。扫描下面命令打印的二维码",
+  "Connect to your Nanodot": "连接到你的 Nanodot",
+  "This app talks to the Nanodot server you run yourself. Scan the QR code printed by":
+    "这个应用连接的是你自己运行的 Nanodot 服务器。扫描下面命令打印的二维码",
   ", or paste the access token below.": "，或在下方粘贴访问令牌。",
   "Access token": "访问令牌",
   Connect: "连接",
@@ -42,26 +42,25 @@ const zhCN: Record<string, string> = {
     "每用一个工具就在对话里多一个小标签。关闭时对话只保留对话本身，名字下方的一行字说明它正在做什么。仅本设备。",
   "On it: {request}": "正在处理：{request}",
   "A star on GitHub helps": "GitHub 上的一颗 Star 帮得上忙",
-  "Welcome. nanoMuse is free, open source and non-profit, a personal agent for anyone who runs it. If that is worth something to you, a star on GitHub is how the next person finds it.":
-    "欢迎。nanoMuse 免费、开源、非营利，做的是一个属于每个人的个人智能体。如果你认同，GitHub 上的一颗 Star 能让下一个人也找到这里。",
-  "Three tasks done. If nanoMuse is useful, a star on GitHub helps the next person find it.":
-    "三个任务完成了。如果 nanoMuse 用得上，到 GitHub 点一颗 Star，下一个人也能找到它。",
-  "{n} tasks done. If nanoMuse is useful, a star on GitHub helps the next person find it.":
-    "已经完成 {n} 个任务了。如果 nanoMuse 用得上，到 GitHub 点一颗 Star，下一个人也能找到它。",
-  "A week with nanoMuse. If it has earned a place in your day, a star on GitHub helps the next person find it.":
-    "和 nanoMuse 一起一周了。如果它在你的日常里站住了脚，到 GitHub 点一颗 Star，下一个人也能找到它。",
-  "A month with nanoMuse. If it has become part of your routine, a star on GitHub tells others it is worth a try.":
-    "和 nanoMuse 一起一个月了。如果它成了你习惯的一部分，一颗 Star 会让更多人愿意试一试。",
-  "{n} days with nanoMuse. If it has earned a place in your day, a star on GitHub helps the next person find it.":
-    "和 nanoMuse 一起 {n} 天了。如果它在你的日常里站住了脚，到 GitHub 点一颗 Star，下一个人也能找到它。",
-  "Goal reached. If nanoMuse helped you get there, a star on GitHub tells the people building it that it did.":
-    "目标达成了。如果 nanoMuse 帮你走到了这里，到 GitHub 点一颗 Star，做它的人就知道了。",
-  "Ten tasks together. If nanoMuse has become part of your day, a star on GitHub tells others it is worth a try.":
-    "已经一起完成十个任务了。如果 nanoMuse 成了你日常的一部分，一颗 Star 会让更多人愿意试一试。",
-  "A new face, drawn for you. If you like where nanoMuse is going, a star on GitHub helps more people find it.":
-    "一张为你画的新面孔。如果你喜欢 nanoMuse 现在的样子，到 GitHub 点一颗 Star，更多人就能遇见它。",
-  "The free allowance is used up. Thank you for coming this far. If nanoMuse has earned it, a star on GitHub keeps the project in view for the next person.":
-    "免费额度用完了，谢谢你一路用到这里。如果 nanoMuse 值得，到 GitHub 点一颗 Star，下一个人也能找到它。",
+  "Welcome. Nanodot is an open-source personal agent based on nanoMuse. A star on GitHub helps others find it.": "欢迎。Nanodot 是基于 nanoMuse 的开源个人智能体。GitHub 上的一颗 Star 能帮助其他人找到它。",
+  "Three tasks done. If Nanodot is useful, a star on GitHub helps the next person find it.":
+    "三个任务完成了。如果 Nanodot 用得上，到 GitHub 点一颗 Star，下一个人也能找到它。",
+  "{n} tasks done. If Nanodot is useful, a star on GitHub helps the next person find it.":
+    "已经完成 {n} 个任务了。如果 Nanodot 用得上，到 GitHub 点一颗 Star，下一个人也能找到它。",
+  "A week with Nanodot. If it has earned a place in your day, a star on GitHub helps the next person find it.":
+    "和 Nanodot 一起一周了。如果它在你的日常里站住了脚，到 GitHub 点一颗 Star，下一个人也能找到它。",
+  "A month with Nanodot. If it has become part of your routine, a star on GitHub tells others it is worth a try.":
+    "和 Nanodot 一起一个月了。如果它成了你习惯的一部分，一颗 Star 会让更多人愿意试一试。",
+  "{n} days with Nanodot. If it has earned a place in your day, a star on GitHub helps the next person find it.":
+    "和 Nanodot 一起 {n} 天了。如果它在你的日常里站住了脚，到 GitHub 点一颗 Star，下一个人也能找到它。",
+  "Goal reached. If Nanodot helped you get there, a star on GitHub tells the people building it that it did.":
+    "目标达成了。如果 Nanodot 帮你走到了这里，到 GitHub 点一颗 Star，做它的人就知道了。",
+  "Ten tasks together. If Nanodot has become part of your day, a star on GitHub tells others it is worth a try.":
+    "已经一起完成十个任务了。如果 Nanodot 成了你日常的一部分，一颗 Star 会让更多人愿意试一试。",
+  "A new face, drawn for you. If you like where Nanodot is going, a star on GitHub helps more people find it.":
+    "一张为你画的新面孔。如果你喜欢 Nanodot 现在的样子，到 GitHub 点一颗 Star，更多人就能遇见它。",
+  "The free allowance is used up. Thank you for coming this far. If Nanodot has earned it, a star on GitHub keeps the project in view for the next person.":
+    "免费额度用完了，谢谢你一路用到这里。如果 Nanodot 值得，到 GitHub 点一颗 Star，下一个人也能找到它。",
   "Load earlier messages": "加载更早的消息",
   "New side chat": "新建旁聊",
   "New side chat, e.g. “Trip to Kyoto”": "新建旁聊，例如“京都之旅”",
@@ -426,7 +425,7 @@ const zhCN: Record<string, string> = {
   "drawn from the picture you attached": "按你附的图片来画",
   "Share my avatar": "分享我的虚拟形象",
   "Pick a card. It goes out through the system share sheet, or saves as a picture where there is none.": "选一张卡片，用系统分享发出去；没有系统分享的浏览器会保存为图片。",
-  "Hi, I'm {name}, a personal AI agent. Meet nanoMuse: open source, runs on your phone.": "你好，我是你的个人 AI 智能体 {name}。认识一下 nanoMuse：开源，在手机上本地运行。",
+  "Hi, I'm {name}, a personal AI agent. Meet Nanodot: open source, runs on your phone.": "你好，我是你的个人 AI 智能体 {name}。认识一下 Nanodot：开源，在手机上本地运行。",
   "Your personal AI agent, open source · {repo}": "你的个人 AI 智能体，开源 · {repo}",
   "Later": "以后再说",
   "Share": "分享",
@@ -557,7 +556,7 @@ const zhCN: Record<string, string> = {
   "Let {name} notify this phone": "让 {name} 通知这台手机",
   "The app stays connected to your server in the background. Approvals, questions and finished background work arrive as notifications and open the right chat.":
     "应用在后台保持与服务器的连接。审批、提问和后台完成的工作会以通知送达，并打开对应的对话。",
-  "nanoMuse for Android {version}": "nanoMuse Android 版 {version}",
+  "Nanodot for Android {version}": "Nanodot Android 版 {version}",
   "Disconnect from this server": "断开此服务器",
   "This device only": "仅这台设备",
   "1 device subscribed": "1 台设备已订阅",
@@ -588,7 +587,7 @@ const zhCN: Record<string, string> = {
   "Follow the system": "跟随系统",
   About: "关于",
   "{version} is out": "{version} 已发布",
-  "nanoMuse {version}": "nanoMuse {version}",
+  "Nanodot {version}": "Nanodot {version}",
   "Tell {name} something to remember": "在对话里告诉 {name} 一件值得记住的事",
   "Write one": "写一个",
   "Latest {version}; you have it": "最新版 {version}，你已经在用了",
@@ -628,12 +627,12 @@ const zhCN: Record<string, string> = {
   "Settings → Calendar → Shared calendars → Publish a calendar → ICS link": "设置 → 日历 → 共享日历 → 发布日历 → ICS 链接",
   "Share Calendar → Public Calendar → copy the webcal:// link": "共享日历 → 公共日历 → 复制 webcal:// 链接",
   "Settings → Calendars → Export → Calendar URL": "设置 → 日历 → 导出 → 日历 URL",
-  "A path on the machine where nanoMuse runs, for example ~/calendar.ics": "nanoMuse 所在机器上的文件路径，例如 ~/calendar.ics",
+  "A path on the machine where Nanodot runs, for example ~/calendar.ics": "Nanodot 所在机器上的文件路径，例如 ~/calendar.ics",
   ".ics file": ".ics 文件",
   Work: "工作",
   "Private .ics link or file path": "私密 .ics 链接或文件路径",
   "Stored encrypted in the vault as CALENDAR_{name}.": "加密保存在保险库中，名为 CALENDAR_{name}。",
-  "nanoMuse fetches whatever address you put here, from this machine; only paste links you trust.": "nanoMuse 会从这台机器上去取你填的任何地址，只粘贴你信任的链接。",
+  "Nanodot fetches whatever address you put here, from this machine; only paste links you trust.": "Nanodot 会从这台机器上去取你填的任何地址，只粘贴你信任的链接。",
   "Add a calendar": "添加日历",
   "Added, but it could not be read: {error}": "已添加，但读取失败：{error}",
   // contacts
@@ -745,7 +744,7 @@ const zhCN: Record<string, string> = {
 
   // ── Onboarding ────────────────────────────────────────────────────────────────────
   "Skip setup": "跳过设置",
-  "Meet your nanoMuse": "认识你的 nanoMuse",
+  "Meet your Nanodot": "认识你的 Nanodot",
   "Your name": "你的名字",
   "The model behind it": "背后的模型",
   "A model is already set up on the server. Keep it, or switch here.": "服务器上已经配置了模型。可以保留，也可以在这里切换。",
@@ -855,7 +854,7 @@ const zhCN: Record<string, string> = {
   "Not yet": "还没开",
   "Not on this Android": "这个安卓版本不支持",
   "Operating the screen needs Android 11 or newer; this phone can still be used for everything else.": "操作屏幕需要 Android 11 或更新；其他功能这台手机都能用。",
-  "Turn on the nanoMuse accessibility service; that is how it sees the screen and taps for you, only while a task runs, with a Stop button on screen.": "打开 nanoMuse 的无障碍服务，它靠这个看屏幕、替你点击，只在任务进行时工作，屏幕上始终有停止按钮。",
+  "Turn on the Nanodot accessibility service; that is how it sees the screen and taps for you, only while a task runs, with a Stop button on screen.": "打开 Nanodot 的无障碍服务，它靠这个看屏幕、替你点击，只在任务进行时工作，屏幕上始终有停止按钮。",
   "Open Accessibility settings": "打开无障碍设置",
   "App settings": "应用设置",
   "Greyed out with “Restricted setting”? Android 13+ does that for apps installed from a download: in App settings tap ⋮ → Allow restricted settings, then come back.": "灰色且提示「受限设置」？Android 13+ 对下载安装的应用会这样：在应用设置里点 ⋮ → 允许受限设置，再回来。",
@@ -979,15 +978,14 @@ const zhCN: Record<string, string> = {
   "Mainland China phone number or e-mail": "中国大陆手机号或邮箱",
   "138 0000 0000 or you@example.com": "138 0000 0000 或 you@example.com",
   // -- the community notice and the gate (0.1.22) --
-  "One free account. It is what lets your phone and computers work as one and brings a model to start with.": "一个免费账号。有了它，手机和电脑就是同一个 nanoMuse，还自带一个可以先用起来的模型。",
+  "One free account. It is what lets your phone and computers work as one and brings a model to start with.": "一个免费账号。有了它，手机和电脑就是同一个 Nanodot，还自带一个可以先用起来的模型。",
   "It uses your phone and computers for you": "替你操作手机和电脑",
   "The relay keeps an account id, a masked identifier, usage counts and your agent's name and look; what else, and what is yours to switch off, is in the": "中继保存账号 id、打码后的手机号或邮箱、用量计数和你的智能体的名字与形象；其余保存什么、哪些由你决定，见",
   "privacy policy": "隐私政策",
-  "Free, open source, non-profit": "免费、开源、非营利",
-  "nanoMuse is a non-profit open-source community project, free forever.": "nanoMuse 是非营利的开源社区项目，永久免费。",
+  "An open-source personal agent": "开源个人智能体",
+  "Nanodot is an open-source personal agent based on nanoMuse.": "Nanodot 是基于 nanoMuse 的开源个人智能体。",
   "Chat apps": "聊天入口",
-  "nanoMuse is a non-profit open-source community project, free forever. Sign in with a phone number or an e-mail and the model comes with a free allowance, paid by the developer; when it is gone, use your own key (Alibaba Cloud Bailian in mainland China, OpenRouter elsewhere). Nothing is sold; what the relay keeps is in the privacy policy, and Settings → Data controls is yours. Delete the account whenever you like.":
-    "nanoMuse 是非营利的开源社区项目，永久免费。用手机号或邮箱登录，模型自带一份免费额度，费用由开发者承担；用完可以换自己的 key（中国大陆用阿里云百炼，海外用 OpenRouter）。数据不会出售；服务器保存什么写在隐私政策里，「设置 → 数据控制」由你决定。账号随时可以删除。",
+  "Nanodot is an open-source personal agent based on nanoMuse. Use your own model API key or connect to nanoMuse Cloud. Model usage and allowances follow the provider's terms. The provider's privacy policy explains what its relay stores; Settings → Data controls manages your account data.": "Nanodot 是基于 nanoMuse 的开源个人智能体。你可以使用自己的模型 API key，或连接 nanoMuse Cloud。模型用量和额度遵循服务商的条款。服务商的隐私政策说明中继保存的数据；「设置 → 数据控制」用于管理账号数据。",
   "The people building it use it every day. Report a bug, ask for a feature, send a pull request: that is what moves the project. A star on GitHub helps others find it.": "做它的人每天都在用。欢迎反馈问题、提需求、贡献代码，项目就是这样往前走的。在 GitHub 点个 Star，能让更多人找到它。",
   "Star on GitHub": "去 GitHub 点个 Star",
   "Report a bug or ask for a feature": "反馈问题 / 提需求",
@@ -1050,7 +1048,7 @@ const zhCN: Record<string, string> = {
     "覆盖对话和动手。画图和生成视频不在其中，那两项需要一个有图像或视频模型的服务商。",
   "OpenAI's terms cover using a ChatGPT plan inside OpenAI's own Codex; other apps have had this access cut off before (OpenCode, January 2026). If it stops working, an API key does.":
     "OpenAI 的条款只允许在它自家的 Codex 里使用 ChatGPT 套餐；其他应用曾被切断过这条路（OpenCode，2026 年 1 月）。哪天它不能用了，API key 仍然可以。",
-  "This nanoMuse has no sign-in route yet. In a terminal on this computer, run": "这个 nanoMuse 还没有登录接口。在这台电脑的终端里运行",
+  "This Nanodot has no sign-in route yet. In a terminal on this computer, run": "这个 Nanodot 还没有登录接口。在这台电脑的终端里运行",
   "and reload this page.": "然后刷新本页。",
   "Signed in with {label}.": "已用 {label} 登录。",
   "Use it for the chat": "让它来回答对话",
@@ -1061,7 +1059,7 @@ const zhCN: Record<string, string> = {
   "A page from OpenAI opened in a new tab. Sign in there; when the browser ends on an address that will not load, paste that address below.": "已在新标签页打开 OpenAI 的页面。在那里登录；浏览器最后停在一个打不开的地址时，把那个地址粘贴到下面。",
   "The address the browser ended on": "浏览器最后停在的地址",
   "Use this address": "用这个地址",
-  "This nanoMuse runs where the browser cannot reach port 1455, so it cannot pick the sign-in up by itself.": "这个 nanoMuse 运行的机器上，浏览器连不到 1455 端口，所以它没法自己接住登录结果。",
+  "This Nanodot runs where the browser cannot reach port 1455, so it cannot pick the sign-in up by itself.": "这个 Nanodot 运行的机器上，浏览器连不到 1455 端口，所以它没法自己接住登录结果。",
   "That address belongs to another sign-in attempt. Open the page again and paste the address it ends on.": "这个地址属于另一次登录尝试。再次打开页面，粘贴它最后停在的地址。",
   "ChatGPT answers the chat now.": "现在由 ChatGPT 回答对话。",
   // the one sentence for a feature no configured provider covers (contract C11)
@@ -1076,7 +1074,7 @@ const zhCN: Record<string, string> = {
   "Step-by-step guide": "图文教程",
   "Invite a friend: +¥{bonus} for you and +¥{bonus} for them, for each new person who signs up with your link.": "邀请朋友：每有一位新用户通过你的链接注册，你 +¥{bonus}，对方也 +¥{bonus}。",
   "Your invite link is under Account": "邀请链接在「账号」页",
-  "Try nanoMuse with me, a fully open-source personal agent, free to use. Sign up with my link: {link}": "来和我一起用 nanoMuse，完全开源的个人智能体，免费使用。用我的链接注册：{link}",
+  "Try Nanodot with me, a fully open-source personal agent, free to use. Sign up with my link: {link}": "来和我一起用 Nanodot，完全开源的个人智能体，免费使用。用我的链接注册：{link}",
   // -- invitations (relay 0.4/0.5) --
   "Invite code (optional)": "邀请码（选填）",
   "A friend's code counts for a new account: you both get ¥{invite} more allowance.": "朋友的邀请码只对新账号有效：你和对方的额度各 +¥{invite}。",
@@ -1087,7 +1085,7 @@ const zhCN: Record<string, string> = {
   "Copied": "已复制",
   "Share the link": "分享链接",
   "Copy the link": "复制链接",
-  "Try nanoMuse with me, a fully open-source personal agent, free to use. Sign up with my code {code}: {link}": "来和我一起用 nanoMuse，完全开源的个人智能体，免费使用。用我的邀请码 {code} 注册：{link}",
+  "Try Nanodot with me, a fully open-source personal agent, free to use. Sign up with my code {code}: {link}": "来和我一起用 Nanodot，完全开源的个人智能体，免费使用。用我的邀请码 {code} 注册：{link}",
   "{n} friends joined": "已邀请 {n} 位",
   "¥{amount} added by invitations": "邀请带来 ¥{amount}",
   "The code you received": "收到的验证码",
@@ -1132,8 +1130,8 @@ const zhCN: Record<string, string> = {
   "Type @{name} in the chat to hand it work.": "在聊天里输入 @{name}，就能把活交给它。",
   "Add a device": "添加一台设备",
   "No other device yet": "还没有其他设备",
-  "Install nanoMuse on your phone, Mac or PC and sign in as {hint}; it appears here on its own.": "在手机、Mac 或 PC 上安装 nanoMuse，用 {hint} 登录，它就会自己出现在这里。",
-  "Install nanoMuse on your phone, Mac or PC and sign in with the same account; it appears here on its own.": "在手机、Mac 或 PC 上安装 nanoMuse，用同一个账号登录，它就会自己出现在这里。",
+  "Install Nanodot on your phone, Mac or PC and sign in as {hint}; it appears here on its own.": "在手机、Mac 或 PC 上安装 Nanodot，用 {hint} 登录，它就会自己出现在这里。",
+  "Install Nanodot on your phone, Mac or PC and sign in with the same account; it appears here on its own.": "在手机、Mac 或 PC 上安装 Nanodot，用同一个账号登录，它就会自己出现在这里。",
   "Get the apps": "下载应用",
   "Forget {name}? It can join again by signing in.": "忘掉 {name}？它重新登录后还可以加入。",
   "on {device}": "在 {device} 上",
@@ -1144,8 +1142,8 @@ const zhCN: Record<string, string> = {
   "Hands on this computer": "操作这台电脑",
   "On the screen now": "正在操作屏幕",
   "Nothing can drive this screen yet.": "目前没有能驱动这块屏幕的组件。",
-  "On a Mac, allow nanoMuse under System Settings → Privacy & Security → Accessibility and Screen Recording when macOS asks; without them clicks do nothing and the screenshot is black. The first action in each app asks you once (\"Let {name} use Safari?\") and the answer is kept under Permissions.":
-    "Mac 上，macOS 弹窗询问时请在「系统设置 → 隐私与安全性」的「辅助功能」和「屏幕录制」里允许 nanoMuse；不允许的话点击没有反应，截图也是黑的。每个应用的第一步会先问你一次（「让 {name} 使用 Safari 吗？」），答复记在「权限」里。",
+  "On a Mac, allow Nanodot under System Settings → Privacy & Security → Accessibility and Screen Recording when macOS asks; without them clicks do nothing and the screenshot is black. The first action in each app asks you once (\"Let {name} use Safari?\") and the answer is kept under Permissions.":
+    "Mac 上，macOS 弹窗询问时请在「系统设置 → 隐私与安全性」的「辅助功能」和「屏幕录制」里允许 Nanodot；不允许的话点击没有反应，截图也是黑的。每个应用的第一步会先问你一次（「让 {name} 使用 Safari 吗？」），答复记在「权限」里。",
   "Where": "范围",
   "One window": "单个窗口",
   "Whole screen": "整个屏幕",
@@ -1176,7 +1174,7 @@ const zhCN: Record<string, string> = {
   "Opened {label}": "打开了 {label}",
   "Opened an application": "打开了一个应用",
   "Waited": "等待",
-  "The dragon": "小龙",
+  "Dot": "Dot",
   "The face drawn for you": "为你画的形象",
   "Draw four": "画四张",
   "send_email": "发邮件",
@@ -1189,7 +1187,7 @@ const zhCN: Record<string, string> = {
   "OpenAI, ChatGPT, Gemini, DeepSeek…": "OpenAI、ChatGPT、Gemini、DeepSeek…",
   "Which model answers?": "让哪个模型来回答？",
   "Your account already brings one. You can add your own API key as well and switch at any time.": "你的账号已经自带了一个。也可以加上自己的 API key，随时切换。",
-  "DeepSeek for the chat and Qwen for the hands, with a free allowance per account paid by the developer. Nothing to configure.": "对话用 DeepSeek，动手用 Qwen；每个账号都有一份由开发者承担的免费额度，不用配置。",
+  "Connect to nanoMuse Cloud. Available models, usage and allowances follow its terms.": "连接 nanoMuse Cloud。可用模型、用量和额度遵循其服务条款。",
   "I have my own API key": "我有自己的 API key",
   "Alibaba Cloud Bailian first (one key covers chat, the hands, pictures and clips), then DeepSeek, Kimi, Zhipu, OpenAI, OpenRouter and any OpenAI-compatible endpoint. The key stays on this device.":
     "首选阿里云百炼（一个 key 就能对话、动手、画图、生成视频），其次是 DeepSeek、Kimi、智谱、OpenAI、OpenRouter，以及任何兼容 OpenAI 接口的服务。key 只留在这台设备上。",
@@ -1273,7 +1271,7 @@ const zhCN: Record<string, string> = {
   "Sign in to nanoMuse Cloud": "登录 nanoMuse Cloud",
   "Sign in to {name}": "登录 {name}",
   "nanoMuse Cloud · one account for all your devices": "nanoMuse Cloud · 一个账号，所有设备",
-  "Every device of yours, one nanoMuse": "你的每台设备，同一个 nanoMuse",
+  "Every device of yours, one Nanodot": "你的每台设备，同一个 Nanodot",
   "A model with a free allowance, or your own key": "自带免费额度的模型，或用你自己的 key",
   "Keys in your vault; nothing you say is kept on the relay": "key 留在你的保险库里；你说的内容不会留在中继上",
   "Free. One account for all your devices, with a model and ¥{allowance} of use to start; a code the first time, a password afterwards if you like.": "免费。一个账号连起你所有设备，自带模型和 ¥{allowance} 的起始额度；第一次用验证码登录，之后可以设密码。",
@@ -1381,13 +1379,13 @@ const zhCN: Record<string, string> = {
   "No chats yet.": "还没有对话。",
   "Untitled chat": "未命名对话",
   "{n} messages": "{n} 条消息",
-  "Sent through nanoMuse": "经 nanoMuse 发送的",
+  "Sent through Nanodot": "经 Nanodot 发送的",
   stopped: "已停止",
   "Sent to {agent}.": "已发给 {agent}。",
   "{agent} is working…": "{agent} 正在处理…",
   "Tell {agent}…": "对 {agent} 说…",
   "Nothing readable in this chat yet.": "这个对话里还没有可读的内容。",
-  "via nanoMuse": "经 nanoMuse",
+  "via Nanodot": "经 Nanodot",
   "Continued as a new chat: the agent could not reopen the old one.": "原来的对话打不开了，已经另起一个新对话接着聊。",
   "Made in the IDE: your message starts a new chat in the same workspace, with the last exchange quoted.": "这是 IDE 里的对话：你的消息会在同一工作区开一个新对话，并带上上一轮的内容。",
   "Continue in a new chat…": "在新对话里接着说…",
@@ -1396,7 +1394,7 @@ const zhCN: Record<string, string> = {
   "Project folder": "项目目录",
   "What to do": "要做什么",
   "Add tests for the parser and run them": "给解析器补上测试并跑一遍",
-  "The agent runs on that computer with its own permissions; nanoMuse only carries the message and brings the answer back.": "助手在那台电脑上以它自己的权限运行；nanoMuse 只负责传话和带回结果。",
+  "The agent runs on that computer with its own permissions; Nanodot only carries the message and brings the answer back.": "助手在那台电脑上以它自己的权限运行；Nanodot 只负责传话和带回结果。",
 
   // -- what the server answers a request with, when it shows as a toast or a test line --
   "The file is larger than {n} MB.": "文件超过了 {n} MB。",
@@ -1486,9 +1484,9 @@ const zhCN: Record<string, string> = {
   "That sign-in is already gone.": "那个登录已经不存在了。",
 
   // -- reaching the runtime --
-  "Cannot reach your nanoMuse right now.": "现在连不上你的 nanoMuse。",
-  "Could not reach your nanoMuse.": "连不上你的 nanoMuse。",
-  "Connecting to your nanoMuse…": "正在连接你的 nanoMuse…",
+  "Cannot reach your Nanodot right now.": "现在连不上你的 Nanodot。",
+  "Could not reach your Nanodot.": "连不上你的 Nanodot。",
+  "Connecting to your Nanodot…": "正在连接你的 Nanodot…",
   "Try again": "再试一次",
   "Could not load.": "没能加载出来。",
   "Use /{name}": "使用 /{name}",
@@ -1559,7 +1557,7 @@ const zhCN: Record<string, string> = {
   "Runtime:": "运行时：",
   "the token is in the server_token file in the data folder": "令牌在数据目录的 server_token 文件里",
   "The command line and the API": "命令行与 API",
-  "nanoMuse on DeepSeek Harness": "nanoMuse 的 DeepSeek Harness 版",
+  "Nanodot on DeepSeek Harness": "Nanodot 的 DeepSeek Harness 版",
   "Desktop app": "桌面应用",
   "Start with the computer": "开机自动启动",
   "Opens in the tray at sign-in; the agent's goals and check-ins run from then on.": "登录系统后在托盘里启动；从那时起，它的目标和定时检查就开始跑了。",
@@ -1647,7 +1645,7 @@ const zhCN: Record<string, string> = {
   "Add a provider and pick its models": "添加一个服务商并选择模型",
   "Image & video models": "图像与视频模型",
   "Name & personality": "名字与人格",
-  "About nanoMuse": "关于 nanoMuse",
+  "About Nanodot": "关于 Nanodot",
   "Privacy policy": "隐私政策",
   Feedback: "反馈问题",
   none: "无",
@@ -1709,7 +1707,7 @@ const zhCN: Record<string, string> = {
   "Error": "出错",
   "Missing": "缺少",
   "Switched on": "已开启",
-  "Install on the computer running nanoMuse, then switch it on again:": "在运行 nanoMuse 的电脑上安装，再重新开启：",
+  "Install on the computer running Nanodot, then switch it on again:": "在运行 Nanodot 的电脑上安装，再重新开启：",
   "Saved.": "已保存。",
   "Saving": "保存中",
   "Set; leave blank to keep": "已设置，留空则保持不变",

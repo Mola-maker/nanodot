@@ -227,7 +227,7 @@ export function scopeLabel(scope: string, tool: string, target?: string | null, 
 
 export function ApprovalCard({
   event,
-  name = "nanoMuse",
+  name = "Dot",
   onDecide,
 }: {
   event: ApprovalEvent;
@@ -561,7 +561,7 @@ export function BrowserCard({ event, onOpen }: { event: BrowserEvent; onOpen: (i
  * the window in front, and a Stop that takes the mouse back. The ring around the cursor is
  * drawn by the desktop stage (desktop/app); here the card is the account of it.
  */
-export function HandsCard({ event, name = "nanoMuse" }: { event: HandsEvent; name?: string }) {
+export function HandsCard({ event, name = "Dot" }: { event: HandsEvent; name?: string }) {
   const t = useT();
   const { state, toast } = useStore();
   const [stopping, setStopping] = useState(false);
@@ -697,7 +697,7 @@ export function holdLine(hold: HoldEvent, t: (s: string, v?: Record<string, stri
  * phone — "Your turn — <reason>" when the agent asked, "You took over …" when they did —
  * with Done. Off: greyed, with how it ended.
  */
-export function HoldCard({ event, name = "nanoMuse" }: { event: HoldEvent; name?: string }) {
+export function HoldCard({ event, name = "Dot" }: { event: HoldEvent; name?: string }) {
   const t = useT();
   const [busy, setBusy] = useState(false);
   const on = event.status === "on";

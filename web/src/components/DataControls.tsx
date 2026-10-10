@@ -11,11 +11,11 @@ import { MuseCaption, MuseCard, MuseDivider, MuseRow, MuseSwitchRow } from "./Mu
 export const PRIVACY_URL = "https://nanomuse.cn/privacy/";
 
 /**
- * Settings → Data controls, in the shape of Muse's: one switch, *Help improve nanoMuse's AI
+ * Settings → Data controls, in the shape of Muse's: one switch, *Help improve Nanodot's AI
  * models*, with what it means written under it in full — what the relay keeps while it is
  * on (what you wrote, what the model answered, the tool calls it chose), what it never
  * keeps (the system prompt, tool results, pictures, who you are), the relay's default for
- * new accounts, how many turns are kept so far — and the delete. It applies to the nanoMuse
+ * new accounts, how many turns are kept so far — and the delete. It applies to the Nanodot
  * Cloud account only: with your own key nothing passes through the relay, and the switch is
  * shown but cannot be moved until you sign in.
  */

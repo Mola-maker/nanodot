@@ -18,7 +18,7 @@ import { cx, relativeTime } from "../util";
  * with *Forget*. Only this device: a card on how to add one. On a computer the card for its
  * own hands follows, as before. There is no "cloud computer" section — we have none.
  */
-const DOWNLOAD_URL = "https://nanomuse.cn/dl/";
+const DOWNLOAD_URL = "https://github.com/Mola-maker/nanodot/releases";
 
 export function DevicesScreen() {
   const { state, dispatch, openThread, setTab, toast } = useStore();
@@ -404,8 +404,8 @@ function EmptyDevices({ hub, signedIn }: { hub: HubView | undefined; signedIn: b
               : !ready
                 ? hubStateLabel(hub?.state ?? "", t)
                 : hub?.account.hint
-                  ? t("Install nanoMuse on your phone, Mac or PC and sign in as {hint}; it appears here on its own.", { hint: hub.account.hint })
-                  : t("Install nanoMuse on your phone, Mac or PC and sign in with the same account; it appears here on its own.")}
+                  ? t("Install Nanodot on your phone, Mac or PC and sign in as {hint}; it appears here on its own.", { hint: hub.account.hint })
+                  : t("Install Nanodot on your phone, Mac or PC and sign in with the same account; it appears here on its own.")}
           </p>
         </div>
       </div>
@@ -422,7 +422,7 @@ function HandsCard({ hands, onChange }: { hands: HandsStatus; onChange: () => vo
   const { dispatch, toast, state } = useStore();
   const t = useT();
   const [busy, setBusy] = useState(false);
-  const museName = state.profile?.name ?? "nanoMuse";
+  const museName = state.profile?.name ?? "Dot";
 
   const set = async (body: { enabled?: boolean; backend?: string; mode?: string }) => {
     setBusy(true);
@@ -499,7 +499,7 @@ function HandsCard({ hands, onChange }: { hands: HandsStatus; onChange: () => vo
         )}
       </MuseCard>
       {hands.enabled && hands.device?.platform === "darwin" && (
-        <MuseCaption>{t("On a Mac, allow nanoMuse under System Settings → Privacy & Security → Accessibility and Screen Recording when macOS asks; without them clicks do nothing and the screenshot is black. The first action in each app asks you once (\"Let {name} use Safari?\") and the answer is kept under Permissions.", { name: museName })}</MuseCaption>
+        <MuseCaption>{t("On a Mac, allow Nanodot under System Settings → Privacy & Security → Accessibility and Screen Recording when macOS asks; without them clicks do nothing and the screenshot is black. The first action in each app asks you once (\"Let {name} use Safari?\") and the answer is kept under Permissions.", { name: museName })}</MuseCaption>
       )}
     </>
   );

@@ -138,26 +138,26 @@ export function starText(t: (s: string, vars?: Record<string, string | number>) 
   switch (m) {
     case "signed_in":
       return t(
-        "Welcome. nanoMuse is free, open source and non-profit, a personal agent for anyone who runs it. If that is worth something to you, a star on GitHub is how the next person finds it.",
+        "Welcome. Nanodot is an open-source personal agent based on nanoMuse. A star on GitHub helps others find it.",
       );
     case "tasks":
       return n === 3
-        ? t("Three tasks done. If nanoMuse is useful, a star on GitHub helps the next person find it.")
+        ? t("Three tasks done. If Nanodot is useful, a star on GitHub helps the next person find it.")
         : n === 10
-          ? t("Ten tasks together. If nanoMuse has become part of your day, a star on GitHub tells others it is worth a try.")
-          : t("{n} tasks done. If nanoMuse is useful, a star on GitHub helps the next person find it.", { n: n ?? 0 });
+          ? t("Ten tasks together. If Nanodot has become part of your day, a star on GitHub tells others it is worth a try.")
+          : t("{n} tasks done. If Nanodot is useful, a star on GitHub helps the next person find it.", { n: n ?? 0 });
     case "new_look":
-      return t("A new face, drawn for you. If you like where nanoMuse is going, a star on GitHub helps more people find it.");
+      return t("A new face, drawn for you. If you like where Nanodot is going, a star on GitHub helps more people find it.");
     case "exhausted":
-      return t("The free allowance is used up. Thank you for coming this far. If nanoMuse has earned it, a star on GitHub keeps the project in view for the next person.");
+      return t("The free allowance is used up. Thank you for coming this far. If Nanodot has earned it, a star on GitHub keeps the project in view for the next person.");
     case "days_used":
       return n === 7
-        ? t("A week with nanoMuse. If it has earned a place in your day, a star on GitHub helps the next person find it.")
+        ? t("A week with Nanodot. If it has earned a place in your day, a star on GitHub helps the next person find it.")
         : n === 30
-          ? t("A month with nanoMuse. If it has become part of your routine, a star on GitHub tells others it is worth a try.")
-          : t("{n} days with nanoMuse. If it has earned a place in your day, a star on GitHub helps the next person find it.", { n: n ?? 0 });
+          ? t("A month with Nanodot. If it has become part of your routine, a star on GitHub tells others it is worth a try.")
+          : t("{n} days with Nanodot. If it has earned a place in your day, a star on GitHub helps the next person find it.", { n: n ?? 0 });
     case "goal_done":
-      return t("Goal reached. If nanoMuse helped you get there, a star on GitHub tells the people building it that it did.");
+      return t("Goal reached. If Nanodot helped you get there, a star on GitHub tells the people building it that it did.");
   }
 }
 

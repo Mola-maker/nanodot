@@ -362,7 +362,7 @@ export class CodingService {
     const dev = hub.devices.find((d) => d.id === device) ?? hub.find(device)
     if (!dev) throw new HubError('no_device', `no device matches '${device}'`)
     if (!dev.online) throw new HubError('device_offline', `${dev.name || device} is offline`)
-    if (!dev.actions.includes(action)) throw new HubError('not_supported', `${dev.name || device} runs an older nanoMuse without coding agents`)
+    if (!dev.actions.includes(action)) throw new HubError('not_supported', `${dev.name || device} runs an older Nanodot without coding agents`)
     return hub.call(dev.id, action, args, { timeoutMs: action === 'coding.send' ? 1_800_000 : 60_000, onEvent })
   }
 

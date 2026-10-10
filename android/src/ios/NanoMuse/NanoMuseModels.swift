@@ -1,6 +1,6 @@
 //
 //  NanoMuseModels.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Which model answers, and how a pick sticks (contract C4): the relay's
 //  menu says `for: ["chat"] | ["gui"] | ["chat","gui"]`; the chat opens on

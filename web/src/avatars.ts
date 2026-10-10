@@ -1,32 +1,27 @@
-/**
- * The agent's face. Muse gives its agent a plush doll; nanoMuse has its dragon — five stills,
- * one per mood (public/avatars/dragon-*.webp) and four short clips that move them (idle,
- * working, waiting, happy — dragon-*.mp4, the same clips the Android app plays) — or a face the
- * person had drawn for them in the avatar studio (served from the runtime's files, stills and,
- * where the video model made them, clips), or an emoji on a colour for anyone who prefers it.
- * `profile.avatar` names the face; "" means the emoji.
- */
+/** Offline Dot stills, custom studio assets, or a chosen emoji. Legacy built-in IDs wear Dot. */
 
 import { fileUrl } from "./api";
 
-/** The dragon: the default face. */
-export const DRAGON = "dragon";
+/** The public built-in avatar ID. Paths keep their legacy names for older clients. */
+export const DOT = "dot-v1";
+/** Kept as a source alias for existing picker imports. */
+export const DRAGON = DOT;
 export type DragonMood = "idle" | "working" | "waiting" | "happy" | "error";
 
 /**
  * Faces from before 0.1.23 — the red panda drawn live and the six knitted dolls — are gone;
- * a profile still naming one wears the dragon.
+ * a profile still naming one wears Dot.
  */
 const RETIRED = new Set(["panda", "sunny", "moss", "sky", "fox", "bolt", "plum"]);
 
 export function isDragon(id: string | undefined | null): boolean {
-  return !id || id === DRAGON || RETIRED.has(id);
+  return id == null || id === DOT || id === "dragon" || RETIRED.has(id);
 }
 
 /**
  * A face from the avatar studio: `profile.avatar` is its id, the stills live in the workspace
  * under `avatar/<id>/` (idle · working · waiting · happy · error, webp) and come through the
- * files API — the same five moods the dragon has.
+ * files API — the same five moods Dot has.
  */
 export function studioUrl(id: string, mood: string): string {
   const still: DragonMood = mood === "working" || mood === "waiting" || mood === "happy" || mood === "error" ? mood : "idle";
@@ -45,10 +40,10 @@ function clipMood(mood: string): ClipMood {
   return mood === "working" || mood === "waiting" || mood === "happy" ? mood : "idle";
 }
 
-/** The dragon's clip for a mood — a few seconds, looping, back in the starting pose at the end. */
+/** Built-in Dot has no video clip; custom studio motion remains available. */
 export function dragonClipUrl(mood: string): string | null {
-  if (mood === "error") return null;
-  return `/avatars/dragon-${clipMood(mood)}.mp4`;
+  void mood;
+  return null;
 }
 
 /**

@@ -196,7 +196,7 @@ object MediaModels {
         val image = imageEndpoint(context)
         val video = videoEndpoint(context)
         return buildString {
-            append("Media models. Unlike Muse, whose image and video models are built in, nanoMuse runs on three models the user configures: ")
+            append("Media models. Unlike Muse, whose image and video models are built in, Nanodot runs on three models the user configures: ")
             append("the chat model (you), an image model (avatar changes, pictures the user asks for) and a video model (the animated avatar, short clips). ")
             append("Image model: ").append(image?.let { "${it.model} via ${it.label}" } ?: "NOT SET").append(". ")
             append("Video model: ").append(video?.let { "${it.model} via ${it.label}" } ?: "NOT SET").append(".\n")

@@ -7187,7 +7187,7 @@ class ChatViewModel(
      *
      *  Also clears [ChatMessage.isAwaitingModelResponse] — without this, an
      *  exception thrown after a tool turn (which sets isAwaitingModelResponse=
-     *  true at runAgentLoop ~4015) leaves the "nanoMuse is thinking" indicator
+     *  true at runAgentLoop ~4015) leaves the "Nanodot is thinking" indicator
      *  on screen even though streaming is over. The flag is per-message and
      *  is not implicitly cleared by isStreaming=false. */
     private fun setInlineError(errorText: String) {
@@ -8066,7 +8066,7 @@ class ChatViewModel(
         val allToolInputs = mutableMapOf<String, String>()
 
         // Add placeholder assistant message (once). Mark as awaiting so the
-        // "nanoMuse is thinking" indicator shows during the initial request gap
+        // "Nanodot is thinking" indicator shows during the initial request gap
         // before the first stream chunk arrives. Mirrors iOS isAwaitingModelResponse.
         // T300: snapshot the user's current thinking level at message
         // creation so the renderer can hide Deep Thinking blocks for
@@ -8254,7 +8254,7 @@ class ChatViewModel(
                     // placeholder, while `loopExitedNormally = true` below
                     // deliberately skips finalizeAtTurnLimit at the loop tail.
                     //
-                    // Without this the bubble stays on "nanoMuse is thinking"
+                    // Without this the bubble stays on "Nanodot is thinking"
                     // forever — the streamJob's finally only clears the GLOBAL
                     // _isStreaming, not the per-message flags. Reachable with no
                     // failure at all: ContextPolicy gives every model with a
@@ -9541,7 +9541,7 @@ class ChatViewModel(
             }
 
             // Update UI with tool statuses. Mark as awaiting the next model
-            // response so "nanoMuse is thinking" shows during the network gap
+            // response so "Nanodot is thinking" shows during the network gap
             // between tool results being sent and the next turn's first chunk.
             // Mirrors iOS isAwaitingModelResponse.
             withContext(Dispatchers.Main) {
@@ -9829,7 +9829,7 @@ class ChatViewModel(
             // [T-vision-group-attribution / GH#182] iOS rewrites the tool block's
             // live content here so the card names the model as it works. Android
             // has no equivalent channel — no tool streams partial output to its
-            // card, and the progress label ("nanoMuse is reading Image",
+            // card, and the progress label ("Nanodot is reading Image",
             // ChatToolFormatting.kt:102) is a static per-tool string. Building
             // that plumbing is a separate change, so for now the per-attempt
             // signal goes to the log, where a fallback is still traceable. The
@@ -12140,7 +12140,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
         if (lastIdx < 0) return
         var last = msgs[lastIdx]
 
-        // T73: clear "nanoMuse is thinking…" the moment the user taps Stop.
+        // T73: clear "Nanodot is thinking…" the moment the user taps Stop.
         // isAwaitingModelResponse is set true at runAgentLoop entry (≈ line
         // 2785) so the typing indicator shows during the initial request
         // gap before the first stream chunk. The cancel paths below didn't
@@ -12208,7 +12208,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
         // Stop fired while still in the pre-first-chunk thinking gap (no
         // partial text, no tool_use emitted, no committed history for this
         // turn). The placeholder ChatMessage runAgentLoop pushed at L5248 is
-        // not in the DB and would otherwise render as an empty "nanoMuse" header
+        // not in the DB and would otherwise render as an empty "Nanodot" header
         // bubble with no body. Drop it so the UI snaps back to idle the
         // instant the user taps Stop. Mirrors the iOS #566/#569 boundary:
         // a candidate WITH real text or any emitted tool_use is kept (handled

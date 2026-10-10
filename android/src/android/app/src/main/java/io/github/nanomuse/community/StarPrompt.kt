@@ -55,7 +55,7 @@ import java.util.Locale
  */
 object StarPrompt {
     /** The repository the star goes to (the policy may point elsewhere; see [url]). */
-    const val REPO_URL = "https://github.com/nano-muse/nanoMuse"
+    const val REPO_URL = "https://github.com/Mola-maker/nanodot"
 
     private const val PREFS = "nm.star"
     private const val KEY_STARRED = "starred"
@@ -148,7 +148,7 @@ object StarPrompt {
     fun policy(context: Context): Nudges.Policy = Nudges.current(context)
 
     /** Where the star goes: the policy's URL (the repository by default). */
-    fun url(context: Context): String = policy(context).url
+    fun url(@Suppress("UNUSED_PARAMETER") context: Context): String = REPO_URL
 
     /** The ledger as the prefs hold it. */
     fun ledger(context: Context): Ledger {
@@ -325,7 +325,7 @@ fun StarNudgeCard(
                     onClick = { StarPrompt.open(context); onDone() },
                     shape = CircleShape,
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = Color.White),
+                    colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
                 ) { Text(stringResource(R.string.nm_star_action), fontSize = 13.sp, fontWeight = FontWeight.Medium) }
                 Spacer(Modifier.width(6.dp))
                 TextButton(onClick = onDone) {

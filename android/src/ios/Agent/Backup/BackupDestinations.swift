@@ -136,7 +136,7 @@ enum BackupDestinations {
     /// still writable.
     ///
     /// `effectiveWritable` covers both halves of the existing model: the OS
-    /// probe (`isWritable`) and the user's own "don't let nanoMuse write here"
+    /// probe (`isWritable`) and the user's own "don't let Nanodot write here"
     /// switch (`userAllowWrite`). Offering a read-only mount as a destination
     /// would only produce a failure at the end of a long export.
     static var eligibleFolders: [MountedFolderEntry] {

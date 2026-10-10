@@ -1,6 +1,6 @@
 //
 //  NanoMuseCoding.swift
-//  nanoMuse
+//  Nanodot
 //
 //  The coding agents on another computer of the account, over the hub:
 //  the `coding.*` actions the runtime there answers (docs/coding-agents.md).
@@ -190,7 +190,7 @@ struct NanoMuseCodingView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 if computer == nil {
-                    Text(AppLocalized("No computer with a coding agent is online. Run nanoMuse on the computer where Cursor, Codex or Claude Code is installed, signed in with this account."))
+                    Text(AppLocalized("No computer with a coding agent is online. Run Nanodot on the computer where Cursor, Codex or Claude Code is installed, signed in with this account."))
                         .font(.subheadline)
                     if let hint = NanoMuseCloud.account?.hint, !hint.isEmpty {
                         Text(String(format: AppLocalized("This phone is signed in as %@; the computer must use the same account."), hint))

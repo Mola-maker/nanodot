@@ -1,13 +1,18 @@
-# nanoMuse in a container: the agent sees only /data and /workspace.
+# Nanodot in a container: the agent sees only /data and /workspace.
 #
-#   docker build -t nanomuse .
-#   docker run -d -p 8787:8787 --env-file .env -v nanomuse-data:/data -v $PWD/workspace:/workspace nanomuse
-#   docker run -it --rm --env-file .env -v nanomuse-data:/data -v $PWD/workspace:/workspace nanomuse chat
+#   docker build -t nanodot .
+#   docker run -d -p 8787:8787 --env-file .env -v nanomuse-data:/data -v $PWD/workspace:/workspace nanodot
+#   docker run -it --rm --env-file .env -v nanomuse-data:/data -v $PWD/workspace:/workspace nanodot chat
 #
 # With a browser (Chromium + Playwright, ~400 MB more; the browser tool is on):
-#   docker build --build-arg WITH_BROWSER=1 -t nanomuse:browser .
+#   docker build --build-arg WITH_BROWSER=1 -t nanodot:browser .
 #
 FROM python:3.12-slim
+
+LABEL org.opencontainers.image.title="Nanodot" \
+      org.opencontainers.image.source="https://github.com/Mola-maker/nanodot" \
+      org.opencontainers.image.description="Nanodot personal agent with Dot, based on nanoMuse" \
+      org.opencontainers.image.licenses="GPL-3.0-or-later"
 
 # Override for a regional PyPI mirror, e.g.
 #   docker build --build-arg PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple .

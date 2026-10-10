@@ -1,6 +1,6 @@
 /**
  * Pictures through an own key (0.1.41 "Choice"): the avatar studio's candidates and poses
- * drawn by the provider the person chose under Settings → Models, not only by nanoMuse
+ * drawn by the provider the person chose under Settings → Models, not only by Nanodot
  * Cloud. Three shapes, the same three the Python runtime's `nanomuse/avatar/studio.py`
  * tells apart:
  *

@@ -31,10 +31,9 @@ test("the NSIS installer puts every file in its archive, the face's clips includ
   assert.ok(nsis.includes("  preCompressedFileExtensions: []"), "nsis.preCompressedFileExtensions is an empty list");
 });
 
-test("the clips the installer must carry are in the bundle's assets", () => {
+test("the offline Dot stills the installer must carry are in the bundle's assets", () => {
   const assets = fileURLToPath(new URL("../dsh-nanomuse/assets/", here));
-  for (const mood of ["idle", "working", "waiting", "happy"]) {
-    assert.ok(existsSync(join(assets, `dragon-${mood}.mp4`)), `dragon-${mood}.mp4`);
+  for (const mood of ["idle", "working", "waiting", "happy", "error"]) {
     assert.ok(existsSync(join(assets, `dragon-${mood}.webp`)), `dragon-${mood}.webp`);
   }
 });

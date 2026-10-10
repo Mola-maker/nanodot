@@ -33,3 +33,22 @@ Other components and their licences: THIRD_PARTY_NOTICES.md.
 nanoMuse is not affiliated with, endorsed by, or derived from Meta
 Platforms, Inc. or its Muse product. "Muse" is a trademark of Meta
 Platforms, Inc.
+
+--------------------------------------------------------------------------
+
+Nanodot modifications, 2026-10-10
+Copyright (C) 2026 Nanodot contributors
+
+Nanodot is based on nanoMuse (https://github.com/nano-muse/nanoMuse),
+using local baseline f627f33ccc8ab70b9b59322929e5f15a2b1bec64.
+The upstream notices above and THIRD_PARTY_NOTICES.md remain applicable.
+Nanodot changes the public application identity, default assistant and
+original Dot artwork, branding generators, safe defaults, platform build
+configuration and documentation. Internal packages and sandbox paths
+remain compatible. Dot SVG artwork is original Nanodot artwork licensed
+GPL-3.0-or-later; SVG source comments record its provenance.
+
+Nanodot source: https://github.com/Mola-maker/nanodot
+The android/deps/proot submodule and its licence remain part of the
+corresponding source. nanoMuse Cloud remains an upstream service, not a
+service operated or rebranded by Nanodot.

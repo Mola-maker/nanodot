@@ -27,6 +27,7 @@ from nanomuse.agent import Incoming, MuseAgent
 from nanomuse.app import NanoMuseApp
 from nanomuse.avatar import AvatarStudio
 from nanomuse.background import spawn
+from nanomuse.brand import AGENT_NAME, DEFAULT_AVATAR, DEFAULT_COLOR
 from nanomuse.bridge.server import Bridge
 from nanomuse.cloud import CLOUD_KEY, DEFAULT_CHAT_MODEL, CloudError, model_url
 from nanomuse.coding.service import CodingService
@@ -199,13 +200,12 @@ _SHUTDOWN_GRACE_S = 5.0
 
 @dataclass
 class Profile:
-    name: str = "nanoMuse"
-    # the face: "dragon" (the one the Android app wears; stills per mood), a face drawn in
-    # the avatar studio (its id names files under the workspace), or "" for the emoji; the
-    # red panda and the dolls of 0.1.22 are gone — a profile naming one wears the dragon
-    avatar: str = "dragon"
+    name: str = AGENT_NAME
+    # The built-in Dot face, an avatar studio id under the workspace, or "" for the emoji.
+    # Existing ids stay on file and clients provide the compatible fallback.
+    avatar: str = DEFAULT_AVATAR
     emoji: str = "✨"
-    color: str = "#0064d4"
+    color: str = DEFAULT_COLOR
     # one line under the name, the way Muse shows it ("Your day, sorted.")
     tagline: str = ""
     # how it talks: a tone (formal · casual · playful · concise), a length or shape of reply
@@ -280,7 +280,7 @@ class Profile:
             p.proactivity = "default" if data["proactive"] else "off"
         if p.proactivity not in PROACTIVITY:
             p.proactivity = "default"
-        p.name = (str(p.name).strip() or "nanoMuse")[:NAME_MAX]
+        p.name = (str(p.name).strip() or AGENT_NAME)[:NAME_MAX]
         if "avatar" not in data:
             # a profile from before the dolls: keep the emoji it has
             p.avatar = ""
@@ -570,7 +570,9 @@ class MuseService:
         path = self.data_dir / "profile.json"
         if path.exists():
             try:
-                return Profile.from_dict(json.loads(path.read_text("utf-8")))
+                data = json.loads(path.read_text("utf-8"))
+                data.setdefault("name", self.settings.agent.name)
+                return Profile.from_dict(data)
             except (OSError, json.JSONDecodeError, ValueError):
                 pass
         return Profile(name=self.settings.agent.name)
@@ -656,7 +658,7 @@ class MuseService:
         ``intro``, the three lines the app speaks first, in ``lang``."""
         view = self.firstrun.view(self.firstrun_lang(lang))
         if intro:
-            view["intro"] = firstrun.intro_lines(self.firstrun_lang(lang))
+            view["intro"] = firstrun.intro_lines(self.firstrun_lang(lang), self.profile.name)
         return view
 
     def _publish_firstrun(self) -> None:

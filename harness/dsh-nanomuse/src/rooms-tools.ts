@@ -23,7 +23,7 @@ export function apply(ctx: Context): void {
       ctx.tools.register(
         defineTool({
           name: 'goals_room_update',
-          description: "Update one of the person's goals in their Goals room (nanoMuse's room, not this session's own goal — that is update_goal): the one-line status, a timeline entry, the title, or mark it done/paused/tracking. Call it whenever something happens on a goal worth noting — a check done, a price seen, a step finished. The goals and their ids are in your context.",
+          description: "Update one of the person's goals in their Goals room (Nanodot's room, not this session's own goal — that is update_goal): the one-line status, a timeline entry, the title, or mark it done/paused/tracking. Call it whenever something happens on a goal worth noting — a check done, a price seen, a step finished. The goals and their ids are in your context.",
           parameters: {
             goal_id: { type: 'string', required: true, description: 'The goal id from your context, or its exact title.' },
             summary: { type: 'string', description: "The goal's status in one line, as it should read under the title (e.g. 'Lowest fare today USD 879.90, still above the ¥4,000 line')." },

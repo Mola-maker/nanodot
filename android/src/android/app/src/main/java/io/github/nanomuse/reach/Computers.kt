@@ -157,7 +157,7 @@ object Computers {
         val all = all(context)
         val onHub = Hub.isConnected
         return buildString {
-            append("## Your devices (nanoMuse)\n")
+            append("## Your devices (Nanodot)\n")
             if (all.isEmpty()) {
                 append("No other device is connected right now. The way to add a computer: install nanoMuse Desktop there (https://nanomuse.cn/#download) and sign in with the same nanoMuse Cloud account as this phone — it appears under [Devices](${Hub.DEEP_LINK}) within seconds, on any network. ")
                 append("When the user wants something done on their PC or Mac, say so in one line and point to the desktop app. ")

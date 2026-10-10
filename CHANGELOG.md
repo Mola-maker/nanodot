@@ -1,8 +1,18 @@
 # Changelog
 
-All notable changes to nanoMuse. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [Semantic Versioning](https://semver.org/). Unreleased changes are on `main`.
+Nanodot changes are recorded under Unreleased; historical entries below describe nanoMuse. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [Semantic Versioning](https://semver.org/). Unreleased changes are on `main`.
 
 ## [Unreleased]
+
+### Nanodot P0
+
+- Establish the shared Nanodot brand profile, default assistant Dot, application ID `io.github.nanodot.app` and external `nanodot://` scheme. Internal Kotlin packages, `minis://` routes, sandbox paths and CLI names remain stable.
+- Supply original GPL-3.0-or-later offline Dot artwork and static default faces across clients while retaining user-created avatars and animation. Seed only missing identity, appearance and Dot preferences; preserve existing SOUL.md, model choices and settings.
+- Default to the system theme; continuous voice is off. Define floating-ball preferences for later phases without enabling accessibility or Hands. New floating-ball and care-mode interaction remain future work.
+- Disable automatic update checks until a Nanodot channel is configured. Preserve nanoMuse Cloud service identity and upstream attribution.
+- Synchronize Android, iOS, desktop, Web and relevant CI identities. Add `scripts/build-nanodot-apk.sh debug|release` for local builds and inspection; release requires dedicated signing with no debug fallback. The wrapper does not publish, upload or tag.
+- Added native desktop Actions packaging with platform-specific runtimes and checksum records, plus unsigned iOS Release archive/device-app artifacts without requiring Apple credentials or uploading to TestFlight.
+- Keep version 1.0.1 / Android versionCode 44. Real-device install/upgrade acceptance and native Xcode, Windows and macOS packaging need their own evidence.
 
 ### Cloud
 

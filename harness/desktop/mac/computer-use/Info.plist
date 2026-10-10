@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!-- nanoMuse Computer Use.app — build.sh fills __VERSION__ and __MIN__. LSUIElement keeps the
+<!-- Nanodot Computer Use.app — build.sh fills __VERSION__ and __MIN__. LSUIElement keeps the
      helper out of the Dock and the ⌘-Tab switcher; the bundle identifier is what the Screen
      Recording and Accessibility panes remember (docs/desktop.md "macOS permissions"). -->
 <plist version="1.0">
@@ -8,17 +8,17 @@
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
   <key>CFBundleDisplayName</key>
-  <string>nanoMuse Computer Use</string>
+  <string>Nanodot Computer Use</string>
   <key>CFBundleExecutable</key>
-  <string>nanoMuse Computer Use</string>
+  <string>Nanodot Computer Use</string>
   <key>CFBundleIconFile</key>
   <string>AppIcon</string>
   <key>CFBundleIdentifier</key>
-  <string>io.github.nanomuse.desktop.computer-use</string>
+  <string>io.github.nanodot.desktop.computer-use</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundleName</key>
-  <string>nanoMuse Computer Use</string>
+  <string>Nanodot Computer Use</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
@@ -32,6 +32,6 @@
   <key>NSHighResolutionCapable</key>
   <true/>
   <key>NSHumanReadableCopyright</key>
-  <string>GPL-3.0-or-later · the nanoMuse community</string>
+  <string>GPL-3.0-or-later · nanoMuse and Nanodot contributors</string>
 </dict>
 </plist>

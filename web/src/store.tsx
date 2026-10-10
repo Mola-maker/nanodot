@@ -705,7 +705,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     // `?thread=<id>` opens a chat, `?tab=goals` (feed, ideas, library, connections) a tab —
     // used by notification taps and by links into the app.
     // `?draft=<text>&attach=<json>` puts text and already-uploaded files into the composer
-    // without sending — how "Share to nanoMuse" from another app on the phone arrives.
+    // without sending — how "Share to Nanodot" from another app on the phone arrives.
     const openFromUrl = (href: string) => {
       const url = new URL(href, window.location.origin);
       const thread = url.searchParams.get("thread");

@@ -22,10 +22,10 @@ import { useStore } from "../store";
 export function SignInGate() {
   const { state, refreshSettings, refreshHub, toast, skipSignIn } = useStore();
   const t = useT();
-  const name = state.profile?.name ?? "nanoMuse";
+  const name = state.profile?.name ?? "Dot";
   const perks = (
     <ul className="grid grid-cols-2 gap-2 text-[12.5px] wide:grid-cols-1 wide:gap-1.5 wide:text-[13.5px]">
-      <Perk icon={<MonitorSmartphone size={15} />} text={t("Every device of yours, one nanoMuse")} />
+      <Perk icon={<MonitorSmartphone size={15} />} text={t("Every device of yours, one Nanodot")} />
       <Perk icon={<Cloud size={15} />} text={t("A model with a free allowance, or your own key")} />
       <Perk icon={<Hand size={15} />} text={t("It uses your phone and computers for you")} />
       <Perk icon={<ShieldCheck size={15} />} text={t("Keys in your vault; nothing you say is kept on the relay")} />

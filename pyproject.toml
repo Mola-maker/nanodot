@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "nanomuse"
 version = "1.0.1"
-description = "nanoMuse: an open-source personal agent for every device you own. This is its runtime: the agent, the Sentinel that decides what may run, the hands that work a phone or a computer, and the web app. Bring your own model."
+description = "Nanodot: an open-source personal agent for every device you own. This is its runtime: the agent, the Sentinel that decides what may run, the hands that work a phone or a computer, and the web app. Bring your own model."
 readme = "README.md"
 license = { text = "GPL-3.0-or-later" }
 requires-python = ">=3.11"
@@ -73,11 +73,11 @@ nanomuse-browser = "nanomuse.bridge.cli:browser_main"
 nanomuse-open = "nanomuse.bridge.cli:open_main"
 
 [project.urls]
-Homepage = "https://nanomuse.cn"
-Documentation = "https://nanomuse.cn/docs/"
-Repository = "https://github.com/nano-muse/nanoMuse"
-Issues = "https://github.com/nano-muse/nanoMuse/issues"
-Changelog = "https://github.com/nano-muse/nanoMuse/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/Mola-maker/nanodot"
+Documentation = "https://github.com/Mola-maker/nanodot/tree/main/docs"
+Repository = "https://github.com/Mola-maker/nanodot"
+Issues = "https://github.com/Mola-maker/nanodot/issues"
+Changelog = "https://github.com/Mola-maker/nanodot/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["nanomuse"]

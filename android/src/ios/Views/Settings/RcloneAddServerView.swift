@@ -506,7 +506,7 @@ struct RcloneAddServerView: View {
     /// Create a subdirectory in the folder currently being browsed.
     ///
     /// Exists because the destination often does not exist yet: a user
-    /// pointing at a NAS share usually wants "…/nanoMuse Backups", and without
+    /// pointing at a NAS share usually wants "…/Nanodot Backups", and without
     /// this the only way to get one was to leave the app, make the folder in
     /// another client, and come back.
     private func createFolder() async {

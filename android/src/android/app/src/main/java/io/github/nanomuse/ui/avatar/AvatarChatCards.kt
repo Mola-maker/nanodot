@@ -277,7 +277,7 @@ fun AvatarShareCard(description: String, onDismiss: () -> Unit) {
             Button(
                 onClick = { sheet = true },
                 shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = Color.White),
+                colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
             ) {
                 Text(stringResource(R.string.nm_avatar_share_button), fontSize = 14.sp, fontWeight = FontWeight.Medium)
             }

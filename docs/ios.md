@@ -657,10 +657,13 @@ certificate); the lane makes them again if they are missing.
 
 ### Does it compile?
 
-*Actions → iOS · build check → Run workflow* (`.github/workflows/ios-check.yml`) builds the app
-for a device on a Mac runner with signing turned off: no Apple account, no secrets. It shares
-the native-dependency cache with the TestFlight workflow, so run it first: a compile error costs
-minutes there, not an upload. The full `xcodebuild` log is attached to the run. The run fails
+*Actions → iOS · unsigned build → Run workflow* (`.github/workflows/ios-check.yml`) archives a
+Release device build on a Mac runner with signing turned off: no Apple account, no secrets.
+Its device-dependency cache includes the runner architecture, Go version, Xcode version and
+pinned iSH revision. The artifacts include the unsigned `.xcarchive` and device `.app` ZIPs,
+checksums and full `xcodebuild` log. They need valid Apple signing and provisioning before
+installation; they are not Simulator apps or installable IPAs. TestFlight remains separate.
+The run fails
 when a warning is reported in a file under `NanoMuse/` (upstream's files are not held to this),
 so the zero-warnings rule above is checked, not just asked for.
 

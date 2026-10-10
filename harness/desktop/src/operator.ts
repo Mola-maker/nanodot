@@ -9,7 +9,7 @@ import type * as Nut from "@computer-use/nut-js";
 import { describeAction, HELPER_NAME, HELPER_SCREEN_PERMISSION_TEXT, MacHelperError, type HelperWindow, type HelperWindowShot, type MacHelper } from "./mac-helper";
 
 /**
- * The hands of nanoMuse Desktop: the mouse, the keyboard and the screenshot, done by this
+ * The hands of Nanodot Desktop: the mouse, the keyboard and the screenshot, done by this
  * process (Electron) rather than by the Python runtime it starts. Why here: the app bundle is
  * what macOS grants Accessibility and Screen Recording to, Electron knows the display's real
  * geometry, and UI-TARS-desktop has run this very operator on many desks already. The
@@ -45,7 +45,7 @@ export interface OperatorInfo {
   platform: NodeJS.Platform;
   display: { width: number; height: number; scaleFactor: number; logical: { width: number; height: number } };
   /**
-   * macOS only: whether "nanoMuse Computer Use" is doing the capture and the input, or why
+   * macOS only: whether "Nanodot Computer Use" is doing the capture and the input, or why
    * not. `present` is the bundle being there at all (the runtime's window mode lists and
    * captures windows through `/windows` and `/window` when it is); `capture` is the helper's
    * source ("ScreenCaptureKit" on macOS 14+).
@@ -128,7 +128,7 @@ export interface OperatorOptions {
   /** macOS: the permissions the hands need, as the app's own probes see them. */
   permissions?: () => { accessibility: boolean; screen: boolean };
   /**
-   * macOS: "nanoMuse Computer Use", the helper app that holds the grants and does the capture
+   * macOS: "Nanodot Computer Use", the helper app that holds the grants and does the capture
    * and the input (mac-helper.ts). When its bundle is there, every screenshot and action goes
    * through it — or fails with the helper's own reason (it did not start, its capture failed);
    * nothing falls through to desktopCapturer or libnut behind its back. Only without a bundle
@@ -152,7 +152,7 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const isNum = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
 
 /** What a Mac without Screen Recording is told — the one text, from `/info` and from a refused `/screenshot` alike. */
-export const SCREEN_PERMISSION_TEXT = "macOS: switch on nanoMuse Desktop under System Settings → Privacy & Security → Screen Recording, then quit and reopen the app.";
+export const SCREEN_PERMISSION_TEXT = "macOS: switch on Nanodot Desktop under System Settings → Privacy & Security → Screen Recording, then quit and reopen the app.";
 /** A channel below this in every sampled pixel means a black picture (macOS without the permission). */
 const BLACK_LEVEL = 8;
 
@@ -259,7 +259,7 @@ export class Operator {
             ? helper
               ? HELPER_SCREEN_PERMISSION_TEXT
               : SCREEN_PERMISSION_TEXT
-            : `macOS: switch on ${helper ? "nanoMuse Computer Use" : "nanoMuse Desktop"} under System Settings → Privacy & Security → ${missing.join(" and ")}${p.screen || helper ? "" : ", then quit and reopen the app"}.`,
+            : `macOS: switch on ${helper ? "Nanodot Computer Use" : "Nanodot Desktop"} under System Settings → Privacy & Security → ${missing.join(" and ")}${p.screen || helper ? "" : ", then quit and reopen the app"}.`,
         };
       }
     }
@@ -602,7 +602,7 @@ export class Operator {
   }
 
   /**
-   * One action through "nanoMuse Computer Use": the same clamping to the display and the
+   * One action through "Nanodot Computer Use": the same clamping to the display and the
    * same marker for the glow as the libnut path, then the action as it came, with the
    * clamped points, to the helper's `/execute`. Its refusals come back as the operator's
    * errors (400 for a bad action, 403 without Accessibility, 503 when it is gone).
@@ -638,7 +638,7 @@ export class Operator {
     try {
       return await helper.execute({ ...action, action: kind, ...(start ? { x: start.x, y: start.y } : {}), ...(end ? { x2: end.x, y2: end.y } : {}) });
     } catch (exc) {
-      if (exc instanceof MacHelperError) throw new OperatorError(exc.status === 403 ? `macOS: switch on nanoMuse Computer Use under System Settings → Privacy & Security → Accessibility.` : exc.message, exc.status === 403 ? 403 : exc.status >= 500 ? 503 : exc.status);
+      if (exc instanceof MacHelperError) throw new OperatorError(exc.status === 403 ? `macOS: switch on Nanodot Computer Use under System Settings → Privacy & Security → Accessibility.` : exc.message, exc.status === 403 ? 403 : exc.status >= 500 ? 503 : exc.status);
       throw exc;
     }
   }

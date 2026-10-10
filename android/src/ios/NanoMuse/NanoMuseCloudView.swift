@@ -190,12 +190,12 @@ struct NanoMuseCloudView: View {
         }
     }
 
-    /// What nanoMuse is, in a few lines, and where to bring a bug or a patch.
+    /// What Nanodot is, in a few lines, and where to bring a bug or a patch.
     private var noticeSection: some View {
         Section {
             VStack(alignment: .leading, spacing: 6) {
-                Text(AppLocalized("Free, open source, non-profit")).font(.subheadline.weight(.semibold))
-                Text(AppLocalized("nanoMuse is a non-profit open-source community project, free, forever. The model comes with a free allowance paid by the developer; after that, your own key. Nothing is sold; what the relay keeps is in the privacy policy, and Settings → Data controls is yours."))
+                Text(AppLocalized("An open-source personal agent")).font(.subheadline.weight(.semibold))
+                Text(AppLocalized("Nanodot is an open-source personal agent based on nanoMuse. Use your own model API key or connect to nanoMuse Cloud. Model usage and allowances follow the provider's terms. The provider's privacy policy explains what its relay stores; Settings → Data controls manages your account data."))
                     .font(.caption).foregroundStyle(.secondary)
                 Text(AppLocalized("Found a bug, want a feature, have a patch? The GitHub repository is the place."))
                     .font(.caption).foregroundStyle(.secondary)

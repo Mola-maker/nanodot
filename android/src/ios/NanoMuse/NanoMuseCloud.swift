@@ -616,7 +616,7 @@ enum NanoMuseCloud {
 
     private static var userAgent: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
-        return "nanoMuse-iOS/\(version)"
+        return "Nanodot-iOS/\(version)"
     }
 
     private static let session: URLSession = {

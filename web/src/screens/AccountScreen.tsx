@@ -241,7 +241,7 @@ function Invite({ invite: inv }: { invite: NonNullable<CloudMe["invite"]> }) {
     }
   };
   const share = async () => {
-    const text = t("Try nanoMuse with me, a fully open-source personal agent, free to use. Sign up with my code {code}: {link}", { code: inv.code, link });
+    const text = t("Try Nanodot with me, a fully open-source personal agent, free to use. Sign up with my code {code}: {link}", { code: inv.code, link });
     const nav = navigator as Navigator & { share?: (data: { text: string }) => Promise<void> };
     if (nav.share) {
       try {

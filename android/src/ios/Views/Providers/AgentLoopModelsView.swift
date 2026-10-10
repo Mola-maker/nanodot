@@ -59,7 +59,7 @@ struct AgentLoopModelsSection: View {
             }
         } header: {
             HStack {
-                Text("Models nanoMuse Can Call at Runtime")
+                Text("Models Nanodot Can Call at Runtime")
                 Spacer()
                 if !currentEntries.isEmpty || !currentGroups.isEmpty {
                     EditButton()
@@ -67,7 +67,7 @@ struct AgentLoopModelsSection: View {
                 }
             }
         } footer: {
-            Text("During a nanoMuse task, the agent calls these models for sub-tasks such as generating an image or summarizing text — work its own model can't do. Also callable from the terminal via minis-model-use. Only these are visible to the agent.")
+            Text("During a Nanodot task, the agent calls these models for sub-tasks such as generating an image or summarizing text — work its own model can't do. Also callable from the terminal via minis-model-use. Only these are visible to the agent.")
         }
     }
 

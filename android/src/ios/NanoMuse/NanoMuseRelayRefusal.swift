@@ -1,6 +1,6 @@
 //
 //  NanoMuseRelayRefusal.swift
-//  nanoMuse
+//  Nanodot
 //
 //  The relay's refusals as the chat shows them (docs/parity.md, item 35): one kind per code,
 //  read off the HTTP status and the body of a refused model call, so the chat can show one

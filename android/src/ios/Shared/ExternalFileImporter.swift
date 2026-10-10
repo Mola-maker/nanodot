@@ -2,7 +2,7 @@ import Foundation
 
 private let importLog = AppLogger(category: "Share")
 
-/// Ingests a `file://` URL that arrived via "Open in nanoMuse" / "Copy to nanoMuse"
+/// Ingests a `file://` URL that arrived via "Open in Nanodot" / "Copy to Nanodot"
 /// from the Files app (or any document provider) into the SAME PendingShare
 /// pipeline the Share Extension uses. The file is copied into the App Group
 /// shared transfer directory and surfaced as a `.attachment` item, so it flows

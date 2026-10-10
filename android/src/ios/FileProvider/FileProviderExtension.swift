@@ -9,12 +9,12 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
 
     let domain: NSFileProviderDomain
 
-    private static let log = OSLog(subsystem: "io.github.nanomuse.app.FileProvider", category: "Extension")
+    private static let log = OSLog(subsystem: "io.github.nanodot.app.FileProvider", category: "Extension")
 
     /// Root directory for all FileProvider-visible files in the App Group container.
     static var providerRoot: URL {
         let container = FileManager.default.containerURL(
-            forSecurityApplicationGroupIdentifier: "group.io.github.nanomuse.app"
+            forSecurityApplicationGroupIdentifier: "group.io.github.nanodot.app"
         )!
         let url = container.appendingPathComponent("MinisFileProvider", isDirectory: true)
         try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
@@ -89,7 +89,7 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
         }
 
         // Location 2: under MinisConfig (private but still pure cruft).
-        if let container = fm.containerURL(forSecurityApplicationGroupIdentifier: "group.io.github.nanomuse.app") {
+        if let container = fm.containerURL(forSecurityApplicationGroupIdentifier: "group.io.github.nanodot.app") {
             let inConfig = container.appendingPathComponent("MinisConfig/logs", isDirectory: true)
             if fm.fileExists(atPath: inConfig.path, isDirectory: &isDir), isDir.boolValue {
                 try? fm.removeItem(at: inConfig)
@@ -108,7 +108,7 @@ final class FileProviderExtension: NSObject, NSFileProviderReplicatedExtension {
         guard fm.fileExists(atPath: legacy.path) else { return }
         // Only delete if the canonical copy already exists under MinisConfig —
         // otherwise we'd lose the data.
-        guard let container = fm.containerURL(forSecurityApplicationGroupIdentifier: "group.io.github.nanomuse.app") else { return }
+        guard let container = fm.containerURL(forSecurityApplicationGroupIdentifier: "group.io.github.nanodot.app") else { return }
         let canonical = container.appendingPathComponent("MinisConfig/mounted-folders.json")
         if fm.fileExists(atPath: canonical.path) {
             try? fm.removeItem(at: legacy)

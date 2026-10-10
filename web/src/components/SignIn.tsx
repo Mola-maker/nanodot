@@ -11,7 +11,7 @@ import { useCloudConfig } from "./StarNudge";
 /**
  * Signing in to nanoMuse Cloud: a code sent to a mainland phone number (SMS) or an e-mail
  * address, or — once one is set — the account password. The same form everywhere it is needed (first run, the gate, the
- * account screen); the key lands in the vault on the machine running nanoMuse.
+ * account screen); the key lands in the vault on the machine running Nanodot.
  *
  * A friend's invite code (``?invite=CODE`` on the page URL, remembered until used, or typed
  * into the optional field) travels with the code sign-in; it counts for a new account only.

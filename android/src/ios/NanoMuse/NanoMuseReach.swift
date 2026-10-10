@@ -1,6 +1,6 @@
 //
 //  NanoMuseReach.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Reaching the account's other devices from this iPhone through the hub:
 //  open a link there, send a note, ask for a screenshot, run a shell
@@ -93,7 +93,7 @@ private struct NanoMuseReachSheet: View {
                     TextField(AppLocalized("A short note"), text: $note, axis: .vertical)
                         .lineLimit(1...4)
                     Button(AppLocalized("Send the note")) {
-                        run("notify", ["text": note.trimmingCharacters(in: .whitespacesAndNewlines), "title": "nanoMuse"]) { _ in
+                        run("notify", ["text": note.trimmingCharacters(in: .whitespacesAndNewlines), "title": "Nanodot"]) { _ in
                             AppLocalized("Sent.")
                         }
                     }

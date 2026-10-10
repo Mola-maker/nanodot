@@ -1,6 +1,6 @@
 //
 //  NanoMuseModelsView.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Settings › Models (0.1.41 "Choice"): the four slots as four rows, each saying which
 //  provider and model holds it; a picker per slot, grouped nanoMuse Cloud first and then
@@ -270,7 +270,7 @@ struct NanoMuseSlotPickerView: View {
         switch slot {
         case .chat, .hands: return AppLocalized("Sign in to nanoMuse Cloud or add a provider")
         case .image: return AppLocalized("None of your providers can draw. Sign in to nanoMuse Cloud, or add an Alibaba Cloud Bailian provider with an API key; the avatar is drawn with one of the two.")
-        case .video: return AppLocalized("No provider that can make video yet. nanoMuse speaks Alibaba Cloud Model Studio's video API, which nanoMuse Cloud relays too. Sign in to nanoMuse Cloud, or add a Model Studio key (it can be the same one as the image model uses), and the avatar starts moving; until then it stays as still pictures.")
+        case .video: return AppLocalized("No provider that can make video yet. Nanodot speaks Alibaba Cloud Model Studio's video API, which nanoMuse Cloud relays too. Sign in to nanoMuse Cloud, or add a Model Studio key (it can be the same one as the image model uses), and the avatar starts moving; until then it stays as still pictures.")
         }
     }
 
@@ -518,7 +518,7 @@ struct NanoMuseUseItForView: View {
                             .padding(.vertical, 12)
                     }
                     .buttonStyle(.borderedProminent)
-                    .tint(NanoMuseTones.action)
+                    .tint(NanoMuseTones.action).foregroundStyle(NanoMuseTones.onAction)
                     .disabled(on.isEmpty)
                     Button(action: onDone) {
                         Text(AppLocalized("Not now"))

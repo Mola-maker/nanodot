@@ -1,5 +1,5 @@
 /**
- * `/api/channels` — the chat apps (Feishu, DingTalk, WeCom, Telegram) your nanoMuse lives in.
+ * `/api/channels` — the chat apps (Feishu, DingTalk, WeCom, Telegram) your Nanodot lives in.
  * Kept apart from api.ts so the channels screen can be wired in with one import. Secrets are
  * written here and never read back: a secret field only says `has_value`.
  */

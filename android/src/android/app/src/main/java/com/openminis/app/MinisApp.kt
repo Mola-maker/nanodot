@@ -462,6 +462,8 @@ class MinisApp : Application(), ImageLoaderFactory {
         // file to read. Safe no-op on subsequent launches — never
         // overwrites existing user edits. Cache refresh primes the
         // synchronous metadata read-path (chat header / system prompt).
+        // nanoMuse: Nanodot seeds only missing values in the existing stores.
+        io.github.nanomuse.dot.DotDefaults.seedIfMissing(io.github.nanomuse.dot.DotPreferences(this))
         com.openminis.app.agent.SoulStore.ensureExists(this)
         com.openminis.app.agent.SoulStore.refreshCache(this)
 

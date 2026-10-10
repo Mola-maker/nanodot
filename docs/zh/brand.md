@@ -1,75 +1,67 @@
-# nanoMuse 品牌
+# Nanodot 品牌
 
-2026-09-24 定稿。应用图标和应用内的配色体系是同一个决定：调色板由图标推导出来，这样整个应用
-才会和主屏幕上的那块图标是一个样子。
+Nanodot 基于 [nanoMuse](https://github.com/nano-muse/nanoMuse) 及其
+[OpenMinis 1.13](https://github.com/OpenMinis/OpenMinis) 手机端子树。产品名为
+**Nanodot**，默认助手叫 **Dot**。公开仓库为
+[Mola-maker/nanodot](https://github.com/Mola-maker/nanodot)。P0 契约不声称未来的新悬浮球
+或关怀模式已经实现。
 
 ## 标志 {#the-mark}
 
-一笔连续的笔画，读出来是一个 **N**：带钩的起笔、一个圆峰、一条长斜线、一个收紧的谷、向上的收笔。
-它和 Muse 的单笔标志遵循同一套视觉语法（Muse 的是三个拱的 M，我们的是一个拱的 N），就像
-OpenManus 和 Manus 押韵，却是另一个手势。标志刻意做得抽象：它先是一个手势，然后才是一个字母。
+Dot 是 Nanodot 原创矢量素材：平静的圆形脸、两只眼睛与小表情。五态离线静态素材为待命、
+干活中、等你回复、搞定与出了点问题。同一角色用于应用标志和默认头像。默认头像使用静态素材
+与轻量状态反馈，旧的内置小龙视频不再作为默认动画。用户自定义头像与动画继续支持。
 
-- 源文件只有一个：`assets/brand/nanomuse-icon-source-1024.png`（最终渲染，品牌蓝底上的白色圆角方块）。
-  其余一切都由它派生。
-- `assets/brand/nanomuse-mark.svg`：只有笔画本身，描成一条填充路径，viewBox
-  `0 0 100 100`，用方块坐标，渐变填充。
-- `assets/brand/nanomuse-icon.svg`：白色圆角方块（`rx=27`）加标志。这就是应用图标。
-- `assets/brand/nanomuse-icon-on-blue.svg`：放在品牌蓝背景上的图标，只用于商店页面和启动页。
-  凡是用图标代表这个应用的地方（README、网站、社交卡片、favicon）都用素净的那块：白底、标志、
-  一道细边，没有背景。
-- `assets/brand/nanomuse-mark-rgba-688.png`：带透明通道的笔画，688 px，位图兜底。
-- `docs/app-icon.png`：带圆角渲染出来的方块（27 % 圆角半径，外侧透明，一道 `#D9D9DE` 细边，
-  放在白底上也保得住形状），512 px：图标在主屏幕上的样子。它是 README 的头图，也是任何把 nanoMuse
-  当作一个 App 展示的地方该用的那张图。
+- 统一契约：`config/brand.nanodot.json`，由 `scripts/brand_profile.py` 校验。
+- 矢量源文件：`assets/brand/nanodot-mark.svg`、`nanodot-icon.svg` 与
+  `nanodot-avatar/{idle,working,waiting,happy,error}.svg`。
+- 生成脚本：`scripts/gen-nanodot-assets.py`、`scripts/gen-android-icons.py` 与
+  `scripts/gen-ios-icons.py`，使用同一个 `--brand-config` 参数。
+- Dot 原创素材使用 GPL-3.0-or-later。SVG 注释记录来源；仓库的
+  [LICENSE](../../LICENSE)、[NOTICE](../../NOTICE) 与
+  [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md) 保留上游条款和署名。
 
-图标**不是**吉祥物。默认的脸是随附的**小龙**（`web/public/avatars/`，Android 应用的 `avatar/`）；
-其他可选的是一个放在色块上的 emoji，或在形象工作室里做出来的一张脸。早期版本的小熊猫在 0.1.23 退役了。
-永远不要把小龙（或过去的小熊猫）放到启动器图标上，也永远不要把 N 标志放进聊天里当一张脸。
+部分生成素材保留 `dragon-idle.webp`、`nm_avatar_idle.webp` 等内部文件名，以保持资源和客户端
+接口兼容；文件内容是 Dot 静态素材。历史演示素材和上游标志不是 Nanodot 的默认素材。
 
 ## 颜色 {#colour}
 
-从图标上量出来的。
+以下值来自统一配置的 `themeColors`。默认主题跟随系统，已有明确主题选择优先。
 
-| 令牌 | 值 | 用途 |
-|---|---|---|
-| `brand.stroke.start` | `#015CFB` | 标志渐变的左端 |
-| `brand.stroke.end` | `#0186FB` | 标志渐变的右端 |
-| `brand.blue` | `#0078FD` | 方块背后的背景；启动页；头图背景 |
-| `tile` | `#FFFFFF` | 图标方块 |
-
-### 浅色主题 {#light-theme}
-
-| 令牌 | 值 | 对比度 | 用途 |
+| 令牌 | 浅色 | 深色 | 用途 |
 |---|---|---|---|
-| `primary` | `#015CFB` | 白底上 5.35 | 链接、主按钮（白字）、当前标签、发送按钮、状态行 |
-| `primary.container` | `#E5F0FF` | — | 用户气泡、选中的行、标签 |
-| `primary.tint` | `#EEF5FF` | — | 轻微高亮的表面 |
-| `bg.grouped` | `#F2F2F7` | — | 页面背景（沿用 OpenMinis，没有改） |
-| `surface` | `#FFFFFF` | — | 卡片、输入框 |
+| `background` | `#F4F7F8` | `#10191D` | 页面背景 |
+| `surface` | `#FFFFFF` | `#182329` | 卡片与输入框 |
+| `text` | `#16252C` | `#E5EDF0` | 文字 |
+| `primary` | `#136F63` | `#7DD6C5` | 操作与链接 |
+| `onPrimary` | `#FFFFFF` | `#10191D` | 主色上的文字 |
+| `care` | `#7057A3` | `#C7B4F7` | 第三强调色，预留给后续关怀交互 |
+| `outline` | `#687980` | `#8EABB5` | 边框与次要文字 |
 
-### 深色主题 {#dark-theme}
+## Android 映射 {#android-mapping}
 
-| 令牌 | 值 | 对比度 | 用途 |
-|---|---|---|---|
-| `primary` | `#58A6FF` | `#000` 上 8.3，`#1C1C1E` 上 6.7 | 链接、按钮（黑字）、当前标签、状态行 |
-| `primary.container` | `#1A2B4A` | — | 用户气泡 |
-| `bg` / `surface` / `surface.2` | `#000000` / `#1C1C1E` / `#2C2C2E` | — | 沿用 OpenMinis，没有改 |
+Android 外部 applicationId 为 `io.github.nanodot.app`，系统链接 scheme 为 `nanodot://`。
+Gradle namespace 和已有内部 Kotlin 包保留 `com.openminis.app` 与 `io.github.nanomuse.*`。
+内部 `minis://` 链接、CLI 名称和沙箱路径保持。iOS 和桌面构建身份已同步为 Nanodot；
+原生打包仍须在各平台验证。
 
-规则：强调色只有一个色相。OpenMinis 用 iOS 的蓝、橙、绿着色的代码块、思考文字和链接，一律改成
-`primary` 加中性色。小熊猫身上的铁锈橙留在形象里；它不是界面颜色。
+自适应图标保留已有 activity 别名与资源名。浅色、深色皮肤使用配置中的 surface/background
+与 primary。通知小图标是 24 dp 的 Dot 单色轮廓；Android 主题图标使用眼睛镂空的遮罩。
 
-## Android 映射（S1 已完成） {#android-mapping-done-in-s1}
+## 默认值与用户选择 {#defaults-and-user-choices}
 
-- 自适应图标：背景层 = 纯色 `#FFFFFF`；前景层 = 标志，一个 `VectorDrawable`，`fillColor` 是上面那个
-  两档线性渐变；单色层 = 同一条路径，平涂填充（由 Android 着色）。
-- 图标皮肤（从 OpenMinis 保留下来的 activity 别名）：*自动* = 白色方块；*浅色* = 白色方块；
-  *深色* = `#0F1B33` 方块加白色标志。
-- 通知小图标：标志，平涂白色，24 dp。
-- 永远不要发布旧的 OpenMinis 图标、名字，或者字母 n 的那些草稿。
+仅初始化缺失字段。已有名字、SOUL.md、头像、动画、模型、主题与偏好保留。恢复默认是用户
+主动操作。`showOnAccessibilityConnected=true` 记录未来悬浮球的选择，不启用旧状态胶囊、
+不授予权限，也不打开 Hands。`continuousVoice=false` 记录安全的语音默认值。
 
-## 不要这样做 {#don-ts}
+P0 自动更新关闭（`enabled=false`、`repositoryUrl=null`）。Nanodot 发布页是手动查看的地址，
+不代表已经有发布包。
 
-- 不要把标志涂成蓝色渐变、平涂白、平涂黑以外的颜色。
-- 不要旋转、描边，也不要给笔画加阴影。
-- 不要把标志直接放在品牌蓝上而不垫白色方块（对比度不够）。
-- 不要把 Meta 的 Muse 标志、名字或蓝色当作素材；亲缘关系只在手势上。
+## 署名与服务身份 {#attribution-and-service-identity}
+
+源码署名、许可、引用和历史记录保留 nanoMuse、OpenMinis 与第三方项目的真实名称。
+**nanoMuse Cloud** 仍是上游真实服务，其端点、隐私政策和模型提供方身份不属于 Nanodot。
+Nanodot 不代该服务承诺免费额度，也不声称非营利身份。不要把 OpenMinis 或 Meta Muse 标志
+当作 Nanodot 自己的标志。
+
+[构建指南](build.md) 说明生成、签名与仍待完成的设备验收。

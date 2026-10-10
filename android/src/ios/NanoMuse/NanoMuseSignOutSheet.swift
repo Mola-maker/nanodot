@@ -1,6 +1,6 @@
 //
 //  NanoMuseSignOutSheet.swift
-//  nanoMuse — the one question a sign-out asks (contract C12): *Keep this account's chats on
+//  Nanodot — the one question a sign-out asks (contract C12): *Keep this account's chats on
 //  this device*. Off by default: the account's chats, memory, feed, goals and face leave the
 //  phone with it. Used by Sign out on this phone, Sign out everywhere and Use a different server.
 //

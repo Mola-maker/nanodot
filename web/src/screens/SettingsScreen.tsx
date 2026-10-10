@@ -125,7 +125,7 @@ export function SettingsScreen() {
 
   const saved = identityOf(state.profile, "", AVATAR_COLORS[0]);
   const dirty = !!state.profile && (Object.keys(identity) as (keyof Identity)[]).some((k) => identity[k] !== saved[k]);
-  const name = state.profile?.name ?? "nanoMuse";
+  const name = state.profile?.name ?? "Dot";
   const developer = useDeveloperTools();
   const steps = useShowSteps();
   // One page on a wide window (the sections down the left, the way Muse's desktop settings
@@ -304,14 +304,14 @@ export function SettingsScreen() {
         {/* Notifications */}
         {show("notifications") && (
         <Section title={t("Notifications")} id="notifications" plain={!wide}>
-          {androidApp() ? <PhoneAppSettings name={state.profile?.name ?? "nanoMuse"} /> : <PushSettings name={state.profile?.name ?? "nanoMuse"} />}
+          {androidApp() ? <PhoneAppSettings name={state.profile?.name ?? "Dot"} /> : <PushSettings name={state.profile?.name ?? "Dot"} />}
         </Section>
         )}
 
         {/* Keep it running: only the Android app has anything to say here */}
         {keepRunningStatus() && show("keep-running") && (
           <Section title={t("Keep it running")} id="keep-running" plain={!wide}>
-            <KeepRunningSettings name={state.profile?.name ?? "nanoMuse"} />
+            <KeepRunningSettings name={state.profile?.name ?? "Dot"} />
           </Section>
         )}
 
@@ -393,7 +393,7 @@ export function SettingsScreen() {
           <div className="flex items-center gap-3">
             <label className="text-[13.5px] flex-1">
               {t("Reply language")}
-              <span className="block text-[12px] text-muted">{t("What {name} writes in", { name: state.profile?.name ?? "nanoMuse" })}</span>
+              <span className="block text-[12px] text-muted">{t("What {name} writes in", { name: state.profile?.name ?? "Dot" })}</span>
             </label>
             <select
               value={s?.agent.language ?? "auto"}
@@ -441,12 +441,12 @@ export function SettingsScreen() {
                 {t("Runtime:")} {window.location.origin} · <span className="text-fg/70">{t("the token is in the server_token file in the data folder")}</span>
               </div>
               <div>
-                <a href="https://github.com/nano-muse/nanoMuse/blob/main/docs/cli.md" target="_blank" rel="noreferrer" className="text-accent underline-offset-2 hover:underline">
+                <a href="https://github.com/Mola-maker/nanodot/blob/main/docs/cli.md" target="_blank" rel="noreferrer" className="text-accent underline-offset-2 hover:underline">
                   {t("The command line and the API")}
                 </a>
                 {" · "}
-                <a href="https://github.com/nano-muse/nanoMuse/blob/main/docs/harness.md" target="_blank" rel="noreferrer" className="text-accent underline-offset-2 hover:underline">
-                  {t("nanoMuse on DeepSeek Harness")}
+                <a href="https://github.com/Mola-maker/nanodot/blob/main/docs/harness.md" target="_blank" rel="noreferrer" className="text-accent underline-offset-2 hover:underline">
+                  {t("Nanodot on DeepSeek Harness")}
                 </a>
               </div>
             </div>
@@ -522,7 +522,7 @@ function VersionRows({ installed, release, checking, onCheck }: { installed: str
   else latest = <>{t("Could not check")} · {checkNow}</>;
   return (
     <div className="rounded-2xl bg-surface-2/60 px-3.5 py-2.5 text-[13px]">
-      <div className="font-medium">{t("nanoMuse {version}", { version: installed })}</div>
+      <div className="font-medium">{t("Nanodot {version}", { version: installed })}</div>
       <div className="mt-0.5 text-muted">{latest}</div>
       {!phone && release?.latest && release.newer && <div className="mt-1 text-[12px] text-muted">{t("To update: pip install -U nanomuse, pull the new image, or use the desktop app's Update.")}</div>}
       {!phone && release?.checked_at && <div className="mt-1 text-[12px] text-muted">{t("Checked {when}", { when: relativeTime(release.checked_at) })}</div>}
@@ -542,7 +542,7 @@ function SettingsHome({ release, onOpen }: { release: UpdateView | null; onOpen:
   const hub = state.hub;
   // what the configured providers cover (contract C11), from the runtime; null on an older one
   const providers = useProviders();
-  const name = state.profile?.name ?? "nanoMuse";
+  const name = state.profile?.name ?? "Dot";
   const themeSetting = useThemeSetting();
   const others = hub?.devices.filter((d) => !d.this && d.kind !== "web") ?? [];
   const computers = others.filter((d) => d.kind === "computer");
@@ -642,13 +642,13 @@ function SettingsHome({ release, onOpen }: { release: UpdateView | null; onOpen:
 
         {/* about */}
         <MuseCard className="mb-3">
-          <MuseRow icon={<Info size={22} />} label={t("About nanoMuse")} value={release?.newer && release.latest ? t("{version} is out", { version: release.latest }) : undefined} onClick={() => onOpen("about")} />
+          <MuseRow icon={<Info size={22} />} label={t("About Nanodot")} value={release?.newer && release.latest ? t("{version} is out", { version: release.latest }) : undefined} onClick={() => onOpen("about")} />
           <MuseDivider />
           <MuseRow icon={<Hand size={22} />} label={t("Privacy policy")} onClick={() => window.open(PRIVACY_URL, "_blank", "noopener")} external />
           <MuseDivider />
-          <MuseRow icon={<MessageSquareWarning size={22} />} label={t("Feedback")} onClick={() => window.open("https://github.com/nano-muse/nanoMuse/issues/new/choose", "_blank", "noopener")} external />
+          <MuseRow icon={<MessageSquareWarning size={22} />} label={t("Feedback")} onClick={() => window.open("https://github.com/Mola-maker/nanodot/issues/new/choose", "_blank", "noopener")} external />
         </MuseCard>
-        <MuseCaption>nanoMuse {state.version}</MuseCaption>
+        <MuseCaption>Nanodot {state.version}</MuseCaption>
       </div>
     </div>
   );
@@ -671,7 +671,7 @@ function PhoneAppSettings({ name }: { name: string }) {
           setOn(v);
         }}
       />
-      <div className="text-[12.5px] text-muted">{t("nanoMuse for Android {version}", { version: phone.version() })}</div>
+      <div className="text-[12.5px] text-muted">{t("Nanodot for Android {version}", { version: phone.version() })}</div>
     </>
   );
 }

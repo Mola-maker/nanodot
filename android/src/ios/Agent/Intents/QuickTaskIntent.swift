@@ -3,7 +3,7 @@ import Foundation
 import UserNotifications
 
 /// Predefined tasks that Siri can invoke by name in a single utterance.
-/// e.g. "nanoMuse analyze sleep" (or the same phrase pattern in the user's locale).
+/// e.g. "Nanodot analyze sleep" (or the same phrase pattern in the user's locale).
 enum QuickTask: String, AppEnum {
     case analyzeSleep
     case healthReport
@@ -52,7 +52,7 @@ enum QuickTask: String, AppEnum {
 /// Runs a predefined quick task — enables single-utterance Siri invocation.
 struct QuickTaskIntent: AppIntent {
     static var title: LocalizedStringResource = "Quick Task"
-    static var description = IntentDescription("Runs a predefined nanoMuse task like sleep analysis, weather check, or morning briefing.")
+    static var description = IntentDescription("Runs a predefined Nanodot task like sleep analysis, weather check, or morning briefing.")
     static var openAppWhenRun = false
 
     @Parameter(title: "Task")
@@ -181,7 +181,7 @@ struct QuickTaskIntent: AppIntent {
         if sendCompletionNotification {
             ShortcutNotification.post(
                 id: "shortcut-start-\(sid)",
-                title: AppLocalized("nanoMuse: \(taskName)"),
+                title: AppLocalized("Nanodot: \(taskName)"),
                 body: AppLocalized("\(modelName) is working on it…"),
                 sessionId: sid
             )
@@ -203,7 +203,7 @@ struct QuickTaskIntent: AppIntent {
             if sendCompletionNotification {
                 ShortcutNotification.post(
                     id: "shortcut-done-\(sid)",
-                    title: AppLocalized("nanoMuse: \(taskName) Done"),
+                    title: AppLocalized("Nanodot: \(taskName) Done"),
                     body: "\(modelName): \(String(responseText.prefix(200)))",
                     sessionId: sid
                 )
@@ -239,7 +239,7 @@ struct QuickTaskIntent: AppIntent {
             if capturedSendCompletionNotification {
                 ShortcutNotification.post(
                     id: "shortcut-done-\(capturedSid)",
-                    title: AppLocalized("nanoMuse: \(capturedTaskName) Done"),
+                    title: AppLocalized("Nanodot: \(capturedTaskName) Done"),
                     body: "\(capturedModelName): \(summary)",
                     sessionId: capturedSid
                 )
@@ -264,7 +264,7 @@ struct QuickTaskIntent: AppIntent {
     // `task` goes on the Summary line since it is the one required choice; the
     // rest are optional refinements under "Show More".
     static var parameterSummary: some ParameterSummary {
-        Summary("Run \(\.$task) in nanoMuse") {
+        Summary("Run \(\.$task) in Nanodot") {
             \.$files
             \.$model
             \.$waitForResult

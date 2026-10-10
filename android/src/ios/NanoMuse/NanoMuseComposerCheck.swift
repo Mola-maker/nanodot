@@ -1,6 +1,6 @@
 //
 //  NanoMuseComposerCheck.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Settings → Appearance → Composer check: what the device knows about the
 //  chat's composer, readable without a Mac. Four rounds of "the input field
@@ -75,7 +75,7 @@ enum NanoMuseComposerReport {
         let build = info["CFBundleVersion"] as? String ?? "?"
         let device = UIDevice.current
         let idiom = device.userInterfaceIdiom == .pad ? "pad" : "phone"
-        lines.append("nanoMuse \(version) (\(build)) · \(device.systemName) \(device.systemVersion) · \(device.model) · \(idiom)")
+        lines.append("Nanodot \(version) (\(build)) · \(device.systemName) \(device.systemVersion) · \(device.model) · \(idiom)")
         lines.append("Muse home: \(NanoMuseShellPrefs.shell ? "on" : "off") · outline: \(NanoMuseComposerWatch.outline ? "on" : "off")")
 
         let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }

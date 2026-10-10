@@ -162,7 +162,7 @@ export function FirstSignInSteps() {
                 <CloudCog size={16} className="mt-0.5 shrink-0 text-accent" />
                 <span>
                   <span className="font-medium">{t("Use the nanoMuse Cloud model")}</span>
-                  <span className="block text-muted">{t("DeepSeek for the chat and Qwen for the hands, with a free allowance per account paid by the developer. Nothing to configure.")}</span>
+                  <span className="block text-muted">{t("Connect to nanoMuse Cloud. Available models, usage and allowances follow its terms.")}</span>
                 </span>
               </li>
               <li className="flex items-start gap-2.5 rounded-2xl bg-surface-2 px-3 py-2.5">

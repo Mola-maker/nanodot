@@ -52,7 +52,7 @@ export function GoalsScreen() {
   const [sheetCategory, setSheetCategory] = useState<(typeof CATEGORIES)[number] | null>(null);
   const [allFinished, setAllFinished] = useState(false);
   const createRef = useRef<HTMLDivElement>(null);
-  const name = state.profile?.name ?? "nanoMuse";
+  const name = state.profile?.name ?? "Dot";
   const t = useT();
 
   useEffect(() => {
@@ -257,7 +257,7 @@ function GoalRow({ goal, onOpen, onToggle }: { goal: Goal; onOpen: () => void; o
 function ProposalCard({ goal, onChanged, onOpen }: { goal: Goal; onChanged: () => void; onOpen: () => void }) {
   const { toast, state } = useStore();
   const [busy, setBusy] = useState(false);
-  const name = state.profile?.name ?? "nanoMuse";
+  const name = state.profile?.name ?? "Dot";
   const t = useT();
   const p = goal.proposal;
   if (!p) return null;
@@ -388,7 +388,7 @@ function GoalDetail({
   const { toast, send, openThread, state } = useStore();
   const [newStep, setNewStep] = useState("");
   const [editing, setEditing] = useState(false);
-  const name = state.profile?.name ?? "nanoMuse";
+  const name = state.profile?.name ?? "Dot";
   const t = useT();
 
   const patch = async (body: Record<string, unknown>) => {
@@ -596,7 +596,7 @@ function NewGoalSheet({ open, onClose, onCreated }: { open: boolean; onClose: ()
   const [due, setDue] = useState("");
   const [checkIn, setCheckIn] = useState("");
   const [busy, setBusy] = useState(false);
-  const name = state.profile?.name ?? "nanoMuse";
+  const name = state.profile?.name ?? "Dot";
   const t = useT();
 
   const reset = () => {

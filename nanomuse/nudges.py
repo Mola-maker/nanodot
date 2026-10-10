@@ -5,7 +5,7 @@ and the ``nudges`` field of ``/v1/me``), the operator changes them on the admin 
 every client follows within a day without a release. This module is the runtime's side of
 it: fetch at most once per 24 h, take the copy that rides along with a sign-in, keep the
 last good copy on disk under the data directory, and fall back to :data:`DEFAULT_NUDGES`
-— the same object the relay ships — when nothing was ever fetched. ``GET /api/nudges``
+with this project's repository when nothing was ever fetched. ``GET /api/nudges``
 hands the web app what is current; the web keeps the ledger (how many tasks, which asks
 were shown) in its own storage, so this module decides nothing about *showing* an ask.
 
@@ -25,13 +25,14 @@ from typing import Any
 import httpx
 
 from nanomuse import __version__
+from nanomuse.brand import REPOSITORY_URL
 from nanomuse.logger import logger
 
 DEFAULT_NUDGES: dict[str, Any] = {
     "version": 1,
     "star": {
         "enabled": True,
-        "url": "https://github.com/nano-muse/nanoMuse",
+        "url": REPOSITORY_URL,
         "moments": {
             "signed_in": True,
             "tasks": [3, 10, 30],

@@ -17,7 +17,7 @@ import { useStore } from "../store";
 import { cx } from "../util";
 
 /**
- * Chat apps (「聊天入口」) — your nanoMuse inside Feishu, DingTalk, WeCom or Telegram
+ * Chat apps (「聊天入口」) — your Nanodot inside Feishu, DingTalk, WeCom or Telegram
  * (docs/channels.md). One card per app: the switch, its credentials (secrets are written and
  * never shown again), who may talk to it, the chats that are paired and which of them get
  * what the Muse does on its own. Codes people were shown when they first wrote to the bot
@@ -299,7 +299,7 @@ function ChannelCard({
         )}
         {!c.sdk_available && (
           <div className="px-4 pb-3 text-[13px] leading-[18px] text-muted">
-            {t("Install on the computer running nanoMuse, then switch it on again:")}
+            {t("Install on the computer running Nanodot, then switch it on again:")}
             <code className="mt-1 block select-all rounded-lg bg-surface-2 px-2 py-1 text-[12.5px] text-fg">{c.install}</code>
           </div>
         )}

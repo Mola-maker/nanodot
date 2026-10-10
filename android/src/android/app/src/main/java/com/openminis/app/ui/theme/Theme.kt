@@ -32,56 +32,60 @@ import androidx.compose.ui.unit.sp
 //
 // Names keep the `Teal` prefix only to avoid churning 90+ call sites; the
 // value is the contract, not the name.
-private val TealPrimary = Color(0xFF015CFB)
+private val TealPrimary = Color(0xFF136F63)
 private val TealOnPrimary = Color(0xFFFFFFFF)
-private val TealPrimaryContainer = Color(0xFFE5F0FF)
-private val TealOnPrimaryContainer = Color(0xFF012F80)
-private val TealSecondary = Color(0xFF4F5B6E)
+private val TealPrimaryContainer = Color(0xFFF4F7F8)
+private val TealOnPrimaryContainer = Color(0xFF16252C)
+private val TealSecondary = Color(0xFF136F63)
 private val TealOnSecondary = Color(0xFFFFFFFF)
-private val TealSecondaryContainer = Color(0xFFDCE6F5)
-private val TealOnSecondaryContainer = Color(0xFF101C2E)
-private val TealTertiary = Color(0xFF46617A)
+private val TealSecondaryContainer = Color(0xFFF4F7F8)
+private val TealOnSecondaryContainer = Color(0xFF16252C)
+private val TealTertiary = Color(0xFF7057A3)
 private val TealOnTertiary = Color(0xFFFFFFFF)
-private val TealTertiaryContainer = Color(0xFFCDE5FF)
-private val TealOnTertiaryContainer = Color(0xFF001D32)
-private val TealBackground = Color(0xFFF2F2F7)
-private val TealOnBackground = Color(0xFF1C1C1E)
-private val TealSurface = Color(0xFFF2F2F7)
-private val TealOnSurface = Color(0xFF1C1C1E)
-private val TealSurfaceVariant = Color(0xFFE5E5EA)
-private val TealOnSurfaceVariant = Color(0xFF3C3C43)
-private val TealOutline = Color(0xFF6E6E73)
+private val TealTertiaryContainer = Color(0xFFF4F7F8)
+private val TealOnTertiaryContainer = Color(0xFF16252C)
+private val TealBackground = Color(0xFFF4F7F8)
+private val TealOnBackground = Color(0xFF16252C)
+private val TealSurface = Color(0xFFFFFFFF)
+private val TealOnSurface = Color(0xFF16252C)
+private val TealSurfaceVariant = Color(0xFFF4F7F8)
+private val TealOnSurfaceVariant = Color(0xFF16252C)
+private val TealOutline = Color(0xFF687980)
 
-private val TealDarkPrimary = Color(0xFF58A6FF)
-private val TealDarkOnPrimary = Color(0xFF00224D)
-private val TealDarkPrimaryContainer = Color(0xFF1A2B4A)
-private val TealDarkOnPrimaryContainer = Color(0xFFE5F0FF)
-private val TealDarkSecondary = Color(0xFFB8C6DA)
-private val TealDarkOnSecondary = Color(0xFF22304A)
-private val TealDarkSecondaryContainer = Color(0xFF334159)
-private val TealDarkOnSecondaryContainer = Color(0xFFDCE6F5)
-private val TealDarkBackground = Color(0xFF000000)
-private val TealDarkOnBackground = Color(0xFFE5E5EA)
-private val TealDarkSurface = Color(0xFF000000)
-private val TealDarkOnSurface = Color(0xFFE5E5EA)
-private val TealDarkSurfaceVariant = Color(0xFF3C3C43)
-private val TealDarkOnSurfaceVariant = Color(0xFFC7C7CC)
-private val TealDarkOutline = Color(0xFF8E8E93)
+private val TealDarkPrimary = Color(0xFF7DD6C5)
+private val TealDarkOnPrimary = Color(0xFF10191D)
+private val TealDarkPrimaryContainer = Color(0xFF10191D)
+private val TealDarkOnPrimaryContainer = Color(0xFFE5EDF0)
+private val TealDarkSecondary = Color(0xFF7DD6C5)
+private val TealDarkOnSecondary = Color(0xFF10191D)
+private val TealDarkSecondaryContainer = Color(0xFF10191D)
+private val TealDarkOnSecondaryContainer = Color(0xFFE5EDF0)
+private val TealDarkTertiary = Color(0xFFC7B4F7)
+private val TealDarkOnTertiary = Color(0xFF10191D)
+private val TealDarkTertiaryContainer = Color(0xFF10191D)
+private val TealDarkOnTertiaryContainer = Color(0xFFE5EDF0)
+private val TealDarkBackground = Color(0xFF10191D)
+private val TealDarkOnBackground = Color(0xFFE5EDF0)
+private val TealDarkSurface = Color(0xFF182329)
+private val TealDarkOnSurface = Color(0xFFE5EDF0)
+private val TealDarkSurfaceVariant = Color(0xFF10191D)
+private val TealDarkOnSurfaceVariant = Color(0xFFE5EDF0)
+private val TealDarkOutline = Color(0xFF8EABB5)
 
 // Neutral grouped-card surfaces (iOS-style system-grouped background).
 // Override Material3's tonal `surfaceContainer*` so cards don't pick up the
 // teal primary tint.
 // Light: page = #F2F2F7 gray, card = white
 // Dark:  page = #000, card = #1C1C1E
-private val NeutralGroupedBg = Color(0xFFF2F2F7)
+private val NeutralGroupedBg = Color(0xFFF4F7F8)
 private val NeutralGroupedCard = Color(0xFFFFFFFF)
-private val NeutralGroupedCardElevated = Color(0xFFF7F7FA)
-private val NeutralOutline = Color(0xFFD1D1D6)
+private val NeutralGroupedCardElevated = Color(0xFFFFFFFF)
+private val NeutralOutline = Color(0xFF687980)
 
-private val NeutralDarkGroupedBg = Color(0xFF000000)
-private val NeutralDarkGroupedCard = Color(0xFF1C1C1E)
-private val NeutralDarkGroupedCardElevated = Color(0xFF2C2C2E)
-private val NeutralDarkOutline = Color(0xFF38383A)
+private val NeutralDarkGroupedBg = Color(0xFF10191D)
+private val NeutralDarkGroupedCard = Color(0xFF182329)
+private val NeutralDarkGroupedCardElevated = Color(0xFF182329)
+private val NeutralDarkOutline = Color(0xFF8EABB5)
 
 private val LightColorScheme = lightColorScheme(
     primary = TealPrimary,
@@ -120,6 +124,10 @@ private val DarkColorScheme = darkColorScheme(
     onSecondary = TealDarkOnSecondary,
     secondaryContainer = TealDarkSecondaryContainer,
     onSecondaryContainer = TealDarkOnSecondaryContainer,
+    tertiary = TealDarkTertiary, // nanoMuse: profile care accent
+    onTertiary = TealDarkOnTertiary,
+    tertiaryContainer = TealDarkTertiaryContainer,
+    onTertiaryContainer = TealDarkOnTertiaryContainer,
     background = NeutralDarkGroupedBg,
     onBackground = TealDarkOnBackground,
     surface = NeutralDarkGroupedBg,

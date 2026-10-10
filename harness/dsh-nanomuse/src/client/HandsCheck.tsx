@@ -3,7 +3,7 @@
  *
  * `HandsTryRows` — two rows for Settings → Computer use and the first-run page: *Take a
  * test screenshot* (a thumbnail of what the hands see, or the black frame that means Screen
- * Recording is missing for nanoMuse Desktop) and *Move the mouse a little* (20 px and back,
+ * Recording is missing for Nanodot Desktop) and *Move the mouse a little* (20 px and back,
  * or "Accessibility not granted"). Both go through the host, which starts a fresh
  * `nanomuse mcp` as its child — the same chain the real hands run in, so a pass here is a
  * pass for them. The screenshot row also reports window mode (`hands.status.window.reason`).
@@ -208,7 +208,7 @@ export function RuntimeRow({ t }: { t: Translate }): ReactNode {
 /** What the black-screen notice needs of `usePermissions()`; the capsule builds it from the live state so it need not poll (and does not know about the helper). */
 export type BlackScreenPerms = Pick<Permissions, 'blackScreen' | 'relaunch' | 'clearBlackScreen'> & Partial<Pick<Permissions, 'helper'>>
 
-/** The hands saw a black screen: Screen Recording for nanoMuse Desktop (or for the helper, nanoMuse Computer Use), then a relaunch — the button is here. */
+/** The hands saw a black screen: Screen Recording for Nanodot Desktop (or for the helper, Nanodot Computer Use), then a relaunch — the button is here. */
 export function BlackScreenNotice({ t, perms, compact = false }: { t: Translate; perms: BlackScreenPerms; compact?: boolean }): ReactNode {
   if (!perms.blackScreen) return null
   return h(

@@ -49,13 +49,13 @@ struct WebLoadError: Equatable {
              (NSURLErrorDomain, NSURLErrorDNSLookupFailed):
             title = AppLocalized("Cannot Open Page")
             message = host.map {
-                AppLocalized("nanoMuse can’t open the page because it can’t find the server “\($0)”.")
-            } ?? AppLocalized("nanoMuse can’t open the page because it can’t find the server.")
+                AppLocalized("Nanodot can’t open the page because it can’t find the server “\($0)”.")
+            } ?? AppLocalized("Nanodot can’t open the page because it can’t find the server.")
             systemImage = "wifi.exclamationmark"
 
         case (NSURLErrorDomain, NSURLErrorCannotConnectToHost):
             title = AppLocalized("Cannot Open Page")
-            message = AppLocalized("nanoMuse can’t open the page because it can’t connect to the server.")
+            message = AppLocalized("Nanodot can’t open the page because it can’t connect to the server.")
             systemImage = "wifi.exclamationmark"
 
         case (NSURLErrorDomain, NSURLErrorNotConnectedToInternet),
@@ -82,8 +82,8 @@ struct WebLoadError: Equatable {
              (NSURLErrorDomain, NSURLErrorClientCertificateRequired):
             title = AppLocalized("This Connection Is Not Private")
             message = host.map {
-                AppLocalized("nanoMuse can’t verify the identity of the server “\($0)”.")
-            } ?? AppLocalized("nanoMuse can’t verify the identity of the server.")
+                AppLocalized("Nanodot can’t verify the identity of the server “\($0)”.")
+            } ?? AppLocalized("Nanodot can’t verify the identity of the server.")
             systemImage = "lock.slash"
 
         case (NSURLErrorDomain, NSURLErrorUnsupportedURL),

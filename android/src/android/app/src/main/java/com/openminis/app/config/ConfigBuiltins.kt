@@ -44,6 +44,7 @@ internal object ConfigBuiltins {
         registerSession(r, providerRepo, chatRepo)
         registerAppearance(r, context)
         registerChat(r, context)
+        registerDotPreferences(r, context) // nanoMuse: P0 preferences, P2 consumes the same keys
         registerBackground(r, context)
         registerLogs(r, context)
         registerProviderCollections(r, providerRepo, envVarRepo)
@@ -304,6 +305,28 @@ internal object ConfigBuiltins {
                 maxLength = 16,
             )
         )
+    }
+
+    // nanoMuse: persist the P0 contract in the same appearance preferences used by the UI.
+    private fun registerDotPreferences(r: ConfigRegistry, context: Context) {
+        val prefs = context.getSharedPreferences(
+            com.openminis.app.ui.settings.PREF_APPEARANCE, Context.MODE_PRIVATE)
+        r.register(PrefsBoolField(
+            path = "dot.showOnAccessibilityConnected",
+            displayName = "Show Dot when accessibility connects",
+            description = "Preference for the Dot floating ball. Does not grant permissions or enable Hands.",
+            prefs = prefs,
+            key = io.github.nanomuse.dot.DotDefaults.SHOW_ON_ACCESSIBILITY_CONNECTED,
+            defaultValue = true,
+        ))
+        r.register(PrefsBoolField(
+            path = "dot.continuousVoice",
+            displayName = "Continuous voice conversation",
+            description = "Preference for a continuous voice session; off until explicitly enabled.",
+            prefs = prefs,
+            key = io.github.nanomuse.dot.DotDefaults.CONTINUOUS_VOICE,
+            defaultValue = false,
+        ))
     }
 
     // -- Chat / input --
@@ -965,7 +988,7 @@ internal object ConfigBuiltins {
             ClosureField(
                 path = "soul.name",
                 displayName = "Soul name",
-                description = "The agent's name as shown in chat bubble headers and as the system-prompt identity. Trimmed; empty falls back to \"nanoMuse\".",
+                description = "The agent's name as shown in chat bubble headers and as the system-prompt identity. Trimmed; empty falls back to \"Nanodot\".",
                 valueSchema = ConfigSchema.Str(maxLength = 64),
                 risk = ConfigRisk.SENSITIVE,
                 revertable = true,

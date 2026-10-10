@@ -1,8 +1,8 @@
 /**
- * The nanoMuse browser half: the Muse look on the harness's Web client. The
+ * The Nanodot browser half: the Muse look on the harness's Web client. The
  * left column (an icon rail beside the harness's chats browser), the agent
  * pinned over the conversation with its status line, a Devices page, the
- * first-run welcome, the nanoMuse section in Settings and the toasts other
+ * first-run welcome, the Nanodot section in Settings and the toasts other
  * devices send. Everything here is a slot registration — the harness's client
  * stays the harness's; we occupy the seats it declares (and, for the sidebar,
  * take over the one seat whose stock occupant the bundle layer switches off,
@@ -237,7 +237,7 @@ export function apply(ctx: ClientContext): void {
   slots.inject('sidebar.brand.name', () =>
     slots.register({ name: 'sidebar.brand.name' }, () => {
       const live = useLive()
-      return h(BrandName, { text: live.profile.name || t('brand') })
+      return h(BrandName, { text: live.profile.name || 'Dot' })
     }))
 
   // The hero above a blank session: the agent, not a logo.
@@ -566,7 +566,7 @@ export function apply(ctx: ClientContext): void {
   slots.inject('settings.onboarding', () =>
     slots.register({ name: 'settings.onboarding', id: 'welcome-notice', order: -100, priority: -1 }, PassThrough))
 
-  // Settings → nanoMuse, after Models (10) and Agents (20); and the pages Muse has.
+  // Settings → Nanodot, after Models (10) and Agents (20); and the pages Muse has.
   const CloudSection = makeCloudSection(t)
   slots.inject('settings.section', () =>
     slots.register({ name: 'settings.section', id: 'nanomuse-cloud', order: 30, label: () => t('nav') }, CloudSection))

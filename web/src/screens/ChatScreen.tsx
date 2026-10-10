@@ -35,7 +35,7 @@ export function ChatScreen() {
   const [activityOpen, setActivityOpen] = useState(false);
   // the browser card being watched (or driven) full-screen
   const [browserView, setBrowserView] = useState<string | null>(null);
-  const name = profile?.name ?? "nanoMuse";
+  const name = profile?.name ?? "Dot";
   // a chat addressed to another device: is that device still on the hub?
   const deviceOnline = thread?.device ? (state.hub?.devices.find((d) => d.id === thread.device)?.online ?? null) : null;
   // another device of the account is working on this chat (C9): the quiet line under its message

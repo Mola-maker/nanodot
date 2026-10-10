@@ -1,8 +1,8 @@
-# nanoMuse on DeepSeek Harness — the bundle (harness/dsh-nanomuse) as a package:
+# Nanodot on DeepSeek Harness — the bundle (harness/dsh-nanomuse) as a package:
 #
 #   dsh-nanomuse-<v>.tgz            what `dsh plugin --profile desktop add <file>` installs
 #                                   into a DeepSeek Harness Desktop someone already has
-#                                   (docs/harness.md, harness/README.md); nanoMuse Desktop
+#                                   (docs/harness.md, harness/README.md); Nanodot Desktop
 #                                   itself carries the same bundle (desktop-app.yml)
 #
 # A push or pull request that touches harness/ builds, typechecks and tests the bundle; a
@@ -15,10 +15,10 @@ name: harness bundle
 on:
   push:
     branches: ["**"]
-    paths: ["harness/**", "scripts/connectors-json.mjs", "scripts/providers-json.mjs", "nanomuse/llm/providers.json", "android/src/android/app/src/main/assets/nanomuse/connectors.json", "android/src/android/app/src/main/assets/nanomuse/providers.json", "android/src/ios/NanoMuse/Resources/connectors.json", "android/src/ios/NanoMuse/Resources/providers.json", ".github/workflows/harness.yml"]
+    paths: ["config/brand.nanodot.json", "scripts/brand_profile.py", "scripts/rebrand.py", "harness/**", "scripts/connectors-json.mjs", "scripts/providers-json.mjs", "nanomuse/llm/providers.json", "android/src/android/app/src/main/assets/nanomuse/connectors.json", "android/src/android/app/src/main/assets/nanomuse/providers.json", "android/src/ios/NanoMuse/Resources/connectors.json", "android/src/ios/NanoMuse/Resources/providers.json", ".github/workflows/harness.yml"]
     tags: ["v*"]
   pull_request:
-    paths: ["harness/**", "scripts/connectors-json.mjs", "scripts/providers-json.mjs", "nanomuse/llm/providers.json", "android/src/android/app/src/main/assets/nanomuse/connectors.json", "android/src/android/app/src/main/assets/nanomuse/providers.json", "android/src/ios/NanoMuse/Resources/connectors.json", "android/src/ios/NanoMuse/Resources/providers.json", ".github/workflows/harness.yml"]
+    paths: ["config/brand.nanodot.json", "scripts/brand_profile.py", "scripts/rebrand.py", "harness/**", "scripts/connectors-json.mjs", "scripts/providers-json.mjs", "nanomuse/llm/providers.json", "android/src/android/app/src/main/assets/nanomuse/connectors.json", "android/src/android/app/src/main/assets/nanomuse/providers.json", "android/src/ios/NanoMuse/Resources/connectors.json", "android/src/ios/NanoMuse/Resources/providers.json", ".github/workflows/harness.yml"]
   workflow_dispatch:
     inputs:
       release_tag:
@@ -50,6 +50,8 @@ jobs:
           node-version: 22
           cache: pnpm
           cache-dependency-path: harness/dsh-nanomuse/pnpm-lock.yaml
+      - name: Apply Nanodot branding
+        run: python3 scripts/rebrand.py
       - name: Install
         working-directory: harness/dsh-nanomuse
         run: pnpm install --frozen-lockfile
@@ -92,12 +94,12 @@ jobs:
           ./node_modules/.bin/dsh --profile check --dump-config | grep -c "patched by dsh-nanomuse"
       - uses: actions/upload-artifact@v7
         with:
-          name: harness-bundle
+          name: nanodot-harness-bundle
           path: packages/*
           if-no-files-found: error
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != ''
+    if: github.repository == 'Mola-maker/nanodot' && github.event_name == 'workflow_dispatch' && inputs.release_tag != ''
     needs: bundle
     runs-on: ubuntu-latest
     permissions:
@@ -105,7 +107,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v8
         with:
-          name: harness-bundle
+          name: nanodot-harness-bundle
           path: packages
       - name: Attach to the release
         env:

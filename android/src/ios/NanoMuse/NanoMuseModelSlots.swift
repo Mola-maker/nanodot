@@ -1,6 +1,6 @@
 //
 //  NanoMuseModelSlots.swift
-//  nanoMuse
+//  Nanodot
 //
 //  0.1.41 "Choice": the four things a model does for the person — chat, operating the screen,
 //  making pictures, making clips — as four slots, each holding one `<provider> · <model>`.
@@ -321,7 +321,7 @@ enum NanoMuseModelSlots {
     }
 
     /// nanoMuse Cloud as a slot provider, from the kept menu (or, until one is kept, from the
-    /// relay instance's own model list); nil when the phone is not signed in or *Use nanoMuse
+    /// relay instance's own model list); nil when the phone is not signed in or *Use Nanodot
     /// Cloud models* is off.
     static func cloudProvider() -> NanoMuseSlotProvider? {
         guard NanoMuseCloud.modelsOn, let inst = NanoMuseCloud.instance else { return nil }

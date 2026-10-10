@@ -1,6 +1,6 @@
 //
 //  NanoMuseAvatarFlow.swift
-//  nanoMuse
+//  Nanodot
 //
 //  Changing the face from inside the conversation, the way Muse does it: a
 //  message such as "把虚拟形象换成一只小狗" / "change your avatar to a corgi"
@@ -384,7 +384,7 @@ struct NanoMuseAvatarCostCard: View {
             HStack(spacing: 10) {
                 Button(studio.estimate?.affordable == false ? AppLocalized("Try anyway") : AppLocalized("Draw it")) { flow.confirmDraw() }
                     .buttonStyle(.borderedProminent)
-                    .tint(NanoMuseTones.action)
+                    .tint(NanoMuseTones.action).foregroundStyle(NanoMuseTones.onAction)
                     .disabled(studio.estimating)
                 Button(AppLocalized("Not now")) { flow.cancel() }
             }

@@ -525,7 +525,7 @@ private fun Page(
             Button(
                 onClick = onPrimary,
                 shape = RoundedCornerShape(50),
-                colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = Color.White),
+                colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
                 modifier = Modifier.fillMaxWidth().height(50.dp),
             ) {
                 Text(primaryLabel, fontSize = 16.sp, fontWeight = FontWeight.Medium)

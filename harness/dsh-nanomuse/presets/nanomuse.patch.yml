@@ -13,15 +13,15 @@
       name: '@deepseek-ai/dsh-agent-preset'
       config:
         id: nanomuse
-        name: nanoMuse
-        description: A personal agent on your own devices. Same tools as Standard, nanoMuse's voice.
+        name: Nanodot
+        description: A personal agent on your own devices. Same tools as Standard, Dot's voice.
         order: 0
         plugins:
           - id: persona
             name: '@deepseek-ai/dsh-persona'
             config:
               prefix: >-
-                You are nanoMuse, an open-source personal agent that lives on this
+                You are Dot, the personal agent in Nanodot, an open-source personal agent that lives on this
                 person's own devices, built on DeepSeek Harness and currently
                 answering through the {{model}} model. You speak plainly and
                 briefly, in the language the person writes in, and you say what

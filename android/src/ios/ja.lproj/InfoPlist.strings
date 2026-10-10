@@ -1,26 +1,26 @@
 /* Info.plist permission strings — 日本語 */
 
-"NSLocationWhenInUseUsageDescription" = "nanoMuse はセッション履歴のために、エージェントセッションの開始位置を記録します。";
-"NSLocationAlwaysAndWhenInUseUsageDescription" = "nanoMuse はバックグラウンドでエージェントタスクを実行し続けるために、バックグラウンド位置情報を使用します。位置データはセッション接続履歴の記録にのみ使用されます。";
-"NSCalendarsUsageDescription" = "nanoMuse はAIエージェントがあなたの予定を確認し、空き状況をチェックし、代わりにイベントを作成できるようにカレンダーへのアクセスを使用します。";
-"NSCalendarsFullAccessUsageDescription" = "nanoMuse はAIエージェントがあなたの予定を確認し、空き状況をチェックし、代わりにイベントを作成できるようにカレンダーへのアクセスを使用します。";
-"NSRemindersUsageDescription" = "nanoMuse はAIエージェントがリマインダーを検索・作成できるようにリマインダーへのアクセスを使用します。";
-"NSRemindersFullAccessUsageDescription" = "nanoMuse はAIエージェントがリマインダーを検索・作成できるようにリマインダーへのアクセスを使用します。";
-"NSCameraUsageDescription" = "nanoMuse はAI会話用の写真を撮影するためにカメラへのアクセスが必要です。";
-"NSPhotoLibraryUsageDescription" = "nanoMuse はAI会話に画像を添付するためにフォトライブラリへのアクセスが必要です。";
-"NSPhotoLibraryAddUsageDescription" = "nanoMuse は動画や画像をフォトライブラリに保存するための許可が必要です。";
-"NSHealthShareUsageDescription" = "nanoMuse はAIエージェントが歩数、心拍数、睡眠、ワークアウトなどの健康データを読み取れるようにヘルスケアへのアクセスを使用します。";
-"NSHealthUpdateUsageDescription" = "nanoMuse はAIエージェントが歩数、体重、水分摂取量などの健康データを記録できるようにヘルスケアの書き込みアクセスを使用します。";
-"NSContactsUsageDescription" = "nanoMuse はAIエージェントが連絡先を検索、閲覧、管理できるように連絡先へのアクセスを使用します。";
-"NSAppleMusicUsageDescription" = "nanoMuse はAIエージェントがミュージックライブラリを検索し、再生を操作できるようにメディアライブラリへのアクセスを使用します。";
-"NSMicrophoneUsageDescription" = "nanoMuse はチャットでの音声テキスト入力のためにマイクへのアクセスが必要です。";
-"NSSpeechRecognitionUsageDescription" = "nanoMuse は音声をテキストメッセージに変換するために音声認識を使用します。";
-"NSHomeKitUsageDescription" = "nanoMuse はAIエージェントがスマートホームアクセサリを操作・制御できるようにHomeKitへのアクセスを使用します。";
-"NSAlarmKitUsageDescription" = "nanoMuse はAIエージェントがアラームやタイマーを設定できるようにAlarmKitを使用します。";
-"NSLocalNetworkUsageDescription" = "nanoMuse はデバッグサーバーのため、また AI エージェントがあなたのネットワーク上のサービスにアクセスできるようにローカルネットワークを使用します。"; /* nanoMuse: the app has no VM; the sentence matches Info.plist */
+"NSLocationWhenInUseUsageDescription" = "Nanodot はセッション履歴のために、エージェントセッションの開始位置を記録します。";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "Nanodot はバックグラウンドでエージェントタスクを実行し続けるために、バックグラウンド位置情報を使用します。位置データはセッション接続履歴の記録にのみ使用されます。";
+"NSCalendarsUsageDescription" = "Nanodot はAIエージェントがあなたの予定を確認し、空き状況をチェックし、代わりにイベントを作成できるようにカレンダーへのアクセスを使用します。";
+"NSCalendarsFullAccessUsageDescription" = "Nanodot はAIエージェントがあなたの予定を確認し、空き状況をチェックし、代わりにイベントを作成できるようにカレンダーへのアクセスを使用します。";
+"NSRemindersUsageDescription" = "Nanodot はAIエージェントがリマインダーを検索・作成できるようにリマインダーへのアクセスを使用します。";
+"NSRemindersFullAccessUsageDescription" = "Nanodot はAIエージェントがリマインダーを検索・作成できるようにリマインダーへのアクセスを使用します。";
+"NSCameraUsageDescription" = "Nanodot はAI会話用の写真を撮影するためにカメラへのアクセスが必要です。";
+"NSPhotoLibraryUsageDescription" = "Nanodot はAI会話に画像を添付するためにフォトライブラリへのアクセスが必要です。";
+"NSPhotoLibraryAddUsageDescription" = "Nanodot は動画や画像をフォトライブラリに保存するための許可が必要です。";
+"NSHealthShareUsageDescription" = "Nanodot はAIエージェントが歩数、心拍数、睡眠、ワークアウトなどの健康データを読み取れるようにヘルスケアへのアクセスを使用します。";
+"NSHealthUpdateUsageDescription" = "Nanodot はAIエージェントが歩数、体重、水分摂取量などの健康データを記録できるようにヘルスケアの書き込みアクセスを使用します。";
+"NSContactsUsageDescription" = "Nanodot はAIエージェントが連絡先を検索、閲覧、管理できるように連絡先へのアクセスを使用します。";
+"NSAppleMusicUsageDescription" = "Nanodot はAIエージェントがミュージックライブラリを検索し、再生を操作できるようにメディアライブラリへのアクセスを使用します。";
+"NSMicrophoneUsageDescription" = "Nanodot はチャットでの音声テキスト入力のためにマイクへのアクセスが必要です。";
+"NSSpeechRecognitionUsageDescription" = "Nanodot は音声をテキストメッセージに変換するために音声認識を使用します。";
+"NSHomeKitUsageDescription" = "Nanodot はAIエージェントがスマートホームアクセサリを操作・制御できるようにHomeKitへのアクセスを使用します。";
+"NSAlarmKitUsageDescription" = "Nanodot はAIエージェントがアラームやタイマーを設定できるようにAlarmKitを使用します。";
+"NSLocalNetworkUsageDescription" = "Nanodot はデバッグサーバーのため、また AI エージェントがあなたのネットワーク上のサービスにアクセスできるようにローカルネットワークを使用します。"; /* nanoMuse: the app has no VM; the sentence matches Info.plist */
 
 /* nanoMuse: the keys Info.plist declares but this file lacked, so the prompt is in the person's language */
-"NFCReaderUsageDescription" = "nanoMuse は NFC を使用し、AI エージェントがあなたに代わって NFC タグを読み書きできるようにします。";
-"NSBluetoothAlwaysUsageDescription" = "nanoMuse は Bluetooth を使用し、AI エージェントがあなたに代わって近くの BLE デバイスを検索・接続・通信できるようにします。";
-"NSBluetoothPeripheralUsageDescription" = "nanoMuse は Bluetooth を使用し、AI エージェントがあなたに代わって近くの BLE デバイスを検索・接続・通信できるようにします。";
-"NSFaceIDUsageDescription" = "nanoMuse は Face ID を使用してロックされたチャットセッションを保護し、あなただけが内容を見られるようにします。";
+"NFCReaderUsageDescription" = "Nanodot は NFC を使用し、AI エージェントがあなたに代わって NFC タグを読み書きできるようにします。";
+"NSBluetoothAlwaysUsageDescription" = "Nanodot は Bluetooth を使用し、AI エージェントがあなたに代わって近くの BLE デバイスを検索・接続・通信できるようにします。";
+"NSBluetoothPeripheralUsageDescription" = "Nanodot は Bluetooth を使用し、AI エージェントがあなたに代わって近くの BLE デバイスを検索・接続・通信できるようにします。";
+"NSFaceIDUsageDescription" = "Nanodot は Face ID を使用してロックされたチャットセッションを保護し、あなただけが内容を見られるようにします。";

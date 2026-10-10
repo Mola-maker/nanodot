@@ -330,12 +330,12 @@ enum ShortcutRunTracker {
         switch category {
         case .keepAliveDisabled:
             title = AppLocalized("Automation may not have completed")
-            body = AppLocalized("The Shortcut sent to nanoMuse may not have finished running in the background. Turn on Background Keep-Alive in Settings so automations can complete reliably.")
+            body = AppLocalized("The Shortcut sent to Nanodot may not have finished running in the background. Turn on Background Keep-Alive in Settings so automations can complete reliably.")
         case .keepAliveEnabledButStillOrphaned:
             // Softer wording — the user already did the right thing; we
             // still tell them but avoid finger-pointing at their setup.
             title = AppLocalized("Automation may not have completed")
-            body = AppLocalized("A Shortcut sent to nanoMuse may not have finished. Open the session to check.")
+            body = AppLocalized("A Shortcut sent to Nanodot may not have finished. Open the session to check.")
         }
 
         let center = UNUserNotificationCenter.current()

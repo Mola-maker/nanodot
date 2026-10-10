@@ -1,6 +1,6 @@
 //
 //  NanoMuseProviderReachCard.swift
-//  nanoMuse
+//  Nanodot
 //
 //  The card the chat shows for a failed turn when the provider could not be reached (DNS,
 //  connect, TLS, a timeout, an interception page), OpenAI refused the region, the sign-in ran
@@ -125,7 +125,7 @@ struct NanoMuseProviderReachCard: View {
 
     private var explanation: String {
         switch reach.kind {
-        case .unreachable: return String(format: AppLocalized("Nothing answered at %@. This is the path from this phone to the provider; nanoMuse's own servers are not involved."), host)
+        case .unreachable: return String(format: AppLocalized("Nothing answered at %@. This is the path from this phone to the provider; Nanodot's own servers are not involved."), host)
         case .regionBlocked: return AppLocalized("The request reached OpenAI, which answered that it does not offer the service where this connection comes from.")
         case .signedOut: return plan ? AppLocalized("The token this phone kept has expired or was revoked. Sign in again to go on with the plan.") : AppLocalized("The provider answered that the key is not valid any more. Check it in the provider's settings.")
         case .quota: return plan ? AppLocalized("OpenAI counts the plan's use in windows of a few hours and of a week; this window is used up.") : AppLocalized("The provider answered that this key's quota is used up.")
@@ -163,13 +163,13 @@ struct NanoMuseProviderReachCard: View {
                 Button(plan ? AppLocalized("Sign in again") : AppLocalized("Open providers")) {
                     NanoMuseOwnScheme.open("minis://settings/providers")
                 }
-                .buttonStyle(.borderedProminent).tint(NanoMuseTones.action).controlSize(.small)
+                .buttonStyle(.borderedProminent).tint(NanoMuseTones.action).foregroundStyle(NanoMuseTones.onAction).controlSize(.small)
                 if let onRetry { Button(AppLocalized("Try again"), action: onRetry).buttonStyle(.plain).font(.footnote).foregroundStyle(NanoMuseTones.action) }
                 if cloudOnce { NanoMuseCloudOnceButton(onRetry: onRetry) }
             } else {
                 if let onRetry {
                     Button(AppLocalized("Try again"), action: onRetry)
-                        .buttonStyle(.borderedProminent).tint(NanoMuseTones.action).controlSize(.small)
+                        .buttonStyle(.borderedProminent).tint(NanoMuseTones.action).foregroundStyle(NanoMuseTones.onAction).controlSize(.small)
                 }
                 if cloudOnce { NanoMuseCloudOnceButton(onRetry: onRetry) }
                 if reach.kind == .unreachable || reach.kind == .regionBlocked {

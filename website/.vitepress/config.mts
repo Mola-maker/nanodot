@@ -1,4 +1,4 @@
-// The nanoMuse docs site: VitePress over ../docs. Nothing is copied — the pages under
+// The Nanodot docs site: VitePress over ../docs. Nothing is copied — the pages under
 // docs/ are the source, and this file only says how they are arranged and where the
 // links that leave docs/ go.
 //
@@ -6,15 +6,14 @@
 //   npm run docs:build    # .vitepress/dist, also the dead-link check
 //   DOCS_BASE=/docs/ npm run docs:build   # for nanomuse.cn/docs/
 //
-// DOCS_BASE defaults to /nanoMuse/docs/ — the project pages at nano-muse.github.io keep
-// site/index.html (the redirect to nanomuse.cn) and site/legacy.html at the root, and the
-// docs sit beside them under /docs/.
+// DOCS_BASE defaults to /nanodot/docs/. Override it for the destination that you deploy;
+// building this site does not publish it or claim ownership of nanomuse.cn.
 import { posix } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, type DefaultTheme } from 'vitepress'
 
-const REPO = 'https://github.com/nano-muse/nanoMuse'
-const base = process.env.DOCS_BASE ?? '/nanoMuse/docs/'
+const REPO = 'https://github.com/Mola-maker/nanodot'
+const base = process.env.DOCS_BASE ?? '/nanodot/docs/'
 
 // Directories under docs/ that are not pages of the site: task briefs and traces are
 // working notes, the archive is the Python line's record, the release notes and the
@@ -74,6 +73,7 @@ function placeholderOrHtml(raw: string): string {
 }
 
 const getStarted: DefaultTheme.SidebarItem[] = [
+  { text: 'Build Nanodot P0', link: '/build' },
   { text: 'Android', link: '/android' },
   { text: 'iPhone and iPad', link: '/ios' },
   { text: 'The desktop app', link: '/desktop' },
@@ -99,7 +99,7 @@ const useIt: DefaultTheme.SidebarItem[] = [
 ]
 
 const runIt: DefaultTheme.SidebarItem[] = [
-  { text: 'Run nanoMuse yourself', link: '/self-hosting' },
+  { text: 'Self-hosting (inherited)', link: '/self-hosting' },
   { text: 'The runtime in Docker', link: '/deployment' },
   { text: 'Configuration', link: '/configuration' },
   { text: 'nanoMuse Cloud, the relay', link: '/cloud' },
@@ -132,6 +132,7 @@ const contribute: DefaultTheme.SidebarItem[] = [
 // The same pages in Chinese, under /zh/. The group and item names follow what the apps'
 // Chinese screens call things (CONTRIBUTING.md, "Translating the docs", has the glossary).
 const zhGetStarted: DefaultTheme.SidebarItem[] = [
+  { text: '构建 Nanodot P0', link: '/zh/build' },
   { text: 'Android', link: '/zh/android' },
   { text: 'iPhone 和 iPad', link: '/zh/ios' },
   { text: '桌面版', link: '/zh/desktop' },
@@ -157,7 +158,7 @@ const zhUseIt: DefaultTheme.SidebarItem[] = [
 ]
 
 const zhRunIt: DefaultTheme.SidebarItem[] = [
-  { text: '自己运行 nanoMuse', link: '/zh/self-hosting' },
+  { text: '自己部署（继承文档）', link: '/zh/self-hosting' },
   { text: 'Docker 里的运行时', link: '/zh/deployment' },
   { text: '配置', link: '/zh/configuration' },
   { text: 'nanoMuse Cloud：中继', link: '/zh/cloud' },
@@ -188,8 +189,8 @@ const zhContribute: DefaultTheme.SidebarItem[] = [
 ]
 
 export default defineConfig({
-  title: 'nanoMuse',
-  description: 'An open-source personal agent for every device you own.',
+  title: 'Nanodot',
+  description: 'Nanodot P0: Dot defaults and build documentation, based on nanoMuse and OpenMinis.',
   lang: 'en',
   base,
   srcDir: '../docs',
@@ -204,17 +205,17 @@ export default defineConfig({
       label: 'English',
       lang: 'en',
       themeConfig: {
-        siteTitle: 'nanoMuse docs',
-        // Home and Try it are the project site and the demo, the same two the homepage's bar has.
+        siteTitle: 'Nanodot docs',
+        // Public Nanodot pages; upstream demos are not Nanodot installation targets.
         nav: [
-          { text: 'Home', link: 'https://nanomuse.cn/' },
-          { text: 'Try it', link: 'https://demo.nanomuse.dev/' },
-          { text: 'Get started', link: '/android' },
+          { text: 'Home', link: '/' },
+          { text: 'Brand', link: '/brand' },
+          { text: 'Build P0', link: '/build' },
           { text: 'Run it yourself', link: '/self-hosting' },
           { text: 'Roadmap', link: '/roadmap' },
         ],
         sidebar: [
-          { text: 'Get started', items: getStarted },
+          { text: 'P0 and inherited platform docs', items: getStarted },
           { text: 'Use it', items: useIt },
           { text: 'Run it yourself', items: runIt },
           { text: 'Understand it', collapsed: true, items: understandIt },
@@ -223,8 +224,8 @@ export default defineConfig({
         outline: { level: [2, 3], label: 'On this page' },
         editLink: { pattern: `${REPO}/edit/main/docs/:path`, text: 'Edit this page on GitHub' },
         footer: {
-          message: 'GPL-3.0-or-later. nanoMuse is an independent community project, not affiliated with Meta.',
-          copyright: 'The nanoMuse contributors',
+          message: 'GPL-3.0-or-later. Nanodot is based on nanoMuse and OpenMinis, independent of Meta.',
+          copyright: 'Nanodot, nanoMuse and upstream contributors',
         },
         langMenuLabel: 'Change language',
       },
@@ -233,19 +234,19 @@ export default defineConfig({
       label: '简体中文',
       lang: 'zh-Hans',
       link: '/zh/',
-      title: 'nanoMuse',
-      description: '开源的个人智能体，面向你的每一台设备。',
+      title: 'Nanodot',
+      description: 'Nanodot P0：Dot 默认值与构建文档，基于 nanoMuse 和 OpenMinis。',
       themeConfig: {
-        siteTitle: 'nanoMuse 文档',
+        siteTitle: 'Nanodot 文档',
         nav: [
-          { text: '首页', link: 'https://nanomuse.cn/' },
-          { text: '试一试', link: 'https://demo.nanomuse.dev/' },
-          { text: '上手', link: '/zh/android' },
+          { text: '首页', link: '/zh/' },
+          { text: '品牌', link: '/zh/brand' },
+          { text: '构建 P0', link: '/zh/build' },
           { text: '自己部署', link: '/zh/self-hosting' },
           { text: '路线图', link: '/zh/roadmap' },
         ],
         sidebar: [
-          { text: '上手', items: zhGetStarted },
+          { text: 'P0 与继承的平台文档', items: zhGetStarted },
           { text: '使用', items: zhUseIt },
           { text: '自己部署', items: zhRunIt },
           { text: '理解它', collapsed: true, items: zhUnderstandIt },
@@ -270,8 +271,8 @@ export default defineConfig({
           code: '404',
         },
         footer: {
-          message: 'GPL-3.0-or-later。nanoMuse 是独立的社区项目，与 Meta 无关。',
-          copyright: 'nanoMuse 贡献者',
+          message: 'GPL-3.0-or-later。Nanodot 基于 nanoMuse 与 OpenMinis，与 Meta 无关。',
+          copyright: 'Nanodot、nanoMuse 与上游贡献者',
         },
       },
     },
@@ -284,7 +285,7 @@ export default defineConfig({
     resolve: { alias: [{ find: /^vue(\/.*)?$/, replacement: `${fileURLToPath(new URL('../node_modules/vue', import.meta.url))}$1` }] },
   },
   head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}nanomuse-icon.svg` }],
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}nanodot-icon.svg` }],
   ],
   // Internal links are checked at build time. The link_open rule below turns every link that
   // leaves docs/ into a GitHub URL, so nothing should remain here; add a pattern only for a
@@ -332,10 +333,8 @@ export default defineConfig({
   // What both languages share. GitHub is not in socialLinks: the nav shows it with the
   // star count instead (theme/GitHubStars.vue, the `nav-bar-content-after` slot).
   themeConfig: {
-    logo: '/nanomuse-icon.svg',
-    socialLinks: [
-      { icon: 'discord', link: 'https://discord.gg/bkTySmm28X' },
-    ],
+    logo: '/nanodot-icon.svg',
+    socialLinks: [],
     search: {
       provider: 'local',
       options: {

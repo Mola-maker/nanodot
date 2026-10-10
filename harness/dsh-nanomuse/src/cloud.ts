@@ -748,12 +748,12 @@ export default class NanomuseCloud extends Service {
           },
           lines: (sessionId) => this.sessionLines(ctx, sessionId),
           create: async (title) => {
-            // In the home workspace (`~/nanoMuse`), as the first conversation is: a session the
+            // In the home workspace (`~/Nanodot`), as the first conversation is: a session the
             // browser cannot place in a workspace shows a disabled composer and no transcript.
-            const folder = join(homedir(), 'nanoMuse')
+            const folder = join(homedir(), 'Nanodot')
             await mkdir(folder, { recursive: true }).catch(() => undefined)
             const registry = ctx.get('workspaceRegistry') as { create(path: string, title?: string): Promise<{ id: string }> } | undefined
-            const workspaceId = await registry?.create(folder, 'nanoMuse').then((w) => w.id).catch(() => undefined)
+            const workspaceId = await registry?.create(folder, 'Nanodot').then((w) => w.id).catch(() => undefined)
             const created = await ctx.sessionController.create(
               workspaceId ? { agentPreset: 'nanomuse', workspaceId: workspaceId as NonNullable<SessionCreateRequest['workspaceId']> } : { agentPreset: 'nanomuse', cwd: folder },
             )
@@ -1706,7 +1706,7 @@ export default class NanomuseCloud extends Service {
     if (key === this.lastSharedConnectors) return
     // Only the connectors: the relay keeps the look as it is for a write that carries nothing
     // else. (0.1.36 sent the look this device wore too, so a desktop that had just signed in,
-    // still wearing the default, renamed the account's muse back to "nanoMuse" and took a drawn
+    // still wearing the default, renamed the account's muse back to "Nanodot" and took a drawn
     // face off every device before its first pull landed.)
     await this.relay.putConnectors(token, rows, this.state.deviceId ?? '', this.writerId())
     this.lastSharedConnectors = key
@@ -2019,12 +2019,14 @@ export default class NanomuseCloud extends Service {
    * `profile` frame and pull). A drawn face keeps its pictures when only the
    * name moves.
    */
-  writeProfile(patch: { name?: string; avatar?: 'dragon' | 'emoji'; emoji?: string; color?: string }): Promise<Profile> {
+  writeProfile(patch: { name?: string; avatar?: 'dot-v1' | 'dragon' | 'emoji'; emoji?: string; color?: string }): Promise<Profile> {
     return this.serialize(async () => {
       const token = await this.token()
       const current = this.profile.current()
-      const name = (patch.name ?? current.name).trim().slice(0, 60) || current.name || 'nanoMuse'
-      const avatar = patch.avatar ?? current.avatar
+      const name = (patch.name ?? current.name).trim().slice(0, 60) || current.name || 'Dot'
+      const selectedAvatar = patch.avatar ?? current.avatar
+      // Existing relays accept dragon as the built-in face; every new client renders it as Dot.
+      const avatar = selectedAvatar === 'dot-v1' ? 'dragon' : selectedAvatar
       const write: ProfileWrite = {
         name,
         avatar,
@@ -2464,7 +2466,7 @@ export default class NanomuseCloud extends Service {
       if (!token || !this.state.account) throw new RelayError(401, 'signed_out', 'Sign in to wear a drawn face')
       const current = this.profile.current()
       const write: ProfileWrite = {
-        name: current.name || 'nanoMuse',
+        name: current.name || 'Dot',
         avatar: 'face',
         emoji: '',
         color: current.color,

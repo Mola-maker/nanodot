@@ -163,7 +163,7 @@ export function ChatGptSignIn({ compact, onChanged }: { compact?: boolean; onCha
       )}
       {routes === "no" ? (
         <p className="text-[12.5px] text-muted">
-          {t("This nanoMuse has no sign-in route yet. In a terminal on this computer, run")} <code className="rounded bg-surface-2 px-1 py-0.5 text-[12px]">nanomuse chatgpt login</code> {t("and reload this page.")}
+          {t("This Nanodot has no sign-in route yet. In a terminal on this computer, run")} <code className="rounded bg-surface-2 px-1 py-0.5 text-[12px]">nanomuse chatgpt login</code> {t("and reload this page.")}
         </p>
       ) : status?.signed_in ? (
         <div className="space-y-2">
@@ -217,7 +217,7 @@ export function ChatGptSignIn({ compact, onChanged }: { compact?: boolean; onCha
               {busy === "paste" ? <Loader2 size={14} className="animate-spin" /> : null} {t("Use this address")}
             </button>
           </form>
-          {!portBound && <p className="text-[11.5px] text-muted">{t("This nanoMuse runs where the browser cannot reach port 1455, so it cannot pick the sign-in up by itself.")}</p>}
+          {!portBound && <p className="text-[11.5px] text-muted">{t("This Nanodot runs where the browser cannot reach port 1455, so it cannot pick the sign-in up by itself.")}</p>}
         </div>
       ) : (
         <div className="space-y-2">

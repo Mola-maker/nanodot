@@ -13,7 +13,7 @@ const resources = join(here, '..', '..', 'desktop', 'resources')
 const html = readFileSync(join(resources, 'loading.html'), 'utf8')
 
 test('the splash is the logo in a ring, the wordmark and a status line — no dragon, no face', () => {
-  assert.match(html, /<h1>nanoMuse<\/h1>/)
+  assert.match(html, /<h1>Nanodot<\/h1>/)
   assert.match(html, /class="mark"[^>]*><span class="ring"><\/span><img src="logo\.png"/)
   assert.match(html, /<p id="line" role="status">/)
   assert.doesNotMatch(html, /dragon/i)

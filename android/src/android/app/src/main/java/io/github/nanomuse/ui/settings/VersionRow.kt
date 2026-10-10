@@ -40,6 +40,7 @@ import io.github.nanomuse.ui.home.MuseTones
 /** The second line under the installed version: checking, the latest, or that the check failed. */
 @Composable
 private fun statusLine(s: UpdateCheck.State): String = when {
+    !io.github.nanomuse.dot.DotBrand.UPDATES_ENABLED -> stringResource(R.string.nm_update_manual)
     s.checking -> stringResource(R.string.nm_version_checking)
     s.failed || s.latest == null -> stringResource(R.string.nm_version_failed)
     s.newer -> stringResource(R.string.nm_version_out, s.latest.orEmpty())
@@ -48,7 +49,7 @@ private fun statusLine(s: UpdateCheck.State): String = when {
 
 /** The tap: off to the download page when a newer build is out, otherwise a fresh check. */
 private fun onTap(context: Context, s: UpdateCheck.State) {
-    if (s.newer) openExternalUrl(context, UpdateCheck.DOWNLOAD_URL) else if (!s.checking) UpdateCheck.checkNow(context)
+    if (!io.github.nanomuse.dot.DotBrand.UPDATES_ENABLED || s.newer) openExternalUrl(context, UpdateCheck.DOWNLOAD_URL) else if (!s.checking) UpdateCheck.checkNow(context)
 }
 
 /** Reads the kept state and runs the daily check the first time the row is on screen. */
@@ -61,7 +62,7 @@ private fun rememberVersionState(): UpdateCheck.State {
 }
 
 /**
- * Settings → About: "Version — nanoMuse 0.1.35 (36)" with the latest release under it and an
+ * Settings → About: "Version — Nanodot 0.1.35 (36)" with the latest release under it and an
  * Update pill when a newer one is out. A Muse row, so it sits in the card with the others.
  */
 @Composable

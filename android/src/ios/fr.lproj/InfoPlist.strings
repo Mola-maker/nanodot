@@ -1,26 +1,26 @@
 /* Info.plist permission strings — Français */
 
-"NSLocationWhenInUseUsageDescription" = "nanoMuse utilise votre position pour enregistrer le lieu de démarrage des sessions de l'agent dans votre historique.";
-"NSLocationAlwaysAndWhenInUseUsageDescription" = "nanoMuse utilise la localisation en arrière-plan pour maintenir les tâches de l'agent en cours d'exécution. Les données de localisation servent uniquement à enregistrer l'historique des connexions.";
-"NSCalendarsUsageDescription" = "nanoMuse accède au calendrier pour que l'agent AI puisse consulter votre emploi du temps, vérifier vos disponibilités et créer des événements en votre nom.";
-"NSCalendarsFullAccessUsageDescription" = "nanoMuse accède au calendrier pour que l'agent AI puisse consulter votre emploi du temps, vérifier vos disponibilités et créer des événements en votre nom.";
-"NSRemindersUsageDescription" = "nanoMuse accède aux rappels pour que l'agent AI puisse consulter et créer des rappels en votre nom.";
-"NSRemindersFullAccessUsageDescription" = "nanoMuse accède aux rappels pour que l'agent AI puisse consulter et créer des rappels en votre nom.";
-"NSCameraUsageDescription" = "nanoMuse a besoin de l'accès à l'appareil photo pour prendre des photos destinées aux conversations AI.";
-"NSPhotoLibraryUsageDescription" = "nanoMuse a besoin de l'accès à la photothèque pour joindre des images aux conversations AI.";
-"NSPhotoLibraryAddUsageDescription" = "nanoMuse a besoin de l'autorisation d'enregistrer des vidéos et images dans votre photothèque.";
-"NSHealthShareUsageDescription" = "nanoMuse accède à HealthKit pour que l'agent AI puisse lire vos données de santé telles que les pas, la fréquence cardiaque, le sommeil et les entraînements.";
-"NSHealthUpdateUsageDescription" = "nanoMuse accède en écriture à HealthKit pour que l'agent AI puisse enregistrer des données de santé telles que les pas, le poids et l'hydratation.";
-"NSContactsUsageDescription" = "nanoMuse accède aux contacts pour que l'agent AI puisse rechercher, consulter et gérer vos contacts en votre nom.";
-"NSAppleMusicUsageDescription" = "nanoMuse accède à la bibliothèque multimédia pour que l'agent AI puisse rechercher votre musique et contrôler la lecture.";
-"NSMicrophoneUsageDescription" = "nanoMuse a besoin de l'accès au microphone pour la saisie vocale dans le chat.";
-"NSSpeechRecognitionUsageDescription" = "nanoMuse utilise la reconnaissance vocale pour convertir votre voix en messages texte.";
-"NSHomeKitUsageDescription" = "nanoMuse accède à HomeKit pour que l'agent AI puisse interroger et contrôler vos accessoires domotiques.";
-"NSAlarmKitUsageDescription" = "nanoMuse utilise AlarmKit pour que l'agent AI puisse régler des alarmes et des minuteries en votre nom.";
-"NSLocalNetworkUsageDescription" = "nanoMuse utilise le réseau local pour le serveur de débogage et pour que l'agent IA puisse joindre les services de votre propre réseau."; /* nanoMuse: the app has no VM; the sentence matches Info.plist */
+"NSLocationWhenInUseUsageDescription" = "Nanodot utilise votre position pour enregistrer le lieu de démarrage des sessions de l'agent dans votre historique.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "Nanodot utilise la localisation en arrière-plan pour maintenir les tâches de l'agent en cours d'exécution. Les données de localisation servent uniquement à enregistrer l'historique des connexions.";
+"NSCalendarsUsageDescription" = "Nanodot accède au calendrier pour que l'agent AI puisse consulter votre emploi du temps, vérifier vos disponibilités et créer des événements en votre nom.";
+"NSCalendarsFullAccessUsageDescription" = "Nanodot accède au calendrier pour que l'agent AI puisse consulter votre emploi du temps, vérifier vos disponibilités et créer des événements en votre nom.";
+"NSRemindersUsageDescription" = "Nanodot accède aux rappels pour que l'agent AI puisse consulter et créer des rappels en votre nom.";
+"NSRemindersFullAccessUsageDescription" = "Nanodot accède aux rappels pour que l'agent AI puisse consulter et créer des rappels en votre nom.";
+"NSCameraUsageDescription" = "Nanodot a besoin de l'accès à l'appareil photo pour prendre des photos destinées aux conversations AI.";
+"NSPhotoLibraryUsageDescription" = "Nanodot a besoin de l'accès à la photothèque pour joindre des images aux conversations AI.";
+"NSPhotoLibraryAddUsageDescription" = "Nanodot a besoin de l'autorisation d'enregistrer des vidéos et images dans votre photothèque.";
+"NSHealthShareUsageDescription" = "Nanodot accède à HealthKit pour que l'agent AI puisse lire vos données de santé telles que les pas, la fréquence cardiaque, le sommeil et les entraînements.";
+"NSHealthUpdateUsageDescription" = "Nanodot accède en écriture à HealthKit pour que l'agent AI puisse enregistrer des données de santé telles que les pas, le poids et l'hydratation.";
+"NSContactsUsageDescription" = "Nanodot accède aux contacts pour que l'agent AI puisse rechercher, consulter et gérer vos contacts en votre nom.";
+"NSAppleMusicUsageDescription" = "Nanodot accède à la bibliothèque multimédia pour que l'agent AI puisse rechercher votre musique et contrôler la lecture.";
+"NSMicrophoneUsageDescription" = "Nanodot a besoin de l'accès au microphone pour la saisie vocale dans le chat.";
+"NSSpeechRecognitionUsageDescription" = "Nanodot utilise la reconnaissance vocale pour convertir votre voix en messages texte.";
+"NSHomeKitUsageDescription" = "Nanodot accède à HomeKit pour que l'agent AI puisse interroger et contrôler vos accessoires domotiques.";
+"NSAlarmKitUsageDescription" = "Nanodot utilise AlarmKit pour que l'agent AI puisse régler des alarmes et des minuteries en votre nom.";
+"NSLocalNetworkUsageDescription" = "Nanodot utilise le réseau local pour le serveur de débogage et pour que l'agent IA puisse joindre les services de votre propre réseau."; /* nanoMuse: the app has no VM; the sentence matches Info.plist */
 
 /* nanoMuse: the keys Info.plist declares but this file lacked, so the prompt is in the person's language */
-"NFCReaderUsageDescription" = "nanoMuse utilise le NFC pour que l'agent IA puisse lire et écrire des tags NFC en votre nom.";
-"NSBluetoothAlwaysUsageDescription" = "nanoMuse utilise le Bluetooth pour que l'agent IA puisse rechercher, connecter et communiquer avec des appareils BLE à proximité en votre nom.";
-"NSBluetoothPeripheralUsageDescription" = "nanoMuse utilise le Bluetooth pour que l'agent IA puisse rechercher, connecter et communiquer avec des appareils BLE à proximité en votre nom.";
-"NSFaceIDUsageDescription" = "nanoMuse utilise Face ID pour protéger les sessions de discussion verrouillées afin que vous seul puissiez en voir le contenu.";
+"NFCReaderUsageDescription" = "Nanodot utilise le NFC pour que l'agent IA puisse lire et écrire des tags NFC en votre nom.";
+"NSBluetoothAlwaysUsageDescription" = "Nanodot utilise le Bluetooth pour que l'agent IA puisse rechercher, connecter et communiquer avec des appareils BLE à proximité en votre nom.";
+"NSBluetoothPeripheralUsageDescription" = "Nanodot utilise le Bluetooth pour que l'agent IA puisse rechercher, connecter et communiquer avec des appareils BLE à proximité en votre nom.";
+"NSFaceIDUsageDescription" = "Nanodot utilise Face ID pour protéger les sessions de discussion verrouillées afin que vous seul puissiez en voir le contenu.";

@@ -6,25 +6,29 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1"
     />
-    <meta name="theme-color" content="#fcfcfc" />
+    <meta name="theme-color" content="#F4F7F8" />
     <script>
-      // light unless dark was chosen under Settings → Appearance (or "system"): applied
+      // Follow the system unless a stored choice overrides it: applied
       // before the first paint so a dark choice does not flash white
       try {
-        var t = localStorage.getItem("nanomuse_theme") || "light";
+        var t = localStorage.getItem("nanomuse_theme") || "system";
         if (t === "system") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
         document.documentElement.dataset.theme = t;
-        if (t === "dark") document.querySelector('meta[name="theme-color"]').setAttribute("content", "#181819");
-      } catch (e) {}
+        if (t === "dark") document.querySelector('meta[name="theme-color"]').setAttribute("content", "#10191D");
+      } catch (e) {
+        var dark = matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+        if (dark) document.querySelector('meta[name="theme-color"]').setAttribute("content", "#10191D");
+      }
     </script>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="nanoMuse" />
+    <meta name="apple-mobile-web-app-title" content="Nanodot" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
-    <title>nanoMuse</title>
+    <title>Nanodot</title>
   </head>
   <body>
     <div id="root"></div>

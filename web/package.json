@@ -2,7 +2,7 @@
   "name": "nanomuse-web",
   "private": true,
   "version": "1.0.1",
-  "description": "nanoMuse mobile-first web app (chat, goals, ideas, memory, approvals)",
+  "description": "Nanodot web app with Dot: chat, goals, ideas, memory and approvals, based on nanoMuse.",
   "type": "module",
   "scripts": {
     "dev": "vite",
