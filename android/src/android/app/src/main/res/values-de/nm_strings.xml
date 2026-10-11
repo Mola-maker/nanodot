@@ -1157,4 +1157,26 @@
     <string name="nm_dot_chat_compact">Komprimieren und senden</string>
     <string name="nm_dot_chat_cancel">Abbrechen</string>
     <string name="nm_care_clarify_no_nodes">Welches Bedienelement siehst du auf dieser Seite?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">Ich leite dich Schritt für Schritt an.</string>
+    <string name="nm_care_goal">Was möchtest du tun?</string>
+    <string name="nm_care_start">Anleitung starten</string>
+    <string name="nm_care_copy">Text kopieren</string>
+    <string name="nm_care_repeat">Anweisung wiederholen</string>
+    <string name="nm_care_pause">Pausieren</string>
+    <string name="nm_care_reobserve">Erneut ansehen</string>
+    <string name="nm_care_end">Anleitung beenden</string>
+    <string name="nm_care_resume">Fortsetzen</string>
+    <string name="nm_care_change_goal">Ziel ändern</string>
+    <string name="nm_care_confirm">Ich habe diesen Schritt erledigt</string>
+    <string name="nm_care_observing">Bildschirm wird angesehen</string>
+    <string name="nm_care_clarifying">Eine Angabe fehlt</string>
+    <string name="nm_care_awaiting">Wartet auf dich</string>
+    <string name="nm_care_verifying">Ergebnis wird geprüft</string>
+    <string name="nm_care_completed">Anleitung beendet</string>
+    <string name="nm_care_recovering">Diesen Schritt prüfen</string>
+    <string name="nm_care_paused">Anleitung pausiert</string>
+    <string name="nm_care_unavailable">Dieser Bildschirm konnte nicht gelesen oder geprüft werden. Erneut ansehen, Ziel ändern oder Anleitung beenden.</string>
+    <string name="nm_care_provider_missing">Wähle unter Einstellungen → Modelle ein verfügbares Textmodell und sieh erneut nach.</string>
 </resources>

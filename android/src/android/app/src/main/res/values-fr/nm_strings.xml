@@ -1157,4 +1157,26 @@
     <string name="nm_dot_chat_compact">Compacter et envoyer</string>
     <string name="nm_dot_chat_cancel">Annuler</string>
     <string name="nm_care_clarify_no_nodes">Quel contrôle vois-tu sur cette page ?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">Je vous guiderai étape par étape.</string>
+    <string name="nm_care_goal">Que souhaitez-vous faire ?</string>
+    <string name="nm_care_start">Commencer le guidage</string>
+    <string name="nm_care_copy">Copier le texte</string>
+    <string name="nm_care_repeat">Répéter la consigne</string>
+    <string name="nm_care_pause">Mettre en pause</string>
+    <string name="nm_care_reobserve">Observer à nouveau</string>
+    <string name="nm_care_end">Terminer le guidage</string>
+    <string name="nm_care_resume">Reprendre</string>
+    <string name="nm_care_change_goal">Modifier le but</string>
+    <string name="nm_care_confirm">Cette étape est terminée</string>
+    <string name="nm_care_observing">Lecture de cet écran</string>
+    <string name="nm_care_clarifying">Une précision est nécessaire</string>
+    <string name="nm_care_awaiting">En attente de votre action</string>
+    <string name="nm_care_verifying">Vérification du résultat</string>
+    <string name="nm_care_completed">Guidage terminé</string>
+    <string name="nm_care_recovering">Vérifiez cette étape</string>
+    <string name="nm_care_paused">Guidage en pause</string>
+    <string name="nm_care_unavailable">Impossible de lire ou de vérifier cet écran. Observez à nouveau, modifiez le but ou terminez le guidage.</string>
+    <string name="nm_care_provider_missing">Choisissez un modèle de texte disponible dans Paramètres → Modèles, puis observez à nouveau.</string>
 </resources>

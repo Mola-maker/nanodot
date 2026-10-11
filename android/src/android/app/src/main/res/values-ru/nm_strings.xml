@@ -1165,4 +1165,26 @@
     <string name="nm_dot_chat_compact">Сжать и отправить</string>
     <string name="nm_dot_chat_cancel">Отмена</string>
     <string name="nm_care_clarify_no_nodes">Какой элемент управления ты видишь на этой странице?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">Я буду направлять вас шаг за шагом.</string>
+    <string name="nm_care_goal">Что вы хотите сделать?</string>
+    <string name="nm_care_start">Начать подсказки</string>
+    <string name="nm_care_copy">Копировать текст</string>
+    <string name="nm_care_repeat">Повторить инструкцию</string>
+    <string name="nm_care_pause">Пауза</string>
+    <string name="nm_care_reobserve">Посмотреть снова</string>
+    <string name="nm_care_end">Завершить подсказки</string>
+    <string name="nm_care_resume">Продолжить</string>
+    <string name="nm_care_change_goal">Изменить цель</string>
+    <string name="nm_care_confirm">Я выполнил этот шаг</string>
+    <string name="nm_care_observing">Просмотр экрана</string>
+    <string name="nm_care_clarifying">Нужно уточнение</string>
+    <string name="nm_care_awaiting">Ожидание вашего действия</string>
+    <string name="nm_care_verifying">Проверка результата</string>
+    <string name="nm_care_completed">Подсказки завершены</string>
+    <string name="nm_care_recovering">Проверьте этот шаг</string>
+    <string name="nm_care_paused">Подсказки приостановлены</string>
+    <string name="nm_care_unavailable">Не удалось прочитать или проверить экран. Посмотрите снова, измените цель или завершите подсказки.</string>
+    <string name="nm_care_provider_missing">Выберите доступную текстовую модель в Настройки → Модели и посмотрите снова.</string>
 </resources>

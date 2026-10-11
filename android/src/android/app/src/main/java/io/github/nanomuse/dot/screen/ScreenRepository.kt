@@ -26,16 +26,22 @@ class ScreenRepository(private val service: AccessibilityService, private val ov
     private val tracker = SceneTracker()
     private val displays = service.getSystemService(DisplayManager::class.java)
     private var connected = false
+    private var lastEventScene: SceneKey? = null
     fun connect() { connected = true }
     fun disconnect() { connected = false; LegacyProjectionService.stop(service) }
-    fun onAccessibilityEvent(event: AccessibilityEvent) {
+    fun onAccessibilityEvent(event: AccessibilityEvent): Boolean {
+        val previous = lastEventScene
         // Window-list changes are observed from current bounds, never package-wide invalidation.
         if (event.eventType != AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
             tracker.contentChanged(event.windowId, ownedWindowIds())
         }
         // Observe IME/display/content changes now, so async results cannot outlive a changed scene.
-        if (connected && !locked()) readScene()?.use { tracker.observe(it.frame) }
+        lastEventScene = currentSceneKey()
+        return previous != lastEventScene
     }
+
+    /** Passive exact current scene; observing does not capture or contact a model. */
+    fun currentSceneKey(): SceneKey? = if (connected && !locked()) readScene()?.use { tracker.observe(it.frame) } else null
 
     /** Passive current host frame; no screenshot, projection or stale snapshot reuse. */
     fun hostWindowId(): Int? = if (connected && !locked()) readScene()?.use { it.frame.windowId } else null

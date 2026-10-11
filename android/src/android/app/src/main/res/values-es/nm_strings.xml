@@ -1157,4 +1157,26 @@
     <string name="nm_dot_chat_compact">Comprimir y enviar</string>
     <string name="nm_dot_chat_cancel">Cancelar</string>
     <string name="nm_care_clarify_no_nodes">¿Qué control puedes ver en esta página?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">Te guiaré paso a paso.</string>
+    <string name="nm_care_goal">¿Qué quieres hacer?</string>
+    <string name="nm_care_start">Iniciar guía</string>
+    <string name="nm_care_copy">Copiar texto</string>
+    <string name="nm_care_repeat">Repetir instrucción</string>
+    <string name="nm_care_pause">Pausar</string>
+    <string name="nm_care_reobserve">Volver a observar</string>
+    <string name="nm_care_end">Terminar guía</string>
+    <string name="nm_care_resume">Reanudar</string>
+    <string name="nm_care_change_goal">Cambiar objetivo</string>
+    <string name="nm_care_confirm">He completado este paso</string>
+    <string name="nm_care_observing">Observando la pantalla</string>
+    <string name="nm_care_clarifying">Falta un detalle</string>
+    <string name="nm_care_awaiting">Esperando tu acción</string>
+    <string name="nm_care_verifying">Comprobando el resultado</string>
+    <string name="nm_care_completed">Guía terminada</string>
+    <string name="nm_care_recovering">Revisa este paso</string>
+    <string name="nm_care_paused">Guía en pausa</string>
+    <string name="nm_care_unavailable">No se pudo leer o verificar esta pantalla. Vuelve a observar, cambia el objetivo o termina la guía.</string>
+    <string name="nm_care_provider_missing">Elige un modelo de texto disponible en Ajustes → Modelos y vuelve a observar.</string>
 </resources>

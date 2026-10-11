@@ -1153,4 +1153,26 @@
     <string name="nm_dot_chat_compact">ย่อและส่ง</string>
     <string name="nm_dot_chat_cancel">ยกเลิก</string>
     <string name="nm_care_clarify_no_nodes">คุณเห็นส่วนควบคุมใดบนหน้านี้?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">ฉันจะคอยแนะนำทีละขั้นตอน</string>
+    <string name="nm_care_goal">คุณต้องการทำอะไร</string>
+    <string name="nm_care_start">เริ่มคำแนะนำ</string>
+    <string name="nm_care_copy">คัดลอกข้อความ</string>
+    <string name="nm_care_repeat">ทวนคำแนะนำ</string>
+    <string name="nm_care_pause">พัก</string>
+    <string name="nm_care_reobserve">ดูอีกครั้ง</string>
+    <string name="nm_care_end">จบคำแนะนำ</string>
+    <string name="nm_care_resume">ดำเนินต่อ</string>
+    <string name="nm_care_change_goal">เปลี่ยนเป้าหมาย</string>
+    <string name="nm_care_confirm">ฉันทำขั้นตอนนี้เสร็จแล้ว</string>
+    <string name="nm_care_observing">กำลังดูหน้าจอ</string>
+    <string name="nm_care_clarifying">ต้องการรายละเอียดเพิ่มเติม</string>
+    <string name="nm_care_awaiting">กำลังรอคุณ</string>
+    <string name="nm_care_verifying">กำลังตรวจผลลัพธ์</string>
+    <string name="nm_care_completed">จบคำแนะนำแล้ว</string>
+    <string name="nm_care_recovering">ตรวจสอบขั้นตอนนี้</string>
+    <string name="nm_care_paused">พักคำแนะนำอยู่</string>
+    <string name="nm_care_unavailable">อ่านหรือตรวจสอบหน้าจอนี้ไม่ได้ ดูอีกครั้ง เปลี่ยนเป้าหมาย หรือจบคำแนะนำ</string>
+    <string name="nm_care_provider_missing">เลือกโมเดลข้อความที่พร้อมใช้งานใน การตั้งค่า → โมเดล แล้วดูอีกครั้ง</string>
 </resources>

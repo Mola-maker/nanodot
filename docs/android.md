@@ -170,7 +170,7 @@ as model success. The default service and existing stored credentials are unchan
 
 ## Care evidence controller foundation {#care-evidence-controller}
 
-The source-only `CareController` exposes a state flow for observing, clarifying, guiding,
+The `CareController` exposes a state flow for observing, clarifying, guiding,
 waiting, verifying, recovering, pausing and ending a task. It does not click, type, paste,
 read the clipboard or run Hands. Its caller owns one coroutine scope and supplies fresh
 screen sampling, the read-only planner and the current host scene. Accessibility events
@@ -200,9 +200,42 @@ owned snapshots close after use. Protected, blank, unavailable and empty capture
 recover without recording a successful step. Ending a task is an explicit user decision.
 
 This foundation is covered by deterministic JVM tests using the public snapshot DTO.
-The focus overlay, goal dialog, service ownership and confirmation controls belong to
-later UI integration. Native wrong-target/advertisement checks, TalkBack and a full
-care task remain separate acceptance gates; unit tests do not establish those results.
+Native wrong-target/advertisement checks, TalkBack and a full care task remain separate
+acceptance gates; unit tests do not establish those results.
+
+## Care guidance overlay {#care-guidance-overlay}
+
+Triple-tap the same Dot, or choose its accessible **Start care** action, to open the purple
+care entry and enter a goal. Opening it does not contact a model or capture the screen.
+Starting a goal reads the current host and requests one instruction using your selected
+visible text model, or your configured default model group. Missing configuration appears
+as a recovery message with a Settings → Models instruction. Care uses a separate tools-empty
+planner; it never enters the chat agent loop or retries with a different provider.
+
+The short instruction card scrolls within the available host/keyboard area. Its buttons
+copy the proposed text to the clipboard, repeat the instruction using the existing reader,
+pause, look again, change the goal, or end guidance. Copying only happens when you press
+**Copy text**; Care never types or pastes into the host. Uncertain steps show the pending
+instruction and **I completed this step**. That explicit confirmation samples again before
+recording user-confirmed evidence. It does not count a generic touch as completion.
+
+A single purple outline marks the validated current target without taking touches or
+accessibility focus. Host content, keyboard or display changes clear it before fresh
+observation. Dot and Care windows are excluded from host events and hidden during capture.
+The short focus transition follows Android's animator duration setting; scale zero uses
+a static outline with no animation loop. Back pauses and closes the card; reopening offers
+explicit resume with fresh observation. Single/double tap or entering the main chat pauses
+competing Care. Locking, hiding Dot or losing the service clears its windows and speech.
+
+Real Hands runs, permitted remote shell/open/task calls, and accessibility action commands
+pause Care before acting. Overlapping operation owners keep it paused until every owner
+releases; their completion never automatically resumes Care. A remote timeout or a cancelled
+UI status still waits for actual VM jobs and their cleanup to complete before releasing
+ownership. Existing permission and risk checks remain in place. Read-only accessibility node/screenshot requests need no action lease.
+
+The native fixture uses an inert public provider and a disposable test host. Native touch,
+copy, Back, TalkBack, light/dark, portrait/landscape and 100/150/200% font acceptance are
+separate root-run gates; successful source compilation is not native or real-model acceptance.
 
 ## Install
 

@@ -1165,4 +1165,26 @@
     <string name="nm_dot_chat_compact">Skompaktuj i wyślij</string>
     <string name="nm_dot_chat_cancel">Anuluj</string>
     <string name="nm_care_clarify_no_nodes">Jaki element sterujący widzisz na tej stronie?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">Poprowadzę Cię krok po kroku.</string>
+    <string name="nm_care_goal">Co chcesz zrobić?</string>
+    <string name="nm_care_start">Rozpocznij prowadzenie</string>
+    <string name="nm_care_copy">Kopiuj tekst</string>
+    <string name="nm_care_repeat">Powtórz instrukcję</string>
+    <string name="nm_care_pause">Wstrzymaj</string>
+    <string name="nm_care_reobserve">Spójrz ponownie</string>
+    <string name="nm_care_end">Zakończ prowadzenie</string>
+    <string name="nm_care_resume">Wznów</string>
+    <string name="nm_care_change_goal">Zmień cel</string>
+    <string name="nm_care_confirm">Ten krok został wykonany</string>
+    <string name="nm_care_observing">Sprawdzanie ekranu</string>
+    <string name="nm_care_clarifying">Potrzebny jest szczegół</string>
+    <string name="nm_care_awaiting">Oczekiwanie na Ciebie</string>
+    <string name="nm_care_verifying">Sprawdzanie wyniku</string>
+    <string name="nm_care_completed">Prowadzenie zakończone</string>
+    <string name="nm_care_recovering">Sprawdź ten krok</string>
+    <string name="nm_care_paused">Prowadzenie wstrzymane</string>
+    <string name="nm_care_unavailable">Nie można odczytać lub zweryfikować tego ekranu. Spójrz ponownie, zmień cel lub zakończ prowadzenie.</string>
+    <string name="nm_care_provider_missing">Wybierz dostępny model tekstowy w Ustawienia → Modele i spójrz ponownie.</string>
 </resources>

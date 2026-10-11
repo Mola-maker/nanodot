@@ -4,6 +4,7 @@ import android.widget.Toast
 import com.openminis.app.MinisApp
 import com.openminis.app.R
 import com.openminis.app.accessibility.MinisAccessibilityService
+import io.github.nanomuse.dot.care.*
 import io.github.nanomuse.dot.chat.DotChatAdapter
 import io.github.nanomuse.dot.gesture.DotIntent
 import io.github.nanomuse.dot.screen.CaptureOutcome
@@ -18,19 +19,50 @@ class DotInteractionCoordinator(private val service: MinisAccessibilityService) 
     private val adapter by lazy { DotChatAdapter.create(app) }
     private var opening: Job? = null
     private var request = 0L
+    private var careWindow: CareOverlayWindow? = null
+    private val carePlanner by lazy { ConfiguredCarePlanner(app) }
+    val careSession by lazy {
+        CareSession(CareController(scope,
+            { generation -> service.dotScreen.capture(CapturePurpose.Care,generation) },
+            { service.dotScreen.currentSceneKey() }, carePlanner::next),
+            { careWindow?.clearFocus() }, { careWindow?.stopSpeech() })
+    }
+    fun connect() { CareOperationGate.observe(careSession::automatic) }
+    fun pauseCare(hide: Boolean = false) {
+        careSession.pause(hide)
+        if (hide) careWindow?.hide()
+    }
+    fun onHostGeometryChanged() {
+        careWindow?.clearFocus(); careWindow?.stopSpeech()
+        careSession.controller.onSceneChanged()
+        careWindow?.refreshGeometry()
+    }
+    fun onSceneChanged(changed: Boolean) {
+        if (changed) onHostGeometryChanged()
+        else careWindow?.refreshGeometry()
+    }
+    private fun openCare() {
+        close()
+        if (careWindow == null) careWindow = CareOverlayWindow(service,scope,careSession,
+            { service.dotScreen.hostViewport() }, { service.dotScreen.currentSceneKey() })
+        careSession.enter()
+    }
 
     /** Explicit main-app session entry switches admission; opening our panel alone never does. */
     fun onChatEntered(sessionId: String) {
+        pauseCare(hide=true)
         ++request
         opening?.cancel()
         if (service.dotOverlay.panelView != null) adapter.bind(sessionId)
     }
 
     fun handle(intent: DotIntent) {
+        if (intent == DotIntent.Triple) { openCare(); return }
         if (intent != DotIntent.Single && intent != DotIntent.Double) {
             Toast.makeText(service,R.string.nm_dot_action_unavailable,Toast.LENGTH_SHORT).show()
             return
         }
+        pauseCare(hide=true)
         opening?.cancel()
         // The old panel's collapse callback invalidates its admission before the new ticket exists.
         service.dotOverlay.collapsePanel()
@@ -63,5 +95,9 @@ class DotInteractionCoordinator(private val service: MinisAccessibilityService) 
         service.dotOverlay.collapsePanel()
     }
 
-    fun disconnect() { close() }
+    fun disconnect() {
+        CareOperationGate.observe(null)
+        careSession.disconnect(); careWindow?.close(); careWindow=null
+        close()
+    }
 }

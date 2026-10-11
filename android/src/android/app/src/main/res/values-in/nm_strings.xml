@@ -1153,4 +1153,26 @@
     <string name="nm_dot_chat_compact">Ringkas dan kirim</string>
     <string name="nm_dot_chat_cancel">Batal</string>
     <string name="nm_care_clarify_no_nodes">Kontrol apa yang bisa kamu lihat di halaman ini?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">Saya akan memandu Anda langkah demi langkah.</string>
+    <string name="nm_care_goal">Apa yang ingin Anda lakukan?</string>
+    <string name="nm_care_start">Mulai panduan</string>
+    <string name="nm_care_copy">Salin teks</string>
+    <string name="nm_care_repeat">Ulangi petunjuk</string>
+    <string name="nm_care_pause">Jeda</string>
+    <string name="nm_care_reobserve">Amati lagi</string>
+    <string name="nm_care_end">Akhiri panduan</string>
+    <string name="nm_care_resume">Lanjutkan</string>
+    <string name="nm_care_change_goal">Ubah tujuan</string>
+    <string name="nm_care_confirm">Saya menyelesaikan langkah ini</string>
+    <string name="nm_care_observing">Mengamati layar ini</string>
+    <string name="nm_care_clarifying">Perlu detail tambahan</string>
+    <string name="nm_care_awaiting">Menunggu Anda</string>
+    <string name="nm_care_verifying">Memeriksa hasil</string>
+    <string name="nm_care_completed">Panduan berakhir</string>
+    <string name="nm_care_recovering">Periksa langkah ini</string>
+    <string name="nm_care_paused">Panduan dijeda</string>
+    <string name="nm_care_unavailable">Layar ini tidak dapat dibaca atau diverifikasi. Amati lagi, ubah tujuan, atau akhiri panduan.</string>
+    <string name="nm_care_provider_missing">Pilih model teks yang tersedia di Setelan → Model, lalu amati lagi.</string>
 </resources>

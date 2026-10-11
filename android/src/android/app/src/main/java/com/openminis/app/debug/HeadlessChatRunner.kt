@@ -158,6 +158,8 @@ internal object HeadlessChatRunner {
         thinkingLevel: ThinkingLevel? = null,
         wait: Boolean,
         timeoutMs: Long,
+        // nanoMuse: optional remote-operation lifetime observer; normal callers are unchanged.
+        onOperationState: ((kotlinx.coroutines.flow.Flow<Boolean>) -> Unit)? = null,
     ): PromptResult = withContext(Dispatchers.Main) {
         val vm = viewModel(context, sessionId)
         // Apply per-call thinking override BEFORE sendMessage so streamMessage
@@ -213,7 +215,10 @@ internal object HeadlessChatRunner {
             )
         }
         for (att in attachments) vm.addAttachment(att)
-        vm.sendMessage(text)
+        try { vm.sendMessage(text) } finally {
+            // nanoMuse: actual VM jobs outlive UI cancellation flags and the RPC wait.
+            onOperationState?.invoke(vm.careOperationBusy)
+        }
         if (!wait) return@withContext PromptResult(status = "Running", responseText = null, timedOut = false)
 
         // Wait for isStreaming to be false (sendMessage flips it true synchronously

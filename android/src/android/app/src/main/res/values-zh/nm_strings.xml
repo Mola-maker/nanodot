@@ -1130,4 +1130,26 @@
     <string name="nm_dot_chat_compact">压缩并发送</string>
     <string name="nm_dot_chat_cancel">取消</string>
     <string name="nm_care_clarify_no_nodes">你在这个页面上能看到哪个控件？</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">我会一步步引导你。</string>
+    <string name="nm_care_goal">你想完成什么？</string>
+    <string name="nm_care_start">开始引导</string>
+    <string name="nm_care_copy">复制文字</string>
+    <string name="nm_care_repeat">重复说明</string>
+    <string name="nm_care_pause">暂停</string>
+    <string name="nm_care_reobserve">重新识别</string>
+    <string name="nm_care_end">结束引导</string>
+    <string name="nm_care_resume">恢复</string>
+    <string name="nm_care_change_goal">修改目标</string>
+    <string name="nm_care_confirm">我已完成这一步</string>
+    <string name="nm_care_observing">正在查看屏幕</string>
+    <string name="nm_care_clarifying">需要补充信息</string>
+    <string name="nm_care_awaiting">等待你操作</string>
+    <string name="nm_care_verifying">正在检查结果</string>
+    <string name="nm_care_completed">引导已结束</string>
+    <string name="nm_care_recovering">请核对这一步</string>
+    <string name="nm_care_paused">引导已暂停</string>
+    <string name="nm_care_unavailable">暂时无法读取或确认当前屏幕。你可以重新识别、修改目标或结束引导。</string>
+    <string name="nm_care_provider_missing">请在设置 → 模型中选择可用的文字模型，然后重新识别。</string>
 </resources>

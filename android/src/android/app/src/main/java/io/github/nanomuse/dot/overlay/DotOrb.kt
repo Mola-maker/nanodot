@@ -25,16 +25,17 @@ import io.github.nanomuse.dot.DotColors
 import io.github.nanomuse.dot.gesture.DotIntent
 
 @Composable
-fun DotOrb(onIntent: (DotIntent) -> Unit) {
+fun DotOrb(onIntent: (DotIntent) -> Unit, careActive: Boolean = false) {
     val dark = isSystemInDarkTheme()
     val open = stringResource(R.string.nm_dot_open_conversation)
     val screen = stringResource(R.string.nm_dot_view_screen)
     val care = stringResource(R.string.nm_dot_start_care)
-    val description = stringResource(R.string.nm_dot_orb_description)
+    val description = stringResource(if(careActive) R.string.nm_care_awaiting else R.string.nm_dot_orb_description)
     Box(
         Modifier.size(48.dp)
             .background(if (dark) DotColors.DarkPrimary else DotColors.LightPrimary, CircleShape)
-            .border(1.dp, if (dark) DotColors.DarkOutline else DotColors.LightOutline, CircleShape)
+            .border(if(careActive) 3.dp else 1.dp, if(careActive) { if(dark) DotColors.DarkCare else DotColors.LightCare }
+                else if (dark) DotColors.DarkOutline else DotColors.LightOutline, CircleShape)
             .semantics {
                 role = Role.Button
                 contentDescription = description

@@ -1161,4 +1161,26 @@
     <string name="nm_dot_chat_compact">Comprimă și trimite</string>
     <string name="nm_dot_chat_cancel">Anulează</string>
     <string name="nm_care_clarify_no_nodes">Ce control vezi pe această pagină?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">Te voi ghida pas cu pas.</string>
+    <string name="nm_care_goal">Ce dorești să faci?</string>
+    <string name="nm_care_start">Începe ghidarea</string>
+    <string name="nm_care_copy">Copiază textul</string>
+    <string name="nm_care_repeat">Repetă instrucțiunea</string>
+    <string name="nm_care_pause">Pauză</string>
+    <string name="nm_care_reobserve">Privește din nou</string>
+    <string name="nm_care_end">Încheie ghidarea</string>
+    <string name="nm_care_resume">Reia</string>
+    <string name="nm_care_change_goal">Schimbă obiectivul</string>
+    <string name="nm_care_confirm">Am finalizat acest pas</string>
+    <string name="nm_care_observing">Se examinează ecranul</string>
+    <string name="nm_care_clarifying">Este necesar un detaliu</string>
+    <string name="nm_care_awaiting">Se așteaptă acțiunea ta</string>
+    <string name="nm_care_verifying">Se verifică rezultatul</string>
+    <string name="nm_care_completed">Ghidare încheiată</string>
+    <string name="nm_care_recovering">Verifică acest pas</string>
+    <string name="nm_care_paused">Ghidare întreruptă</string>
+    <string name="nm_care_unavailable">Acest ecran nu a putut fi citit sau verificat. Privește din nou, schimbă obiectivul sau încheie ghidarea.</string>
+    <string name="nm_care_provider_missing">Alege un model text disponibil în Setări → Modele, apoi privește din nou.</string>
 </resources>
