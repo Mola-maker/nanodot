@@ -15,6 +15,8 @@ Nanodot uses each platform's native controls and accessibility behavior. Dot's b
 
 Kotlin exposes `DotTokens.Space.S4` through `S48`, `Type.Body/Care`, `Motion.Page/Press/Focus` and `TouchTarget`. Swift exposes `NanodotTokens.Space`, `Typography`, `Motion` (seconds), `touchTarget` and `Colors.Light/Dark`. Swift callers use scaled system text, not fixed-size text that defeats Dynamic Type. Desktop exports `dotTokens` from `harness/dsh-nanomuse/src/client/dot-tokens.ts`. Web and showcase CSS expose `--dot-background`, `--dot-surface`, `--dot-text`, `--dot-primary`, `--dot-on-primary`, `--dot-care`, `--dot-outline`, `--dot-space-*`, `--dot-type-*`, `--dot-touch-target` and `--dot-motion-*`. CSS follows system dark mode by default; `data-dot-theme="light|dark"` selects the saved override. These generated exports are consumed by later platform shell/component tasks.
 
+The desktop stylesheet consumes the shared light/dark tokens for its built-in blue palette. A branding rerun refreshes that token export without rewriting the TypeScript template or the saved profile accent. Secondary and muted text use the text role; outline remains a border or disabled-state role. Existing Chat, Tasks, Devices and Settings navigation, rem sizing and reduced-motion behavior remain in place.
+
 ## Color roles {#color-roles}
 
 `DotColors.lightScheme/darkScheme` supplies all color roles supported by the pinned Material 3 library to Android's existing `MinisTheme`; the saved theme selection still decides which scheme is active. Never use a light on-primary foreground on a dark primary button. Text on surface and on-primary text both meet a 4.5:1 contrast ratio in each approved palette. Generated roles also check tertiary, secondary and container foreground pairs.

@@ -868,7 +868,7 @@ internal fun ThinkingBlock(block: AssistantBlock, isStreaming: Boolean, isLast: 
         // if the user hasn't taken control of its state yet.
         if (!isStreaming && !userTouched) expanded = false
     }
-    val thinkingBlue = Color(0xFF136F63)
+    val thinkingBlue = androidx.compose.material3.MaterialTheme.colorScheme.primary // nanoMuse: active-theme foreground accent.
     val charCount = block.content.length
     val charLabel = when {
         charCount >= 1000 -> "${charCount / 1000}K"
@@ -945,7 +945,7 @@ internal fun ThinkingBlock(block: AssistantBlock, isStreaming: Boolean, isLast: 
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium,
                     fontFamily = FontFamily.Monospace,
-                    color = thinkingBlue.copy(alpha = 0.6f),
+                    color = thinkingBlue, // nanoMuse: full-opacity small text and control glyph.
                 )
                 Spacer(modifier = Modifier.width(4.dp))
             }
@@ -963,7 +963,7 @@ internal fun ThinkingBlock(block: AssistantBlock, isStreaming: Boolean, isLast: 
                 Icon(
                     imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                     contentDescription = if (expanded) "Collapse" else "Expand",
-                    tint = thinkingBlue.copy(alpha = 0.5f),
+                    tint = thinkingBlue, // nanoMuse: full-opacity small text and control glyph.
                     modifier = Modifier.size(14.dp),
                 )
             }
@@ -1098,7 +1098,7 @@ private fun ThinkingFullContentDialog(content: String, onDismiss: () -> Unit) {
                         text = "Deep Thinking",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF136F63),
+                        color = androidx.compose.material3.MaterialTheme.colorScheme.primary, // nanoMuse: active-theme foreground accent.
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     MinisTextButton(onClick = onDismiss) {

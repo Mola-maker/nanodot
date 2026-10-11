@@ -38,7 +38,7 @@ export function Avatar({
 
   const mood = useMood(status);
   const state = status?.state ?? "idle";
-  const color = profile?.color ?? "#136F63";
+  const color = profile?.color ?? "var(--om-accent)";
   // the dragon is the default: no profile yet, or a profile that names it (or a retired face)
   const dragon = !profile || isDragon(profile.avatar);
   // a face from the studio: anything else that is not the emoji

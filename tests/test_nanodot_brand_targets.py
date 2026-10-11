@@ -73,6 +73,13 @@ def css_block(text, selector):
     return re.search(re.escape(selector) + r" \{([^}]+)\}", text).group(1)
 
 
+def desktop_colors(root):
+    source = (root / "harness/dsh-nanomuse/src/client/dot-tokens.ts").read_text(encoding="utf-8")
+    return json.loads(re.search(r"export const dotTokens = ([\s\S]+) as const;", source)[1])[
+        "colors"
+    ]
+
+
 def test_explicit_update_channel_reaches_every_platform_and_is_idempotent(tmp_path):
     root, preserved = fixture(tmp_path)
     brand = alternate_brand(tmp_path)
@@ -119,11 +126,15 @@ def test_disabling_and_restoring_the_profile_updates_existing_generated_values(t
     apply_brand(root, original)
     assert "nanodot-releases" not in (root / DESK).read_text(encoding="utf-8")
     assert "nanodot-releases" not in (root / IOS_UPDATE).read_text(encoding="utf-8")
-    assert "static let action = tone(0x136F63, 0x7DD6C5)" in (root / IOS_TONES).read_text(
+    light = original.themeColors["light"]
+    dark = original.themeColors["dark"]
+    assert f"static let action = tone(0x{light['primary'][1:]}, 0x{dark['primary'][1:]})" in (
+        root / IOS_TONES
+    ).read_text(encoding="utf-8")
+    assert f"--om-accent: {light['primary']};" in (root / "web/src/index.css").read_text(
         encoding="utf-8"
     )
-    assert "--om-accent: #136F63;" in (root / "web/src/index.css").read_text(encoding="utf-8")
-    assert "--nm-accent: #7DD6C5;" in (root / DESKTOP_STYLE).read_text(encoding="utf-8")
+    assert desktop_colors(root)["dark"]["primary"] == dark["primary"]
     assert apply_brand(root, original) == []
 
 
@@ -133,10 +144,11 @@ def test_alternate_palettes_reach_semantic_tokens_and_preserve_unrelated_colors(
     apply_brand(root, brand)
     web = (root / "web/src/index.css").read_text(encoding="utf-8")
     desktop = (root / DESKTOP_STYLE).read_text(encoding="utf-8")
+    colors = desktop_colors(root)
     swift = (root / IOS_TONES).read_text(encoding="utf-8")
-    for mode, selector, desktop_selector in (
-        ("light", ":root", "html[data-nanomuse] body"),
-        ("dark", 'html[data-theme="dark"]', "html[data-nanomuse] body[data-ds-dark-theme]"),
+    for mode, selector in (
+        ("light", ":root"),
+        ("dark", 'html[data-theme="dark"]'),
     ):
         palette = brand.themeColors[mode]
         block = css_block(web, selector)
@@ -144,15 +156,14 @@ def test_alternate_palettes_reach_semantic_tokens_and_preserve_unrelated_colors(
             "bg": "background",
             "surface": "surface",
             "fg": "text",
-            "muted": "outline",
+            "muted": "text",
             "accent": "primary",
             "accent-fg": "onPrimary",
             "care": "care",
         }.items():
             assert f"--om-{prop}: {palette[token]};" in block
-        block = css_block(desktop, desktop_selector)
-        assert f"--nm-base: {palette['background']};" in block
-        assert f"--nm-card: {palette['surface']};" in block
+        assert colors[mode]["background"] == palette["background"]
+        assert colors[mode]["surface"] == palette["surface"]
         assert palette["background"] in (root / "web/src/theme.ts").read_text(encoding="utf-8")
         assert palette["background"] in (root / "web/index.html").read_text(encoding="utf-8")
         assert palette["background"] in (root / "harness/desktop/src/main.ts").read_text(
@@ -168,12 +179,9 @@ def test_alternate_palettes_reach_semantic_tokens_and_preserve_unrelated_colors(
     }.items():
         values = [brand.themeColors[mode][token][1:] for mode in ("light", "dark")]
         assert f"static let {field} = tone(0x{values[0]}, 0x{values[1]})" in swift
-    assert f"--nm-accent: {brand.themeColors['light']['primary']};" in css_block(
-        desktop, "html[data-nanomuse]"
-    )
-    assert f"--nm-on-primary: {brand.themeColors['dark']['onPrimary']};" in css_block(
-        desktop, "html[data-nanomuse] body[data-ds-dark-theme]"
-    )
+    assert colors["light"]["primary"] == brand.themeColors["light"]["primary"]
+    assert colors["dark"]["onPrimary"] == brand.themeColors["dark"]["onPrimary"]
+    assert desktop == (ROOT / DESKTOP_STYLE).read_text(encoding="utf-8")
     theme = (root / THEME).read_text(encoding="utf-8")
     assert "private val DarkColorScheme = io.github.nanomuse.dot.DotColors.darkScheme" in theme
     colors = (

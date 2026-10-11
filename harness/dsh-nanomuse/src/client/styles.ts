@@ -47,9 +47,9 @@ const CSS = `
 html[data-nanomuse] {
   --nm-accent: var(--nm-profile-accent, ${light.primary});
   --nm-care: ${light.care};
-  --nm-on-primary: ${light.surface};
+  --nm-on-primary: ${light.onPrimary};
   --nm-blue: ${light.primary};
-  --nm-blue-hover: #105F55;
+  --nm-blue-hover: ${light.primary};
   --nm-rail: max(66px, 4.125rem);
   --nm-radius: 14px;
   --nm-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
@@ -58,7 +58,7 @@ html[data-nanomuse] {
 html[data-nanomuse] body {
   --nm-base: ${light.background};
   --nm-field: ${light.surface};
-  --nm-field-border: #e3e4e6;
+  --nm-field-border: ${light.outline};
   --nm-card: ${light.surface};
   --nm-selected: #f0f0f1;
   --nm-hover: #f1f1f2;
@@ -68,16 +68,17 @@ html[data-nanomuse] body {
   --nm-send: var(--nm-accent);
   --nm-send-idle: ${light.outline};
   --dsw-alias-bg-base: ${light.background};
-  --dsw-alias-bg-layer-1: #f2f2f2;
-  --dsw-alias-bg-layer-2: #ececec;
-  --dsw-alias-bg-layer-3: #e3e4e6;
+  --dsw-alias-bg-layer-1: ${light.surface};
+  --dsw-alias-bg-layer-2: ${light.background};
+  --dsw-alias-bg-layer-3: ${light.surface};
   --dsw-specific-sidebar-fill: ${light.background};
   --dsw-specific-bubble: #e9e9eb;
   --dsw-specific-bubble-highlight: #dedfe2;
   --dsw-specific-input-major: ${light.surface};
   --dsw-alias-brand-primary: ${light.primary};
   --dsw-alias-label-primary: ${light.text};
-  --dsw-alias-label-secondary: ${light.outline};
+  --dsw-alias-label-secondary: ${light.text};
+  --dsw-alias-label-tertiary: ${light.text};
 }
 /* Dark: one near-black, fields and cards a step lighter, bubbles a quiet grey. */
 html[data-nanomuse] body[data-ds-dark-theme] {
@@ -85,10 +86,10 @@ html[data-nanomuse] body[data-ds-dark-theme] {
   --nm-care: ${dark.care};
   --nm-on-primary: ${dark.background};
   --nm-blue: ${dark.primary};
-  --nm-blue-hover: #95E0D1;
+  --nm-blue-hover: ${dark.primary};
   --nm-base: ${dark.background};
   --nm-field: ${dark.surface};
-  --nm-field-border: ${dark.surface};
+  --nm-field-border: ${dark.outline};
   --nm-card: ${dark.surface};
   --nm-selected: #262626;
   --nm-hover: #222222;
@@ -98,8 +99,8 @@ html[data-nanomuse] body[data-ds-dark-theme] {
   --nm-send: var(--nm-accent);
   --nm-send-idle: ${dark.outline};
   --dsw-alias-bg-base: ${dark.background};
-  --dsw-alias-bg-layer-1: #1d1d1d;
-  --dsw-alias-bg-layer-2: #232323;
+  --dsw-alias-bg-layer-1: ${dark.surface};
+  --dsw-alias-bg-layer-2: ${dark.background};
   --dsw-alias-bg-layer-3: ${dark.surface};
   --dsw-specific-sidebar-fill: ${dark.background};
   --dsw-specific-bubble: #242424;
@@ -107,7 +108,8 @@ html[data-nanomuse] body[data-ds-dark-theme] {
   --dsw-specific-input-major: ${dark.surface};
   --dsw-alias-brand-primary: ${dark.primary};
   --dsw-alias-label-primary: ${dark.text};
-  --dsw-alias-label-secondary: ${dark.outline};
+  --dsw-alias-label-secondary: ${dark.text};
+  --dsw-alias-label-tertiary: ${dark.text};
 }
 html[data-nanomuse] body { font-family: var(--nm-font); }
 
@@ -899,7 +901,7 @@ html[data-nm-platform='darwin']:not([data-nm-fullscreen]) .nm-room-top { height:
 .nm-room-toast { margin: 0 0 10px; padding: 8px 12px; border-radius: 10px; background: var(--dsw-alias-bg-layer-2); font-size: 0.8125rem; color: var(--dsw-alias-label-secondary); }
 /* goals: the agent's progress and the flag */
 .nm-goal-bar { position: relative; height: 5px; border-radius: 999px; background: var(--dsw-alias-bg-layer-2); overflow: hidden; margin-top: 6px; }
-.nm-goal-bar > span { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: var(--nm-accent, #1d6fe0); }
+.nm-goal-bar > span { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: var(--nm-accent); }
 .nm-goal-bar.nm-attention > span { background: #d9480f; }
 .nm-goal-flag { margin-left: 8px; font-size: 0.6875rem; font-weight: 600; color: #d9480f; }
 .nm-goal-progress { display: flex; align-items: center; gap: 10px; margin: 10px 0 4px; }
@@ -912,7 +914,7 @@ html[data-nm-platform='darwin']:not([data-nm-fullscreen]) .nm-room-top { height:
 .nm-fence { margin: 6px 0; padding: 12px 14px; border-radius: 16px; border: 1px solid var(--dsw-alias-divider, rgba(127,127,127,0.25)); background: var(--dsw-alias-bg-layer-1, transparent); font-size: 0.875rem; }
 .nm-fence-kind { font-size: 0.75rem; font-weight: 500; color: var(--dsw-alias-label-secondary); }
 .nm-fence-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.nm-fence-status { font-size: 0.75rem; font-weight: 600; color: var(--nm-accent, #1d6fe0); }
+.nm-fence-status { font-size: 0.75rem; font-weight: 600; color: var(--nm-accent); }
 .nm-fence-status.nm-attention { color: #d9480f; }
 .nm-fence-title { margin-top: 4px; font-size: 1rem; font-weight: 600; }
 .nm-fence-sub { margin-top: 3px; font-size: 0.8125rem; line-height: 1.5; color: var(--dsw-alias-label-secondary); }
@@ -920,7 +922,7 @@ html[data-nm-platform='darwin']:not([data-nm-fullscreen]) .nm-room-top { height:
 .nm-fence-steps li::before { content: '☐'; margin-right: 8px; color: var(--dsw-alias-label-secondary); }
 .nm-fence-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; }
 .nm-fence-fine { font-size: 0.75rem; color: var(--dsw-alias-label-secondary); }
-.nm-fence-btn { border: 0; background: transparent; color: var(--nm-accent, #1d6fe0); font: inherit; font-size: 0.8125rem; font-weight: 600; padding: 4px 8px; border-radius: 8px; cursor: pointer; }
+.nm-fence-btn { border: 0; background: transparent; color: var(--nm-accent); font: inherit; font-size: 0.8125rem; font-weight: 600; padding: 4px 8px; border-radius: 8px; cursor: pointer; }
 .nm-fence-btn:hover { background: var(--dsw-alias-bg-layer-2); }
 .nm-fence-row { display: flex; align-items: center; gap: 10px; }
 .nm-fence-main { flex: 1; min-width: 0; }
@@ -1358,7 +1360,7 @@ html[data-nm-muse] [data-conversation-scroll]:has(> .nm-intro-host) [class*="_co
 .nm-md-clip { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex: none; background: var(--dsw-alias-bg-layer-2); }
 .nm-md-clip-none { display: inline-block; border: 1px dashed var(--nm-divider); background: transparent; }
 .nm-md-bar { height: 4px; margin: 0 14px 12px; border-radius: 999px; background: var(--dsw-alias-bg-layer-3); overflow: hidden; }
-.nm-md-bar > span { display: block; height: 100%; background: var(--nm-accent, #136F63); border-radius: 999px; transition: width 300ms; }
+.nm-md-bar > span { display: block; height: 100%; background: var(--nm-accent); border-radius: 999px; transition: width 300ms; }
 .nm-md-failed { color: #c9302c; }
 
 html[data-nm-muse] [data-composer-card] :is([contenteditable], [contenteditable] p) { font-size: 1rem !important; line-height: 1.4; }
@@ -1366,14 +1368,14 @@ html[data-nm-muse] [data-composer-card] :is([contenteditable], [contenteditable]
 /* Task4 shared Dot tokens cover the harness surfaces as well as the plugin rooms. */
 html[data-nanomuse] {
   --nm-bg: ${light.background}; --nm-surface: ${light.surface}; --nm-fg: ${light.text};
-  --nm-accent: var(--nm-profile-accent, ${light.primary}); --nm-on-primary: ${light.onPrimary}; --nm-care: ${light.care}; --nm-muted: ${light.outline};
+  --nm-accent: var(--nm-profile-accent, ${light.primary}); --nm-on-primary: ${light.onPrimary}; --nm-care: ${light.care}; --nm-muted: ${light.text};
   --nm-page-motion: ${dotTokens.motion.page}ms; --nm-press-motion: ${dotTokens.motion.press}ms; --nm-focus-motion: ${dotTokens.motion.focus}ms;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: ${dotTokens.type.body / 16}rem;
 }
 html[data-nanomuse] body[data-ds-dark-theme] {
   --nm-bg: ${dark.background}; --nm-surface: ${dark.surface}; --nm-fg: ${dark.text};
-  --nm-accent: var(--nm-profile-accent, ${dark.primary}); --nm-on-primary: ${dark.onPrimary}; --nm-care: ${dark.care}; --nm-muted: ${dark.outline};
+  --nm-accent: var(--nm-profile-accent, ${dark.primary}); --nm-on-primary: ${dark.onPrimary}; --nm-care: ${dark.care}; --nm-muted: ${dark.text};
 }
 html[data-nanomuse] :is(button,input,select) { min-height: 44px; }
 html[data-nanomuse] :is(button,input,textarea,select):focus-visible { outline: 2px solid var(--nm-accent); outline-offset: 3px; transition-duration: var(--nm-focus-motion); }

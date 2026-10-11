@@ -17,10 +17,10 @@ from pathlib import Path
 
 if __package__:
     from .brand_profile import BrandProfile, load_brand
-    from .ui_tokens import render_dot_colors
+    from .ui_tokens import CSS_PATH, TS_PATH, load_ui, render_dot_colors, render_outputs
 else:
     from brand_profile import BrandProfile, load_brand
-    from ui_tokens import render_dot_colors
+    from ui_tokens import CSS_PATH, TS_PATH, load_ui, render_dot_colors, render_outputs
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION_NAME = "1.0.1"
@@ -348,6 +348,92 @@ def _manual_update_strings(res, write) -> None:
         write(path, text)
 
 
+def _android_semantic_accents(upstream, primary, edit) -> None:
+    """Only foreground consumers: retain fixed fills paired with white badge/terminal ink."""
+    role = "androidx.compose.material3.MaterialTheme.colorScheme.primary"
+    # These call sites are already composable. The picker also has one matching low-alpha tint.
+    foreground_files = (
+        "ui/chat/ChatAssistantMessageUI.kt",
+        "ui/chat/ChatModelPickerSheet.kt",
+        "ui/components/ModelEntryPicker.kt",
+        "ui/components/UnifiedModelPickerSheet.kt",
+        "ui/settings/MountDetailScreen.kt",
+        "ui/settings/SharedFolderDetailScreen.kt",
+        "ui/settings/MountedFoldersScreen.kt",
+        "ui/settings/AgentLoopAddSheets.kt",
+        "ui/settings/MinisSkillsBrowserScreen.kt",
+        "ui/settings/SkillRowItem.kt",
+    )
+    for name in foreground_files:
+        edit(
+            upstream / name,
+            [
+                (
+                    rf"(^[^\n]*?)Color\(0xFF{primary[1:]}\)([^\n]*)$",
+                    rf"\g<1>{role}\g<2> // nanoMuse: active-theme foreground accent.",
+                )
+            ],
+        )
+    # Restore EntryRow uses a filled circle with white ink, not a foreground accent.
+    # Repair the prior generated theme-role state as well as preserving literal inputs.
+    edit(
+        upstream / "ui/settings/backup/RestoreBrowseScreen.kt",
+        [
+            (
+                r"(if \(entry\.isDirectory\) Color\(0xFF8E8E93\) else )"
+                r"androidx\.compose\.material3\.MaterialTheme\.colorScheme\.primary,"
+                r"(?: // nanoMuse: active-theme foreground accent\.)?",
+                rf"\g<1>Color(0xFF{primary[1:]}),",
+            )
+        ],
+    )
+    edit(
+        upstream / "ui/chat/ChatAssistantMessageUI.kt",
+        [
+            (
+                r"((?:color|tint) = )thinkingBlue\.copy\(alpha = 0\.[56]f\),",
+                r"\g<1>thinkingBlue, // nanoMuse: full-opacity small text and control glyph.",
+            )
+        ],
+    )
+    edit(
+        upstream / "ui/settings/SkillRowItem.kt",
+        [
+            (
+                r"(?<!@Composable // nanoMuse: active palette for source glyphs.\n)"
+                r"^fun sourceIconAndColor\(",
+                "@Composable // nanoMuse: active palette for source glyphs.\nfun sourceIconAndColor(",
+            )
+        ],
+    )
+    edit(
+        upstream / "ui/settings/SharedFoldersScreen.kt",
+        [
+            (
+                r"tint = folder\.iconColor,",
+                f'tint = if (folder.id == "shared") {role} else folder.iconColor, '
+                "// nanoMuse: active-theme shared-folder glyph.",
+            )
+        ],
+    )
+    # Keep the explicit pale-blue terminal pair; only generic themed tool text uses this role.
+    detail = upstream / "ui/chat/ChatToolDetailUI.kt"
+    edit(
+        detail,
+        [
+            (
+                r"    val displayed = remember\(shownText, urlClick, linkify\) \{",
+                f"    val linkColor = {role} // nanoMuse: active themed link, including saved overrides.\n"
+                "    val displayed = remember(shownText, urlClick, linkify, linkColor) {",
+            ),
+            (
+                r"linkifyUrls\(text = shownText, onClick = urlClick\)",
+                "linkifyUrls(text = shownText, onClick = urlClick, linkColor = linkColor)",
+            ),
+        ],
+    )
+
+
 def _android_colors(java, res, brand, edit, write) -> None:
     light, dark = brand.themeColors["light"], brand.themeColors["dark"]
     upstream = java / "com/openminis/app"
@@ -444,8 +530,9 @@ def _android_colors(java, res, brand, edit, write) -> None:
             "inputBg": "surface",
             "inputIconBg": "surface",
             "primaryText": "text",
-            "secondaryText": "outline",
-            "tertiaryText": "outline",
+            # Outline is a non-text role; use text on both surface and background.
+            "secondaryText": "text",
+            "tertiaryText": "text",
             "disabledText": "outline",
             "userBubble": "surface",
             "toolBg": "surface",
@@ -469,6 +556,13 @@ def _android_colors(java, res, brand, edit, write) -> None:
                 body = re.sub(
                     rf"({field} = )Color(?:\(0x[0-9A-Fa-f]+\)|\.White|\.Black)",
                     rf"\g<1>Color(0xFF{palette[token][1:]})",
+                    body,
+                )
+            # Preserve decorative opacity while updating its semantic accent on every run.
+            for field in ("blockquoteBar", "toastBg"):
+                body = re.sub(
+                    rf"({field} = Color\(0x)([0-9A-Fa-f]{{2}})[0-9A-Fa-f]{{6}}",
+                    rf"\g<1>\g<2>{palette['primary'][1:]}",
                     body,
                 )
             return body
@@ -506,6 +600,11 @@ def _android_colors(java, res, brand, edit, write) -> None:
         ("015CFB", light["primary"]),
         ("0A84FF", dark["primary"]),
         ("58A6FF", dark["primary"]),
+        # Earlier Nanodot builds already migrated upstream accents to these values.
+        ("136F63", light["primary"]),
+        ("7DD6C5", dark["primary"]),
+        ("2D6396", light["primary"]),
+        ("A9D2F5", dark["primary"]),
     ]
     color_rules = []
     for old, new in accents:
@@ -515,7 +614,7 @@ def _android_colors(java, res, brand, edit, write) -> None:
         if path.name == "DotBrand.kt":
             continue
         edit(path, color_rules)
-        # Dark primary is mint: action buttons must use the corresponding dark
+        # Dark primary is pale: action buttons must use the corresponding dark
         # foreground, while white labels on unrelated brand/media surfaces stay.
         if path.suffix == ".kt":
             edit(
@@ -533,6 +632,7 @@ def _android_colors(java, res, brand, edit, write) -> None:
     )
     # Both UI and P0 branding use the same renderer; never restore a stale M3 mapping.
     write(java / "io/github/nanomuse/dot/DotColors.kt", render_dot_colors(brand))
+    _android_semantic_accents(upstream, light["primary"], edit)
 
 
 def _ios_brand(ios, brand, edit, write) -> None:
@@ -652,7 +752,9 @@ def _ios_brand(ios, brand, edit, write) -> None:
         data["strings"] = converted
         new = json.dumps(data, ensure_ascii=False, indent=2, separators=(",", " : "))
         new = re.sub(r"^([ ]*)(.*)\{\}", lambda m: f"{m[1]}{m[2]}{{\n\n{m[1]}}}", new, flags=re.M)
-        write(xc, new + ("\n" if raw.endswith("\n") else ""))
+        # Keep formatting untouched when this profile changes no translated text.
+        if data != json.loads(raw):
+            write(xc, new + ("\n" if raw.endswith("\n") else ""))
 
 
 def _cross_platform_brand(root, brand, edit, write) -> None:
@@ -740,23 +842,76 @@ def _cross_platform_brand(root, brand, edit, write) -> None:
 
             def block(match, palette=palette, tokens=tokens):
                 body = match[2]
+                if "var(--dot-" in body:
+                    # Shared CSS consumers keep their references; defaults are rendered below.
+                    return match[0]
                 for prop, token in tokens.items():
-                    body = re.sub(
+                    body, count = re.subn(
                         rf"(^\s*{re.escape(prop)}:\s*)[^;]+;",
                         lambda m, value=palette[token]: m[1] + value + ";",
                         body,
                         flags=re.M,
                     )
+                    if not count:
+                        body += f"  {prop}: {palette[token]};\n"
                 return match[1] + body + match[3]
 
             text = re.sub(rf"(^\s*{re.escape(selector)} \{{)([^}}]+)(\}})", block, text, flags=re.M)
         write(path, text)
 
+    # Update only built-in fallback colors; saved profile colors still win.
+    for relative, variable in (
+        ("web/src/components/Avatar.tsx", "--om-accent"),
+        ("harness/dsh-nanomuse/src/client/Avatar.tsx", "--nm-accent"),
+        ("harness/dsh-nanomuse/src/client/BrandMark.tsx", "--nm-accent"),
+    ):
+        edit(root / relative, [(r"#136F63", f"var({variable})")])
+    edit(
+        root / "harness/dsh-nanomuse/src/client/BrandMark.tsx",
+        [
+            (r"#F4FFFC", "var(--nm-on-primary)"),
+        ],
+    )
+    desktop_styles = root / "harness/dsh-nanomuse/src/client/styles.ts"
+    token_backed_desktop = desktop_styles.exists() and re.search(
+        r"^import\s+\{\s*dotTokens\s*\}\s+from\s+['\"]\./dot-tokens\.ts['\"]",
+        desktop_styles.read_text(encoding="utf-8"),
+        flags=re.M,
+    )
+    web_styles = root / "web/src/index.css"
+    token_backed_web = web_styles.exists() and "var(--dot-" in web_styles.read_text(
+        encoding="utf-8"
+    )
+    if token_backed_desktop or token_backed_web:
+        ui_source = root / "config/ui.nanodot.json"
+        if not ui_source.exists():
+            ui_source = ROOT / "config/ui.nanodot.json"
+        defaults = render_outputs(brand, load_ui(ui_source))
+        if token_backed_desktop:
+            # This is executable TypeScript with ${...}, not a literal CSS block.
+            # Preserve its source and saved profile fallback, updating only the export.
+            write(root / TS_PATH, defaults[TS_PATH])
+        if token_backed_web:
+            write(root / CSS_PATH, defaults[CSS_PATH])
+    if not token_backed_desktop:
+        edit(
+            desktop_styles,
+            [
+                (
+                    r"(color-mix\(in srgb, var\(--nm-accent\) 42%, )#[0-9A-Fa-f]{6}",
+                    r"\g<1>var(--nm-base)",
+                ),
+                (r"var\(--nm-accent, #[0-9A-Fa-f]{6}\)", "var(--nm-accent)"),
+            ],
+        )
+
     web_tokens = {
         "--om-bg": "background",
         "--om-surface": "surface",
         "--om-fg": "text",
-        "--om-muted": "outline",
+        "--om-muted": "text",
+        "--om-bubble-user": "primary",
+        "--om-bubble-user-fg": "onPrimary",
         "--om-accent": "primary",
         "--om-accent-fg": "onPrimary",
         "--om-care": "care",
@@ -768,6 +923,7 @@ def _cross_platform_brand(root, brand, edit, write) -> None:
     accents = {
         "--nm-accent": "primary",
         "--nm-blue": "primary",
+        "--nm-blue-hover": "primary",
         "--nm-care": "care",
         "--nm-on-primary": "onPrimary",
     }
@@ -775,18 +931,28 @@ def _cross_platform_brand(root, brand, edit, write) -> None:
         "--nm-base": "background",
         "--nm-field": "surface",
         "--nm-card": "surface",
+        "--nm-field-border": "outline",
+        "--nm-send": "primary",
+        "--dsw-alias-brand-primary": "primary",
+        "--dsw-alias-label-primary": "text",
+        "--dsw-alias-label-secondary": "text",
+        "--dsw-alias-label-tertiary": "text",
+        "--dsw-alias-bg-layer-1": "surface",
+        "--dsw-alias-bg-layer-2": "background",
+        "--dsw-alias-bg-layer-3": "surface",
         "--dsw-alias-bg-base": "background",
         "--dsw-specific-sidebar-fill": "background",
         "--dsw-specific-input-major": "surface",
     }
-    css_tokens(
-        root / "harness/dsh-nanomuse/src/client/styles.ts",
-        [
-            ("html[data-nanomuse]", light, accents),
-            ("html[data-nanomuse] body", light, surfaces),
-            ("html[data-nanomuse] body[data-ds-dark-theme]", dark, {**accents, **surfaces}),
-        ],
-    )
+    if not token_backed_desktop:
+        css_tokens(
+            desktop_styles,
+            [
+                ("html[data-nanomuse]", light, accents),
+                ("html[data-nanomuse] body", light, surfaces),
+                ("html[data-nanomuse] body[data-ds-dark-theme]", dark, {**accents, **surfaces}),
+            ],
+        )
     edit(
         root / "web/src/theme.ts",
         [

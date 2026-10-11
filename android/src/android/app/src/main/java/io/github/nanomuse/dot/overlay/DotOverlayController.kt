@@ -52,8 +52,25 @@ class DotOverlayController(
     fun registerCareWindow(view: View) { careWindows.add(view) }
     fun unregisterCareWindow(view: View) { careWindows.remove(view) }
     fun setCareActive(active: Boolean) { careActive.value = active }
-    private fun ownedViews() = listOfNotNull(orbView, panelView) + careWindows.toList()
+    private fun ownedViews() = listOfNotNull(orbView, panelView, trailView) + careWindows.toList()
     private fun suspendCare() { (service as? MinisAccessibilityService)?.dotInteraction?.pauseCare(hide=true) }
+    private val visualActive = androidx.compose.runtime.mutableStateOf(true)
+    private val pressed = androidx.compose.runtime.mutableStateOf(false)
+    private val dragging = androidx.compose.runtime.mutableStateOf(false)
+    private var motionEnabled = true
+    private val trail = CrystalTrail()
+    private var trailView: DotTrailView? = null
+    private val trailTick = object : Runnable {
+        override fun run() {
+            val points = trail.visible(SystemClock.uptimeMillis())
+            if (points.isEmpty()) { removeTrailWindow(); return }
+            if (!motionEnabled || !visualActive.value || !isConnected || locked || !enabled) {
+                clearTrail(); return
+            }
+            trailView?.let { it.points = points; it.invalidate() }
+            handler.postDelayed(this, 16)
+        }
+    }
     private val handler = Handler(Looper.getMainLooper())
     private val windows = service.getSystemService(WindowManager::class.java)
     private val displays = service.getSystemService(DisplayManager::class.java)
@@ -76,7 +93,7 @@ class DotOverlayController(
         private set
     internal var orbOwner: DotOverlayOwner? = null
         private set
-    internal val windowCount get() = registry.size
+    internal val windowCount get() = registry.size + if (trailView != null) 1 else 0
     private var orbComposition: ComposeView? = null
     internal var panelView: View? = null
         private set
@@ -214,6 +231,8 @@ class DotOverlayController(
      */
     suspend fun <T> withHiddenForCapture(block: suspend () -> T): T {
         checkMainThread()
+        visualActive.value = false
+        clearTrail()
         val owned = ownedViews().filter { it.isAttachedToWindow }
         val alphas = owned.map { it.alpha }
         try {
@@ -236,6 +255,7 @@ class DotOverlayController(
             }
             return block()
         } finally {
+            visualActive.value = true
             owned.forEachIndexed { index, view ->
                 if ((view in ownedViews()) && view.isAttachedToWindow) {
                     view.alpha = alphas[index]; view.invalidate()
@@ -386,7 +406,14 @@ class DotOverlayController(
         view.setViewTreeSavedStateRegistryOwner(owner)
         val composition = ComposeView(service).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent { DotOrb(::onIntent, careActive.value) }
+            setContent {
+                io.github.nanomuse.dot.ui.DotMotionHost {
+                    DotOrb(::onIntent, careActive.value, visualActive.value, pressed.value, dragging.value) {
+                        motionEnabled = it
+                        if (!it) clearTrail()
+                    }
+                }
+            }
         }
         view.addView(composition, FrameLayout.LayoutParams(size, size))
         val flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
@@ -468,11 +495,12 @@ class DotOverlayController(
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 downPoint = point; downPosition = params?.let { it.x to it.y }; blockedTouch = false
+                clearTrail(); pressed.value = true; dragging.value = false
                 dragStarted = false; downAtMs = event.eventTime
                 accept(GestureEvent.Down(point, event.eventTime, id))
             }
             MotionEvent.ACTION_POINTER_DOWN -> {
-                restoreDownPosition(); blockedTouch = true
+                restoreDownPosition(); clearTrail(); pressed.value = false; dragging.value = false; blockedTouch = true
                 accept(GestureEvent.Down(point, event.eventTime, id))
             }
             MotionEvent.ACTION_MOVE -> {
@@ -483,6 +511,7 @@ class DotOverlayController(
                         event.eventTime - downAtMs < ViewConfiguration.getLongPressTimeout() &&
                         kotlin.math.hypot(point.x - start.x, point.y - start.y) > config.scaledTouchSlop) {
                         dragStarted = true
+                        dragging.value = true
                     }
                     if (dragStarted && start != null && position != null) {
                         val bounds = availableBounds() ?: return
@@ -493,10 +522,12 @@ class DotOverlayController(
                             orbView?.let { windows.updateViewLayout(it, p) }
                         }
                     }
+                    if (dragStarted) recordTrail(point, event.eventTime)
                     accept(GestureEvent.Move(point, event.eventTime, event.getPointerId(0)))
                 }
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
+                pressed.value = false; dragging.value = false
                 accept(GestureEvent.Up(point, event.eventTime, id))
                 if (event.actionMasked == MotionEvent.ACTION_UP) { downPoint = null; downPosition = null }
             }
@@ -512,8 +543,39 @@ class DotOverlayController(
     }
 
     private fun cancelGesture() {
+        clearTrail(); pressed.value = false; dragging.value = false
         accept(GestureEvent.Cancel)
         downPoint = null; downPosition = null; blockedTouch = false; dragStarted = false
+    }
+
+    private fun recordTrail(point: PointPx, at: Long) {
+        if (!motionEnabled || !visualActive.value || !isConnected || locked || !enabled) return
+        trail.add(point.x, point.y, at, motionEnabled)
+        if (trail.visible(at).isEmpty()) return
+        if (trailView == null) {
+            val view = DotTrailView(service)
+            val p = WindowManager.LayoutParams(-1, -1, WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, PixelFormat.TRANSLUCENT).apply {
+                gravity = Gravity.TOP or Gravity.LEFT; title = "Nanodot Dot crystal trail"
+            }
+            // Owned here, included in capture exclusion, and removed after the final sample expires.
+            try { windows.addView(view, p); trailView = view }
+            catch (_: RuntimeException) { trail.clear(); return }
+        }
+        handler.removeCallbacks(trailTick)
+        trailTick.run()
+    }
+
+    private fun clearTrail() {
+        trail.clear()
+        removeTrailWindow()
+    }
+
+    private fun removeTrailWindow() {
+        handler.removeCallbacks(trailTick)
+        trailView?.let { windows.removeViewImmediate(it) }
+        trailView = null
     }
 
     private fun restoreDownPosition() {

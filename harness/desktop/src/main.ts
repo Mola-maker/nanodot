@@ -592,8 +592,8 @@ function iconPath(): string {
 }
 
 /** The Muse window colours: near-black in the dark, paper in the light (the bundle's stylesheet agrees). */
-const BASE_DARK = "#10191D";
-const BASE_LIGHT = "#F4F7F8";
+const BASE_DARK = "#101D30";
+const BASE_LIGHT = "#F4F8FF";
 /** The height of the Windows caption-button overlay; the page's top clearance matches it. */
 const OVERLAY_HEIGHT = 40;
 

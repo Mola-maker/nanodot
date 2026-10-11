@@ -127,8 +127,9 @@ fun SkillRowItem(
  * Kept here (rather than duplicated in each screen) so badge colors and icons
  * stay consistent between Settings and the in-chat sheet.
  */
+@Composable // nanoMuse: active palette for source glyphs.
 fun sourceIconAndColor(source: SkillRepository.ImportSource): Pair<ImageVector, Color> = when (source) {
-    SkillRepository.ImportSource.URL -> Icons.Default.Link to Color(0xFF136F63)
+    SkillRepository.ImportSource.URL -> Icons.Default.Link to androidx.compose.material3.MaterialTheme.colorScheme.primary // nanoMuse: active-theme foreground accent.
     SkillRepository.ImportSource.FILE -> Icons.Outlined.Description to Color(0xFFFF9500)
     SkillRepository.ImportSource.BUNDLED -> Icons.Default.Inventory2 to Color(0xFF34C759)
     SkillRepository.ImportSource.SESSION -> Icons.Outlined.ChatBubble to Color(0xFFAF52DE)

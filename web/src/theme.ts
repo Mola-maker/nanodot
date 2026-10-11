@@ -10,7 +10,7 @@ export type ThemeSetting = "light" | "dark" | "system";
 export type Theme = "light" | "dark";
 
 const STORAGE_KEY = "nanomuse_theme";
-const COLORS: Record<Theme, string> = { light: "#F4F7F8", dark: "#10191D" };
+const COLORS: Record<Theme, string> = { light: "#F4F8FF", dark: "#101D30" };
 
 function load(): ThemeSetting {
   try {

@@ -15,6 +15,8 @@ Nanodot 使用各平台的原生控件和无障碍行为。默认视觉是随应
 
 Kotlin 提供 `DotTokens.Space.S4` 到 `S48`、`Type.Body/Care`、`Motion.Page/Press/Focus` 和 `TouchTarget`。Swift 提供 `NanodotTokens.Space`、`Typography`、`Motion`（秒）、`touchTarget` 和 `Colors.Light/Dark`。Swift 调用方使用可缩放的系统文字，不能用固定字号绕过动态字体。桌面从 `harness/dsh-nanomuse/src/client/dot-tokens.ts` 导出 `dotTokens`。Web 和展示站 CSS 提供 `--dot-background`、`--dot-surface`、`--dot-text`、`--dot-primary`、`--dot-on-primary`、`--dot-care`、`--dot-outline`、`--dot-space-*`、`--dot-type-*`、`--dot-touch-target` 和 `--dot-motion-*`。CSS 默认跟随系统深色模式；`data-dot-theme="light|dark"` 选择保存的外观覆盖值。这些生成的接口供后续平台框架和组件任务使用。
 
+桌面样式使用共享的明暗 tokens 提供默认蓝色色板。重新生成品牌只更新 token 导出，不改写 TypeScript 模板或用户保存的个人配色。次要和弱化文字使用 text 角色；outline 用于边框或禁用状态。现有 Chat、Tasks、Devices、Settings 导航、rem 字号和减少动态效果行为继续保留。
+
 ## 颜色角色 {#color-roles}
 
 `DotColors.lightScheme/darkScheme` 为 Android 现有 `MinisTheme` 提供固定版本 Material 3 库支持的完整颜色角色；保存的主题选择仍决定使用哪个方案。深色主按钮不能使用浅色方案的 on-primary 前景。在两个已批准色板中，表面文字与主按钮文字的对比度均达到 4.5:1。生成器还检查 tertiary、secondary 和各容器的前景对比度。

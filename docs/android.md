@@ -58,6 +58,16 @@ cancellation, rotation, and additional fingers clear pending gestures. The adapt
 supply `ViewConfiguration` limits and monotonic times. The orb uses these system limits and event times.
 
 When you enable Nanodot’s accessibility service, a 48dp Dot orb appears above other apps.
+The orb uses a packaged, newly generated ice-blue transparent crystal atlas: 16 frames
+breathe over 3.2 seconds. Dragging leaves a pale-blue trail of actual touch points,
+limited to 36 samples that fade within 650ms. The trail never takes touch or keyboard
+focus and its temporary window closes after fading. Cancel, lock, disable, capture hiding,
+display changes and disconnect clear it. Turning off Android animator duration scale
+holds frame zero and removes the trail; static touch and care cues remain.
+The shared light/dark palette is blue, including chat cards, buttons and care outlines.
+Frame transitions preserve the crystal’s transparency on light and dark content.
+Small thinking and model-picker text follows the selected light/dark appearance.
+Theme overrides and custom avatar choices are preserved.
 Settings → Appearance → Show Dot orb hides it immediately and preserves that choice
 across service reconnects. Locking the phone, disabling accessibility, or rotating the
 display clears pending gestures and removes the old window; unlock and rotation restore

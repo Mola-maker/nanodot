@@ -53,9 +53,9 @@ internal fun formatStepDuration(seconds: Long, stillRunning: Boolean): String {
 internal fun toolAccentColor(toolName: String): Color = when (toolName) {
     "shell_execute" -> Color(0xFF34C759)
     "file_read" -> Color(0xFF32ADE6)
-    "file_write" -> Color(0xFF136F63)
+    "file_write" -> Color(0xFF2D6396)
     "file_edit" -> Color(0xFFFF9500)
-    "browser_use" -> Color(0xFF136F63)
+    "browser_use" -> Color(0xFF2D6396)
     "read_image" -> Color(0xFFAF52DE)
     "memory_write", "memory_get" -> Color(0xFFFF2D55)
     "web_search" -> Color(0xFF32ADE6)    // iOS: .cyan for search
