@@ -431,6 +431,7 @@ class ManualForegroundApiProofTest {
                         (field(window,"job") as? Job)?.let { jobs.add(it); it.cancel() }
                     }
                 } }
+                restore { inst.runOnMainSync { controller.cancel() } } // Invalidate even if disconnect's focus/speech callbacks throw.
                 restore { inst.runOnMainSync { session.disconnect() } }
                 restore { inst.runOnMainSync {
                     check(field(actual.dotInteraction,"careWindow")===ownedWindow) // Never close another owner's window.
@@ -440,8 +441,11 @@ class ManualForegroundApiProofTest {
                     }
                 } }
                 restore { runBlocking { withTimeout(5000) { jobs.distinct().forEach { it.join() } } } }
-                restore { inst.runOnMainSync { set(controller,"sample",originalSample) } }
-                restore { inst.runOnMainSync { set(controller,"plan",originalPlan) } }
+                restore { inst.runOnMainSync {
+                    check(field(controller,"active")==false && controller.state.value==CareUiState() &&
+                        field(controller,"work")==null && jobs.all { it.isCompleted }) { "Keyless Care callbacks remain isolated" }
+                    set(controller,"sample",originalSample); set(controller,"plan",originalPlan)
+                } }
                 restore { inst.runOnMainSync {
                     bubbles.value=emptyList()
                     conversation.javaClass.getDeclaredField("userSequence").apply { isAccessible=true }.setLong(conversation,originalSequence)
