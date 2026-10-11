@@ -1,7 +1,6 @@
 package io.github.nanomuse.dot.care
 
 import android.content.ClipboardManager
-import android.content.Intent
 import android.graphics.Rect
 import android.os.SystemClock
 import android.view.MotionEvent
@@ -18,6 +17,7 @@ import com.openminis.app.data.model.*
 import com.openminis.app.provider.LLMProvider
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.Rule
 import org.junit.runner.RunWith
 
 /** Root-only native gate. Production controller, Compose card, window owner and focus layer;
@@ -27,7 +27,8 @@ class CareOverlayTest {
     private lateinit var session: CareSession
     private lateinit var window: CareOverlayWindow
     private val instrumentation=InstrumentationRegistry.getInstrumentation()
-    private val automation get()=instrumentation.getUiAutomation(android.app.UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES)
+    @get:Rule val native = CareNativeHarness()
+    private val automation get()=native.automation
     @Suppress("DEPRECATION")
     private fun nodes(): List<AccessibilityNodeInfo> {
         val result=mutableListOf<AccessibilityNodeInfo>()
@@ -95,7 +96,7 @@ class CareOverlayTest {
         assertTrue(description,ready)
     }
     @Test fun fontScaleTwoKeepsAllControlsReachable() {
-        val service=requireNotNull(MinisAccessibilityService.getInstance())
+        val service=native.service
         val previous=android.provider.Settings.System.getString(service.contentResolver,"font_scale")
         require(previous==null || previous.matches(Regex("[0-9]+(?:\\.[0-9]+)?")))
         fun shell(command: String) {
@@ -110,7 +111,7 @@ class CareOverlayTest {
         }
     }
     @Test fun animatorScaleZeroKeepsOneStaticNonfocusedOutline() {
-        val service=requireNotNull(MinisAccessibilityService.getInstance())
+        val service=native.service
         val previous=android.provider.Settings.Global.getString(service.contentResolver,"animator_duration_scale")
         require(previous==null || previous.matches(Regex("[0-9]+(?:\\.[0-9]+)?")))
         fun shell(command: String) {
@@ -123,7 +124,7 @@ class CareOverlayTest {
                 flags=flags or android.accessibilityservice.AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
             }
             shell("settings put global animator_duration_scale 0")
-            instrumentation.context.startActivity(Intent(instrumentation.context,CareOverlayFixture::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            native.awaitHost()
             awaitMain("Disposable reduced-motion host must be the real current scene") {
                 service.dotScreen.currentSceneKey()?.packageName==instrumentation.context.packageName
             }
@@ -159,7 +160,6 @@ class CareOverlayTest {
             } finally {
                 try {
                     shell(if(previous==null) "settings delete global animator_duration_scale" else "settings put global animator_duration_scale $previous")
-                    closeOwnedFixture(service)
                 } finally {
                     automation.serviceInfo=automation.serviceInfo.apply { flags=originalFlags }
                 }
@@ -167,17 +167,16 @@ class CareOverlayTest {
         }
     }
     @Test fun oneTouchThroughTargetUserCopyBackPauseAndAccessibleControls() {
-        val service=requireNotNull(MinisAccessibilityService.getInstance()) { "Root must enable the real accessibility service first" }
+        val service=native.service
         val originalFlags=automation.serviceInfo.flags
-        var originalClip: android.content.ClipData?=null
-        var clipboardSaved=false
+        native.backupClipboard() // A durable host acknowledgement is required before any Copy.
         val scope=CoroutineScope(SupervisorJob()+Dispatchers.Main.immediate)
         var target: RectPx?=null
         try {
             automation.serviceInfo=automation.serviceInfo.apply {
                 flags=flags or android.accessibilityservice.AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
             }
-            instrumentation.context.startActivity(Intent(instrumentation.context,CareOverlayFixture::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            native.awaitHost()
             awaitMain("Disposable external host must be the real current scene") {
                 service.dotScreen.currentSceneKey()?.packageName==instrumentation.context.packageName
             }
@@ -214,16 +213,15 @@ class CareOverlayTest {
                 com.openminis.app.R.string.nm_care_confirm,com.openminis.app.R.string.nm_care_change_goal)
             for (label in reachable) assertReachable(service.getString(label))
             scrollCardToStart()
-            instrumentation.runOnMainSync {
-                originalClip=service.getSystemService(ClipboardManager::class.java).primaryClip
-                clipboardSaved=true
-            }
             val copy=service.getString(com.openminis.app.R.string.nm_care_copy)
+            native.stage("copy_about_to_execute")
             click(copy)
             instrumentation.runOnMainSync {
-                assertEquals("fixture copy",service.getSystemService(ClipboardManager::class.java).primaryClip!!.getItemAt(0).text.toString())
+                assertTrue("Copy must equal the public fixture text",
+                    service.getSystemService(ClipboardManager::class.java).primaryClip?.getItemAt(0)?.text?.toString()=="fixture copy")
                 assertTrue(session.controller.verifiedSteps.value.isEmpty())
             }
+            native.stage("copy_asserted")
             val bounds=requireNotNull(target); tap((bounds.left+bounds.right)/2,(bounds.top+bounds.bottom)/2)
             automation.waitForIdle(300,5000)
             withNodes { all -> assertTrue(all.any { it.text?.toString()=="CARE_TOUCH_RECEIVED" }) }
@@ -242,18 +240,10 @@ class CareOverlayTest {
         } finally {
             try {
             instrumentation.runOnMainSync {
-                if(clipboardSaved) {
-                    val clipboard=service.getSystemService(ClipboardManager::class.java)
-                    originalClip?.let(clipboard::setPrimaryClip) ?: run {
-                        if(android.os.Build.VERSION.SDK_INT>=28) clipboard.clearPrimaryClip()
-                        else clipboard.setPrimaryClip(android.content.ClipData.newPlainText("",""))
-                    }
-                }
                 if(::window.isInitialized) window.close()
                 if(::session.isInitialized) session.disconnect()
                 scope.cancel()
             }
-            closeOwnedFixture(service)
             } finally {
                 automation.serviceInfo=automation.serviceInfo.apply { flags=originalFlags }
             }
