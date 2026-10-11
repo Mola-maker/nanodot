@@ -540,10 +540,66 @@ class ManualForegroundApiProofTest {
                 if(publicTarget) { geometry("targetBounds",target?.bounds); geometry("cardBounds",measured); geometry("bubbleBounds",bubble) }
                 return result
             }
+            fun publicAxEvidence():JSONObject {
+                val state=controller.state.value; val target=checkNotNull(state.target); val proposal=checkNotNull(state.proposal)
+                check(state.state==CareState.AwaitingUser && target.description==ForegroundApiHostFixture.ONE &&
+                    proposal.targetRef==target.ref && proposal.action==CareAction.Focus && proposal.instruction==focusInstruction &&
+                    proposal.expectation==CareExpectation.Focused(target.ref))
+                val window=checkNotNull(ownedWindow); check(field(actual.dotInteraction,"careWindow")===window)
+                val card=field(window,"card") as View; check(card.isAttachedToWindow)
+                val native=card.createAccessibilityNodeInfo()
+                val cardId=try { native.windowId } finally { native.recycle() }; check(cardId>=0 && host(actual,cardId))
+                val bubble=field(window.focus,"instruction") as? RectPx
+                val names=listOf("exactTextAny","exactTextVisible","exactDescriptionAny","exactDescriptionVisible",
+                    "normalizedTextAny","normalizedTextVisible","containsTextAny","containsTextVisible")
+                val expected=listOf(GOAL,focusInstruction); val counts=Array(2) { IntArray(names.size) }
+                val bounds=JSONArray(); var boundsOmitted=0; var visited=0; var nullChildren=0; var truncated=0
+                val spaces=Regex("\\s+")
+                fun visit(node:AccessibilityNodeInfo,depth:Int) {
+                    visited++
+                    val text=node.text?.toString()?.trim(); val description=node.contentDescription?.toString()?.trim()
+                    val visible=node.isVisibleToUser
+                    expected.forEachIndexed { index,value ->
+                        val matches=listOf(text==value,description==value,text?.replace(spaces," ")==value,text?.contains(value)==true)
+                        matches.forEachIndexed { match,yes -> if(yes) { counts[index][match*2]++; if(visible) counts[index][match*2+1]++ } }
+                    }
+                    if(text==focusInstruction || description==focusInstruction) {
+                        if(bounds.length()<8) {
+                            val r=android.graphics.Rect(); node.getBoundsInScreen(r)
+                            val usable=r.width()>0 && r.height()>0
+                            bounds.put(JSONObject().put("visible",visible).put("cardWindowIdMatch",node.windowId==cardId)
+                                .put("positiveBounds",usable).put("bubbleOverlap",usable && bubble!=null &&
+                                    r.left<bubble.right && r.right>bubble.left && r.top<bubble.bottom && r.bottom>bubble.top)
+                                .put("bounds",JSONArray(listOf(r.left,r.top,r.right,r.bottom))))
+                        } else boundsOmitted++
+                    }
+                    for(index in 0 until node.childCount) {
+                        if(visited+nullChildren>=256 || depth>=32) { truncated+=node.childCount-index; break }
+                        val child=node.getChild(index)
+                        if(child==null) nullChildren++ else try { visit(child,depth+1) } finally { child.recycle() }
+                    }
+                }
+                val windows=automation.windows
+                try {
+                    val overlay=checkNotNull(windows.singleOrNull { it.id==cardId && it.type==AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY })
+                    check(actual.dotOverlay.ownsWindow(overlay))
+                    val root=checkNotNull(overlay.root)
+                    try { check(root.packageName?.toString()==app.packageName); visit(root,1) }
+                    finally { root.recycle() }
+                } finally { windows.forEach { it.recycle() } }
+                val result=JSONObject().put("exactOwnedRoot",true).put("visited",visited).put("nullChildren",nullChildren)
+                    .put("truncatedBranches",truncated).put("instructionMatches",bounds).put("boundsOmitted",boundsOmitted)
+                listOf("goal","instruction").forEachIndexed { index,label ->
+                    val values=JSONObject(); names.forEachIndexed { metric,name -> values.put(name,counts[index][metric]) }
+                    result.put(label,values)
+                }
+                return result
+            }
             val until=SystemClock.uptimeMillis()+10000
             var focusResult=JSONObject()
             inst.runOnMainSync {
-                android.util.Log.i("ForegroundCareFocusKeyless",focusConditions().put("phase","valid_focus_ui_enter").toString())
+                android.util.Log.i("ForegroundCareFocusKeyless",focusConditions().put("phase","valid_focus_ui_enter")
+                    .put("publicAxEvidence",publicAxEvidence()).toString())
             }
             do {
                 inst.runOnMainSync { focusResult=focusConditions() }
@@ -551,7 +607,7 @@ class ManualForegroundApiProofTest {
             } while(SystemClock.uptimeMillis()<until)
             inst.runOnMainSync {
                 check(controller.verifiedSteps.value.isEmpty())
-                android.util.Log.i("ForegroundCareFocusKeyless",focusResult.toString())
+                android.util.Log.i("ForegroundCareFocusKeyless",focusResult.put("publicAxEvidence",publicAxEvidence()).toString())
             }
         } finally {
             if(installed) {
