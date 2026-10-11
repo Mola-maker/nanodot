@@ -266,6 +266,11 @@ including windows still awaiting attachment. Cancellation, mode changes, lock, d
 disconnect clear scanning; stale outcomes cannot update a newer scan. A removable timestamped
 preview, text-only fallback or actual capture error describes the result; animation never
 claims a model has understood the screen.
+The scan covers the full display, including its system-bar edges. It respects Android's
+effective animator state as well as the motion setting; disabled motion shows a static
+perimeter. Its 720ms trace and 100ms ending hold, or 250ms static result, begin only after
+the restored window has drawn visibly with positive dimensions. Capture hiding does not
+consume that visible lifetime, and closing or detaching cancels pending draw callbacks.
 
 Triple-tap the same Dot, or choose its accessible **Start care** action, to open the blue
 care entry and enter a goal. Opening it does not contact a model or capture the screen.

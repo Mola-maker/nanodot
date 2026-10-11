@@ -1,9 +1,6 @@
 package io.github.nanomuse.dot.overlay
 
 import android.accessibilityservice.AccessibilityService
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
-import android.animation.ValueAnimator
 import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -56,60 +53,19 @@ class DotOverlayController(
     fun registerCareWindow(view: View) { careWindows.add(view) }
     fun unregisterCareWindow(view: View) { careWindows.remove(view) }
     fun setCareActive(active: Boolean) { careActive.value = active }
-    private fun ownedViews() = listOfNotNull(orbView, panelView, trailView, scannerView) + careWindows.toList()
-    private val scanTicket = CaptureScanTicket()
-    private var scannerView: DotCaptureScanner? = null
-    private var scannerGeneration: Long? = null
-    private var scanAnimation: ValueAnimator? = null
-    private var scanRemoval: Runnable? = null
+    private fun ownedViews() = listOfNotNull(orbView, panelView, trailView, captureScanner.view) + careWindows.toList()
+    private val captureScanner = DotCaptureScanWindow(service)
     fun beginCaptureScan(generation: Long) {
         checkMainThread()
-        if(!isConnected || locked || !enabled || scanTicket.begin(generation)==null) return
-        val view=DotCaptureScanner(service)
-        val p=WindowManager.LayoutParams(-1,-1,WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,PixelFormat.TRANSLUCENT).apply {
-            gravity=Gravity.TOP or Gravity.LEFT; title="Nanodot screen scan"
-        }
-        try { windows.addView(view,p); scannerView=view; scannerGeneration=generation }
-        catch(_: RuntimeException) { scanTicket.cancel(); return }
-        animateScan(generation,finish=false)
+        if (isConnected && !locked && enabled) captureScanner.begin(generation)
     }
     fun finishCaptureScan(generation: Long, success: Boolean) {
         checkMainThread()
-        if(!scanTicket.finish(generation,success) || scannerGeneration!=generation) return
-        scannerView?.outcome=success
-        animateScan(generation,finish=true)
-    }
-    private fun animateScan(generation: Long, finish: Boolean) {
-        scanAnimation?.removeAllListeners(); scanAnimation?.cancel(); scanAnimation=null
-        val view=scannerView ?: return
-        val motion=Settings.Global.getFloat(service.contentResolver,Settings.Global.ANIMATOR_DURATION_SCALE,1f)>0f
-        if(!motion || view.outcome==false) {
-            view.progress=1f; view.invalidate()
-            if(finish) scheduleScanRemoval(generation,250)
-            return
-        }
-        scanAnimation=ValueAnimator.ofFloat(0f,1f).apply {
-            duration=720L
-            addUpdateListener { if(scannerGeneration==generation) { view.progress=it.animatedValue as Float; view.invalidate() } }
-            if(finish) addListener(object: AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) { scheduleScanRemoval(generation,100) }
-            })
-            start()
-        }
-    }
-    private fun scheduleScanRemoval(generation: Long, delay: Long) {
-        scanRemoval?.let(handler::removeCallbacks)
-        scanRemoval=Runnable { if(scannerGeneration==generation) cancelCaptureScan() }.also { handler.postDelayed(it,delay) }
+        captureScanner.finish(generation, success)
     }
     fun cancelCaptureScan(generation: Long? = null) {
         checkMainThread()
-        if(generation!=null && scannerGeneration!=generation) return
-        scannerGeneration=null; scanTicket.cancel()
-        scanRemoval?.let(handler::removeCallbacks); scanRemoval=null
-        scanAnimation?.removeAllListeners(); scanAnimation?.cancel(); scanAnimation=null
-        scannerView?.let { windows.removeViewImmediate(it) }; scannerView=null
+        captureScanner.cancel(generation)
     }
     private fun suspendCare() { (service as? MinisAccessibilityService)?.dotInteraction?.pauseCare(hide=true) }
     private val visualActive = androidx.compose.runtime.mutableStateOf(true)
@@ -292,8 +248,7 @@ class DotOverlayController(
     suspend fun <T> withHiddenForCapture(block: suspend () -> T): T {
         checkMainThread()
         visualActive.value = false
-        val capturingAnimation=scanAnimation
-        capturingAnimation?.pause()
+        val resumeScan = captureScanner.pauseForCapture()
         clearTrail()
         // A newly added window may attach during capture; hide its alpha before
         // that first traversal too, and only await drawing for attached windows.
@@ -320,7 +275,7 @@ class DotOverlayController(
             }
             return block()
         } finally {
-            if(scanAnimation===capturingAnimation) capturingAnimation?.resume()
+            resumeScan()
             visualActive.value = true
             owned.forEachIndexed { index, view ->
                 if (view in ownedViews()) {
