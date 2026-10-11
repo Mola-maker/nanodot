@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Fixed fresh Care instruction reveal state, compact foreground chat height with short keyboard hosts and enlarged text, and keyboard-first Care Back handling across direct supported paths.
+
 - Kept Dot conversations and Care goals, instructions and confirmed steps in bounded foreground bubble panels; added a capture-owned blue screen-edge scan and touch-through target tracing with instruction leaders, while moving visible Care chat upward around targets and retaining keyboard, voice and cancellation ownership.
 
 - Preserved desktop navigation and saved profile accents while integrating the shared blue palette; branding regenerated token defaults without corrupting the TypeScript stylesheet.

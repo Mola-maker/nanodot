@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -49,8 +47,8 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit) {
             else listState.scrollToItem(listState.layoutInfo.totalItemsCount - 1)
         }
     }
-    DotForegroundChat(status = if (busy) stringResource(R.string.nm_status_replying) else null, onCollapse = onCollapse) {
-            LazyColumn(Modifier.weight(1f).fillMaxWidth(), state = listState, verticalArrangement = Arrangement.spacedBy(DotTokens.Space.S12)) {
+    DotForegroundChat(status = if (busy) stringResource(R.string.nm_status_replying) else null, onCollapse = onCollapse, history = {
+            LazyColumn(Modifier.fillMaxSize(), state = listState, verticalArrangement = Arrangement.spacedBy(DotTokens.Space.S12)) {
                 if (messages.isEmpty()) item { Text(stringResource(R.string.nm_dot_chat_empty), fontSize = DotTokens.Type.Body) }
                 items(messages.filterNot { it.isInternalBridge }, key = { it.id }) { message ->
                     DotMessageBubble(message.role == "user") {
@@ -91,7 +89,8 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit) {
                     }
                 }
             }
-            Column(Modifier.weight(.85f, fill = false).fillMaxWidth().verticalScroll(rememberScrollState()),
+    }, controls = {
+            Column(Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(DotTokens.Space.S8)) {
             io.github.nanomuse.dot.voice.DotVoiceControls(adapter)
             OutlinedTextField(text, adapter::editInput, Modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget).testTag("dot_composer"),
@@ -103,5 +102,5 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit) {
                 Text(stringResource(if (busy) R.string.nm_dot_chat_stop else R.string.nm_dot_chat_send), fontSize = DotTokens.Type.Body)
             }
         }
-    }
+    })
 }

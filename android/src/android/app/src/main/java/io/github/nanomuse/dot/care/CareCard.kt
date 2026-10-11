@@ -1,14 +1,9 @@
 package io.github.nanomuse.dot.care
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -62,11 +57,8 @@ internal fun CarePanel(session: CareSession, onCopy: () -> Unit, onRepeat: (Stri
     val list = rememberLazyListState()
     val current = if (state.proposal != null) session.instructionKey() else null
     val motion=LocalDotMotionEnabled.current
-    var cueTarget by remember(current) { mutableFloatStateOf(if(current==null) 1f else 0f) }
-    val cue by animateFloatAsState(cueTarget,tween(if(motion) 980 else 0,easing=LinearEasing),label="careInstructionCue")
-    LaunchedEffect(current,motion) {
-        cueTarget=1f
-    }
+    var measured by remember(current) { mutableStateOf(false) }
+    val cue = rememberCareInstructionReveal(current, motion, measured)
     LaunchedEffect(history.size, current) {
         if (list.layoutInfo.totalItemsCount > 0) {
             if(motion) list.animateScrollToItem(list.layoutInfo.totalItemsCount - 1)
@@ -75,8 +67,8 @@ internal fun CarePanel(session: CareSession, onCopy: () -> Unit, onRepeat: (Stri
         if (current == null) onInstructionBounds(null, null)
     }
     DisposableEffect(Unit) { onDispose { onInstructionBounds(null, null) } }
-    DotForegroundChat(status, { session.pause(hide = true) }) {
-        LazyColumn(Modifier.weight(1f).fillMaxWidth(), state = list,
+    DotForegroundChat(status, { session.pause(hide = true) }, history = {
+        LazyColumn(Modifier.fillMaxSize(), state = list,
             verticalArrangement = Arrangement.spacedBy(DotTokens.Space.S8)) {
             if (history.isEmpty()) item { DotMessageBubble(false) {
                 Text(stringResource(R.string.nm_care_intro),fontSize=DotTokens.Type.Care)
@@ -85,6 +77,7 @@ internal fun CarePanel(session: CareSession, onCopy: () -> Unit, onRepeat: (Stri
                 if(row.id==current) DisposableEffect(row.id) { onDispose { onInstructionBounds(row.id,null) } }
                 val anchor = if (row.id == current) Modifier.graphicsLayer { alpha=careCueProgress((cue*980).toLong(),motion).bubble }.onGloballyPositioned { coordinates ->
                     val r = coordinates.boundsInWindow()
+                    measured = r.width > 0 && r.height > 0
                     onInstructionBounds(row.id, RectPx(r.left,r.top,r.right,r.bottom))
                 } else Modifier
                 DotMessageBubble(row.user, anchor) {
@@ -100,7 +93,8 @@ internal fun CarePanel(session: CareSession, onCopy: () -> Unit, onRepeat: (Stri
                 Text(state.pendingInstruction!!,fontSize=DotTokens.Type.Care)
             } }
         }
-        Column(Modifier.weight(.85f, fill=false).fillMaxWidth().verticalScroll(rememberScrollState()),
+    }, controls = {
+        Column(Modifier.fillMaxWidth(),
             verticalArrangement=Arrangement.spacedBy(DotTokens.Space.S8)) {
             if (editing || state.state==CareState.Clarifying) {
                 OutlinedTextField(value=goal,onValueChange={ if(it.length<=2048) goal=it },
@@ -122,7 +116,7 @@ internal fun CarePanel(session: CareSession, onCopy: () -> Unit, onRepeat: (Stri
                 CareButton(R.string.nm_care_end,session::end)
             }
         }
-    }
+    })
 }
 
 internal fun careStatusLabel(state: CareState): Int = when(state) {

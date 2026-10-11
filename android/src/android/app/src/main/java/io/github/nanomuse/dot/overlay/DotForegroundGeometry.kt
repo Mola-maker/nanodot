@@ -18,8 +18,13 @@ internal fun foregroundFrame(
     val sideMargin = minOf(8f * density, host.width * 0.25f)
     val verticalMargin = minOf(8f * density, host.height * 0.225f)
     val width = minOf(360f * density, host.width - sideMargin * 2f)
-    val measured = measuredHeight.takeIf { it.isFinite() && it > 0f } ?: (96f * density)
-    val height = minOf(maxOf(measured, 96f * density), host.height * 0.55f)
+    // A short IME host needs room for transcript + a full 48dp control viewport.
+    // Normal hosts retain the 55% cap; short hosts use the available height.
+    val availableHeight = host.height - verticalMargin * 2f
+    val minimumHeight = 156f * density
+    val measured = measuredHeight.takeIf { it.isFinite() && it > 0f } ?: minimumHeight
+    val maximumHeight = minOf(maxOf(host.height * 0.55f, minimumHeight), availableHeight)
+    val height = minOf(maxOf(measured, minimumHeight), maximumHeight)
     val left = host.left + (host.width - width) / 2f
     val bottom = host.bottom - verticalMargin
     val ordinary = RectPx(left, bottom - height, left + width, bottom)
@@ -32,7 +37,7 @@ internal fun foregroundFrame(
     val top = host.top + verticalMargin
     val aboveBottom = minOf(observedTarget.top - verticalMargin, bottom)
     val aboveHeight = aboveBottom - top
-    val minimumUsefulHeight = minOf(96f * density, height)
+    val minimumUsefulHeight = minOf(minimumHeight, height)
     val moved = if (aboveHeight >= minimumUsefulHeight) {
         val fittedHeight = minOf(height, aboveHeight)
         RectPx(left, aboveBottom - fittedHeight, left + width, aboveBottom)

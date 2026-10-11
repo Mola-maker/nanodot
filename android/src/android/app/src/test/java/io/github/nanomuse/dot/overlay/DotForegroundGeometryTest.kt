@@ -5,6 +5,14 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class DotForegroundGeometryTest {
+    @Test fun shortImeHostBudgetsVisibleTranscriptAndOneFullTouchControl() {
+        val frame = foregroundFrame(RectPx(0f,0f,360f,160f),88f,1f)
+        assertEquals("Short hosts use available height instead of the 55 percent cap",144f,frame.bounds.height,0f)
+        assertEquals(8f,frame.bounds.top,0f)
+        assertEquals(152f,frame.bounds.bottom,0f)
+        // Compact shell: 8 padding + 32 largest status + 8 gaps + 48 control leaves 48 transcript.
+        assertTrue(frame.bounds.height - 8f - 32f - 8f - 48f >= 48f)
+    }
     @Test fun bottomFrameUsesTheObservedHostOrigin() {
         val frame = foregroundFrame(RectPx(120f, 70f, 720f, 870f), 320f, 1f)
         assertEquals(RectPx(240f, 542f, 600f, 862f), frame.bounds)
@@ -23,8 +31,8 @@ class DotForegroundGeometryTest {
 
     @Test fun keyboardClippedHostBoundsTheHeightAndBottom() {
         val frame = foregroundFrame(RectPx(100f, 24f, 700f, 324f), 500f, 2f)
-        assertEquals(RectPx(116f, 143f, 684f, 308f), frame.bounds)
-        assertEquals(165f, frame.bounds.height, 0.001f)
+        assertEquals(RectPx(116f, 40f, 684f, 308f), frame.bounds)
+        assertEquals(268f, frame.bounds.height, 0.001f)
     }
 
     @Test fun largerFontMeasurementUsesTheFullAllowedScrollHeight() {
@@ -94,14 +102,14 @@ class DotForegroundGeometryTest {
     @Test fun invalidMeasurementsRetainAUsefulInitialPanel() {
         for (height in listOf(0f, -1f, Float.NaN, Float.POSITIVE_INFINITY)) {
             val frame = foregroundFrame(RectPx(0f, 24f, 400f, 824f), height, 1f)
-            assertEquals(RectPx(20f, 720f, 380f, 816f), frame.bounds)
+            assertEquals(RectPx(20f, 660f, 380f, 816f), frame.bounds)
         }
     }
 
     @Test fun shortInitialMeasurementCannotCollapseWholeHostTargetControls() {
         val host = RectPx(0f, 24f, 400f, 824f)
         val frame = foregroundFrame(host, 1f, 1f, host)
-        assertEquals(RectPx(20f, 32f, 380f, 128f), frame.bounds)
+        assertEquals(RectPx(20f, 32f, 380f, 188f), frame.bounds)
         assertTrue(frame.movedUp)
     }
 

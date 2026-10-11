@@ -9,6 +9,7 @@ import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -61,6 +62,15 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
     fun hide() { focus.clear(); removeCard(); registry?.setCareActive(false) }
     fun stopSpeech() { player?.stop() }
     fun refreshGeometry() { if(session.visible.value) render() }
+    @Suppress("DEPRECATION") // Direct Back support on API26–32 also needs keyboard-first behavior.
+    private fun hideImeOrClose(view: View) {
+        if (card !== view) return
+        val observed = service.windows
+        val keyboard = try { observed.any { it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_INPUT_METHOD } }
+            finally { observed.forEach { it.recycle() } }
+        if (keyboard) service.getSystemService(InputMethodManager::class.java).hideSoftInputFromWindow(view.windowToken, 0)
+        else session.pause(hide = true)
+    }
     private fun render() {
         session.observeConversation()
         val host=viewport()
@@ -95,13 +105,17 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
     private fun addCard() {
         val lifecycle=DotOverlayOwner()
         val view=object: FrameLayout(service) {
+            private var backDown = false
             override fun onMeasure(widthMeasureSpec: Int,heightMeasureSpec: Int) {
                 super.onMeasure(widthMeasureSpec,View.MeasureSpec.makeMeasureSpec(maxHeight.coerceAtLeast(1),View.MeasureSpec.AT_MOST))
             }
             private fun back(e: KeyEvent): Boolean {
                 if(e.keyCode!=KeyEvent.KEYCODE_BACK) return false
-                if(e.action==KeyEvent.ACTION_UP) session.pause(hide=true)
-                return true
+                if(e.action==KeyEvent.ACTION_DOWN) { backDown=true; return true }
+                if(e.action==KeyEvent.ACTION_UP && backDown) {
+                    backDown=false; hideImeOrClose(this); return true
+                }
+                return false
             }
             override fun dispatchKeyEventPreIme(e: KeyEvent)=back(e)||super.dispatchKeyEventPreIme(e)
             override fun dispatchKeyEvent(e: KeyEvent)=back(e)||super.dispatchKeyEvent(e)
@@ -148,7 +162,7 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
         if(Build.VERSION.SDK_INT>=33) view.post {
             if(card===view && view.isAttachedToWindow) {
                 val dispatcher=view.findOnBackInvokedDispatcher()
-                val callback=android.window.OnBackInvokedCallback { session.pause(hide=true) }
+                val callback=android.window.OnBackInvokedCallback { hideImeOrClose(view) }
                 dispatcher?.registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,callback)
                 removeBack={ dispatcher?.unregisterOnBackInvokedCallback(callback) }
             }

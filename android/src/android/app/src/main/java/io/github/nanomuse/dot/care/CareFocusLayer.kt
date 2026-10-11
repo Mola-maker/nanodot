@@ -32,6 +32,7 @@ class CareFocusLayer(private val service: AccessibilityService, private val chan
     fun setInstructionBubble(bounds: RectPx?) {
         instruction=bounds?.takeIf { it.width>0 && it.height>0 &&
             listOf(it.left,it.top,it.right,it.bottom).all(Float::isFinite) }
+        if (instruction != null && progress == 0f && animation == null) startTrace()
         view?.invalidate()
     }
     fun show(bounds: RectPx, key: String = "") {
@@ -42,6 +43,7 @@ class CareFocusLayer(private val service: AccessibilityService, private val chan
         val bubble=instruction
         clear() // A new position never interpolates through unrelated controls.
         this.bounds=bounds; identity=key; instruction=bubble
+        progress = if (motionEnabled()) 0f else 1f
         val paint=Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style=Paint.Style.STROKE; strokeWidth=3*service.resources.displayMetrics.density
             color=if(service.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK==Configuration.UI_MODE_NIGHT_YES)
@@ -81,14 +83,17 @@ class CareFocusLayer(private val service: AccessibilityService, private val chan
             gravity=Gravity.TOP or Gravity.LEFT; title="Nanodot Care focus"
         }
         windows.addView(target,p); view=target; changed(target)
-        // ValueAnimator uses the platform duration scale. At zero there is no animator at all.
-        if(Settings.Global.getFloat(service.contentResolver,Settings.Global.ANIMATOR_DURATION_SCALE,1f)>0f) {
-            animation=ValueAnimator.ofFloat(0f,1f).apply {
-                duration=980L
-                interpolator=LinearInterpolator()
-                progress=0f
-                addUpdateListener { progress=it.animatedValue as Float; target.invalidate() }; start()
-            }
+        if (instruction != null) startTrace()
+    }
+    private fun motionEnabled() = Settings.Global.getFloat(service.contentResolver,Settings.Global.ANIMATOR_DURATION_SCALE,1f)>0f
+    /** Start both visual stages only after the current instruction has a measured anchor. */
+    private fun startTrace() {
+        val target=view ?: return
+        if (!motionEnabled()) { progress=1f; target.invalidate(); return }
+        animation=ValueAnimator.ofFloat(0f,1f).apply {
+            duration=980L
+            interpolator=LinearInterpolator()
+            addUpdateListener { progress=it.animatedValue as Float; target.invalidate() }; start()
         }
     }
     fun clear() {

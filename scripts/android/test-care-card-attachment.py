@@ -20,15 +20,21 @@ class ClipData { companion object { fun newPlainText(label: String, text: String
 class ClipboardManager { fun setPrimaryClip(data: ClipData) {} }
 ''',
     "graphics.kt": "package android.graphics\nobject PixelFormat { const val TRANSLUCENT = -3 }\n",
-    "build.kt": "package android.os\nobject Build { object VERSION { const val SDK_INT = 35 } }\n",
+    "build.kt": "package android.os\nobject Build { object VERSION { var SDK_INT = 35 } }\n",
     "service.kt": r'''
 package android.accessibilityservice
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
+import android.view.accessibility.AccessibilityWindowInfo
 class Metrics { val density = 1f }
 class Resources { val displayMetrics = Metrics() }
 open class AccessibilityService(val manager: WindowManager) {
     val resources = Resources()
-    fun <T> getSystemService(type: Class<T>): T = type.cast(manager)
+    var imeShown = false
+    val observedWindows = mutableListOf<AccessibilityWindowInfo>()
+    val windows get() = (if(imeShown) listOf(AccessibilityWindowInfo(AccessibilityWindowInfo.TYPE_INPUT_METHOD)) else emptyList()).also { observedWindows.addAll(it) }
+    val ime = InputMethodManager { imeShown = false }
+    fun <T> getSystemService(type: Class<T>): T = type.cast(if(type == InputMethodManager::class.java) ime else manager)
     fun getString(id: Int) = "Copy"
 }
 ''',
@@ -38,7 +44,7 @@ import android.accessibilityservice.AccessibilityService
 import android.window.OnBackInvokedDispatcher
 object Gravity { const val TOP = 48; const val LEFT = 3 }
 class KeyEvent(val keyCode: Int, val action: Int) {
-    companion object { const val KEYCODE_BACK = 4; const val ACTION_UP = 1 }
+    companion object { const val KEYCODE_BACK = 4; const val ACTION_DOWN = 0; const val ACTION_UP = 1 }
 }
 class WindowInsets
 open class View(val service: AccessibilityService) {
@@ -46,6 +52,8 @@ open class View(val service: AccessibilityService) {
     var measuredHeight = 0
     var measuredWidth = 0
     var measures = 0
+    val windowToken = Any()
+    val backDispatcher = OnBackInvokedDispatcher()
     val posts = ArrayDeque<Runnable>()
     val attachListeners = mutableListOf<OnAttachStateChangeListener>()
     var layoutListener: (() -> Unit)? = null
@@ -58,7 +66,7 @@ open class View(val service: AccessibilityService) {
         layoutListener = { listener(this, 0, 0, 0, 0, 0, 0, 0, 0) }
     }
     fun setOnApplyWindowInsetsListener(listener: (View, WindowInsets) -> WindowInsets) { insetsListener = listener }
-    fun findOnBackInvokedDispatcher(): OnBackInvokedDispatcher? = null
+    fun findOnBackInvokedDispatcher(): OnBackInvokedDispatcher? = backDispatcher
     fun getLocationOnScreen(location: IntArray) { location[0] = 0; location[1] = 0 }
     open fun dispatchKeyEventPreIme(event: KeyEvent) = false
     open fun dispatchKeyEvent(event: KeyEvent) = false
@@ -164,9 +172,25 @@ fun View.setViewTreeSavedStateRegistryOwner(owner: DotOverlayOwner) {}
 package android.window
 fun interface OnBackInvokedCallback { fun onBackInvoked() }
 class OnBackInvokedDispatcher {
-    fun registerOnBackInvokedCallback(priority: Int, callback: OnBackInvokedCallback) {}
-    fun unregisterOnBackInvokedCallback(callback: OnBackInvokedCallback) {}
+    var registered: OnBackInvokedCallback? = null
+    fun registerOnBackInvokedCallback(priority: Int, callback: OnBackInvokedCallback) { registered = callback }
+    fun unregisterOnBackInvokedCallback(callback: OnBackInvokedCallback) { check(registered === callback); registered = null }
     companion object { const val PRIORITY_DEFAULT = 0 }
+}
+''',
+    "ime.kt": r'''
+package android.view.inputmethod
+class InputMethodManager(private val hidden: () -> Unit) {
+    var hides = 0
+    fun hideSoftInputFromWindow(token: Any?, flags: Int): Boolean { hides++; hidden(); return true }
+}
+''',
+    "ax-window.kt": r'''
+package android.view.accessibility
+class AccessibilityWindowInfo(val type: Int) {
+    var recycled = false
+    fun recycle() { recycled = true }
+    companion object { const val TYPE_INPUT_METHOD = 2 }
 }
 ''',
     "r.kt": "package com.openminis.app\nobject R { object string { const val nm_care_copy = 1 } }\n",
@@ -283,7 +307,7 @@ fun main() {
             val view = r.open(); view.attach(); r.pump(view)
             r.host = RectPx(100f, 24f, 700f, 224f)
             r.window.refreshGeometry()
-            check(r.manager.updates.last() == listOf(360, 110, 220, 106))
+            check(r.manager.updates.last() == listOf(360, 156, 220, 60))
             r.host = RectPx(0f, 24f, 400f, 824f)
             r.session.target = RectPx(0f, 700f, 400f, 800f)
             r.window.refreshGeometry()
@@ -339,7 +363,7 @@ fun main() {
             r.window.refreshGeometry(); r.pump(view)
             check(view.measures == count && view.posts.isEmpty())
             view.attach(); r.pump(view)
-            check(r.manager.updates.last() == listOf(360, 110, 220, 106))
+            check(r.manager.updates.last() == listOf(360, 156, 220, 60))
         } finally { r.close() }
     }
     test("layout changes queue rather than recursively remeasure and settle at unchanged bounds") {
@@ -367,6 +391,36 @@ fun main() {
             failed.attach(); r.pump(failed)
             check(failed.measures == 0 && r.manager.live.isEmpty())
             check(r.service.dotOverlay.registered.isEmpty())
+        } finally { r.close() }
+    }
+    test("legacy direct preIME Back hides keyboard and preserves card before next Back closes") {
+        android.os.Build.VERSION.SDK_INT = 26
+        val r = Rig()
+        try {
+            val view = r.open(); view.attach(); r.pump(view)
+            val compose = (view as FrameLayout).children.filterIsInstance<ComposeView>().single()
+            r.service.imeShown = true
+            check(view.dispatchKeyEventPreIme(android.view.KeyEvent(4,0)))
+            check(view.dispatchKeyEventPreIme(android.view.KeyEvent(4,1)))
+            check(r.service.ime.hides == 1) { "First Back did not request keyboard hiding" }
+            check(r.session.visible.value && view in r.manager.live && !compose.disposed) { "First Back destroyed the draft composition" }
+            check(r.service.observedWindows.all { it.recycled })
+            view.dispatchKeyEventPreIme(android.view.KeyEvent(4,0)); view.dispatchKeyEventPreIme(android.view.KeyEvent(4,1))
+            check(!r.session.visible.value && r.manager.live.isEmpty() && compose.disposed)
+        } finally { r.close(); android.os.Build.VERSION.SDK_INT = 35 }
+    }
+    test("API33 direct Back callback is keyboard-first, unregisters, and stale callback cannot close fresh card") {
+        val r = Rig()
+        try {
+            val view = r.open(); view.attach(); r.pump(view)
+            val callback = requireNotNull(view.backDispatcher.registered)
+            r.service.imeShown = true; callback.onBackInvoked()
+            check(r.service.ime.hides == 1 && r.session.visible.value && view in r.manager.live)
+            callback.onBackInvoked()
+            check(!r.session.visible.value && view.backDispatcher.registered == null && r.manager.live.isEmpty())
+            val fresh = r.open(); fresh.attach(); r.pump(fresh)
+            callback.onBackInvoked()
+            check(r.session.visible.value && fresh in r.manager.live) { "Stale Back callback closed a different card" }
         } finally { r.close() }
     }
     println("RESULT passed=$passed failed=${failures.size}")
