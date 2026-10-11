@@ -296,26 +296,55 @@ class DotForegroundAcceptanceTest {
     private fun field(owner: Any, name: String): Any? = owner.javaClass.getDeclaredField(name).apply { isAccessible = true }.get(owner)
     private fun setField(owner: Any, name: String, value: Any?) = owner.javaClass.getDeclaredField(name).apply { isAccessible = true }.set(owner, value)
     @Suppress("UNCHECKED_CAST") private fun <T> state(owner: Any, name: String) = field(owner, name) as MutableStateFlow<T>
-    private fun <T> onMain(action: () -> T): T { var value: T? = null; instrumentation.runOnMainSync { value = action() }; @Suppress("UNCHECKED_CAST") return value as T }
+    private fun <T> onMain(action: () -> T): T {
+        var value: T? = null
+        var failure: Throwable? = null
+        instrumentation.runOnMainSync {
+            try { value = action() } catch (caught: Throwable) { failure = caught }
+        }
+        // Rethrow on the JUnit caller so assertion/reflection failures reach @After/attempt.
+        failure?.let { throw it }
+        @Suppress("UNCHECKED_CAST") return value as T
+    }
     private fun waitFor(label: String, condition: () -> Boolean) {
         val deadline = SystemClock.uptimeMillis() + 10000
         while (!condition() && SystemClock.uptimeMillis() < deadline) Thread.sleep(100)
         assertTrue(label, condition())
     }
-    @Suppress("DEPRECATION") // Node/window recycling supports this app's older Android APIs.
+    @Suppress("DEPRECATION") // Node/window recycling and real display bounds support older APIs.
     private fun nativeBounds(type: Int, packageName: String, text: String): Rect? {
-        fun find(node: AccessibilityNodeInfo): Rect? {
-            if (node.text?.toString()?.contains(text) == true) return Rect().also(node::getBoundsInScreen).takeIf { it.width() > 0 && it.height() > 0 }
+        val displaySize = android.graphics.Point()
+        app.getSystemService(WindowManager::class.java).defaultDisplay.getRealSize(displaySize)
+        val displayBounds = Rect(0, 0, displaySize.x, displaySize.y)
+        val panelBounds = if (type == AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY) onMain {
+            val panel = service.dotOverlay.panelView
+            if (panel?.isAttachedToWindow == true && panel.isShown && panel.windowVisibility == android.view.View.VISIBLE)
+                Rect().takeIf { panel.getGlobalVisibleRect(it) } else null
+        } else null
+        if (type == AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY && panelBounds == null) return null
+        fun find(node: AccessibilityNodeInfo, windowId: Int, viewport: Rect): Rect? {
+            if (node.isVisibleToUser && node.windowId == windowId && node.text?.toString()?.contains(text) == true) {
+                val visible = Rect().also(node::getBoundsInScreen)
+                if (visible.width() > 0 && visible.height() > 0 && visible.intersect(viewport)) return visible
+            }
             for (index in 0 until node.childCount) {
                 val child = node.getChild(index) ?: continue
-                try { find(child)?.let { return it } } finally { child.recycle() }
+                try { find(child, windowId, viewport)?.let { return it } } finally { child.recycle() }
             }
             return null
         }
         val windows = automation.windows
         try { for (window in windows.filter { it.type == type }) {
+            // Application matches must belong to the current foreground/focused window.
+            // Overlay matches additionally use the actual attached, shown panel's visible frame.
+            if (type == AccessibilityWindowInfo.TYPE_APPLICATION && !window.isActive && !window.isFocused) continue
+            val viewport = Rect().also(window::getBoundsInScreen)
+            if (viewport.width() <= 0 || viewport.height() <= 0 || !viewport.intersect(displayBounds)) continue
+            if (panelBounds != null && !viewport.intersect(panelBounds)) continue
             val root = window.root ?: continue
-            try { if (root.packageName?.toString() == packageName) find(root)?.let { return it } } finally { root.recycle() }
+            try { if (root.isVisibleToUser && root.windowId == window.id && root.packageName?.toString() == packageName)
+                find(root, window.id, viewport)?.let { return it }
+            } finally { root.recycle() }
         } } finally { windows.forEach { it.recycle() } }
         return null
     }
