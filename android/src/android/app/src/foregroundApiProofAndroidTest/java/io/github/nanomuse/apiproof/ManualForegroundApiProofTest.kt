@@ -699,7 +699,21 @@ class ManualForegroundApiProofTest {
                     (if(second) measured.top>=target.bounds.bottom else measured.bottom<=target.bounds.top) &&
                     overlayText(actual,GOAL,card) && overlayText(actual,proposal.instruction,card)
             }
-            await("Initial real bottom Focus guide/panel did not appear",45000) { guide(false) }
+            try {
+                await("Initial real bottom Focus guide/panel did not appear",45000) { guide(false) }
+            } finally {
+                inst.runOnMainSync {
+                    val state=controller.state.value
+                    val code=state.errorCode?.let { if(it in setOf("host_unavailable","nodes_unavailable","scene_changed",
+                        "locked","accessibility_unavailable","timeout","locked_or_disconnected","permission_denied",
+                        "care_timeout","care_unavailable","invalid_goal","recovering_invalid_proposal","foreground_exchange_limit")) it else "other" } ?: "none"
+                    android.util.Log.i("ForegroundCareAdmission",JSONObject().put("state",state.state.name).put("code",code)
+                        .put("careCalls",careCalls).put("transportCount",transports.size)
+                        .put("operationOwners",field(field(CareOperationGate,"owners")!!,"count") as Int)
+                        .put("automatic",field(controller,"automatic") as Boolean)
+                        .put("canonicalCareBusy",canonical.careOperationBusy.value).toString())
+                }
+            }
             stage("care_initial_visible",Bundle().apply {
                 val target=controller.state.value.target!!; putString("targetDescription",target.description)
                 putFloat("targetLeft",target.bounds.left); putFloat("targetTop",target.bounds.top); putFloat("targetRight",target.bounds.right); putFloat("targetBottom",target.bounds.bottom)
