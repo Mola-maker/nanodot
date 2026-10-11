@@ -1091,4 +1091,6 @@
     <string name="nm_dot_view_screen">查看屏幕</string>
     <string name="nm_dot_start_care">开始关怀</string>
     <string name="nm_dot_action_unavailable">此 Dot 功能暂未开放。</string>
+    <string name="nm_tab_tasks">任务</string>
+    <string name="nm_task_library">资料</string>
 </resources>

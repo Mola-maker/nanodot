@@ -37,7 +37,7 @@ object HomeBus {
 }
 
 /**
- * Whether the home shell is what `Routes.SESSION_LIST` renders right now (compact windows), and
+ * Whether the home shell is what `Routes.SESSION_LIST` renders right now (all window sizes), and
  * the one way to open a chat while it is.
  *
  * Every "open this session" entry point — a notification, the tool capsule, Hands bringing the
@@ -46,13 +46,12 @@ object HomeBus {
  * header, no tabs, the old look. [openSession] takes those requests to the shell instead.
  */
 object HomeShell {
-    /** Set by AppNavigation from the window size class; read from MainActivity's warm-start path. */
+    /** Set by AppNavigation for the adaptive session host; read from MainActivity's warm-start path. */
     @Volatile var active: Boolean = false
 
     /**
      * Shows [sessionId] inside the shell — pops back to it if something sits on top, or mounts
-     * it when the graph started elsewhere — and returns true. Returns false in wide windows,
-     * where the caller keeps the upstream list/detail route.
+     * it when the graph started elsewhere — and returns true. Returns false only when the home host is unavailable.
      */
     fun openSession(nav: NavController, sessionId: String): Boolean {
         if (!active) return false
@@ -74,7 +73,7 @@ object HomeShell {
     /**
      * Back to the main chat with [text] in the composer — Devices' "Ask this device" puts
      * "@Mac " there so the next message runs on that device (contract C7, rule 8). Returns
-     * false in wide windows, where there is no shell to come back to.
+     * false only when the home host is unavailable.
      */
     fun prefill(nav: NavController, text: String): Boolean {
         if (!active) return false

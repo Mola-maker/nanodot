@@ -1126,4 +1126,6 @@
     <string name="nm_dot_view_screen">Просмотреть экран</string>
     <string name="nm_dot_start_care">Начать поддержку</string>
     <string name="nm_dot_action_unavailable">Эта функция Dot пока недоступна.</string>
+    <string name="nm_tab_tasks">Задачи</string>
+    <string name="nm_task_library">Библиотека</string>
 </resources>

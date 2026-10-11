@@ -1114,4 +1114,6 @@
     <string name="nm_dot_view_screen">ดูหน้าจอ</string>
     <string name="nm_dot_start_care">เริ่มการดูแล</string>
     <string name="nm_dot_action_unavailable">ฟังก์ชัน Dot นี้ยังไม่พร้อมใช้งาน</string>
+    <string name="nm_tab_tasks">งาน</string>
+    <string name="nm_task_library">คลัง</string>
 </resources>

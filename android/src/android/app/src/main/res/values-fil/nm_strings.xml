@@ -1118,4 +1118,6 @@
     <string name="nm_dot_view_screen">Tingnan ang screen</string>
     <string name="nm_dot_start_care">Simulan ang paggabay</string>
     <string name="nm_dot_action_unavailable">Hindi pa magagamit ang feature na ito ng Dot.</string>
+    <string name="nm_tab_tasks">Mga gawain</string>
+    <string name="nm_task_library">Library</string>
 </resources>

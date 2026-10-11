@@ -45,6 +45,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ### Android
 
+- Unified Android home navigation into labeled Chat, Tasks, Devices and Settings destinations, retained Feed/Ideas/Goals/Library inside Tasks, and adapted the same session host to bottom navigation, rail and conversation-list panes.
+
 - Fixed stopping an Android OpenAI stream leaving its HTTP reader active until EOF. Kept reasoning output while omitting unsupported reasoning history only for the exact Nanodot HTTPS gateway origin.
 - Added a 48dp Dot accessibility orb with a persistent appearance switch, TalkBack actions, edge positioning within native system-bar and cutout bounds, and cleanup on lock, disconnect, and rotation. Pending conversation, screen, and care actions report that they are unavailable; showing Dot does not capture or record.
 - Prepared pure Dot orb gesture arbitration with exclusive single/double/triple taps, drag trajectories, and cancellation.

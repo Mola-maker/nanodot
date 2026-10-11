@@ -1084,4 +1084,6 @@
     <string name="nm_dot_view_screen">檢視螢幕</string>
     <string name="nm_dot_start_care">開始關懷</string>
     <string name="nm_dot_action_unavailable">此 Dot 功能尚未開放。</string>
+    <string name="nm_tab_tasks">任務</string>
+    <string name="nm_task_library">資料</string>
 </resources>

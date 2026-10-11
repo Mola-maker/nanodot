@@ -1,60 +1,26 @@
 package io.github.nanomuse.ui.home
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import com.openminis.app.ui.theme.ChatColors
+import androidx.compose.ui.platform.LocalDensity
+import io.github.nanomuse.dot.ui.DotDestination
+import io.github.nanomuse.dot.ui.DotHomeRoute
+import io.github.nanomuse.dot.ui.DotTokens
 
-/**
- * Muse's bottom bar: a plain white strip, five glyphs, the current one filled and
- * dark, the others outlined and softer. No labels, no indicator pill — the fill is the state.
- */
+/** Visible native destination labels reflow into two rows at enlarged system font sizes. */
 @Composable
-fun MuseBottomBar(
-    selected: HomeTab,
-    onSelect: (HomeTab) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(ChatColors.background)
-            .windowInsetsPadding(WindowInsets.navigationBars),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            HomeTab.entries.forEach { tab ->
-                val isSelected = tab == selected
-                IconButton(onClick = { onSelect(tab) }) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = if (isSelected) tab.selectedIcon else tab.icon,
-                            contentDescription = stringResource(tab.label),
-                            tint = if (isSelected) MaterialTheme.colorScheme.onSurface
-                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f),
-                            modifier = Modifier.size(26.dp),
-                        )
+fun MuseBottomBar(selected: DotHomeRoute, onSelect: (DotHomeRoute) -> Unit, modifier: Modifier = Modifier) {
+    Surface(color = MaterialTheme.colorScheme.surface, modifier = modifier) {
+        Column(Modifier.fillMaxWidth().navigationBarsPadding().selectableGroup().padding(DotTokens.Space.S4)) {
+            val columns = if (LocalDensity.current.fontScale >= 1.5f) 2 else 4
+            DotHomeRoute.entries.chunked(columns).forEach { row ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(DotTokens.Space.S4)) {
+                    row.forEach { route ->
+                        DotDestination(route, route == selected, { onSelect(route) }, Modifier.weight(1f))
                     }
                 }
             }

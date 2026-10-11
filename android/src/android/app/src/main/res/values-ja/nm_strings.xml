@@ -1114,4 +1114,6 @@
     <string name="nm_dot_view_screen">画面を見る</string>
     <string name="nm_dot_start_care">ケアを開始</string>
     <string name="nm_dot_action_unavailable">この Dot 機能はまだ利用できません。</string>
+    <string name="nm_tab_tasks">タスク</string>
+    <string name="nm_task_library">ライブラリ</string>
 </resources>

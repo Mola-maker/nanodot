@@ -1114,4 +1114,6 @@
     <string name="nm_dot_view_screen">Lihat layar</string>
     <string name="nm_dot_start_care">Mulai pendampingan</string>
     <string name="nm_dot_action_unavailable">Fitur Dot ini belum tersedia.</string>
+    <string name="nm_tab_tasks">Tugas</string>
+    <string name="nm_task_library">Pustaka</string>
 </resources>

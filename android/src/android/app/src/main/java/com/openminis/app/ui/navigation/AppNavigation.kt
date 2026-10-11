@@ -244,11 +244,11 @@ fun AppNavigation(
         (context.applicationContext as com.openminis.app.MinisApp).mountedFoldersStore
     }
 
-    // nanoMuse: whether SESSION_LIST renders the home shell (compact windows) — decided here,
+    // nanoMuse: SESSION_LIST uses the adaptive home shell at every window width,
     // ahead of the deep-link effects, and published for the non-composable entry points
     // (MainActivity's warm deep links). Written during composition on purpose so the effects
-    // below already see it. Wide windows keep the upstream list/detail behaviour.
-    val nmHomeActive = !shouldUseTwoPane()
+    // below already see it. Legacy CHAT routes keep their existing list/detail scaffold.
+    val nmHomeActive = true // nanoMuse: one adaptive session host at every window width.
     io.github.nanomuse.ui.home.HomeShell.active = nmHomeActive
 
     // App-icon quick action (New chat / Voice / Camera): the draft's id, decided once per
@@ -272,8 +272,20 @@ fun AppNavigation(
         }
     }
 
+    // nanoMuse: consume an accepted session launch once; recreation restores saved primary/task/session
+    // state instead of replaying that link over it. Warm links still use MainActivity.onNewIntent.
+    val nmLaunchLinkHandled = androidx.compose.runtime.saveable.rememberSaveable {
+        androidx.compose.runtime.mutableStateOf(false)
+    }
+    // nanoMuse: only session launches wait for known config/auth state; own-key signed-out users qualify.
+    val nmLaunchConfigReady by providerRepository.configLoaded.collectAsState()
+    val nmLaunchSignedIn by io.github.nanomuse.cloud.NanoMuseCloud.signedIn(context).collectAsState()
+    val nmSessionLaunchReady = nmLaunchConfigReady && nmLaunchSignedIn != null
     // Handle initial deep link after composition
-    LaunchedEffect(initialDeepLink) {
+    LaunchedEffect(initialDeepLink, if (initialDeepLink is DeepLinkAction.OpenSession) nmSessionLaunchReady else true) {
+        // nanoMuse: retain the pending link until the existing dispatcher can accept it.
+        if (initialDeepLink is DeepLinkAction.OpenSession && !nmSessionLaunchReady) return@LaunchedEffect
+        if (initialDeepLink is DeepLinkAction.OpenSession && nmLaunchLinkHandled.value) return@LaunchedEffect
         when (initialDeepLink) {
             is DeepLinkAction.OpenTerminal -> {
                 navController.safeNavigate(Routes.terminal(initialDeepLink.initCommand))
@@ -281,6 +293,7 @@ fun AppNavigation(
             is DeepLinkAction.OpenSession -> {
                 // nanoMuse: in compact windows the home shell shows the chat itself.
                 if (io.github.nanomuse.ui.home.HomeShell.openSession(navController, initialDeepLink.sessionId)) {
+                    nmLaunchLinkHandled.value = true // nanoMuse: only after the host accepted the request.
                     return@LaunchedEffect
                 }
                 // T-double-chat-fix: on process-death recreation NavController
@@ -586,20 +599,8 @@ fun AppNavigation(
         // them keeps working unchanged. On a phone the scaffold resolves to a
         // single pane, so those pushes look and behave exactly as before.
         composable(Routes.SESSION_LIST) {
-            // nanoMuse: compact windows open on the home shell (main chat +
-            // bottom tabs); the upstream split keeps wide windows.
-            if (!shouldUseTwoPane()) {
-                io.github.nanomuse.ui.home.NanoMuseHome(
-                    navController = navController,
-                    chatRepository = chatRepository,
-                    providerRepository = providerRepository,
-                    memoryRepository = memoryRepository,
-                    skillRepository = skillRepository,
-                    mcpRepository = mcpRepository,
-                )
-            } else
-            ChatSplitScaffoldRoute(
-                initialSessionId = null,
+            // nanoMuse: the home adapts by its allocated pane; keep legacy CHAT aliases below.
+            io.github.nanomuse.ui.home.NanoMuseHome(
                 navController = navController,
                 chatRepository = chatRepository,
                 providerRepository = providerRepository,

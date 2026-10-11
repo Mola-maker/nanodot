@@ -1118,4 +1118,6 @@
     <string name="nm_dot_view_screen">Ekranı görüntüle</string>
     <string name="nm_dot_start_care">Desteği başlat</string>
     <string name="nm_dot_action_unavailable">Bu Dot özelliği henüz kullanılamıyor.</string>
+    <string name="nm_tab_tasks">Görevler</string>
+    <string name="nm_task_library">Kitaplık</string>
 </resources>

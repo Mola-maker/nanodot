@@ -1118,4 +1118,6 @@
     <string name="nm_dot_view_screen">Voir l’écran</string>
     <string name="nm_dot_start_care">Démarrer l’accompagnement</string>
     <string name="nm_dot_action_unavailable">Cette fonction de Dot n’est pas encore disponible.</string>
+    <string name="nm_tab_tasks">Tâches</string>
+    <string name="nm_task_library">Bibliothèque</string>
 </resources>
