@@ -1115,4 +1115,18 @@
     <string name="nm_goal_completion">目标已完成：%1$s</string>
     <string name="nm_feed_like_post">喜欢帖子：%1$s</string>
     <string name="nm_feed_post_info">帖子信息：%1$s</string>
+    <string name="nm_dot_chat_empty">给 Dot 发消息，开始这段对话。</string>
+    <string name="nm_dot_chat_message">消息</string>
+    <string name="nm_dot_chat_send">发送</string>
+    <string name="nm_dot_chat_stop">停止</string>
+    <string name="nm_dot_chat_retry">重试</string>
+    <string name="nm_dot_chat_collapse">收起对话</string>
+    <string name="nm_dot_chat_remove">移除预览</string>
+    <string name="nm_dot_chat_capturing">正在查看屏幕…</string>
+    <string name="nm_dot_chat_capture_failed">当前无法采集屏幕。请回到宿主页面后重试。</string>
+    <string name="nm_dot_chat_historical">采集于 %1$s · 历史附件</string>
+    <string name="nm_dot_chat_text_only">仅文字 · 无截图</string>
+    <string name="nm_dot_chat_voice_pending">语音功能尚未开放。</string>
+    <string name="nm_dot_chat_compact">压缩并发送</string>
+    <string name="nm_dot_chat_cancel">取消</string>
 </resources>

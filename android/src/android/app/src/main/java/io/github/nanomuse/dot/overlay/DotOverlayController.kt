@@ -15,6 +15,8 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.os.SystemClock
+import android.view.KeyEvent
+import android.view.inputmethod.InputMethodManager
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -33,6 +35,11 @@ import com.openminis.app.ui.settings.PREF_APPEARANCE
 import io.github.nanomuse.dot.DotDefaults
 import io.github.nanomuse.dot.DotPreferences
 import io.github.nanomuse.dot.gesture.*
+import io.github.nanomuse.dot.chat.DotChatAdapter
+import io.github.nanomuse.dot.chat.DotChatPanel
+import io.github.nanomuse.dot.screen.RectPx
+import com.openminis.app.accessibility.MinisAccessibilityService
+import com.openminis.app.ui.theme.MinisTheme
 import kotlin.math.roundToInt
 
 /** Main-thread owner of window, gesture clock and service-scoped observers. No capture/voice APIs. */
@@ -64,6 +71,17 @@ class DotOverlayController(
         private set
     internal val windowCount get() = registry.size
     private var orbComposition: ComposeView? = null
+    internal var panelView: View? = null
+        private set
+    private var panelComposition: ComposeView? = null
+    private var panelOwner: DotOverlayOwner? = null
+    private var panelAdapter: DotChatAdapter? = null
+    private var panelCollapse: (() -> Unit)? = null
+    internal var panelHostWindowId: Int? = null
+        private set
+    private var panelParams: WindowManager.LayoutParams? = null
+    private var geometryPending = false
+    private var removeBackCallback: (() -> Unit)? = null
     private var dragStarted = false
     private var downAtMs = 0L
     private var params: WindowManager.LayoutParams? = null
@@ -170,8 +188,10 @@ class DotOverlayController(
     @Suppress("DEPRECATION")
     fun ownsWindow(window: android.view.accessibility.AccessibilityWindowInfo): Boolean {
         if (window.type != android.view.accessibility.AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY) return false
-        val node = orbView?.createAccessibilityNodeInfo() ?: return false
-        return try { node.windowId >= 0 && node.windowId == window.id } finally { node.recycle() }
+        return listOfNotNull(orbView, panelView).any { view ->
+            val node = view.createAccessibilityNodeInfo() ?: return@any false
+            try { node.windowId >= 0 && node.windowId == window.id } finally { node.recycle() }
+        }
     }
 
     /** Hide alpha without removing/recreating owners or changing the user's preference.
@@ -179,10 +199,10 @@ class DotOverlayController(
      */
     suspend fun <T> withHiddenForCapture(block: suspend () -> T): T {
         checkMainThread()
-        val view = orbView
-        val previousAlpha = view?.alpha
+        val owned = listOfNotNull(orbView, panelView).filter { it.isAttachedToWindow }
+        val alphas = owned.map { it.alpha }
         try {
-            if (view != null && view.isAttachedToWindow) {
+            for (view in owned) {
                 view.alpha = 0f
                 kotlinx.coroutines.suspendCancellableCoroutine<Unit> { continuation ->
                     lateinit var listener: ViewTreeObserver.OnDrawListener
@@ -201,18 +221,143 @@ class DotOverlayController(
             }
             return block()
         } finally {
-            if (orbView === view && view?.isAttachedToWindow == true && previousAlpha != null) {
-                view.alpha = previousAlpha; view.invalidate()
+            owned.forEachIndexed { index, view ->
+                if ((orbView === view || panelView === view) && view.isAttachedToWindow) {
+                    view.alpha = alphas[index]; view.invalidate()
+                }
             }
         }
     }
 
+    fun showPanel(adapter: DotChatAdapter, onCollapse: () -> Unit) {
+        checkMainThread()
+        if (!isConnected || locked || !enabled || hostViewport() == null) {
+            adapter.binding.value?.let(adapter::cancel)
+            return
+        }
+        collapsePanel()
+        panelHostWindowId = (service as? MinisAccessibilityService)?.dotScreen?.hostWindowId()
+        if (panelHostWindowId == null) { adapter.binding.value?.let(adapter::cancel); return }
+        panelAdapter = adapter
+        panelCollapse = onCollapse
+        sync()
+    }
+
+    fun collapsePanel() {
+        checkMainThread()
+        if (panelAdapter == null && panelView == null) return
+        panelAdapter = null
+        sync()
+    }
+
+    private fun hostViewport(): RectPx? = (service as? MinisAccessibilityService)?.dotScreen?.hostViewport(panelHostWindowId)
+
+    /** Two traversals must agree before adopting host/IME bounds, including split-screen hosts. */
+    fun refreshPanelGeometry() {
+        val view = panelView ?: return
+        if (geometryPending) return
+        geometryPending = true
+        view.postOnAnimation {
+            val first = hostViewport()
+            view.postOnAnimation {
+                geometryPending = false
+                if (panelView === view && first != null && first == hostViewport()) {
+                    panelParams?.let { p ->
+                        p.x = first.left.roundToInt(); p.y = first.top.roundToInt()
+                        p.width = first.width.roundToInt(); p.height = first.height.roundToInt()
+                        if (p.width > 0 && p.height > 0) windows.updateViewLayout(view,p)
+                    }
+                } else if (panelView === view) {
+                    if (first == null && hostViewport() == null) collapsePanel()
+                    else refreshPanelGeometry()
+                }
+            }
+        }
+    }
+
+    @Suppress("DEPRECATION") // Required native keyboard/back support on API26–32.
+    private fun hideImeOrCollapse(view: View) {
+        val nativeWindows = service.windows
+        val keyboard = try { nativeWindows.any { it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_INPUT_METHOD } }
+            finally { nativeWindows.forEach { it.recycle() } }
+        if (keyboard) service.getSystemService(InputMethodManager::class.java).hideSoftInputFromWindow(view.windowToken,0)
+        else collapsePanel()
+    }
+
+    @Suppress("DEPRECATION") // ADJUST_RESIZE remains the legacy keyboard window contract.
+    private fun addPanel() {
+        val adapter = panelAdapter ?: return
+        val owner = DotOverlayOwner()
+        val view = object : FrameLayout(service) {
+            private var backDown = false
+            private fun back(event: KeyEvent): Boolean {
+                if (event.keyCode != KeyEvent.KEYCODE_BACK) return false
+                if (event.action == KeyEvent.ACTION_DOWN) { backDown = true; return true }
+                if (event.action == KeyEvent.ACTION_UP && backDown) {
+                    backDown = false
+                    hideImeOrCollapse(this)
+                    return true
+                }
+                return false
+            }
+            override fun dispatchKeyEventPreIme(event: KeyEvent): Boolean = back(event) || super.dispatchKeyEventPreIme(event)
+            override fun dispatchKeyEvent(event: KeyEvent): Boolean = back(event) || super.dispatchKeyEvent(event)
+        }
+        view.setViewTreeLifecycleOwner(owner)
+        view.setViewTreeSavedStateRegistryOwner(owner)
+        val composition = ComposeView(service).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent { MinisTheme { DotChatPanel(adapter, ::collapsePanel) } }
+        }
+        view.addView(composition, FrameLayout.LayoutParams(-1,-1))
+        val host = hostViewport()
+        val p = WindowManager.LayoutParams(host?.width?.roundToInt() ?: -1, host?.height?.roundToInt() ?: -1,
+            WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+            PixelFormat.TRANSLUCENT).apply {
+            gravity = Gravity.TOP or Gravity.LEFT; title = "Nanodot Dot conversation"
+            x = host?.left?.roundToInt() ?: 0; y = host?.top?.roundToInt() ?: 0
+            softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+        }
+        try { windows.addView(view,p); owner.start() }
+        catch (failure: RuntimeException) {
+            owner.destroy(); composition.disposeComposition()
+            panelAdapter = null
+            panelCollapse?.invoke(); panelCollapse = null
+            throw failure
+        }
+        panelView = view; panelOwner = owner; panelComposition = composition; panelParams = p
+        view.setOnApplyWindowInsetsListener { _, insets -> refreshPanelGeometry(); insets }
+        if (Build.VERSION.SDK_INT >= 33) view.post {
+            if (panelView === view) {
+                val dispatcher = view.findOnBackInvokedDispatcher()
+                val callback = android.window.OnBackInvokedCallback { hideImeOrCollapse(view) }
+                dispatcher?.registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,callback)
+                removeBackCallback = { dispatcher?.unregisterOnBackInvokedCallback(callback) }
+            }
+        }
+        refreshPanelGeometry()
+    }
+
+    private fun removePanel() {
+        val onCollapse = panelCollapse
+        panelCollapse = null; panelAdapter = null
+        removeBackCallback?.invoke(); removeBackCallback = null
+        panelView?.let { windows.removeViewImmediate(it) }
+        panelComposition?.disposeComposition(); panelOwner?.destroy()
+        panelView = null; panelComposition = null; panelOwner = null; panelParams = null; panelHostWindowId = null
+        geometryPending = false
+        onCollapse?.invoke()
+    }
+
     private fun sync() {
-        registry.sync(OverlayPolicy.windows(isConnected, locked, enabled))
+        val wanted = OverlayPolicy.windows(isConnected, locked, enabled)
+        registry.sync(if (wanted.isNotEmpty() && panelAdapter != null) wanted + OverlayKind.Panel else wanted)
     }
 
     private fun addWindow(kind: OverlayKind) {
-        check(kind == OverlayKind.Orb) // Auxiliary windows are created by later coordinator tasks.
+        if (kind == OverlayKind.Panel) { addPanel(); return }
+        check(kind == OverlayKind.Orb)
         val owner = DotOverlayOwner()
         val view = object : FrameLayout(service) {
             override fun dispatchTouchEvent(event: MotionEvent): Boolean {
@@ -287,6 +432,7 @@ class DotOverlayController(
     }
 
     private fun removeWindow(kind: OverlayKind) {
+        if (kind == OverlayKind.Panel) { removePanel(); return }
         cancelGesture()
         orbView?.let { view ->
             firstLayout?.let { view.viewTreeObserver.removeOnPreDrawListener(it) }

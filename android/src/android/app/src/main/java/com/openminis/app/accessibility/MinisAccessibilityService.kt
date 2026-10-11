@@ -51,10 +51,13 @@ class MinisAccessibilityService : AccessibilityService() {
     private val eventListeners = CopyOnWriteArrayList<(RecordedEvent) -> Unit>()
 
     // nanoMuse: overlay ownership starts only at the real accessibility connection.
-    internal val dotOverlay by lazy { io.github.nanomuse.dot.overlay.DotOverlayController(this) }
+    internal val dotOverlay by lazy { io.github.nanomuse.dot.overlay.DotOverlayController(this) { dotInteraction.handle(it) } }
 
     // nanoMuse: read-only scene repository shares the service and its owned-window controller.
     val dotScreen by lazy { io.github.nanomuse.dot.screen.ScreenRepository(this, dotOverlay) }
+
+    // nanoMuse: ordinary conversation delegates to the canonical main-chat VM.
+    internal val dotInteraction by lazy { io.github.nanomuse.dot.DotInteractionCoordinator(this) }
 
     val nodeRegistry: NodeRegistry = NodeRegistry()
 
@@ -96,6 +99,8 @@ class MinisAccessibilityService : AccessibilityService() {
         if (event == null) return
         // nanoMuse: host geometry/content updates invalidate asynchronous scene results.
         dotScreen.onAccessibilityEvent(event)
+        // nanoMuse: settled host/IME frames constrain the actual focusable Dot panel.
+        dotOverlay.refreshPanelGeometry()
         val rec = RecordedEvent(
             type = AccessibilityEvent.eventTypeToString(event.eventType),
             packageName = event.packageName?.toString(),
@@ -112,6 +117,7 @@ class MinisAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {
         // nanoMuse: interruption clears pending gestures and every Dot window.
+        dotInteraction.disconnect()
         dotOverlay.disconnect()
         // nanoMuse: disconnect also revokes the legacy projection session.
         dotScreen.disconnect()
@@ -120,6 +126,7 @@ class MinisAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         // nanoMuse: dispose window composition and owners before the service goes away.
+        dotInteraction.disconnect()
         dotOverlay.disconnect()
         // nanoMuse: disconnect also revokes the legacy projection session.
         dotScreen.disconnect()

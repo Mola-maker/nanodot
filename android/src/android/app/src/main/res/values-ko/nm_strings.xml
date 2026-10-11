@@ -1138,4 +1138,18 @@
     <string name="nm_goal_completion">완료된 목표: %1$s</string>
     <string name="nm_feed_like_post">게시물 좋아요: %1$s</string>
     <string name="nm_feed_post_info">게시물 정보: %1$s</string>
+    <string name="nm_dot_chat_empty">Dot에게 메시지를 보내 대화를 시작하세요.</string>
+    <string name="nm_dot_chat_message">메시지</string>
+    <string name="nm_dot_chat_send">보내기</string>
+    <string name="nm_dot_chat_stop">중지</string>
+    <string name="nm_dot_chat_retry">다시 시도</string>
+    <string name="nm_dot_chat_collapse">대화 접기</string>
+    <string name="nm_dot_chat_remove">미리보기 제거</string>
+    <string name="nm_dot_chat_capturing">화면 읽는 중…</string>
+    <string name="nm_dot_chat_capture_failed">화면을 캡처할 수 없습니다. 원래 화면에서 다시 시도하세요.</string>
+    <string name="nm_dot_chat_historical">캡처 %1$s · 이전 첨부</string>
+    <string name="nm_dot_chat_text_only">텍스트만 · 스크린샷 없음</string>
+    <string name="nm_dot_chat_voice_pending">음성은 아직 사용할 수 없습니다.</string>
+    <string name="nm_dot_chat_compact">압축 후 보내기</string>
+    <string name="nm_dot_chat_cancel">취소</string>
 </resources>

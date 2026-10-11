@@ -1150,4 +1150,18 @@
     <string name="nm_goal_completion">Цель выполнена: %1$s</string>
     <string name="nm_feed_like_post">Нравится публикация: %1$s</string>
     <string name="nm_feed_post_info">Сведения о публикации: %1$s</string>
+    <string name="nm_dot_chat_empty">Напишите Dot, чтобы начать разговор.</string>
+    <string name="nm_dot_chat_message">Сообщение</string>
+    <string name="nm_dot_chat_send">Отправить</string>
+    <string name="nm_dot_chat_stop">Остановить</string>
+    <string name="nm_dot_chat_retry">Повторить</string>
+    <string name="nm_dot_chat_collapse">Свернуть разговор</string>
+    <string name="nm_dot_chat_remove">Удалить предпросмотр</string>
+    <string name="nm_dot_chat_capturing">Чтение экрана…</string>
+    <string name="nm_dot_chat_capture_failed">Снимок экрана недоступен. Повторите на исходном экране.</string>
+    <string name="nm_dot_chat_historical">Снимок %1$s · прежнее вложение</string>
+    <string name="nm_dot_chat_text_only">Только текст · без снимка</string>
+    <string name="nm_dot_chat_voice_pending">Голос пока недоступен.</string>
+    <string name="nm_dot_chat_compact">Сжать и отправить</string>
+    <string name="nm_dot_chat_cancel">Отмена</string>
 </resources>

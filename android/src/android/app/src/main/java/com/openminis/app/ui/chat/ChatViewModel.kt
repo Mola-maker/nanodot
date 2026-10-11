@@ -65,6 +65,9 @@ import com.openminis.app.offload.OffloadPermissionManager
 import com.openminis.app.service.SessionActivityTracker
 import com.openminis.app.service.SessionConcurrencyManager
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart // nanoMuse: retain admitted work before it starts.
+import kotlinx.coroutines.currentCoroutineContext // nanoMuse
+import kotlinx.coroutines.ensureActive // nanoMuse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
@@ -1130,6 +1133,9 @@ class ChatViewModel(
 
     /** Cancel an in-flight compaction. No-op when nothing is running. */
     fun cancelCompact() {
+        // nanoMuse: cancel the independent continuation before compact's failure callback fires.
+        compactThenSendJob?.cancel()
+        _pendingCompactSend.value = false
         val job = compactJob ?: return
         if (!job.isActive) return
         AppLogger.info(TAG, "[Compact] cancelled by user")
@@ -1154,6 +1160,15 @@ class ChatViewModel(
     // streaming, hiding the Stop button while the new turn was live).
     @Volatile
     private var streamJob: Job? = null
+    // nanoMuse: Stop owns first-send preparation as well as its eventual stream child.
+    @Volatile private var sendSetupJob: Job? = null
+    // nanoMuse: a parked compact-then-send must be revocable before its first suspension.
+    private var compactThenSendJob: Job? = null
+    private val _pendingCompactSend = MutableStateFlow(false)
+    val pendingCompactSend: StateFlow<Boolean> = _pendingCompactSend.asStateFlow()
+    // nanoMuse: receipt only after the matching mediaRef/user row was persisted.
+    private val _consumedAttachmentMessages = MutableStateFlow<Map<String,String>>(emptyMap())
+    val consumedAttachmentMessages: StateFlow<Map<String,String>> = _consumedAttachmentMessages.asStateFlow()
     private var currentProvider: LLMProvider? = null
     private var currentModel: LLMModel? = null
 
@@ -3417,13 +3432,21 @@ class ChatViewModel(
         _showCompactBeforeSendPrompt.value = false
         val text = pendingSendText ?: return
         pendingSendText = null
-        viewModelScope.launch {
-            val ok = awaitCompaction()
-            if (!ok) {
-                AppLogger.warning(TAG, "[Context] pre-send compaction failed — sending anyway")
+        // nanoMuse: publish/retain ownership synchronously, including cancellation before start.
+        _pendingCompactSend.value = true
+        compactThenSendJob = viewModelScope.launch(start = CoroutineStart.LAZY) {
+            try {
+                val ok = awaitCompaction()
+                currentCoroutineContext().ensureActive()
+                if (!ok) {
+                    AppLogger.warning(TAG, "[Context] pre-send compaction failed — sending anyway")
+                }
+                sendMessage(text, skipContextCheck = true)
+            } finally {
+                if (compactThenSendJob === currentCoroutineContext()[Job]) _pendingCompactSend.value = false
             }
-            sendMessage(text, skipContextCheck = true)
         }
+        compactThenSendJob?.start()
     }
 
     /** Dialog action: send without compacting. */
@@ -3932,6 +3955,8 @@ class ChatViewModel(
 
     /** Ensure the session exists in the database. Called before first message. */
     private suspend fun ensureSession(): String {
+        // nanoMuse: revoked preparation must not create a session at a later checkpoint.
+        currentCoroutineContext().ensureActive()
         if (realSessionId.isNotEmpty()) return realSessionId
         val modelId = currentModel?.id ?: providerRepository.allVisibleEntries().firstOrNull()?.model?.id ?: "unknown"
         // [T-memory-global-toggle-settings-ui-android] Snapshot the
@@ -3943,6 +3968,8 @@ class ChatViewModel(
             modelId = modelId,
             memoryEnabled = _memoryEnabled.value,
         )
+        // nanoMuse: no promotion/binding work after cancellation of the suspended insert.
+        currentCoroutineContext().ensureActive()
         realSessionId = session.id
         // "New Chat in Group": file the just-promoted draft into its folder.
         // Unconditional (vs iOS setFolderIfUnfiled) — the session is seconds
@@ -6964,17 +6991,22 @@ class ChatViewModel(
         val editingId = _editingMessageId.value
         if (editingId != null) _editingMessageId.value = null
 
-        viewModelScope.launch {
+        // nanoMuse: retain the entire send before dispatch, not only the later IO stream.
+        sendSetupJob = viewModelScope.launch(start = CoroutineStart.LAZY) {
             var streamLaunched = false
             try {
             // Ensure session exists in DB (creates on first message for draft sessions)
+            currentCoroutineContext().ensureActive() // nanoMuse
             val activeSessionId = ensureSession()
+            currentCoroutineContext().ensureActive() // nanoMuse
 
             if (editingId != null) {
                 truncateBeforeEdit(editingId)
             }
 
+            currentCoroutineContext().ensureActive() // nanoMuse: media is not read after revocation.
             val prepared = prepareUserAttachments(currentAttachments, activeSessionId)
+            currentCoroutineContext().ensureActive() // nanoMuse
 
             // [T-android-paste-mediaref] Fold `[Pasted#N]` markers out to disk
             // BEFORE persisting, so the stored message carries a mediaRef per
@@ -6995,6 +7027,7 @@ class ChatViewModel(
                 prepared.attachedFilesXml,
                 bodyPartsJson = pasted?.partsJson,
             )
+            currentCoroutineContext().ensureActive() // nanoMuse: fence row persistence.
             val persistedUser = chatRepository.appendMessage(activeSessionId, "user", userPartsJson)
             io.github.nanomuse.sync.ConversationSync.sent(activeSessionId) // nanoMuse: the person's line reaches the other devices at send (C8), then "working" (C9)
 
@@ -7020,7 +7053,11 @@ class ChatViewModel(
                 attachmentNames = prepared.attachmentNames + (pasted?.uiNames ?: emptyList()),
                 attachmentUris = prepared.nonImageUris + (pasted?.uiUris ?: emptyList()),
             )
+            currentCoroutineContext().ensureActive() // nanoMuse: fence UI/history publication.
             _messages.value = _messages.value + userMsg
+            // nanoMuse: only mediaRefs on this persisted row consume these exact attachment IDs.
+            _consumedAttachmentMessages.value = _consumedAttachmentMessages.value +
+                prepared.persistedAttachmentIds.associateWith { persistedUser.id }
             val imageParts = prepared.imageParts
 
             // T132: build the user contentParts in iOS order — caption first
@@ -7095,6 +7132,7 @@ class ChatViewModel(
             } else baseSystemPrompt
 
             // Start agent loop with fallback. _isStreaming was set synchronously at top.
+            currentCoroutineContext().ensureActive() // nanoMuse: OAuth cancellation cannot start a stream.
             streamLaunched = true
             streamJob = launch(Dispatchers.IO) {
                 AppLogger.info(TAG_STREAM, "send streamJob ENTER sid=$activeSessionId")
@@ -7175,12 +7213,14 @@ class ChatViewModel(
                 AppLogger.info(TAG_STREAM, "send streamJob EXIT")
             }
             } finally {
-                if (!streamLaunched) {
+                // nanoMuse: an old cancelled setup must not clear a newer operation's state.
+                if (!streamLaunched && currentCoroutineContext().isActive && sendSetupJob === currentCoroutineContext()[Job]) {
                     AppLogger.info(TAG_STREAM, "send _isStreaming=false (setup aborted)")
                     _isStreaming.value = false
                 }
             }
         }
+        sendSetupJob?.start() // nanoMuse: assignment precedes dispatch, including Main.immediate.
     }
 
     /** Set error inline on the last assistant message (iOS: message.error).
@@ -11024,6 +11064,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
      * attachments survive a session reload (T128).
      */
     private data class PreparedAttachments(
+        val persistedAttachmentIds: Set<String>, // nanoMuse: exact durable mediaRefs in the user row.
         val imageParts: List<LLMMessage.ImagePart>,
         val imageUris: List<Uri>,
         val attachmentNames: List<String>,
@@ -11054,10 +11095,13 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
      * NOT inlined into the LLM payload (parity with iOS processAttachments,
      * AIChatViewModel.swift L1552-1645).
      */
-    private fun prepareUserAttachments(
+    private suspend fun prepareUserAttachments(
         attachments: List<InputAttachment>,
         sessionId: String,
     ): PreparedAttachments {
+        currentCoroutineContext().ensureActive() // nanoMuse: admission before any disk work.
+        val persistedImageIds = mutableListOf<String>() // nanoMuse
+        val persistedFileIds = mutableSetOf<String>() // nanoMuse
         val imageParts = mutableListOf<LLMMessage.ImagePart>()
         val imageUris = mutableListOf<Uri>()
         val imageNames = mutableListOf<String>()
@@ -11092,6 +11136,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
         val nowStr = isoFormatter.format(java.util.Date(nowMs))
 
         for (attachment in attachments) {
+            currentCoroutineContext().ensureActive() // nanoMuse: fence each media transfer.
             if (attachment.isImage) {
                 // T209: read the original image bytes once and reuse them
                 // for storage + uploads dir; only the LLM inference payload
@@ -11106,6 +11151,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
                     Log.w(TAG, "image read failed for ${attachment.fileName}: ${e.message}")
                     null
                 } ?: continue
+                currentCoroutineContext().ensureActive() // nanoMuse: fence durable media persistence.
                 val ref = try {
                     mediaStore.saveMedia(
                         data = rawBytes,
@@ -11152,6 +11198,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
                 imageUris.add(Uri.fromFile(savedFile))
                 imageNames.add(attachment.fileName)
                 imageMediaRefPartsJson.add(buildMediaRefPartJson(ref, linuxPath = linuxPath))
+                persistedImageIds.add(attachment.id) // nanoMuse
                 continue
             }
 
@@ -11185,6 +11232,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
             }
             if (!uploadOk) continue
 
+            currentCoroutineContext().ensureActive() // nanoMuse: fence durable file persistence.
             val ref = try {
                 dest.inputStream().use { input ->
                     mediaStore.saveMediaStreamed(
@@ -11199,6 +11247,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
                 null
             }
             if (ref != null) {
+                persistedFileIds.add(attachment.id) // nanoMuse
                 nonImageMediaRefPartsJson.add(buildMediaRefPartJson(ref))
                 nonImageUris.add(Uri.fromFile(java.io.File(mediaStore.mediaBaseDir, ref.relativePath)))
             }
@@ -11230,6 +11279,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
             val newSize = newImageParts.size
             imageParts.clear()
             imageParts.addAll(newImageParts)
+            while (persistedImageIds.size > newSize) persistedImageIds.removeAt(persistedImageIds.size - 1) // nanoMuse
             while (imageUris.size > newSize) imageUris.removeAt(imageUris.size - 1)
             while (imageNames.size > newSize) imageNames.removeAt(imageNames.size - 1)
             while (imageMediaRefPartsJson.size > newSize) imageMediaRefPartsJson.removeAt(imageMediaRefPartsJson.size - 1)
@@ -11266,6 +11316,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
 
         // Order matches UserAttachmentList convention: images first, then files.
         return PreparedAttachments(
+            persistedAttachmentIds = (persistedImageIds + persistedFileIds).toSet(), // nanoMuse
             imageParts = imageParts,
             imageUris = imageUris,
             attachmentNames = imageNames + nonImageNames,
@@ -11940,6 +11991,10 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
     }
 
     fun cancelStream() {
+        // nanoMuse: preparation has no current assistant response to persist as interrupted.
+        val preparing = sendSetupJob?.isActive == true && streamJob?.isActive != true
+        sendSetupJob?.cancel()
+        cancelCompact()
         AppLogger.info(TAG_STREAM, "cancelStream invoked _isStreaming=false (sid=$activeSessionId)")
         streamJob?.cancel()
         _isStreaming.value = false
@@ -11972,7 +12027,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
             // Mid-turn rename: sweep any lingering draft shell too.
             ExecutionCoordinator.stopCurrentCommand(sessionId)
         }
-        handleUserCancelledCleanup()
+        if (!preparing) handleUserCancelledCleanup() // nanoMuse: never persist a virtual welcome during setup.
 
         // T189: iOS parity (AIChatViewModel.swift L2592-2610). If the user
         // enqueued prompts during the cancelled stream, auto-resume the drain
@@ -12139,6 +12194,8 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
         val lastIdx = msgs.indexOfLast { it.role == "assistant" }
         if (lastIdx < 0) return
         var last = msgs[lastIdx]
+        // nanoMuse: welcome rows are virtual, not a partial response or a draft DB parent.
+        if (last.id.startsWith("nm_intro_")) return
 
         // T73: clear "Nanodot is thinking…" the moment the user taps Stop.
         // isAwaitingModelResponse is set true at runAgentLoop entry (≈ line

@@ -1142,4 +1142,18 @@
     <string name="nm_goal_completion">Meta concluída: %1$s</string>
     <string name="nm_feed_like_post">Curtir publicação: %1$s</string>
     <string name="nm_feed_post_info">Informações da publicação: %1$s</string>
+    <string name="nm_dot_chat_empty">Escreva para Dot para iniciar esta conversa.</string>
+    <string name="nm_dot_chat_message">Mensagem</string>
+    <string name="nm_dot_chat_send">Enviar</string>
+    <string name="nm_dot_chat_stop">Parar</string>
+    <string name="nm_dot_chat_retry">Tentar novamente</string>
+    <string name="nm_dot_chat_collapse">Recolher conversa</string>
+    <string name="nm_dot_chat_remove">Remover prévia</string>
+    <string name="nm_dot_chat_capturing">Lendo a tela…</string>
+    <string name="nm_dot_chat_capture_failed">Captura indisponível. Tente novamente na tela original.</string>
+    <string name="nm_dot_chat_historical">Capturado %1$s · anexo anterior</string>
+    <string name="nm_dot_chat_text_only">Somente texto · sem captura</string>
+    <string name="nm_dot_chat_voice_pending">A voz ainda não está disponível.</string>
+    <string name="nm_dot_chat_compact">Compactar e enviar</string>
+    <string name="nm_dot_chat_cancel">Cancelar</string>
 </resources>

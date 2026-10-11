@@ -66,9 +66,22 @@ relative to the usable display area, excluding system bars and display cutouts. 
 8–10, Dot waits for its native content frame before restoring its position. Screen-region
 selection is not available yet; drags currently move the orb. Other apps receive touches outside the orb.
 
-TalkBack exposes Open conversation, View screen, and Start care actions. These actions
-currently explain that the capability is unavailable while the coordinator is being
-implemented. Showing the orb never takes a screenshot, records audio, or calls a model.
+TalkBack exposes Open conversation, View screen, and Start care actions. A single tap
+opens a foreground Compose conversation in a real accessibility overlay. A double tap
+captures the host before opening that panel and shows a removable preview with its capture
+time. The preview is a historical attachment to the named conversation, even after the
+panel opens. It stays in private cache until you press Send; removing it, collapsing the
+panel, changing conversations or cancelling deletes owned temporary copies. Confirmed
+message media remains in conversation history. The overlay and the main app share the
+same ChatViewModel and draft-to-persisted session identity.
+
+Back first hides the keyboard, then collapses the panel to the orb. Send, Stop and Retry
+use the existing chat pipeline. An empty conversation and an unconfigured model have
+explicit states. Older devices show a clearly labelled fresh text-only preview unless
+separate screen-capture permission is active; pixel errors may also fall back to newly
+sampled accessible text. Voice, care and screen-region selection remain unavailable.
+Showing the orb or opening conversation alone never captures, records audio or calls a
+model. Live gateway text/SSE and unique-host vision acceptance remain pending deployment.
 
 ## Dot scene sampling
 
@@ -77,9 +90,9 @@ and descriptions. Each requested snapshot carries its host window/display, scene
 rotation, insets, keyboard bounds, capture time and pixel transform. The `insets: RectPx`
 field stores left/top/right/bottom host edge margins from the display, including keyboard
 and multiwindow space; it is not a rectangle or universal system `WindowInsets`, and its
-width/height must not be used. Only Dot’s owned orb
+width/height must not be used. Only Dot’s owned orb and panel
 windows are excluded; Nanodot’s normal Activity can be the host. Captures run one at a time,
-temporarily hide the orb through a completed draw, and release cancelled or late buffers.
+temporarily hide the orb and panel through a completed draw, and release cancelled or late buffers.
 Locked devices, changed scenes, permission loss, rate limits and timeouts return an
 unavailable code; an earlier image is never substituted. Callers close accepted snapshots.
 
@@ -97,9 +110,8 @@ host window; visible system bars can prevent detection. Older APIs cannot univer
 identify protected pages, although Android still masks their pixels.
 
 The additive `captureNodes(generation)` entry explicitly re-reads the current scene for a
-fresh text-only fallback after a pixel error. Later conversation/care callers choose and
-label that fallback. Orb actions still show the capability-unavailable message until those
-coordinators are wired; this repository alone does not call a model or upload a screen.
+fresh text-only fallback after a pixel error. The conversation coordinator labels that fallback as text only. The repository itself
+does not call a model or upload a screen.
 
 ## Install
 

@@ -1142,4 +1142,18 @@
     <string name="nm_goal_completion">Tamamlanan hedef: %1$s</string>
     <string name="nm_feed_like_post">Gönderiyi beğen: %1$s</string>
     <string name="nm_feed_post_info">Gönderi bilgileri: %1$s</string>
+    <string name="nm_dot_chat_empty">Bu konuşmayı başlatmak için Dot’a yazın.</string>
+    <string name="nm_dot_chat_message">Mesaj</string>
+    <string name="nm_dot_chat_send">Gönder</string>
+    <string name="nm_dot_chat_stop">Durdur</string>
+    <string name="nm_dot_chat_retry">Yeniden dene</string>
+    <string name="nm_dot_chat_collapse">Konuşmayı daralt</string>
+    <string name="nm_dot_chat_remove">Önizlemeyi kaldır</string>
+    <string name="nm_dot_chat_capturing">Ekran okunuyor…</string>
+    <string name="nm_dot_chat_capture_failed">Ekran yakalama kullanılamıyor. Asıl ekranda yeniden deneyin.</string>
+    <string name="nm_dot_chat_historical">Yakalandı %1$s · geçmiş ek</string>
+    <string name="nm_dot_chat_text_only">Yalnızca metin · ekran görüntüsü yok</string>
+    <string name="nm_dot_chat_voice_pending">Ses henüz kullanılamıyor.</string>
+    <string name="nm_dot_chat_compact">Sıkıştır ve gönder</string>
+    <string name="nm_dot_chat_cancel">İptal</string>
 </resources>

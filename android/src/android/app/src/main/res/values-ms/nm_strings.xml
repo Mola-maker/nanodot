@@ -1138,4 +1138,18 @@
     <string name="nm_goal_completion">Matlamat selesai: %1$s</string>
     <string name="nm_feed_like_post">Sukai siaran: %1$s</string>
     <string name="nm_feed_post_info">Maklumat siaran: %1$s</string>
+    <string name="nm_dot_chat_empty">Tulis kepada Dot untuk memulakan perbualan ini.</string>
+    <string name="nm_dot_chat_message">Mesej</string>
+    <string name="nm_dot_chat_send">Hantar</string>
+    <string name="nm_dot_chat_stop">Hentikan</string>
+    <string name="nm_dot_chat_retry">Cuba lagi</string>
+    <string name="nm_dot_chat_collapse">Tutup perbualan</string>
+    <string name="nm_dot_chat_remove">Buang pratonton</string>
+    <string name="nm_dot_chat_capturing">Membaca skrin…</string>
+    <string name="nm_dot_chat_capture_failed">Tangkapan skrin tidak tersedia. Cuba lagi pada skrin asal.</string>
+    <string name="nm_dot_chat_historical">Ditangkap %1$s · lampiran terdahulu</string>
+    <string name="nm_dot_chat_text_only">Teks sahaja · tiada tangkapan skrin</string>
+    <string name="nm_dot_chat_voice_pending">Suara belum tersedia.</string>
+    <string name="nm_dot_chat_compact">Ringkaskan dan hantar</string>
+    <string name="nm_dot_chat_cancel">Batal</string>
 </resources>
