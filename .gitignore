@@ -38,8 +38,10 @@ web/dist/
 web/.vite/
 npm-debug.log*
 
-# website: generated from web/ and docs/ by `npm run site:mascot` (see site/README.md)
-site/assets/
+# Product Dot SVGs are committed; other legacy site assets are generated.
+site/assets/*
+!site/assets/dot-idle.svg
+!site/assets/nanodot-icon.svg
 # the docs site, built by pages.yml from website/ into site/docs/
 site/docs/
 

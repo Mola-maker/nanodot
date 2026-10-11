@@ -4,6 +4,10 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Prevented product-site builds from deleting source trees through custom output paths while preserving the dedicated generated output and external temporary builds.
+
+- Added bilingual Nanodot product, connection and privacy pages with offline Dot artwork, temporary P0 artifact ZIP checksums and honest preview states; preserved API JSON routing and the existing documentation base.
+
 - Added one source for Nanodot spacing, system typography and motion across native and Web clients, completed Android Material color roles, and documented accessible component states in English and Chinese.
 
 ### Nanodot P0
