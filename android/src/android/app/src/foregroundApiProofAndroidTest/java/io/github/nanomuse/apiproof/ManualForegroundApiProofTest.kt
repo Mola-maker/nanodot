@@ -229,6 +229,61 @@ class ManualForegroundApiProofTest {
                 nativeText(root,text) && (!freshCare || currentCare()) } finally { root?.recycle() }
         } } finally { windows.forEach { it.recycle() } }
     }
+    private fun careGuideConditions(service:MinisAccessibilityService,second:Boolean,first:CareProposal?):JSONObject {
+        val session=service.dotInteraction.careSession; val controller=session.controller
+        val state=controller.state.value; val target=state.target; val proposal=state.proposal
+        val window=field(service.dotInteraction,"careWindow") as? CareOverlayWindow
+        val card=window?.let { field(it,"card") as? View }
+        val measured=card?.takeIf { it.isAttachedToWindow && it.width>0 && it.height>0 }?.let(::rect)
+        val bubble=window?.let { field(it.focus,"instruction") as? RectPx }
+        val expected=if(second) ForegroundApiHostFixture.TWO else ForegroundApiHostFixture.ONE
+        val publicTarget=target!=null && proposal!=null && target.description==expected &&
+            proposal.action==CareAction.Focus && proposal.targetRef==target.ref && proposal.expectation==CareExpectation.Focused(target.ref)
+        val node=card?.takeIf { it.isAttachedToWindow }?.createAccessibilityNodeInfo()
+        val id=node?.let { try { it.windowId } finally { it.recycle() } }
+        val windows=service.windows
+        val owned=try { id!=null && id>=0 && window!=null && card!=null && windows.any { observed ->
+            val root=observed.root
+            try { observed.id==id && observed.type==AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY &&
+                root?.packageName?.toString()==app.packageName && service.dotOverlay.ownsWindow(observed) }
+            finally { root?.recycle() }
+        } && field(service.dotInteraction,"careWindow")===window && field(window,"card")===card &&
+            card.isAttachedToWindow && host(service,id) } finally { windows.forEach { it.recycle() } }
+        val verified=controller.verifiedSteps.value.singleOrNull()
+        val lineage=first!=null && verified!=null && verified.proposal==first && verified.origin==VerificationOrigin.Observable &&
+            verified.afterSnapshotId!=first.snapshotId && CareVerifier.sameHost(first.scene,verified.afterScene)
+        val rows=session.conversation.rows
+        val goalIndex=rows.indexOfLast { it.user && it.text==GOAL }
+        val verifiedIndex=if(verified==null) -1 else rows.indexOfFirst { it.id=="verified:${verified.afterSnapshotId}" && it.verified && !it.user && it.text==verified.proposal.instruction }
+        val currentIndex=if(proposal==null) -1 else rows.indexOfFirst { it.id==session.instructionKey() && !it.user && !it.verified && it.text==proposal.instruction }
+        val goalHistory=state.goal==GOAL && goalIndex>=0; val verifiedHistory=verifiedIndex>=0; val currentHistory=currentIndex>=0
+        val ordered=goalIndex>=0 && verifiedIndex>goalIndex && currentIndex>verifiedIndex
+        val goalVisible=owned && overlayText(service,GOAL,card,freshCare=true)
+        val instructionVisible=owned && publicTarget && overlayText(service,proposal!!.instruction,card,freshCare=true)
+        val boundsMatch=target!=null && window?.focus?.bounds==target.bounds
+        val keyMatch=window!=null && field(window.focus,"identity")==session.instructionKey()
+        val attached=window?.focus?.view?.isAttachedToWindow==true
+        val positive=bubble!=null && bubble.width>0 && bubble.height>0
+        val contained=bubble!=null && measured!=null && bubble.left>=measured.left && bubble.top>=measured.top &&
+            bubble.right<=measured.right && bubble.bottom<=measured.bottom
+        val placement=measured!=null && target!=null && (if(second) measured.top>=target.bounds.bottom else measured.bottom<=target.bounds.top)
+        val context=if(second) goalHistory && verifiedHistory && currentHistory && ordered && lineage else goalVisible
+        val guide=state.state==CareState.AwaitingUser && publicTarget && owned && boundsMatch && keyMatch && attached && positive && contained && placement && context && instructionVisible
+        val result=JSONObject().put("awaitingUser",state.state==CareState.AwaitingUser).put("publicTargetAndRef",publicTarget)
+            .put("exactOwnedWindowHost",owned).put("focusBoundsMatch",boundsMatch).put("instructionKeyMatch",keyMatch).put("focusAttached",attached)
+            .put("bubblePositive",positive).put("bubbleContained",contained).put("panelPlacement",placement)
+            .put("goalAxVisible",goalVisible).put("instructionAxVisible",instructionVisible).put("goalHistory",goalHistory)
+            .put("verifiedHistory",verifiedHistory).put("currentHistory",currentHistory).put("historyOrdered",ordered).put("singleObservableLineage",lineage)
+            .put("originalGuidePassed",state.state==CareState.AwaitingUser && publicTarget && owned && boundsMatch && keyMatch && attached && positive && contained && placement && goalVisible && instructionVisible)
+            .put("guidePassed",guide)
+        if(owned && publicTarget && window!=null) {
+            @Suppress("UNCHECKED_CAST") val viewport=(field(window,"viewport") as ()->RectPx?).invoke()
+            listOf("targetBounds" to target?.bounds,"cardBounds" to measured,"bubbleBounds" to bubble,"viewport" to viewport).forEach { (name,r) ->
+                if(r!=null && listOf(r.left,r.top,r.right,r.bottom).all { it.isFinite() }) result.put(name,JSONArray(listOf(r.left,r.top,r.right,r.bottom)))
+            }
+        }
+        return result
+    }
     private fun rect(view: View): RectPx {
         check(view.isAttachedToWindow && view.width>0 && view.height>0)
         val at=IntArray(2); view.getLocationOnScreen(at)
@@ -378,7 +433,8 @@ class ManualForegroundApiProofTest {
         val originalSequence=field(conversation,"userSequence") as Long
         val owners=field(CareOperationGate,"owners")!!
         var samples=0; var plans=0; var ownedWindow:CareOverlayWindow?=null; var installed=false; var publicHost:Int?=null
-        var focusProbe=false
+        var focusProbe=false; var nextProbe=false; var nextPlans=0
+        var firstFocusSnapshot:ScreenSnapshot?=null; var firstFocusProposal:CareProposal?=null
         val focusInstruction="Focus FOREGROUND_FOCUS_ONE."
         val jobs=mutableListOf<Job>()
         var originalOwners=0; var originalAutomatic=false
@@ -418,6 +474,7 @@ class ManualForegroundApiProofTest {
         }
         try {
             val sample:suspend(Long)->CaptureOutcome = { generation ->
+                if(nextProbe) { kotlinx.coroutines.currentCoroutineContext()[Job]?.let(jobs::add); (field(controller,"work") as? Job)?.let(jobs::add) }
                 samples++
                 val current=actual.dotScreen.currentSceneKey()
                 val result=if(current==null || current.packageName!=inst.context.packageName || current.windowId!=publicHost)
@@ -434,9 +491,22 @@ class ManualForegroundApiProofTest {
                 emit("sample_return")
                 result // Ownership goes to the unchanged actual controller, which closes it.
             }
-            val plan:suspend(String,ScreenSnapshot,List<CareProposal>)->CarePlanResult = { goal,snapshot,history ->
+            val plan:suspend(String,ScreenSnapshot,List<CareProposal>)->CarePlanResult = plan@{ goal,snapshot,history ->
+                if(nextProbe) { kotlinx.coroutines.currentCoroutineContext()[Job]?.let(jobs::add); (field(controller,"work") as? Job)?.let(jobs::add) }
                 plans++
-                check(goal==GOAL && history.isEmpty())
+                check(goal==GOAL && (history.isEmpty() || nextProbe))
+                if(nextProbe && history.isNotEmpty()) {
+                    val before=checkNotNull(firstFocusSnapshot); val first=checkNotNull(firstFocusProposal)
+                    val targets=publicSnapshot(actual,snapshot); val verified=controller.verifiedSteps.value.single()
+                    check(nextPlans==0 && history==listOf(first) && verified.proposal==first && verified.origin==VerificationOrigin.Observable &&
+                        verified.afterSnapshotId==snapshot.id && verified.afterScene==snapshot.scene &&
+                        CareVerifier(before).evaluate(first,snapshot)==VerificationResult.Confirmed && targets.first.focused && !targets.second.focused)
+                    nextPlans++
+                    val proposal=CareProposal(snapshot.id,snapshot.scene,targets.second.ref,CareAction.Focus,
+                        "Tap the FOREGROUND_FOCUS_TWO field to focus it.",null,CareExpectation.Focused(targets.second.ref),1f)
+                    check(CareProposalValidator().validate(proposal,snapshot))
+                    return@plan CarePlanResult.Step(proposal)
+                }
                 // Diagnostic booleans only: the admission below still uses the unchanged strict helper.
                 observed.put("sceneMatchesCurrent",snapshot.scene==actual.dotScreen.currentSceneKey())
                     .put("imeAbsent",snapshot.imeBounds==null).put("imageAbsent",snapshot.image==null)
@@ -461,9 +531,11 @@ class ManualForegroundApiProofTest {
                 if(focusProbe) {
                     val target=publicSnapshot(actual,snapshot).first
                     check(!target.focused && controller.verifiedSteps.value.isEmpty())
-                    val proposal=CareProposal(snapshot.id,snapshot.scene,target.ref,CareAction.Focus,focusInstruction,null,
+                    val instruction=if(nextProbe) "Tap the FOREGROUND_FOCUS_ONE field to focus it." else focusInstruction
+                    val proposal=CareProposal(snapshot.id,snapshot.scene,target.ref,CareAction.Focus,instruction,null,
                         CareExpectation.Focused(target.ref),1f)
                     check(CareProposalValidator().validate(proposal,snapshot))
+                    firstFocusSnapshot=snapshot; firstFocusProposal=proposal
                     CarePlanResult.Step(proposal)
                 } else CarePlanResult.Unavailable(if(accepted) "keyless_plan_reached" else "keyless_public_check_failed")
             }
@@ -671,6 +743,52 @@ class ManualForegroundApiProofTest {
                     .put("pre",flags(pre)).put("fresh",flags(fresh)).toString())
                 check(fresh.getBoolean("guidePassed")) { "Cache-fresh public Focus guide did not pass" }
             }
+            inst.runOnMainSync {
+                check(field(actual.dotInteraction,"careWindow")===ownedWindow && field(owners,"count")==0 && field(controller,"automatic")==false)
+                (field(controller,"work") as? Job)?.let(jobs::add)
+                nextProbe=true; nextPlans=0; firstFocusSnapshot=null; firstFocusProposal=null
+                observed.put("probe","public_two_step")
+                session.submitGoal(GOAL) // Actual new start; retain actual conversation rows, never fabricate history or credit.
+            }
+            var initialFailed=false
+            try { await("Public long ONE guide did not become ready",10000) {
+                check(field(actual.dotInteraction,"careWindow")===ownedWindow)
+                (field(controller,"work") as? Job)?.let(jobs::add)
+                firstFocusProposal?.instruction=="Tap the FOREGROUND_FOCUS_ONE field to focus it." &&
+                    controller.state.value.proposal==firstFocusProposal && careGuideConditions(actual,false,firstFocusProposal).getBoolean("guidePassed") &&
+                    controller.verifiedSteps.value.isEmpty()
+            } } catch(problem:Throwable) { initialFailed=true; throw problem } finally {
+                if(initialFailed) runCatching { inst.runOnMainSync {
+                    check(field(actual.dotInteraction,"careWindow")===ownedWindow)
+                    android.util.Log.i("ForegroundCareLocalNext",careGuideConditions(actual,false,firstFocusProposal).put("phase","local_initial_failed").toString())
+                } }
+            }
+            inst.runOnMainSync {
+                check(field(actual.dotInteraction,"careWindow")===ownedWindow)
+                val ready=careGuideConditions(actual,false,firstFocusProposal)
+                check(ready.getBoolean("guidePassed") && controller.verifiedSteps.value.isEmpty())
+                android.util.Log.i("ForegroundCareLocalNext",ready.put("phase","one_click_ready").put("verifiedSteps",0).toString())
+            }
+            // Root CUA performs one real ONE touch. No test action, confirmation or synthetic evidence.
+            var next=JSONObject(); var waitFailed=false
+            try {
+                await("Public actual ONE touch did not produce Observable local TWO guide",20000) {
+                    check(field(actual.dotInteraction,"careWindow")===ownedWindow)
+                    (field(controller,"work") as? Job)?.let(jobs::add)
+                    next=careGuideConditions(actual,true,firstFocusProposal)
+                    next.getBoolean("guidePassed") && nextPlans==1
+                }
+            } catch(problem:Throwable) { waitFailed=true; throw problem } finally {
+                val observation=runCatching { inst.runOnMainSync {
+                    check(field(actual.dotInteraction,"careWindow")===ownedWindow)
+                    (field(controller,"work") as? Job)?.let(jobs::add)
+                    next=careGuideConditions(actual,true,firstFocusProposal)
+                    android.util.Log.i("ForegroundCareLocalNext",next.put("phase",if(next.getBoolean("guidePassed") && nextPlans==1) "local_next_settled" else "local_next_failed").put("nextPlans",nextPlans).toString())
+                } }
+                if(!waitFailed) observation.getOrThrow() // Never replace the original wait failure.
+            }
+            check(nextPlans==1 && next.getBoolean("guidePassed"))
+            SystemClock.sleep(5000) // Bounded public screenshot window for Root; never advances or credits a step.
         } finally {
             if(installed) {
                 var failures=0
@@ -684,6 +802,7 @@ class ManualForegroundApiProofTest {
                         (field(window,"job") as? Job)?.let { jobs.add(it); it.cancel() }
                     }
                 } }
+                if(nextProbe) jobs.distinct().forEach { job -> restore { job.cancel() } } // Independently cancel every captured owned probe job.
                 restore { inst.runOnMainSync { controller.cancel() } } // Invalidate even if disconnect's focus/speech callbacks throw.
                 restore { inst.runOnMainSync { session.disconnect() } }
                 restore { inst.runOnMainSync {
@@ -707,6 +826,12 @@ class ManualForegroundApiProofTest {
                     check(field(owners,"count")==originalOwners && field(controller,"automatic")==originalAutomatic)
                     emit("restored")
                 } }
+                if(nextProbe) restore {
+                    inst.runOnMainSync { check(field(controller,"active")==false && controller.state.value==CareUiState() && jobs.all { it.isCompleted } &&
+                        field(controller,"sample")===originalSample && field(controller,"plan")===originalPlan &&
+                        actual.dotScreen.hostWindowId()==publicHost && actual.dotScreen.currentSceneKey()?.windowId==publicHost && host(actual)) }
+                    startHost(actual) // Recreate only this admitted public host after the real touch, never inject focus.
+                }
                 restore { await("Public host focus did not return after diagnostic") { host(actual) } }
                 restore { inspectBothPublicFields(actual) } // Same strict public whitelist; both fields remain unfocused.
                 restore { android.util.Log.i("ForegroundCareKeyless",JSONObject().put("phase","cleanup_finished").put("cleanupFailures",failures).toString()) }
@@ -878,18 +1003,7 @@ class ManualForegroundApiProofTest {
                 result
             }
             inst.runOnMainSync { careBound=true; set(controller,"sample",sample); set(controller,"plan",plan); actual.dotInteraction.handle(DotIntent.Triple); actual.dotInteraction.careSession.submitGoal(GOAL) }
-            fun guide(second:Boolean): Boolean {
-                val state=controller.state.value; val target=state.target ?: return false; val proposal=state.proposal ?: return false
-                if(state.state!=CareState.AwaitingUser || target.description!=(if(second) ForegroundApiHostFixture.TWO else ForegroundApiHostFixture.ONE)) return false
-                val window=field(actual.dotInteraction,"careWindow") as? CareOverlayWindow ?: return false
-                val card=field(window,"card") as? View ?: return false
-                val measured=rect(card)
-                val bubble=field(window.focus,"instruction") as? RectPx ?: return false
-                return window.focus.bounds==target.bounds && field(window.focus,"identity")==actual.dotInteraction.careSession.instructionKey() && window.focus.view?.isAttachedToWindow==true &&
-                    bubble.width>0 && bubble.height>0 && bubble.left>=measured.left && bubble.top>=measured.top && bubble.right<=measured.right && bubble.bottom<=measured.bottom &&
-                    (if(second) measured.top>=target.bounds.bottom else measured.bottom<=target.bounds.top) &&
-                    overlayText(actual,GOAL,card,freshCare=true) && overlayText(actual,proposal.instruction,card,freshCare=true)
-            }
+            fun guide(second:Boolean): Boolean = careGuideConditions(actual,second,initialProposal).getBoolean("guidePassed")
             try {
                 await("Initial real bottom Focus guide/panel did not appear",45000) { guide(false) }
             } finally {
