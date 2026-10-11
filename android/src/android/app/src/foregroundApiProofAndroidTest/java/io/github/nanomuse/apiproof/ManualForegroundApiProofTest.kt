@@ -338,7 +338,7 @@ class ManualForegroundApiProofTest {
         var samples=0; var plans=0; var ownedWindow:CareOverlayWindow?=null; var installed=false; var publicHost:Int?=null
         val jobs=mutableListOf<Job>()
         var originalOwners=0; var originalAutomatic=false
-        val observed=JSONObject().put("sampleOutcome","NotSampled").put("sampleCode","none")
+        val observed=JSONObject().put("probe","initial").put("sampleOutcome","NotSampled").put("sampleCode","none")
             .put("snapshotMatchesCurrent",false).put("publicCheckPassed",false)
         val codes=setOf("host_unavailable","nodes_unavailable","scene_changed","locked","accessibility_unavailable",
             "timeout","locked_or_disconnected","permission_denied","care_timeout","care_unavailable",
@@ -393,6 +393,23 @@ class ManualForegroundApiProofTest {
             val plan:suspend(String,ScreenSnapshot,List<CareProposal>)->CarePlanResult = { goal,snapshot,history ->
                 plans++
                 check(goal==GOAL && history.isEmpty())
+                // Diagnostic booleans only: the admission below still uses the unchanged strict helper.
+                observed.put("sceneMatchesCurrent",snapshot.scene==actual.dotScreen.currentSceneKey())
+                    .put("imeAbsent",snapshot.imeBounds==null).put("imageAbsent",snapshot.image==null)
+                    .put("publicShapePassed",runCatching {
+                        check(snapshot.scene.packageName==inst.context.packageName && snapshot.nodes.size in 3..16)
+                        val allowed=setOf(ForegroundApiHostFixture.ONE,ForegroundApiHostFixture.TWO,ForegroundApiHostFixture.MARKER)
+                        snapshot.nodes.forEach { node ->
+                            check(!node.password && (node.text.isNullOrEmpty() || node.text in allowed) &&
+                                (node.description.isNullOrEmpty() || node.description in allowed) &&
+                                (node.viewId==null || node.viewId=="android:id/content" || node.viewId.startsWith(inst.context.packageName+":id/")))
+                        }
+                        val one=snapshot.nodes.single { it.description==ForegroundApiHostFixture.ONE }
+                        val two=snapshot.nodes.single { it.description==ForegroundApiHostFixture.TWO }
+                        check(one.ref!=two.ref && one.editable && two.editable && one.enabled && two.enabled)
+                        check(listOf(one,two).all { node -> node.bounds.left>=snapshot.bounds.left && node.bounds.top>=snapshot.bounds.top &&
+                            node.bounds.right<=snapshot.bounds.right && node.bounds.bottom<=snapshot.bounds.bottom && node.bounds.width>0 && node.bounds.height>0 })
+                    }.isSuccess)
                 emit("plan_enter")
                 val accepted=runCatching { publicSnapshot(actual,snapshot) }.isSuccess
                 observed.put("publicCheckPassed",accepted)
@@ -418,6 +435,32 @@ class ManualForegroundApiProofTest {
                 }
             }
             inst.runOnMainSync { emit("settled_attached") }
+            fun ownedCardFocused():Boolean {
+                check(field(actual.dotInteraction,"careWindow")===ownedWindow)
+                val card=ownedWindow?.let { field(it,"card") as? View }
+                return if(card?.isAttachedToWindow!=true) false else {
+                    val node=card.createAccessibilityNodeInfo(); val id=try { node.windowId } finally { node.recycle() }
+                    val windows=actual.windows
+                    try { windows.any { it.id==id && it.isActive && it.isFocused && actual.dotOverlay.ownsWindow(it) } }
+                    finally { windows.forEach { it.recycle() } }
+                }
+            }
+            await("Owned Care card did not become active and focused",10000) { ownedCardFocused() }
+            var firstSamples=0; var firstPlans=0
+            inst.runOnMainSync {
+                check(ownedCardFocused()) // Confirm admission again on the same Main turn as reobserve.
+                check(field(owners,"count")==0 && field(controller,"automatic")==false && field(controller,"active")==true)
+                check(controller.state.value.state==CareState.Recovering)
+                (field(controller,"work") as? Job)?.let { jobs.add(it) } // reobserve invalidates this handle; retain it for cleanup join.
+                firstSamples=samples; firstPlans=plans
+                observed.put("probe","stable_care_focus")
+                emit("before_reobserve")
+                session.reobserve()
+            }
+            await("Stable Care focus reobserve did not reach sample and plan",10000) {
+                samples>firstSamples && plans>firstPlans && controller.state.value.state in setOf(CareState.Recovering,CareState.Paused)
+            }
+            inst.runOnMainSync { emit("settled_reobserve") }
         } finally {
             if(installed) {
                 var failures=0
