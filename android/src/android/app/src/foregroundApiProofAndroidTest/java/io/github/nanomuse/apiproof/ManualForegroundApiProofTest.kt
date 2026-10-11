@@ -702,7 +702,7 @@ class ManualForegroundApiProofTest {
             try {
                 await("Initial real bottom Focus guide/panel did not appear",45000) { guide(false) }
             } finally {
-                inst.runOnMainSync {
+                runCatching { inst.runOnMainSync { // Observation must not replace the await's original failure.
                     val state=controller.state.value
                     val code=state.errorCode?.let { if(it in setOf("host_unavailable","nodes_unavailable","scene_changed",
                         "locked","accessibility_unavailable","timeout","locked_or_disconnected","permission_denied",
@@ -712,7 +712,7 @@ class ManualForegroundApiProofTest {
                         .put("operationOwners",field(field(CareOperationGate,"owners")!!,"count") as Int)
                         .put("automatic",field(controller,"automatic") as Boolean)
                         .put("canonicalCareBusy",canonical.careOperationBusy.value).toString())
-                }
+                } }
             }
             stage("care_initial_visible",Bundle().apply {
                 val target=controller.state.value.target!!; putString("targetDescription",target.description)
