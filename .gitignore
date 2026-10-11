@@ -73,3 +73,9 @@ uv.lock
 
 # nanoMuse Cloud relay runtime data
 cloud/data/
+
+# Generated gateway acceptance bundles and private local evidence
+evidence/task-6/
+gateway/dist-operator/
+gateway/dist-relay/
+gateway/static-scan.json

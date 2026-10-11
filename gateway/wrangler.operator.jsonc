@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "nanodot-task6-operator",
+  "main": "src/operator.ts",
+  "compatibility_date": "2026-10-11",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [],
+  "ai": { "binding": "AI", "remote": true },
+  "durable_objects": { "bindings": [{ "name": "FREE_GATE", "class_name": "FreeGate", "script_name": "nanodot-gateway" }] },
+  "observability": { "enabled": false },
+  "send_metrics": false
+}

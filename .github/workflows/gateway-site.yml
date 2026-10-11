@@ -1,0 +1,112 @@
+name: Gateway site checks and manual deployment
+on:
+  pull_request:
+    paths: ['gateway/**', 'site/**', 'scripts/gateway/**', 'scripts/site/**', 'docs/**', 'website/**', '.github/workflows/gateway-site.yml', '.github/workflows/pages.yml']
+  push:
+    branches: [main]
+    paths: ['gateway/**', 'site/**', 'scripts/gateway/**', 'scripts/site/**', 'docs/**', 'website/**', '.github/workflows/gateway-site.yml', '.github/workflows/pages.yml']
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Deploy reviewed source to the existing Worker (protected environment)'
+        type: boolean
+        default: false
+      free_plan_confirmed:
+        description: 'Operator rechecked Workers Free and approved this exact resource/version diff'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: gateway-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            gateway/package-lock.json
+            website/package-lock.json
+      - name: Public registry lockfiles only
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync } from 'node:fs';
+          for (const path of ['gateway/package-lock.json', 'website/package-lock.json']) {
+            for (const entry of Object.values(JSON.parse(readFileSync(path)).packages)) {
+              if (entry.resolved && !entry.resolved.startsWith('https://registry.npmjs.org/')) throw Error('Nonpublic registry in lockfile');
+            }
+          }
+          JS
+      - run: npm ci --prefix gateway && npm ci --prefix website
+      - name: Check scripts and tests without AI
+        run: |
+          node --check scripts/gateway/verify-live.mjs
+          node --check scripts/gateway/verify-audio.mjs
+          node --check scripts/gateway/start-operator-relay.mjs
+          node --test scripts/gateway/*.test.mjs
+          npm --prefix gateway run typecheck
+          npm --prefix gateway test
+          node --test site/tests/*.test.mjs
+      - name: Build bilingual docs at the production base
+        env:
+          NANODOT_DOCS_BASE: /docs/
+        run: npm --prefix website run docs:build
+      - name: Assemble reviewed product site
+        run: |
+          node scripts/site/build.mjs
+          node scripts/gateway/verify-live.mjs --scan-site gateway/public --report gateway/static-scan.json
+      - name: Compile without credentials or deployment
+        run: |
+          npm --prefix gateway run dry-run
+          cd gateway
+          npx wrangler deploy --config wrangler.operator.jsonc --dry-run --outdir dist-operator
+          npx wrangler deploy --config wrangler.operator-relay.jsonc --dry-run --outdir dist-relay
+      - uses: actions/upload-artifact@v7
+        with:
+          name: gateway-reviewed-${{ github.sha }}
+          path: |
+            gateway/public
+            gateway/static-scan.json
+            gateway/dist
+            gateway/dist-operator
+            gateway/dist-relay
+          retention-days: 7
+  deploy:
+    if: github.repository == 'Mola-maker/nanodot' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.deploy && inputs.free_plan_confirmed
+    needs: check
+    runs-on: ubuntu-latest
+    environment:
+      name: gateway-production
+      url: https://molamaker.si
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm ci --prefix gateway
+      - uses: actions/download-artifact@v8
+        with:
+          name: gateway-reviewed-${{ github.sha }}
+          path: gateway
+      - name: Upload and activate version only; never change domains, migrations or secrets here
+        working-directory: gateway
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID"
+          npx wrangler versions upload --message "$GITHUB_SHA" > version-upload.log
+          node -e 'const fs=require("fs");const m=fs.readFileSync("version-upload.log","utf8").match(/Version ID: ([a-f0-9-]{36})/);if(!m)process.exit(1);fs.writeFileSync("version-id.txt",m[1]);'
+          VERSION_ID=$(cat version-id.txt)
+          npx wrangler versions deploy "$VERSION_ID@100%" --yes
+      - name: Archive sanitized deployment evidence
+        uses: actions/upload-artifact@v7
+        with:
+          name: gateway-deployment-${{ github.sha }}
+          path: gateway/version-id.txt
+          retention-days: 30
