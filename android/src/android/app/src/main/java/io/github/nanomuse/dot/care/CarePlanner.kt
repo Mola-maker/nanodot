@@ -26,7 +26,7 @@ class CarePlanner(private val provider: LLMProvider, private val emptyNodesQuest
         val outputTokens = minOf(1024, provider.effectiveMaxOutputTokens(provider.model))
         if (outputTokens <= 0) return CarePlanResult.Unavailable("model_budget_unavailable")
         val past = verified.filter { validator.validContent(it) && it.snapshotId != snapshot.id &&
-            it.scene.version < snapshot.scene.version }.takeLast(8)
+            it.scene.version <= snapshot.scene.version }.takeLast(8)
         val context = buildJsonObject {
             put("goal", goal)
             put("snapshotId", snapshot.id)

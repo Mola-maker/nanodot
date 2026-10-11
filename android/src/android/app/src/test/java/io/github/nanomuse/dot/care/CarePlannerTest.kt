@@ -178,6 +178,34 @@ class CarePlannerTest {
         assertEquals("s1",context.getValue("snapshotId").jsonPrimitive.content)
         assertFalse(context.toString().contains("javascript"))
     }
+    @Test fun sameSceneConfirmedCopyRemainsDeclaredHistoryForRealPlanner()=runTest {
+        val provider=FakeProvider()
+        val confirmedCopy=proposal().copy(snapshotId="confirmed-copy",action=CareAction.Copy,copyText="tea",
+            expectation=CareExpectation.TextEquals("n1","tea"))
+        snapshot().use { current ->
+            CarePlanner(provider,"Which control can you see?").next("tea",current,listOf(confirmedCopy))
+        }
+        val context=Json.parseToJsonElement(provider.requests.single().messages.single().content).jsonObject
+        val history=context.getValue("verified").jsonArray
+        assertEquals(1,history.size)
+        assertEquals("confirmed-copy",history.single().jsonObject.getValue("snapshotId").jsonPrimitive.content)
+        assertEquals("Copy",history.single().jsonObject.getValue("action").jsonPrimitive.content)
+        assertEquals(3,history.single().jsonObject.getValue("scene").jsonObject.getValue("version").jsonPrimitive.int)
+        assertEquals("s1",context.getValue("snapshotId").jsonPrimitive.content)
+    }
+    @Test fun currentSnapshotAndFutureVersionCannotEnterDeclaredHistory()=runTest {
+        val provider=FakeProvider()
+        val past=proposal().copy(snapshotId="past",scene=proposal().scene.copy(version=2))
+        val future=proposal().copy(snapshotId="future",scene=proposal().scene.copy(version=4))
+        snapshot().use { current ->
+            CarePlanner(provider,"Which control can you see?").next("tea",current,listOf(past,proposal(),future))
+        }
+        val context=Json.parseToJsonElement(provider.requests.single().messages.single().content).jsonObject
+        val history=context.getValue("verified").jsonArray
+        assertEquals(1,history.size)
+        assertEquals("past",history.single().jsonObject.getValue("snapshotId").jsonPrimitive.content)
+        assertEquals(3,context.getValue("scene").jsonObject.getValue("version").jsonPrimitive.int)
+    }
     @Test fun providerErrorAndTimeoutRecoverOnce()=runTest {
         val failing=FakeProvider().apply { failure=IllegalStateException("private-provider-detail") }
         assertEquals(CarePlanResult.Unavailable("provider_unavailable"),CarePlanner(failing, "Which control can you see?").next("tea",snapshot(),emptyList()))

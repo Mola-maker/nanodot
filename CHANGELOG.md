@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Added an Android care controller foundation that advanced only from fresh target evidence or explicit user confirmation, cleared stale targets on pause or scene changes, and closed owned snapshots; care UI and native acceptance remained pending.
+
 - Rejected whitespace-separated numeric calls in Android care instructions, copy text and expectations while retaining ordinary text guidance.
 
 - Rejected plainly executable unfenced code in Android care proposals while preserving ordinary text and URL guidance; documented the conservative recognition boundary.
