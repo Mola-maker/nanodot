@@ -198,15 +198,35 @@ class ManualForegroundApiProofTest {
             } && windows.none { it.type==AccessibilityWindowInfo.TYPE_INPUT_METHOD }
         } finally { windows.forEach { it.recycle() } }
     }
-    private fun overlayText(service: MinisAccessibilityService,text: String,view:View?=service.dotOverlay.panelView): Boolean {
+    private fun overlayText(service: MinisAccessibilityService,text: String,view:View?=service.dotOverlay.panelView,freshCare:Boolean=false): Boolean {
         if(view?.isAttachedToWindow!=true) return false
         val actualNode=view.createAccessibilityNodeInfo()
         val ownedId=try { actualNode.windowId } finally { actualNode.recycle() }
         if(!host(service,ownedId)) return false
+        val care=if(freshCare) field(service.dotInteraction,"careWindow") as? CareOverlayWindow ?: return false else null
+        fun currentCare():Boolean {
+            if(care==null || ownedId<0 || !view.isAttachedToWindow ||
+                field(service.dotInteraction,"careWindow")!==care || field(care,"card")!==view) return false
+            val node=view.createAccessibilityNodeInfo()
+            return try { node.windowId==ownedId } finally { node.recycle() }
+        }
+        if(freshCare) {
+            if(android.os.Build.VERSION.SDK_INT<34 || !currentCare()) return false
+            val before=automation.windows
+            val registered=try { before.any { window ->
+                val root=window.root
+                try { window.id==ownedId && window.type==AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY &&
+                    root?.packageName?.toString()==app.packageName && service.dotOverlay.ownsWindow(window) }
+                finally { root?.recycle() }
+            } } finally { before.forEach { it.recycle() } }
+            if(!registered || !currentCare() || !automation.clearCache()) return false
+        }
         val windows=automation.windows
         return try { windows.filter { it.type==AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY }.any { window ->
             val root=window.root
-            try { window.id==ownedId && root?.packageName?.toString()==app.packageName && nativeText(root,text) } finally { root?.recycle() }
+            try { window.id==ownedId && root?.packageName?.toString()==app.packageName &&
+                (!freshCare || (currentCare() && service.dotOverlay.ownsWindow(window) && host(service,ownedId))) &&
+                nativeText(root,text) && (!freshCare || currentCare()) } finally { root?.recycle() }
         } } finally { windows.forEach { it.recycle() } }
     }
     private fun rect(view: View): RectPx {
@@ -500,7 +520,7 @@ class ManualForegroundApiProofTest {
                 session.reobserve()
             }
             await("Local valid Focus did not reach actual AwaitingUser",10000) { controller.state.value.state==CareState.AwaitingUser }
-            fun focusConditions():JSONObject {
+            fun focusConditions(freshCare:Boolean=false):JSONObject {
                 val state=controller.state.value; val target=state.target; val proposal=state.proposal
                 val window=ownedWindow; val exactWindow=field(actual.dotInteraction,"careWindow")===window && window!=null
                 val card=window?.let { field(it,"card") as? View }
@@ -519,8 +539,8 @@ class ManualForegroundApiProofTest {
                 val contained=bubble!=null && measured!=null && bubble.left>=measured.left && bubble.top>=measured.top &&
                     bubble.right<=measured.right && bubble.bottom<=measured.bottom
                 val above=measured!=null && target!=null && measured.bottom<=target.bounds.top
-                val goalText=card?.isAttachedToWindow==true && overlayText(actual,GOAL,card)
-                val instructionText=card?.isAttachedToWindow==true && overlayText(actual,focusInstruction,card)
+                val goalText=card?.isAttachedToWindow==true && overlayText(actual,GOAL,card,freshCare)
+                val instructionText=card?.isAttachedToWindow==true && overlayText(actual,focusInstruction,card,freshCare)
                 val guide=awaiting && target?.description==ForegroundApiHostFixture.ONE && boundsMatch && keyMatch && focusAttached &&
                     bubblePositive && contained && above && goalText && instructionText
                 val result=JSONObject().put("phase","valid_focus_ui").put("state",state.state.name)
@@ -638,6 +658,19 @@ class ManualForegroundApiProofTest {
                         .put("afterRefreshGuide",focusConditions()).toString())
                 }
             } finally { refreshNode?.recycle(); refreshNode=null }
+            inst.runOnMainSync {
+                val pre=focusConditions(); val fresh=focusConditions(freshCare=true)
+                check(controller.verifiedSteps.value.isEmpty())
+                fun flags(value:JSONObject)=JSONObject().apply {
+                    listOf("exactWindow","publicTargetAndRef","awaitingUser","targetDescriptionMatch","targetRefMatch",
+                        "instructionMatch","cardAttached","cardMeasured","focusBoundsMatch","instructionKeyMatch","focusAttached",
+                        "bubblePresent","bubblePositive","bubbleContained","panelAboveTarget","goalAxText","instructionAxText",
+                        "ownCardActiveFocused","strictHost","guidePassed").forEach { put(it,value.getBoolean(it)) }
+                }
+                android.util.Log.i("ForegroundCareCacheKeyless",JSONObject().put("phase","settled_cache_fresh")
+                    .put("pre",flags(pre)).put("fresh",flags(fresh)).toString())
+                check(fresh.getBoolean("guidePassed")) { "Cache-fresh public Focus guide did not pass" }
+            }
         } finally {
             if(installed) {
                 var failures=0
@@ -855,7 +888,7 @@ class ManualForegroundApiProofTest {
                 return window.focus.bounds==target.bounds && field(window.focus,"identity")==actual.dotInteraction.careSession.instructionKey() && window.focus.view?.isAttachedToWindow==true &&
                     bubble.width>0 && bubble.height>0 && bubble.left>=measured.left && bubble.top>=measured.top && bubble.right<=measured.right && bubble.bottom<=measured.bottom &&
                     (if(second) measured.top>=target.bounds.bottom else measured.bottom<=target.bounds.top) &&
-                    overlayText(actual,GOAL,card) && overlayText(actual,proposal.instruction,card)
+                    overlayText(actual,GOAL,card,freshCare=true) && overlayText(actual,proposal.instruction,card,freshCare=true)
             }
             try {
                 await("Initial real bottom Focus guide/panel did not appear",45000) { guide(false) }
