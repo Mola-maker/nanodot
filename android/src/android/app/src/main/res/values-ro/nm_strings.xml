@@ -1112,4 +1112,14 @@
     <string name="nm_models_search_clear">Șterge căutarea</string>
     <string name="nm_models_no_match">Niciun model nu se potrivește</string>
     <string name="nm_update_manual">Actualizările automate sunt dezactivate. Verifică manual pagina de versiuni Nanodot.</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Buton plutitor Dot</string>
+    <string name="nm_dot_show_orb">Arată butonul Dot</string>
+    <string name="nm_dot_settings_footer">Apare când accesibilitatea este conectată. Dacă îl dezactivezi, rămâne ascuns după reconectare.</string>
+    <string name="nm_dot_orb_description">Buton Dot. Deschide conversația, vezi ecranul sau începe sprijinul.</string>
+    <string name="nm_dot_open_conversation">Deschide conversația</string>
+    <string name="nm_dot_view_screen">Vezi ecranul</string>
+    <string name="nm_dot_start_care">Începe sprijinul</string>
+    <string name="nm_dot_action_unavailable">Această funcție Dot nu este încă disponibilă.</string>
 </resources>

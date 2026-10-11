@@ -32,13 +32,25 @@ update*) and offers the download.
 ## Dot orb gesture foundation
 
 The pure `io.github.nanomuse.dot.gesture.DotGestureReducer` prepares gesture arbitration
-for the future accessibility orb. Single and double taps wait for the system's tap
+for the accessibility orb. Single and double taps wait for the system's tap
 interval; a qualifying third tap emits only a triple-tap intent. Holding the next tap
 suspends that sequence's deadline. Movement beyond touch slop becomes a drag, which
 remains valid during a long trajectory. A stationary long press suppresses tap actions;
 cancellation, rotation, and additional fingers clear pending gestures. The adapter must
-supply `ViewConfiguration` limits and monotonic times. This foundation does not enable
-the orb or accessibility service.
+supply `ViewConfiguration` limits and monotonic times. The orb uses these system limits and event times.
+
+When you enable Nanodot’s accessibility service, a 48dp Dot orb appears above other apps.
+Settings → Appearance → Show Dot orb hides it immediately and preserves that choice
+across service reconnects. Locking the phone, disabling accessibility, or rotating the
+display clears pending gestures and removes the old window; unlock and rotation restore
+it only if the switch is on. Drag the orb to move it to an edge; its position is saved
+relative to the usable display area, excluding system bars and display cutouts. On Android
+8–10, Dot waits for its native content frame before restoring its position. Screen-region
+selection is not available yet; drags currently move the orb. Other apps receive touches outside the orb.
+
+TalkBack exposes Open conversation, View screen, and Start care actions. These actions
+currently explain that the capability is unavailable while the coordinator is being
+implemented. Showing the orb never takes a screenshot, records audio, or calls a model.
 
 ## Install
 

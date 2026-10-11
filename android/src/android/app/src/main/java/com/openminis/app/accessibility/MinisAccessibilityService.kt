@@ -50,6 +50,9 @@ class MinisAccessibilityService : AccessibilityService() {
     private val eventRing = ConcurrentLinkedQueue<RecordedEvent>()
     private val eventListeners = CopyOnWriteArrayList<(RecordedEvent) -> Unit>()
 
+    // nanoMuse: overlay ownership starts only at the real accessibility connection.
+    internal val dotOverlay by lazy { io.github.nanomuse.dot.overlay.DotOverlayController(this) }
+
     val nodeRegistry: NodeRegistry = NodeRegistry()
 
     override fun onCreate() {
@@ -61,6 +64,8 @@ class MinisAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         _instance = this
+        // nanoMuse: service connection, not onCreate, grants the overlay window token.
+        dotOverlay.connect()
         // [T-android-a11y-miui-service-failure] Breadcrumb on (re)bind. On OEM
         // ROMs (MIUI etc.) the system kills + rebinds this service repeatedly,
         // surfacing "此服务出现故障"; a connect log lets us correlate a degraded
@@ -81,6 +86,8 @@ class MinisAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        // nanoMuse: recheck keyguard on service events as well as screen broadcasts.
+        dotOverlay.refreshLockState()
         if (event == null) return
         val rec = RecordedEvent(
             type = AccessibilityEvent.eventTypeToString(event.eventType),
@@ -97,10 +104,14 @@ class MinisAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
+        // nanoMuse: interruption clears pending gestures and every Dot window.
+        dotOverlay.disconnect()
         AppLogger.info(TAG, "service interrupted")
     }
 
     override fun onDestroy() {
+        // nanoMuse: dispose window composition and owners before the service goes away.
+        dotOverlay.disconnect()
         super.onDestroy()
         if (_instance === this) _instance = null
         eventRing.clear()

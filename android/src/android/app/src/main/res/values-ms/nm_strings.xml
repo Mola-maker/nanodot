@@ -1104,4 +1104,14 @@
     <string name="nm_models_search_clear">Kosongkan carian</string>
     <string name="nm_models_no_match">Tiada model yang sepadan</string>
     <string name="nm_update_manual">Kemas kini automatik dimatikan. Buka halaman keluaran Nanodot untuk menyemak secara manual.</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Butang terapung Dot</string>
+    <string name="nm_dot_show_orb">Tunjukkan butang Dot</string>
+    <string name="nm_dot_settings_footer">Muncul apabila kebolehcapaian disambungkan. Jika dimatikan, kekal tersembunyi selepas disambung semula.</string>
+    <string name="nm_dot_orb_description">Butang Dot. Buka perbualan, lihat skrin atau mulakan sokongan.</string>
+    <string name="nm_dot_open_conversation">Buka perbualan</string>
+    <string name="nm_dot_view_screen">Lihat skrin</string>
+    <string name="nm_dot_start_care">Mulakan sokongan</string>
+    <string name="nm_dot_action_unavailable">Ciri Dot ini belum tersedia.</string>
 </resources>

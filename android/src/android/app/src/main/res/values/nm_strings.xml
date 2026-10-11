@@ -1085,4 +1085,14 @@
     <string name="nm_models_search_clear">Clear the search</string>
     <string name="nm_models_no_match">No model matches</string>
     <string name="nm_update_manual">Automatic updates are off. Open the Nanodot releases page to check manually.</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Dot orb</string>
+    <string name="nm_dot_show_orb">Show Dot orb</string>
+    <string name="nm_dot_settings_footer">Appears when accessibility is connected. Turning it off keeps it hidden after reconnecting.</string>
+    <string name="nm_dot_orb_description">Dot orb. Open conversation, view screen, or start care.</string>
+    <string name="nm_dot_open_conversation">Open conversation</string>
+    <string name="nm_dot_view_screen">View screen</string>
+    <string name="nm_dot_start_care">Start care</string>
+    <string name="nm_dot_action_unavailable">This Dot action is not available yet.</string>
 </resources>

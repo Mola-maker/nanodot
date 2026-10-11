@@ -1108,4 +1108,14 @@
     <string name="nm_models_search_clear">I-clear ang paghahanap</string>
     <string name="nm_models_no_match">Walang tumutugmang modelo</string>
     <string name="nm_update_manual">Naka-off ang awtomatikong update. Buksan ang release page ng Nanodot para tingnan nang manu-mano.</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Lumulutang na button ng Dot</string>
+    <string name="nm_dot_show_orb">Ipakita ang button ng Dot</string>
+    <string name="nm_dot_settings_footer">Lumalabas kapag nakakonekta ang accessibility. Kapag pinatay, mananatiling nakatago kahit muling kumonekta.</string>
+    <string name="nm_dot_orb_description">Button ng Dot. Buksan ang usapan, tingnan ang screen, o simulan ang paggabay.</string>
+    <string name="nm_dot_open_conversation">Buksan ang usapan</string>
+    <string name="nm_dot_view_screen">Tingnan ang screen</string>
+    <string name="nm_dot_start_care">Simulan ang paggabay</string>
+    <string name="nm_dot_action_unavailable">Hindi pa magagamit ang feature na ito ng Dot.</string>
 </resources>

@@ -1108,4 +1108,14 @@
     <string name="nm_models_search_clear">Suche löschen</string>
     <string name="nm_models_no_match">Kein Modell passt</string>
     <string name="nm_update_manual">Automatische Updates sind aus. Auf der Nanodot-Release-Seite manuell nachsehen.</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Dot-Kugel</string>
+    <string name="nm_dot_show_orb">Dot-Kugel anzeigen</string>
+    <string name="nm_dot_settings_footer">Wird bei verbundener Bedienungshilfe angezeigt. Nach dem Ausschalten bleibt sie auch bei erneuter Verbindung verborgen.</string>
+    <string name="nm_dot_orb_description">Dot-Kugel. Gespräch öffnen, Bildschirm ansehen oder Begleitung starten.</string>
+    <string name="nm_dot_open_conversation">Gespräch öffnen</string>
+    <string name="nm_dot_view_screen">Bildschirm ansehen</string>
+    <string name="nm_dot_start_care">Begleitung starten</string>
+    <string name="nm_dot_action_unavailable">Diese Dot-Funktion ist noch nicht verfügbar.</string>
 </resources>

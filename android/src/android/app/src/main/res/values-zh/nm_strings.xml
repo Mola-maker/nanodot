@@ -1081,4 +1081,14 @@
     <string name="nm_models_search_clear">清除搜索</string>
     <string name="nm_models_no_match">没有匹配的模型</string>
     <string name="nm_update_manual">自动更新已关闭。打开 Nanodot 发布页手动查看更新。</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Dot 悬浮球</string>
+    <string name="nm_dot_show_orb">显示 Dot 悬浮球</string>
+    <string name="nm_dot_settings_footer">无障碍服务连接后显示。关闭后，重新连接也会保持隐藏。</string>
+    <string name="nm_dot_orb_description">Dot 悬浮球。打开对话、查看屏幕或开始关怀。</string>
+    <string name="nm_dot_open_conversation">打开对话</string>
+    <string name="nm_dot_view_screen">查看屏幕</string>
+    <string name="nm_dot_start_care">开始关怀</string>
+    <string name="nm_dot_action_unavailable">此 Dot 功能暂未开放。</string>
 </resources>

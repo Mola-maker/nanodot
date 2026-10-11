@@ -1108,4 +1108,14 @@
     <string name="nm_models_search_clear">Borrar la búsqueda</string>
     <string name="nm_models_no_match">Ningún modelo coincide</string>
     <string name="nm_update_manual">Las actualizaciones automáticas están desactivadas. Consulta la página de versiones de Nanodot.</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Burbuja de Dot</string>
+    <string name="nm_dot_show_orb">Mostrar burbuja de Dot</string>
+    <string name="nm_dot_settings_footer">Aparece al conectar la accesibilidad. Si la desactivas, seguirá oculta al reconectar.</string>
+    <string name="nm_dot_orb_description">Burbuja de Dot. Abrir conversación, ver pantalla o iniciar acompañamiento.</string>
+    <string name="nm_dot_open_conversation">Abrir conversación</string>
+    <string name="nm_dot_view_screen">Ver pantalla</string>
+    <string name="nm_dot_start_care">Iniciar acompañamiento</string>
+    <string name="nm_dot_action_unavailable">Esta función de Dot aún no está disponible.</string>
 </resources>
