@@ -26,23 +26,59 @@
 
 ## 新权限或凭据前的具体提案
 
-首次 Worker 创建、SQLite 迁移、secret 与两个域名使用已登录 dashboard，在审查资源差异后执行。
-不能为了初始化创建持久宽权限 token。真实 namespace/version/domain ID 在创建后写入忽略的证据，不提前编造。
+使用已登录的 Dashboard 创建无敏感内容的 Hello World 占位 Worker，先关闭公开 URL，再上传已审查代码。
+实际创建表单的 Access 关闭，隐含 workers.dev 地址，创建前没有关闭 URL 的控制。
+点击创建前，刷新账号状态、核验 Workers Free，并检查精确名称 `nanodot-gateway`、`nanodot-task6-operator`。
+若任一名称已存在，停止并审查，不覆盖或改作他用。必须获得**新的、具体的人工同意**，涵盖这两个创建动作和
+短暂的 workers.dev/Version URL 公开暴露。此前的一般部署同意或已登录状态不授权这次暴露；已观察到的响应或日志不能事后消除。
 
-后续 CI 必须先创建并核验受保护的 GitHub `gateway-production` environment，然后才存储 secret。
-required human reviewer 为 `Mola-maker`（GitHub 用户 ID `229602071`），设置
-`prevent_self_review=false`，使用自定义部署分支规则，仅允许 `main`。
-所有者明确允许发起人审批自己的部署；每次部署仍须由 Mola-maker 本人实际批准，代理不得代为提交审批。
+**一次只创建并关闭一个 Worker**：先创建仅含已检查 Hello World 模板的 `nanodot-gateway`，立即在
+Settings → Domains & Routes 关闭 workers.dev 与 Version URLs，确认两个 URL 不再提供模板且没有
+Custom Domains/路由，保存实际资源/version/settings ID 和关闭证据。随后对 `nanodot-task6-operator`
+重复同一流程。任一公开入口不能确认关闭就停止。在两个资源实际关闭前，不添加 AI/DO 绑定、项目摘要、
+私密操作服务代码或 assets，不调用 AI。[Version URLs](https://developers.cloudflare.com/workers/versions-and-deployments/version-urls/)
+启用时是公开的，未设置时继承 workers.dev 状态，可在 Dashboard 关闭；已审查配置保持
+`workers_dev:false`、`preview_urls:false`。
+
+两个 Worker 已存在并关闭后，才由人工授予**短期 Individual Workers Editor token，仅限这两个实际资源 ID**。
+先审查精确角色、资源 ID 和到期时间，创建凭据及私密交接还需独立的操作时授权。不申请 Workers 产品级
+Admin/Editor、zone/DNS、KV、R2、D1、AI REST 推理、用户资料、全部 zone 或无关 Worker 权限。
+凭据不进入聊天、argv 或日志；初始化 token 与后续仅限网关的 CI token 分开。
+
+在 `gateway/wrangler.jsonc` 旁准备 `gateway/.env.task6-bootstrap.jsonc`，现有 `.env.*` 规则会忽略
+这个不含凭据的 JSONC 元数据文件，**唯一差异为 `routes:[]`**。另行获准的初始化从 `gateway/` 运行 Wrangler，
+明确指定 `--config .env.task6-bootstrap.jsonc`，不把该文件当作 dotenv 载入；CI 继续使用标准的已审查
+`wrangler.jsonc` 版本上传配置。保留已审查源码/bundle、
+精确的291文件 assets manifest、AI/ASSETS、`FREE_GATE` → `FreeGate`、`v1` / `new_sqlite_classes`、
+`workers_dev:false`、`preview_urls:false`、`INFERENCE_ENABLED=false`、`TTS_ZH_VERIFIED=false`，
+不设置 `TTS_ZH_LANG`。通过获准的双 Worker Editor token 上传/部署到已有网关，仅应用首次迁移，
+记录真实 namespace/version ID 和迁移结果。固定版本 Wrangler 的上传/迁移授权**仍未实测**：遇到精确的
+权限拒绝就停止并审查该操作，不静默扩大权限。保留首次 namespace 和生产计数；不重置计数、不重复试验迁移、
+不转换 schema，也不静默改为新版 exports 语法。
+
+网关 namespace 实际存在后，才向已关闭的操作服务占位资源部署已审查的无路由代码，外部绑定
+`FREE_GATE`、class `FreeGate`、`script_name=nanodot-gateway`，不设自己的迁移。添加独立项目摘要前，
+核验真实 namespace 身份和公开入口仍关闭。操作服务的 AI 绑定/候选语音要求先关闭入口；此流程不授权候选调用。
+项目摘要只经另行获准的私密 stdin/Dashboard 输入。保存 DNS/邮件/路由 ID、重新核验 Free 并取得公开暴露的
+具体同意后，只通过已登录 Dashboard 添加根域与 www Custom Domains；保留全部邮件记录和无关 Worker，
+域名操作不使用无 zone 权限的 token。
+
+后续 CI 存储 secret 前，核验受保护的 `gateway-production` environment：required human reviewer 为
+`Mola-maker`（GitHub 用户 ID `229602071`），`prevent_self_review=false`，自定义部署分支仅允许 `main`，
+且 `can_admins_bypass=false`。所有者允许发起人审批；每次仍须由 Mola-maker 本人实际批准，代理不得提交审批。
 仅存储 `CLOUDFLARE_API_TOKEN` secret 和 `CLOUDFLARE_ACCOUNT_ID` environment variable。
-使用短期 account API token，仅对已存在的 `nanodot-gateway` 授予 **Editor**。CI 仅上传/激活版本，
-不创建 Worker、不改域名/路由、不迁移存储、不设置项目 secret、不部署操作服务。
+使用**独立的短期 Individual Worker Editor token，仅限已存在的 `nanodot-gateway`**。CI 只上传/激活版本，
+不得创建 Worker、迁移存储、修改域名/路由、设置 secret 或部署操作服务。
 
-[官方 Workers 权限](https://developers.cloudflare.com/workers/authorization/workers/)要求创建 Worker 使用产品级
-Admin，部署已有 Worker 使用 Editor；改域名还需该 zone 的 Workers Routes Write，且 Custom Domain
-目前不支持单 Worker 角色。因此首次域名操作由现有 dashboard 完成，不产生持久宽权限 token。
-[DO 权限](https://developers.cloudflare.com/workers/authorization/durable-objects/)继承实现它的 Worker。
-绑定资源部署不需要该资源的直接数据权限。例行版本 CI 不申请 DNS Edit、KV、R2、D1、AI REST 推理、
-用户资料或全部 zone 权限。若 Wrangler 实际拒绝精确权限，停止该动作并记录原因，审查后才请求具体增量权限。
+[官方 Workers 权限](https://developers.cloudflare.com/workers/authorization/workers/)要求创建使用已有账号权限，
+Editor 部署已有 Worker。Custom Domains 支持**单 Worker Editor 加每个受影响 zone 的 Workers Routes Write**。
+本提案仍由已登录 Dashboard 连接域名，避免向初始化/CI token 增加 zone 权限。Editor 本身可修改更多内容，
+包括 Worker settings/secret 和通过 Data Studio 访问 Durable Object 数据；CI 的“只上传”是人工审批下的
+操作约束，不是更窄的固有 token 权限。[DO 权限](https://developers.cloudflare.com/workers/authorization/durable-objects/)
+继承实现它的 Worker，绑定资源部署无需该资源的独立直接权限。域名/settings/上传失败不证明需要账号级 Admin，
+应先记录并审查被拒绝的精确操作。此前被自动审批拒绝的账号级 Admin 准备动作，不授权改用 API/CLI 重做。
+Remote service/edge-preview 传输权限仍是下文所述的独立未解决门槛；不假定双 Worker Editor 覆盖尚不存在的
+relay 脚本或账号会话 API，不启动默认 OAuth，也不新增 Admin 授权。
 
 ## 源码检查与首次部署
 
@@ -70,8 +106,9 @@ Wrangler 编译日志写入忽略且可写的 `evidence/task-6/wrangler-logs/`�
 
 需要 Node22。gateway 测试池 `remoteBindings:false`，CI 不调用模型。旧 GitHub Pages 原始源码发布路径已关闭。
 默认文档构建保留旧 base，仅网关使用 `/docs/`。生成产物/证据忽略。Phase B 前保存 commit、产物哈希、
-账号 Free 核验、现有路由/域名 ID 和全部 DNS 记录 type/ID。获准后部署独立 Worker、迁移和 assets，
-通过私密 stdin/dashboard 设置摘要 secret；绝不写入 argv、聊天、日志。初始关闭推理，先验 TLS、health、
+账号 Free 核验、现有路由/域名 ID 和全部 DNS 记录 type/ID。按上文具体获准的占位资源创建/关闭、
+已有 Worker Editor 上传/迁移和 Dashboard 域名流程执行。仅通过另行获准的私密 stdin/Dashboard 设置摘要 secret，
+绝不写入 argv、聊天、日志。初始关闭推理，先验 TLS、health、
 鉴权、preflight、404，再单独审查 `INFERENCE_ENABLED=true` 配置变更，TTS 仍为 false。CI 不负责初始化。
 
 ## 无 AI 与有限真实验收
