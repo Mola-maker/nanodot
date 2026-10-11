@@ -266,6 +266,10 @@ pause, look again, change the goal, or end guidance. Copying only happens when y
 instruction and **I completed this step**. That explicit confirmation samples again before
 recording user-confirmed evidence. It does not count a generic touch as completion.
 
+The card waits for its native window to attach before measuring Compose content. Closing
+or detaching the card cancels pending geometry callbacks; a reopened card uses its current
+host and keyboard bounds.
+
 A single purple outline marks the validated current target without taking touches or
 accessibility focus. Host content, keyboard or display changes clear it before fresh
 observation. Dot and Care windows are excluded from host events and hidden during capture.

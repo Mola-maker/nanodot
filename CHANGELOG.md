@@ -10,6 +10,9 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 - Connected Android Dot overlay dictation and explicit reply read-aloud to the shared voice manager, with a visible permission Activity, private microphone service, Stop notification and generation-scoped cancellation; native and genuine Chinese ASR/TTS acceptance remained pending.
 
 - Added Android capture tickets, awaited recorder/synthesis cleanup and guarded late voice callbacks; floating voice UI, permission/service integration and real ASR/TTS acceptance remained pending.
+
+- Deferred Android care-card measurement until its Compose window attached, and cancelled old layout callbacks when the card closed or detached.
+
 - Preserved crystal transparency across breathing frame transitions and made Android thinking/model-picker text and control accents follow the selected theme without low-opacity small text.
 
 - Replaced the Android Dot orb with a packaged ice-blue crystal breathing atlas and short, touch-through drag trails that stop with reduced motion or overlay cleanup; unified shared light/dark colors in blue while retaining theme and avatar preferences.
