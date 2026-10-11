@@ -40,7 +40,7 @@ API 首先检查 secret 和 `AI`、`ASSETS`、`FREE_GATE` bindings。配置缺�
 
 两种模型都接受官方支持的 function 定义。Qwen 已验证 schema 的简单属性需包含 `type` 和 `description`，不支持的 schema 关键字会被拒绝。Gemma 支持 OpenAI function 定义、assistant `tool_calls` 和携带 `tool_call_id` 的 `tool` 结果。**Qwen 的工具历史目前返回 `400`**，因为公开消息 schema 未明确其编码。两种模型的 reasoning 历史输入均在编码核验前拒绝；输出中的 reasoning 保留。Android 即使从内置模型资料获得 reasoning 能力，也只对解析后的 `https://molamaker.si` origin（默认端口或 443）省略不受支持的历史字段；其他 origin 的原有回传规则保留。需要已验证的 agent 工具往返时使用 Gemma，不自动替换模型。网关只回传 function 调用，不执行工具。Care 模式发送 `tools: []`。
 
-非流式响应采用 `choices[].message`、completion 元数据和上游 usage。流式响应采用 SSE `choices[].delta`，保留文字、reasoning、function 调用、usage 和 stop/length/tool finish reason，最后仅发送一次 `data: [DONE]`。官方记录的 [Workers AI 原生流](https://blog.cloudflare.com/workers-ai-streaming/) 从 `response` 文字事件和明确的 `[DONE]` 转换成同一协议；普通 EOF 不代表完成。空流、非法事件、上游错误和截断流发送脱敏 SSE `error`，随后关闭，不伪造 stop 或 `[DONE]`。UTF-8 解码能保留任意字节分段中的中文。
+非流式响应采用 `choices[].message`、completion 元数据和上游 usage。流式响应采用 SSE `choices[].delta`，保留文字、reasoning、function 调用、usage 和 stop/length/tool finish reason，最后仅发送一次 `data: [DONE]`。官方记录的 [Workers AI 原生流](https://blog.cloudflare.com/workers-ai-streaming/) 从 `response` 文字事件和明确的 `[DONE]` 转换成同一协议；普通 EOF 不代表完成。空流、非法事件、上游错误和截断流发送脱敏 SSE `error`，随后关闭，不伪造 stop 或 `[DONE]`。UTF-8 解码能保留任意字节分段中的中文。空工具数组、只有工具 ID/index 的元数据和空 reasoning 字段不算有效输出；reasoning 文字及 function 名称/参数片段必须先通过类型检查才能计入输出。
 
 HTTP 错误保持 JSON：凭据错误 `401`，配额超限 `429` 并附 `Retry-After`，配置或模型服务不可用 `503`。已经开始流式传输后的错误使用 SSE error。客户端 abort 或 `reader.cancel()` 会取消并释放本地上游 reader，但无法保证 Cloudflare 停止已开始的推理或计费；已准入尝试不退回计数。
 

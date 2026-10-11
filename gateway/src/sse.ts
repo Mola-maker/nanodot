@@ -41,8 +41,32 @@ export function normalizeAiStream(source: ReadableStream<Uint8Array>, model: str
         for (const key of ['role', 'content', 'reasoning_content', 'reasoning', 'tool_calls']) {
           if (choice.delta[key] !== undefined) delta[key] = choice.delta[key];
         }
-        if (delta.content != null && typeof delta.content !== 'string') throw new Error('Invalid content');
-        if (delta.content || delta.reasoning_content || delta.reasoning || delta.tool_calls) seen = true;
+        let hasOutput = false;
+        for (const key of ['content', 'reasoning_content', 'reasoning']) {
+          if (delta[key] != null) {
+            if (typeof delta[key] !== 'string') throw new Error('Invalid text delta');
+            if (delta[key].length > 0) hasOutput = true;
+          }
+        }
+        if (delta.tool_calls !== undefined) {
+          if (!Array.isArray(delta.tool_calls)) throw new Error('Invalid tool deltas');
+          for (const call of delta.tool_calls) {
+            if (!record(call) || !Number.isInteger(call.index) || call.index < 0) throw new Error('Invalid tool index');
+            if (call.id !== undefined && typeof call.id !== 'string') throw new Error('Invalid tool id');
+            if (call.type !== undefined && call.type !== 'function') throw new Error('Invalid tool type');
+            if (call.function !== undefined) {
+              if (!record(call.function)) throw new Error('Invalid function delta');
+              for (const key of ['name', 'arguments']) {
+                if (call.function[key] !== undefined) {
+                  if (typeof call.function[key] !== 'string') throw new Error('Invalid function fragment');
+                  if (call.function[key].length > 0) hasOutput = true;
+                }
+              }
+            }
+          }
+        }
+        // IDs, indexes and empty arrays are metadata, not usable model output.
+        if (hasOutput) seen = true;
         if (choice.finish_reason != null) {
           if (!['stop', 'length', 'tool_calls', 'content_filter'].includes(choice.finish_reason)) throw new Error('Invalid finish');
           if (!seen) throw new Error('Empty completion');

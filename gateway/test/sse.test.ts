@@ -1,3 +1,4 @@
+import toolOutput from './fixtures/tool-output-validation.json';
 import normalFixture from './fixtures/normal-stream.json';
 import fixture from './fixtures/stream.json';
 import { expect, it } from 'vitest';
@@ -35,4 +36,27 @@ it('normalizes the ordinary two-turn Android response fixture', async () => {
  const input = normalFixture.events.map(e => `data: ${JSON.stringify(e)}\n\n`).join('') + 'data: [DONE]\n\n';
  const events = (await read(input)).split('\n\n').filter(e => e.startsWith('data: {')).map(e => { const {id, object, created, model, ...event} = JSON.parse(e.slice(6)); return event; });
  expect(events).toEqual(normalFixture.events);
+});
+
+const wire = (events: unknown[]) => events.map(e => `data: ${JSON.stringify(e)}\n\n`).join('') + 'data: [DONE]\n\n';
+const normalizedEvents = (output: string) => output.split('\n\n').filter(e => e.startsWith('data: {')).map(e => {
+ const {id, object, created, model, ...event} = JSON.parse(e.slice(6)); return event;
+});
+it('rejects empty tool arrays with the same error wire consumed by Android', async () => {
+ const output = await read(wire(toolOutput.empty_upstream_events));
+ expect(normalizedEvents(output)).toEqual(toolOutput.empty_normalized_events);
+ expect(output).not.toContain('[DONE]'); expect(output).not.toContain('"finish_reason":"stop"');
+});
+it('requires typed nonempty reasoning or meaningful function deltas', async () => {
+ const empty = [{reasoning_content: ''}, {reasoning: null}, {tool_calls: [{index: 0, id: 'metadata_only', type: 'function'}]}, {tool_calls: [{index: 0, function: {name: '', arguments: ''}}]}];
+ const invalid = [{reasoning_content: {}}, {reasoning: 1}, {tool_calls: {}}, {tool_calls: [null]}, {tool_calls: [{index: -1, function: {name: 'lookup'}}]}, {tool_calls: [{index: 0, type: 'custom', function: {name: 'lookup'}}]}, {tool_calls: [{index: 0, id: 2, function: {name: 'lookup'}}]}, {tool_calls: [{index: 0, function: {arguments: {}}}]}];
+ for (const delta of [...empty, ...invalid]) {
+  const output = await read(wire([{choices: [{index: 0, delta}]}, {choices: [{index: 0, delta: {}, finish_reason: 'stop'}]}]));
+  expect(output).toContain('"error"'); expect(output).not.toContain('[DONE]'); expect(output).not.toContain('"finish_reason":"stop"');
+ }
+});
+it('preserves genuine tool-only output and its continuation arguments', async () => {
+ const output = await read(wire(toolOutput.tool_only_events));
+ expect(normalizedEvents(output)).toEqual(toolOutput.tool_only_events);
+ expect(output).toContain('[DONE]'); expect(output).not.toContain('"error"');
 });

@@ -149,6 +149,27 @@ class GatewayProtocolTest {
             assertEquals("captured", serialized.getJSONArray("messages").getJSONObject(1).getString("reasoning_content"))
         }
     }
+    @Test fun emptyToolCallsErrorAndGenuineToolOnlyStreamUseRealFactory() {
+        val shared = JSONObject(fixture("tool-output-validation.json"))
+        fun wire(key: String, done: Boolean): String {
+            val events = shared.getJSONArray(key)
+            return (0 until events.length()).joinToString("") { "data: ${events.getJSONObject(it)}\n\n" } +
+                if (done) "data: [DONE]\n\n" else ""
+        }
+        val empty = runCatching { stream(wire("empty_normalized_events", false)) }
+        assertTrue("The normalized empty-tool error must fail the real provider", empty.isFailure)
+        assertTrue(empty.exceptionOrNull() is CancellationException)
+        val causes = generateSequence(empty.exceptionOrNull()) { it.cause }.take(8).toList()
+        assertTrue(causes.joinToString(" -> "), causes.any { it is LLMError.ProviderError &&
+            it.message.orEmpty().contains("Upstream stream failed or ended without completion.") })
+        val chunks = stream(wire("tool_only_events", true))
+        assertTrue(chunks.none { it is LLMStreamChunk.Text })
+        val call = chunks.filterIsInstance<LLMStreamChunk.ToolCallComplete>().single()
+        assertEquals("call_tool_only", call.id)
+        assertEquals("lookup", call.name)
+        assertEquals("中文", call.args.getString("value"))
+        assertEquals("tool_calls", chunks.filterIsInstance<LLMStreamChunk.Finished>().single().stopReason)
+    }
     @Test fun stopAndLengthRemainDistinct() {
         for (reason in listOf("stop", "length")) {
             val chunks = stream("data: {\"choices\":[{\"index\":0,\"delta\":{\"content\":\"你好\"}}]}\n\ndata: {\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"$reason\"}]}\n\ndata: [DONE]\n\n")
