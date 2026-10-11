@@ -323,3 +323,134 @@ checks and device ownership/release before supplying one private input and
 reserving the actual case. Worker actual credential reads/API/native actions0;
 shared actual counter remains root-supplied1/15. Independent logger approval at
 be882 C0/I0/M1 is unchanged. This implementer does not approve its own fixes.
+
+
+## Fix round2 — narrow strict pre-validation comment boundary
+
+Exact BASE is `674cb4bce7c614d484253b1d646278b6be50a007`. The full SAME-reviewer
+formal report `api-proof-fix-round1-review.md` was read and SHA256 verified:
+`67c7abe60e41b13c63cd408e9f2a133cb72edd539ef1c757e96ff200145be8b9`.
+It marks original I1/I2 ADDRESSED, prior M1 documentation addressed and M2 baseline
+retained; source approval is withheld for exactly one NEW Important. This appendix
+addresses only that new response pre-parser boundary. It does not reopen original
+I1/I2 or assert source approval on behalf of the implementer.
+
+The defect: the scanner considered quotes inside string-external block comments
+as standard JSON quotes. In the exact public payload
+`{"ignored":/*"*/` + `[` repeated33 + `0` + `]` repeated33 + `/*"*/}`,
+comment quotes shield the array brackets and the scanner reaches JSONTokener
+without its claimed pre-allocation nesting rejection. Actual Android tokenizer
+comment support remains unverified; no Android acceptance, crash or allocation
+claim is needed for this source defect. JVM parser refusal alone is inadequate.
+
+Minimal correction: add `/` beside the existing single-quote rejection in the
+scanner's **outside-quoted-string** branch. It rejects comment syntax before any
+JSONTokener construction. The existing handling of quoted strings and backslash
+escapes is untouched; `/` and `\/` inside standard strings continue to forward
+unchanged. Scanner depth32, recursive decoded key/string inspection2048, literal
+credential guard, 16KiB/line, 256KiB total, DONE handling, ownership, same-FD input
+core, provider/body/cap/thinking and original sourceSets are untouched. No production
+business/provider API or main/release source inclusion changed.
+
+One test-only observable boolean `tokenizerReached` is set immediately BEFORE
+`JSONTokener(payload)` and never reset. It has a private setter and no value from
+response/input text. This is an observation seam in the existing TEST-ONLY helper,
+not a parser replacement, fake Android class, copied scanner or production DI.
+A false observation after refusal therefore directly establishes pre-validation
+rejection instead of host tokenizer rejection. It is never written into the manual
+result or any public response diagnostic.
+
+### Exact controls and RED/GREEN
+
+All new evidence is in ignored `work/api-proof/fix-round-2/`; no previous artifact
+was overwritten. Original16 evidence hashes and fix1's18 evidence hashes were
+verified unchanged. Original19 GREEN and every historical failure remain preserved.
+`baseline-report.md` preserves the full BASE674cb report before this appendix.
+The new11-entry source manifest covers the same full candidate source/document
+list as fix1, binding the changed two files and unchanged ownership/build/docs.
+The new13-entry evidence manifest binds fix2 logs/XML/filter/baseline plus the
+supplied formal review. Two premature result snapshots copied while the final
+Gradle process was still running are labeled `premature-prior-result-snapshot-*`:
+they contain the previous failed run and are NOT final verification evidence.
+Final XML was copied only after the process returned exit0 and checked separately.
+
+The two new negative methods use exactly the requested shielded33-array payload
+above and `{"ignored":/*public*/0}`. Each independently owns two public loopback
+controls: one reads the actual owned response boundary, one collects the actual
+OpenAIProvider Flow. No credential handoff is read. Boundary assertions require
+fixed `Proof stream rejected`, null cause, zero forwarded sink bytes,
+`tokenizerReached=false`, no DONE, closed response and one admitted exchange.
+The actual provider asserts only its pre-existing local Started lifecycle chunk,
+no response-derived Text/Usage/Finished/Thinking/tool/media chunks, no tokenizer,
+no DONE and closed response. Each own transport admits one request; server2 totals
+belong to the two separately constructed controls, never retries/follow-ups.
+
+The positive standard data line is exactly
+`{"choices":[],"public":{"url":"https://public.invalid/a/b","path":"a\/b"}}`.
+It is prepended to the existing READY/final-choice-usage/DONE SSE. Raw owned-boundary
+reading asserts the entire response body equals the original string, including
+literal URL slashes and escaped path slash. A separate actual-provider collection
+asserts READY, stop, freshinput6/cache4/prompt10/output2, DONE, closed response and
+one exchange. The URL is public response text only and is never visited.
+
+- Meaningful initial RED:3 new tests,2 assertion failures,0errors/0skips at
+  2026-10-11T08:58:40. Both negative failures explicitly say
+  `Comments must fail BEFORE JSONTokener allocation`: host tokenizer rejection
+  already produced the fixed error, but the observation was true. The positive
+  unchanged raw body and actual-provider control passed before the minimal fix.
+- First final22 batch after slash correction:22tests/2failures,0errors/0skips.
+  Both new negatives passed the boundary pre-validation/zero-forward checks but
+  failed the fixture's initially overstrict `chunks.isEmpty()` assertion. Actual
+  provider source sends `LLMStreamChunk.Started` before reading a response; this
+  local lifecycle block is not remote content. The failure log/XML remain.
+  Root explicitly ruled that no forwarded chunks means no response-derived blocks
+  and authorized the exact `listOf(LLMStreamChunk.Started)` assertion. No provider
+  change or broad chunk ignoring occurred. Initial meaningful RED remains valid.
+- Final verification after that fixture correction:22tests,0failures,0errors,0skips
+  (18transport = original15+3new, plus4unchanged host input controls), XML timestamps
+  2026-10-11T08:59:59 and09:00:00. Gradle exit0/BUILD SUCCESSFUL18s,37tasks,
+  3executed/34up-to-date. No repeated verification after this successful affected
+  batch and no whole business/project suite run. One extra batch was justified
+  only by the newly discovered fixture failure.
+
+All three invocations used the same approved SDK/JDK and existing owned2G Gradle
+profile, own `work/api-proof/gradle` and `work/api-proof/android-user`, `--offline`,
+`--console=plain --no-daemon -Pnm.abi=x86_64`. Initial RED selected only
+`*.ApiProofTransportTest.*comment*` and `*.ApiProofTransportTest.*slashes*`.
+The two affected batches used this exact command:
+
+```sh
+./android/src/android/gradlew -p android/src/android \
+  :app:testDebugUnitTest --tests 'io.github.nanomuse.apiproof.*' \
+  :app:compileDebugAndroidTestKotlin \
+  -I "$PWD/work/api-proof/fix-round-2/fixture-only.init.gradle" \
+  --offline --console=plain --no-daemon -Pnm.abi=x86_64
+```
+
+The fix2 filter is a byte-identical COPY of the preserved fix1 filter (no new
+fixture/helper filenames): SHA256
+`35d87a7b736724b640c7dd97be96d8fed3e89a3de3216062096ba8a521a7f050`.
+Its Task4 provenance and exact3→4 diff remain in previous appendices/artifacts.
+OWN4 instrumentation Kotlin compile **executed** in the first22 batch, printed
+exactly ManualDeepSeekApiProofTest.kt, PrivateProofInput.kt, ApiProofTransport.kt
+and ProofInputConsumption.kt, and completed before the new unit assertion failure.
+The final successful batch reused that compile UP-TO-DATE against unchanged
+shared/native source. Both source roots remain; main and all unit source compilation
+are unfiltered. Known8legacy mountedSessionId full instrumentation errors remain
+binding/unwaived; neither batch establishes full instrumentation compile success.
+Fresh production debug compile classes.jar inspection still found0proof-package
+classes. No native test, APK/release/device/ADB operation occurred in this worker.
+
+The existing three MockWebServer warnings remain visible with their fix1 precise
+explanation; SDK XML/AGP/manifest/Kotlin baseline remains and no upgrade/suppression
+was applied. Logs preserve these warnings without a warning-free claim.
+
+Root must obtain SAME-reviewer scoped judgment on NEW Important1 and any new breakage
+from this narrow diff. Original I1/I2 source findings remain addressed, while public
+native filesystem controls/no-file skip, Android tokenizer behavior, reflected
+client identity, target/source/APK header-mask provenance, owned teardown and normal
+state baseline/after checks remain independent root runtime gates. This worker used
+only public synthetic loopback data: real credential reads/API/native/device
+operations0, shared actual budget unchanged1/15. Logger be882 C0/I0/M1 independent
+approval remains valid. No helper/reviewer dispatch, push/CI/deploy or actual proof
+claim. Root alone owns eventual native/real-provider execution.

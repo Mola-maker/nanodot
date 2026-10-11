@@ -54,6 +54,10 @@ class ApiProofTransport(private val endpoint: HttpUrl, private val credential: S
     @Volatile var responseReadStarted = false
         private set
 
+    // Test-only observation: strict pre-validation must reject comments before parser allocation.
+    @Volatile internal var tokenizerReached = false
+        private set
+
     private val client = OkHttpClient.Builder()
         .dispatcher(dispatcher).connectionPool(pool)
         .proxy(Proxy.NO_PROXY)
@@ -143,10 +147,11 @@ class ApiProofTransport(private val endpoint: HttpUrl, private val credential: S
                 '"' -> quoted = true
                 '{', '[' -> { depth++; check(depth <= 32) }
                 '}', ']' -> { depth--; check(depth >= 0) }
-                '\'' -> error("Nonstandard proof JSON")
+                '\'', '/' -> error("Nonstandard proof JSON")
             }
         }
         check(!quoted && depth == 0)
+        tokenizerReached = true
         val parser = JSONTokener(payload)
         val parsed = parser.nextValue()
         check(parsed is JSONObject && parser.nextClean() == '\u0000')

@@ -1,0 +1,13 @@
+cd08405030a9cafb4d7b6c054de049fc7dd85a9c8753e341d1864b57869a12d8  work/api-proof/fix-round-2/baseline-report.md
+9b045d466b14b95a020c7ed8c331e6d7c5b765ccc5f51f48205381a4bf44269f  work/api-proof/fix-round-2/final-green-input.xml
+50cb7ce44d9e14dd8007ae0b9845d75d02a48a6d46732b4a87db9bb3301fa8f4  work/api-proof/fix-round-2/final-green-transport.xml
+9d6b6de40ccf189248be1b64273bf32c84a6583d1c611e4910bf970ff33a76b0  work/api-proof/fix-round-2/final-green.log
+b03d0976531f48ac44b51ffe479b971f81a8f6bdb487c4a7f8cba0bf0f6ba01f  work/api-proof/fix-round-2/first-green-input.xml
+be201ce2d58c9daeb79257270c4081fec0643a6443548c35083de61993e747cd  work/api-proof/fix-round-2/first-green-transport-failure.xml
+35d87a7b736724b640c7dd97be96d8fed3e89a3de3216062096ba8a521a7f050  work/api-proof/fix-round-2/fixture-only.init.gradle
+df2d503fe2500f067756d57532ba0aeac18859b31b9196fcd38fd19209b9af11  work/api-proof/fix-round-2/green.log
+b03d0976531f48ac44b51ffe479b971f81a8f6bdb487c4a7f8cba0bf0f6ba01f  work/api-proof/fix-round-2/premature-prior-result-snapshot-input.xml
+be201ce2d58c9daeb79257270c4081fec0643a6443548c35083de61993e747cd  work/api-proof/fix-round-2/premature-prior-result-snapshot-transport.xml
+3d5f189b76ca398dac073acf03f26bf05ff0720c1208767a2e9ccd11ec86bc36  work/api-proof/fix-round-2/red-transport.xml
+f24ac08fe0c9a77c91305a12b61ba3aee4656dc79fb4547efa33e45d5f7f9735  work/api-proof/fix-round-2/red.log
+67c7abe60e41b13c63cd408e9f2a133cb72edd539ef1c757e96ff200145be8b9  .superpowers/sdd/2026-10-10-android-dot-care/api-proof-fix-round1-review.md

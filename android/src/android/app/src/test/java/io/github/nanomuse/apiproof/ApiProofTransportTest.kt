@@ -259,4 +259,83 @@ class ApiProofTransportTest {
 
     @Test fun `excessive JSON nesting is rejected before parsing or forwarding`() =
         assertMalformedBoundaryRejected("{\"ignored\":" + "[".repeat(33) + "\"public\"" + "]".repeat(33) + "}")
+
+    private fun proofRequest(server: MockWebServer) = Request.Builder().url(server.url("/chat/completions"))
+        .post("""{"model":"deepseek-flash","stream":true,"max_tokens":64,"max_completion_tokens":64,"thinking":{"type":"disabled"},"messages":[{"role":"user","content":"Reply with the word READY."}]}""".toRequestBody("application/json".toMediaType())).build()
+
+    private fun ownedClient(transport: ApiProofTransport): OkHttpClient =
+        ApiProofTransport::class.java.getDeclaredField("client").apply { isAccessible = true }.get(transport) as OkHttpClient
+
+    private fun assertCommentPrevalidationRejected(payload: String) = runBlocking {
+        MockWebServer().use { server ->
+            val body = "data: $payload\n\ndata: [DONE]\n\n"
+            server.enqueue(MockResponse().setBody(body)); server.enqueue(MockResponse().setBody(body)); server.start()
+            ApiProofTransport(server.url("/chat/completions"), "synthetic-proof-key").use { transport ->
+                ownedClient(transport).newCall(proofRequest(server)).execute().use { response ->
+                    val forwarded = okio.Buffer()
+                    val failure = runCatching { response.body!!.source().read(forwarded, 8192) }.exceptionOrNull()
+                    assertNotNull(failure)
+                    assertEquals("Proof stream rejected", failure!!.message)
+                    assertNull(failure.cause)
+                    assertEquals(0L, forwarded.size)
+                    assertFalse("Comments must fail BEFORE JSONTokener allocation", transport.tokenizerReached)
+                }
+                assertFalse(transport.sawDone)
+                assertTrue(transport.responseClosed)
+                assertEquals(1, transport.exchangeCount)
+            }
+            ApiProofTransport(server.url("/chat/completions"), "synthetic-proof-key").use { transport ->
+                val chunks = mutableListOf<LLMStreamChunk>()
+                val failure = runCatching {
+                    transport.flow(transport.provider("synthetic-proof-key", server.url("/").toString().trimEnd('/'))).collect { chunks.add(it) }
+                }.exceptionOrNull()
+                assertNotNull(failure)
+                // The actual provider sends local Started before any response read; no response-derived chunk.
+                assertEquals(listOf(LLMStreamChunk.Started), chunks)
+                assertFalse(transport.tokenizerReached)
+                assertFalse(transport.sawDone)
+                assertTrue(transport.responseClosed)
+                assertEquals(1, transport.exchangeCount)
+            }
+            assertEquals(2, server.requestCount) // Two independently owned public controls, never a retry.
+        }
+    }
+
+    @Test fun `comment shielded arrays are rejected in prevalidation before tokenizer`() =
+        assertCommentPrevalidationRejected("{\"ignored\":/*\"*/" + "[".repeat(33) + "0" + "]".repeat(33) + "/*\"*/}")
+
+    @Test fun `plain JSON comment is rejected in prevalidation before tokenizer`() =
+        assertCommentPrevalidationRejected("""{"ignored":/*public*/0}""")
+
+    @Test fun `standard quoted slashes pass unchanged and actual provider READY usage DONE`() = runBlocking {
+        // Public URL is response text only; neither provider nor fixture visits it.
+        val slashLine = """data: {"choices":[],"public":{"url":"https://public.invalid/a/b","path":"a\/b"}}"""
+        val body = slashLine + "\n\n" + publicSse
+        MockWebServer().use { server ->
+            server.enqueue(MockResponse().setBody(body)); server.enqueue(MockResponse().setBody(body)); server.start()
+            ApiProofTransport(server.url("/chat/completions"), "synthetic-proof-key").use { transport ->
+                ownedClient(transport).newCall(proofRequest(server)).execute().use { response ->
+                    assertEquals(body, response.body!!.string())
+                    assertTrue(transport.tokenizerReached)
+                    assertTrue(transport.sawDone)
+                }
+                assertTrue(transport.responseClosed)
+                assertEquals(1, transport.exchangeCount)
+            }
+            ApiProofTransport(server.url("/chat/completions"), "synthetic-proof-key").use { transport ->
+                val chunks = transport.flow(transport.provider("synthetic-proof-key", server.url("/").toString().trimEnd('/'))).toList()
+                assertEquals("READY", chunks.filterIsInstance<LLMStreamChunk.Text>().joinToString("") { it.text })
+                assertEquals(listOf("stop"), chunks.filterIsInstance<LLMStreamChunk.Finished>().map { it.stopReason })
+                val usage = chunks.filterIsInstance<LLMStreamChunk.Usage>().single().usage
+                assertEquals(6, usage.inputTokens)
+                assertEquals(4, usage.cacheReadInputTokens)
+                assertEquals(10, usage.latestContextTokens)
+                assertEquals(2, usage.outputTokens)
+                assertTrue(transport.sawDone)
+                assertTrue(transport.responseClosed)
+                assertEquals(1, transport.exchangeCount)
+            }
+            assertEquals(2, server.requestCount)
+        }
+    }
 }
