@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Added Android capture tickets, awaited recorder/synthesis cleanup and guarded late voice callbacks; floating voice UI, permission/service integration and real ASR/TTS acceptance remained pending.
+
 - Kept Android care paused until remote VM jobs and cancellation cleanup actually completed, including compact/send handoffs and intercepted prompt jobs.
 
 - Added Android triple-tap care guidance with a touch-through target outline, accessible instruction and goal controls, explicit copy/confirmation, and service/automatic-operation ownership; native and real-model acceptance remained separate gates.

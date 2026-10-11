@@ -52,6 +52,12 @@ interface SpeechRecognitionEngine {
      */
     fun start(locale: Locale, listener: Listener)
 
+    // nanoMuse: null preserves main dictation; Dot supplies its explicit per-capture policy.
+    fun startOwned(locale: Locale, continuous: Boolean?, listener: Listener) = start(locale, listener)
+
+    // nanoMuse: adapters must await actual owned resources, not only a stop acknowledgement.
+    suspend fun cancelAndJoin()
+
     /** Stop capture; a final result (or error) is still delivered via [Listener]. */
     fun stop()
 

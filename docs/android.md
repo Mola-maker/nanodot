@@ -83,6 +83,19 @@ sampled accessible text. Voice, care and screen-region selection remain unavaila
 Showing the orb or opening conversation alone never captures, records audio or calls a
 model. Live gateway text/SSE and unique-host vision acceptance remain pending deployment.
 
+## Voice ownership foundation
+
+The shared speech manager now holds a capture ticket until its selected engine, recorder,
+pipe and controlled jobs finish cleanup. Late callbacks cannot release a newer capture,
+and the main window keeps its existing segmented dictation policy. Dot's future capture
+port defaults to a single capture and prepares editable text through the conversation binding.
+Read-aloud pauses wait for controlled synthesis cleanup before the microphone starts;
+the system TTS stop acknowledgement does not prove physical acoustic silence.
+
+This is an internal Task5A milestone. Floating voice input remains pending Task5B: the visible
+permission Activity, microphone foreground service, main/overlay controls and lifecycle hooks.
+Virtual-device permission/audio testing and genuine Chinese ASR/TTS acceptance remain pending.
+
 ## Dot scene sampling
 
 Dot’s read-only screen repository copies accessible host nodes and redacts password text

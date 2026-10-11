@@ -37,6 +37,8 @@ class EngineDegradationIsolationTest {
         override fun start(locale: Locale, listener: SpeechRecognitionEngine.Listener) {}
         override fun stop() {}
         override fun cancel() {}
+        // nanoMuse: this availability-only fake owns no asynchronous resources.
+        override suspend fun cancelAndJoin() {}
         override fun markDegraded() { degraded = true }
         override fun clearDegraded() { degraded = false }
     }

@@ -298,8 +298,9 @@ class TextToSpeechManager : TextToSpeech.OnInitListener {
     /**
      * Stops all speech immediately.
      */
-    fun stop() {
-        tts?.stop()
+    // nanoMuse: capture requires the platform stop acknowledgement; acoustic silence is a device gate.
+    fun stop(requireAcknowledgement: Boolean = false) {
+        val status = tts?.stop() ?: TextToSpeech.SUCCESS
         isPaused = false
         pendingTexts.clear()
         pausedAtIndex = 0
@@ -308,6 +309,7 @@ class TextToSpeechManager : TextToSpeech.OnInitListener {
         // utterances, or they'd blurt out the moment onInit lands.
         synchronized(queueLock) { preInitQueue.clear() }
         _isSpeaking.value = false
+        if (requireAcknowledgement && status != TextToSpeech.SUCCESS) throw IllegalStateException()
     }
 
     /**

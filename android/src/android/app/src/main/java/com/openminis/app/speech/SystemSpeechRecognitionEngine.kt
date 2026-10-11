@@ -144,7 +144,15 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
         ).distinctBy { it.toLanguageTag() }
     }
 
-    override fun start(locale: Locale, listener: SpeechRecognitionEngine.Listener) {
+    // nanoMuse: pin callbacks and cleanup to this capture and every platform restart.
+    private var platformGeneration = 0L
+    private var captureGeneration = 0L
+    private var cleanupFailure: Throwable? = null
+    private val captureResources = io.github.nanomuse.dot.voice.CaptureResources()
+    override fun start(locale: Locale, listener: SpeechRecognitionEngine.Listener) = startOwned(locale, null, listener)
+    override fun startOwned(locale: Locale, continuous: Boolean?, listener: SpeechRecognitionEngine.Listener) {
+        cleanupFailure = null
+        ++captureGeneration // nanoMuse: invalidate delayed VAD work from a previous capture.
         this.listener = listener
         bufferedPartial = null
         heardSpeech = false
@@ -171,7 +179,7 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
         // harmless because the mic never changes hands. If the recogniser owns
         // the mic, a restart would re-acquire it each time, so we leave that
         // path on single-shot behaviour.
-        continuousSession = feedingAudio
+        continuousSession = io.github.nanomuse.dot.voice.CapturePolicy.continuous(feedingAudio, continuous)
         continuousLocale = if (feedingAudio) locale else null
         startInternal(locale, allowOnDeviceRetry = true)
     }
@@ -293,6 +301,8 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
     private val segmentTranscript = StringBuilder()
 
     private fun startEndpointingVad() {
+        // nanoMuse: VAD callbacks are delivered on IO; marshal and reject retired captures.
+        val capture = captureGeneration
         // EXTRA_AUDIO_SOURCE is API 33+. Below that the recogniser must open
         // the mic itself, so we cannot run a VAD at all: two AudioRecords on
         // one device leaves one of them silent.
@@ -314,94 +324,104 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
             appContext,
             object : VoiceActivityListener {
                 override fun onVoiceStart() {
-                    speechStartedAt = System.currentTimeMillis()
-                    heardSpeech = true
-                    Log.i(TAG, "[vad] speech start")
+                    mainHandler.post {
+                        if (capture != captureGeneration) return@post
+                        speechStartedAt = System.currentTimeMillis()
+                        heardSpeech = true
+                        Log.i(TAG, "[vad] speech start")
+                    }
                 }
 
                 override fun onLevel(level: Float) {
-                    // Drive the waveform from the VAD's AGC-boosted tap rather
-                    // than onRmsChanged: it updates ~10x more often and uses
-                    // the same perceptual curve as iOS. Mapped back onto the
-                    // [0,12] scale SpeechRecognitionManager normalises from.
-                    listener?.onRmsDb(level * 12f)
+                    mainHandler.post {
+                        if (capture != captureGeneration) return@post
+                        // Drive the waveform from the VAD's AGC-boosted tap rather
+                        // than onRmsChanged: it updates ~10x more often and uses
+                        // the same perceptual curve as iOS. Mapped back onto the
+                        // [0,12] scale SpeechRecognitionManager normalises from.
+                        listener?.onRmsDb(level * 12f)
+                    }
                 }
 
                 override fun onVoiceEnd(wav: ByteArray, reason: SegmentEndReason, spokenSeconds: Float) {
-                    if (reason != SegmentEndReason.SILENCE_DETECTED) return
-                    speechStartedAt = 0L
+                    mainHandler.post {
+                        if (capture != captureGeneration) return@post
+                        if (reason != SegmentEndReason.SILENCE_DETECTED) return@post
+                        speechStartedAt = 0L
 
-                    // iOS discards a silence-closed segment under 2.0 s
-                    // outright (VoiceInputPanel.swift:652-663) — a cough or a
-                    // door shouldn't commit text. Cancel rather than stop so
-                    // the recognizer produces no result at all.
-                    //
-                    // spokenSeconds is measured from the audio payload; a
-                    // wall-clock figure would include the ~5 s silence that
-                    // closed the segment and could never fall below 2 s.
-                    // [T-android-vad-merge-segments] Accumulate DURATION, don't
-                    // cancel.
-                    //
-                    // The Provider engine can merge WAV payloads, but this path
-                    // can't: the audio has ALREADY been streamed into the
-                    // recognizer's pipe by the time onVoiceEnd fires, so there
-                    // is nothing left to concatenate. The equivalent fix is to
-                    // keep the session open — a sub-2s burst just isn't a
-                    // reason to tear it down. iOS applies its 2 s floor to the
-                    // running total (VoiceInputPanel.swift:651); here the
-                    // recognizer holds the audio and we only track how much
-                    // speech it has been given.
-                    //
-                    // Without this, natural stop-start speech — "yes" (0.8 s),
-                    // pause, "send it" (0.9 s) — cancelled on the first burst
-                    // and could never be dictated.
-                    heldSpokenSeconds += spokenSeconds
-                    if (heldSpokenSeconds < MIN_SEGMENT_SECONDS) {
-                        Log.i(
-                            TAG,
-                            "[vad] silence close, spoken=${"%.2f".format(spokenSeconds)}s " +
-                                "(held ${"%.2f".format(heldSpokenSeconds)}s) — holding session open",
-                        )
-                        // Force-flush after HOLD_FLUSH_MS so an isolated cough
-                        // still settles instead of pinning the mic open. The
-                        // recognizer's own session cap still bounds the total.
-                        holdFlushRunnable?.let { mainHandler.removeCallbacks(it) }
-                        val flush = Runnable {
-                            val held = heldSpokenSeconds
-                            Log.i(TAG, "[vad] hold expired at ${"%.2f".format(held)}s — settling")
-                            stopVad()
-                            cancel()
-                            if (held > TOO_SHORT_FLOOR_SECONDS) {
-                                listener?.onError(
-                                    RecognitionError.NO_MATCH,
-                                    "Too short — tap the mic and speak.",
-                                )
+                        // iOS discards a silence-closed segment under 2.0 s
+                        // outright (VoiceInputPanel.swift:652-663) — a cough or a
+                        // door shouldn't commit text. Cancel rather than stop so
+                        // the recognizer produces no result at all.
+                        //
+                        // spokenSeconds is measured from the audio payload; a
+                        // wall-clock figure would include the ~5 s silence that
+                        // closed the segment and could never fall below 2 s.
+                        // [T-android-vad-merge-segments] Accumulate DURATION, don't
+                        // cancel.
+                        //
+                        // The Provider engine can merge WAV payloads, but this path
+                        // can't: the audio has ALREADY been streamed into the
+                        // recognizer's pipe by the time onVoiceEnd fires, so there
+                        // is nothing left to concatenate. The equivalent fix is to
+                        // keep the session open — a sub-2s burst just isn't a
+                        // reason to tear it down. iOS applies its 2 s floor to the
+                        // running total (VoiceInputPanel.swift:651); here the
+                        // recognizer holds the audio and we only track how much
+                        // speech it has been given.
+                        //
+                        // Without this, natural stop-start speech — "yes" (0.8 s),
+                        // pause, "send it" (0.9 s) — cancelled on the first burst
+                        // and could never be dictated.
+                        heldSpokenSeconds += spokenSeconds
+                        if (heldSpokenSeconds < MIN_SEGMENT_SECONDS) {
+                            Log.i(
+                                TAG,
+                                "[vad] silence close, spoken=${"%.2f".format(spokenSeconds)}s " +
+                                    "(held ${"%.2f".format(heldSpokenSeconds)}s) — holding session open",
+                            )
+                            // Force-flush after HOLD_FLUSH_MS so an isolated cough
+                            // still settles instead of pinning the mic open. The
+                            // recognizer's own session cap still bounds the total.
+                            holdFlushRunnable?.let { mainHandler.removeCallbacks(it) }
+                            val flush = Runnable {
+                                if (capture != captureGeneration) return@Runnable
+                                val held = heldSpokenSeconds
+                                Log.i(TAG, "[vad] hold expired at ${"%.2f".format(held)}s — settling")
+                                listener?.onError(RecognitionError.NO_MATCH, "Too short — tap the mic and speak.")
+                                cancel()
                             }
+                            holdFlushRunnable = flush
+                            mainHandler.postDelayed(flush, HOLD_FLUSH_MS)
+                            return@post
                         }
-                        holdFlushRunnable = flush
-                        mainHandler.postDelayed(flush, HOLD_FLUSH_MS)
-                        return
+                        holdFlushRunnable?.let { mainHandler.removeCallbacks(it) }
+                        holdFlushRunnable = null
+                        Log.i(TAG, "[vad] silence close, spoken=${"%.2f".format(spokenSeconds)}s — finalising")
+                        finaliseSession()
                     }
-                    holdFlushRunnable?.let { mainHandler.removeCallbacks(it) }
-                    holdFlushRunnable = null
-                    Log.i(TAG, "[vad] silence close, spoken=${"%.2f".format(spokenSeconds)}s — finalising")
-                    finaliseSession()
                 }
 
                 override fun onSessionLimit(limit: SessionLimit) {
-                    // Not a failure — the session ran out its allowance. Commit
-                    // whatever the recognizer has rather than discarding it, so
-                    // a long dictation that hits the 300 s ceiling is not lost.
-                    Log.i(TAG, "[vad] session limit $limit — finalising")
-                    finaliseSession()
+                    mainHandler.post {
+                        if (capture != captureGeneration) return@post
+                        // Not a failure — the session ran out its allowance. Commit
+                        // whatever the recognizer has rather than discarding it, so
+                        // a long dictation that hits the 300 s ceiling is not lost.
+                        Log.i(TAG, "[vad] session limit $limit — finalising")
+                        finaliseSession()
+                    }
                 }
 
                 override fun onCaptureError(message: String) {
-                    // Endpointing died; leave the recognizer running on the
-                    // platform's own timing rather than stranding the user
-                    // with a mic that never stops.
-                    Log.w(TAG, "[vad] endpointing unavailable, platform timing applies: $message")
-                    stopVad()
+                    mainHandler.post {
+                        if (capture != captureGeneration) return@post
+                        // nanoMuse: a dead audio feeder is terminal, not microphone-ready.
+                        Log.w(TAG, "[vad] endpointing unavailable: $message")
+                        listener?.onError(RecognitionError.AUDIO_ERROR, message)
+                        stopVad()
+                        closeAudioPipe()
+                    }
                 }
             },
         )
@@ -420,6 +440,8 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
                 }
             }
         }
+        // nanoMuse: retain the detector until the capture job's resource finally completes.
+        captureResources.track({ det.cancel() }, { det.awaitStopped() })
         when (val err = det.start()) {
             null -> {
                 vad = det
@@ -510,10 +532,10 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
     }
 
     private fun closeAudioPipe() {
-        audioPipeStream?.let { runCatching { it.close() } }
+        audioPipeStream?.let { runCatching { it.close() }.onFailure { cleanupFailure = it } }
         audioPipeStream = null
         audioPipeWrite = null
-        audioPipeRead?.let { runCatching { it.close() } }
+        audioPipeRead?.let { runCatching { it.close() }.onFailure { cleanupFailure = it } }
         audioPipeRead = null
         feedingAudio = false
     }
@@ -521,7 +543,7 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
     private fun stopVad() {
         vad?.let {
             it.rawAudioSink = null
-            runCatching { it.stop() }
+            runCatching { it.stop() }.onFailure { cleanupFailure = it }
         }
         vad = null
         speechStartedAt = 0L
@@ -545,7 +567,10 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
      * it false, which forces the regular (typically cloud) recognizer.
      */
     private fun startInternal(locale: Locale, allowOnDeviceRetry: Boolean) {
+        // nanoMuse: a cancelled/retired posted start cannot open a newer capture's recognizer.
+        val generation = ++platformGeneration
         mainHandler.post {
+            if (platformGeneration != generation) return@post
             try {
                 // Only reach for the on-device recognizer when the user actually
                 // asked for offline. It used to be created unconditionally on
@@ -566,7 +591,7 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
                 usingOnDevice = wantOnDevice
                 pendingLocale = locale
                 recognizer = r
-                r.setRecognitionListener(callbacks)
+                r.setRecognitionListener(callbacksFor(generation))
                 r.startListening(buildIntent(locale))
             } catch (e: Throwable) {
                 Log.w(TAG, "startListening threw: ${e.message}")
@@ -592,7 +617,10 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
         //
         // Our capture is stopped here because nothing else will — the
         // recogniser only owns the pipe, not the AudioRecord behind it.
+        // nanoMuse: queued stop belongs to this platform generation only.
+        val generation = platformGeneration
         mainHandler.post {
+            if (generation != platformGeneration) return@post
             // [T-android-continuous-dictation] Disarm BEFORE stopListening, so
             // the onResults it triggers ends the dictation instead of starting
             // another segment.
@@ -616,11 +644,32 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
     }
 
     override fun cancel() {
+        // nanoMuse: invalidate immediately, before the posted platform cleanup runs.
+        ++platformGeneration
+        ++captureGeneration
+        listener = null
+        val generation = platformGeneration
         mainHandler.post {
+            if (generation != platformGeneration) return@post
             try { recognizer?.cancel() }
             catch (e: Throwable) { Log.w(TAG, "cancel: ${e.message}") }
             tearDown()
         }
+    }
+
+    // nanoMuse: the manager keeps admission until posted teardown AND VAD completion.
+    override suspend fun cancelAndJoin() {
+        var failure: Throwable? = null
+        try {
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main.immediate) {
+                ++platformGeneration
+                ++captureGeneration
+                listener = null
+                try { recognizer?.cancel() } finally { tearDown() }
+            }
+        } catch (t: Throwable) { failure = t }
+        try { captureResources.closeAndJoin() } catch (t: Throwable) { failure = t }
+        (failure ?: cleanupFailure)?.let { markDegraded(); throw it }
     }
 
     override fun markDegraded() {
@@ -632,7 +681,11 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
     }
 
     private fun tearDown() {
-        try { recognizer?.destroy() } catch (_: Throwable) {}
+        // nanoMuse: stale platform/VAD callbacks must not reach the next listener or restart it.
+        ++platformGeneration
+        ++captureGeneration
+        // nanoMuse: cleanup errors remain observable after all other resources are attempted.
+        try { recognizer?.destroy() } catch (t: Throwable) { cleanupFailure = t }
         recognizer = null
         // [T-android-vad] The VAD holds the mic; leaking it past a session
         // would keep recording after the user stopped. The pipe must go too —
@@ -777,6 +830,21 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
                 )
             }
         }
+    }
+
+    // nanoMuse: each platform listener carries its own generation, including internal restarts.
+    private fun callbacksFor(generation: Long): RecognitionListener = object : RecognitionListener {
+        override fun onReadyForSpeech(params: Bundle?) { if (generation == platformGeneration) callbacks.onReadyForSpeech(params) }
+        override fun onBeginningOfSpeech() { if (generation == platformGeneration) callbacks.onBeginningOfSpeech() }
+        override fun onBufferReceived(buffer: ByteArray?) { if (generation == platformGeneration) callbacks.onBufferReceived(buffer) }
+        override fun onEndOfSpeech() { if (generation == platformGeneration) callbacks.onEndOfSpeech() }
+        override fun onEvent(eventType: Int, params: Bundle?) { if (generation == platformGeneration) callbacks.onEvent(eventType, params) }
+        override fun onRmsChanged(rms: Float) { if (generation == platformGeneration) callbacks.onRmsChanged(rms) }
+        override fun onPartialResults(results: Bundle?) { if (generation == platformGeneration) callbacks.onPartialResults(results) }
+        override fun onResults(results: Bundle?) { if (generation == platformGeneration) callbacks.onResults(results) }
+        override fun onSegmentResults(results: Bundle) { if (generation == platformGeneration) callbacks.onSegmentResults(results) }
+        override fun onEndOfSegmentedSession() { if (generation == platformGeneration) callbacks.onEndOfSegmentedSession() }
+        override fun onError(error: Int) { if (generation == platformGeneration) callbacks.onError(error) }
     }
 
     private val callbacks = object : RecognitionListener {

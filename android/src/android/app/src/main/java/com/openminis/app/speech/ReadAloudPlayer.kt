@@ -245,7 +245,8 @@ class ReadAloudPlayer(context: Context) {
         // dictation mic (echo), and capture/playback also fight over the
         // audio route. iOS drops the text outright; mirrored here.
         val recState = SpeechRecognitionManager.state.value
-        if (recState == RecognitionState.RECORDING || recState == RecognitionState.STARTING) {
+        // nanoMuse: suppress newly registered players and finishing captures too.
+        if (VoiceOutputState.captureSuppressed || capturePaused || recState != RecognitionState.IDLE) {
             AppLogger.info(TAG, "enqueue dropped — mic capturing (state=$recState)")
             return
         }
@@ -275,6 +276,9 @@ class ReadAloudPlayer(context: Context) {
         capturePaused = true
         // nanoMuse: pause cancels current synthesis; held queue remains resumable.
         generation.invalidate()
+        // nanoMuse: detach before cancellation handlers run, so capture observes release failures.
+        val playback = player
+        player = null
         utteranceJob?.cancel()
         // Drain into the holding list rather than onto the floor.
         val held = mutableListOf<String>()
@@ -289,8 +293,13 @@ class ReadAloudPlayer(context: Context) {
         heldForCapture.addAll(held)
 
         playbackFinisher?.invoke()
-        releasePlayer()
-        system.stop()
+        var playbackFailure: Throwable? = null
+        try { playback?.stop() } catch (t: Throwable) { playbackFailure = t }
+        try { playback?.release() } catch (t: Throwable) { playbackFailure = t }
+        abandonAudioFocus()
+        // nanoMuse: a failed stop must not be interpreted as microphone-ready.
+        system.stop(requireAcknowledgement = true)
+        playbackFailure?.let { throw it }
         pending.set(0)
         _isSpeaking.value = false
         if (ownsCapsule()) {
@@ -298,6 +307,11 @@ class ReadAloudPlayer(context: Context) {
             VoiceOutputState.isSynthesizing.value = false
         }
         AppLogger.info(TAG, "suspended for mic capture — held ${heldForCapture.size} utterance(s)")
+    }
+
+    // nanoMuse: await synthesis/playback coroutine finally after invalidating late bytes.
+    suspend fun suspendForCaptureAndJoin() {
+        io.github.nanomuse.dot.voice.CapturePause.await(utteranceJob) { suspendForCapture() }
     }
 
     /** Re-queue whatever [suspendForCapture] held back. */

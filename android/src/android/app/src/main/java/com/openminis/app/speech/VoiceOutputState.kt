@@ -156,6 +156,20 @@ object VoiceOutputState {
      * channel and the selection Read-Aloud player can both be live, and
      * leaving the non-active one talking is exactly the echo this prevents.
      */
+    // nanoMuse: process capture gate also covers players registered during asynchronous cleanup.
+    @Volatile var captureSuppressed: Boolean = false
+        private set
+
+    suspend fun suspendAllForCaptureAndJoin() {
+        captureSuppressed = true
+        val live = synchronized(players) { players.toList() }
+        var failure: Throwable? = null
+        for (player in live) {
+            try { player.suspendForCaptureAndJoin() } catch (t: Throwable) { failure = t }
+        }
+        failure?.let { throw it }
+    }
+
     fun suspendAllForCapture() {
         val live = synchronized(players) { players.toList() }
         live.forEach { runCatching { it.suspendForCapture() } }
@@ -163,6 +177,8 @@ object VoiceOutputState {
 
     /** Resume every player parked by [suspendAllForCapture]. */
     fun resumeAllAfterCapture() {
+        // nanoMuse: called only by the capture that finished controlled resource cleanup.
+        captureSuppressed = false
         val live = synchronized(players) { players.toList() }
         live.forEach { runCatching { it.resumeAfterCapture() } }
     }

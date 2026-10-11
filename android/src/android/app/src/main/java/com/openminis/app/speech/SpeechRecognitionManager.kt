@@ -7,6 +7,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.Locale
+// nanoMuse: shared capture admission is used by the live main manager and future Dot port.
+import io.github.nanomuse.dot.voice.*
+import kotlinx.coroutines.*
 
 /**
  * Application-scoped orchestrator for speech-to-text. Owns:
@@ -36,27 +39,15 @@ object SpeechRecognitionManager {
     private val _state = MutableStateFlow(RecognitionState.IDLE)
     val state: StateFlow<RecognitionState> = _state.asStateFlow()
 
-    /**
-     * [T-android-tts-stop-on-capture] Resume read-aloud the moment capture
-     * ends, whichever way it ended.
-     *
-     * There are five separate writes of IDLE in this file — final result,
-     * engine error, engine-start throw, cancelRecording, and the mid-session
-     * locale restart — plus FINISHING from stopRecording. Hanging the resume
-     * off each one individually means a sixth path added later silently leaves
-     * TTS muted forever, which is a much worse failure than a missed pause.
-     * Funnelling every transition through one setter makes that impossible by
-     * construction.
-     *
-     * FINISHING deliberately does NOT resume: the engine is still delivering
-     * the final result and the mic may still be hot.
-     */
-    private fun setState(next: RecognitionState) {
-        val prev = _state.value
+    // nanoMuse: IDLE is published only after the pinned engine's controlled cleanup.
+    private val captureScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val captures = OwnedCapture(captureScope, VoiceLease(), object : CaptureOutput {
+        override suspend fun pause() = VoiceOutputState.suspendAllForCaptureAndJoin()
+        override fun resume() = VoiceOutputState.resumeAllAfterCapture()
+    }) { next ->
         _state.value = next
-        if (next == RecognitionState.IDLE && prev != RecognitionState.IDLE) {
-            VoiceOutputState.resumeAllAfterCapture()
-        }
+        if (next == RecognitionState.STARTING) { _recognizedText.value = ""; _lastError.value = null; resetLevels() }
+        if (next == RecognitionState.IDLE) { resetLevels(); refreshAvailability() }
     }
 
     private val _recognizedText = MutableStateFlow("")
@@ -227,6 +218,8 @@ object SpeechRecognitionManager {
         val engine = currentEngine() ?: return
         if (engine is SystemSpeechRecognitionEngine) {
             engine.fetchSupportedLocales { locales ->
+                // nanoMuse: a late availability response cannot reconfigure an active capture.
+                if (currentEngine() !== engine || _state.value != RecognitionState.IDLE) return@fetchSupportedLocales
                 _supportedLocales.value = locales
                 if (locales.isNotEmpty() && locales.none { it.toLanguageTag() == _locale.value.toLanguageTag() }) {
                     val fallback = locales.firstOrNull { it.language == Locale.getDefault().language }
@@ -244,6 +237,8 @@ object SpeechRecognitionManager {
         engines.firstOrNull { it.isAvailable }?.id ?: "system"
 
     fun selectEngine(id: String) {
+        // nanoMuse: compatibility configuration belongs to main, never an active Dot capture.
+        if (_state.value != RecognitionState.IDLE && captures.current("main") == null) return
         if (_selectedEngineId.value == id) return
         _selectedEngineId.value = id
         prefs.edit().putString(KEY_ENGINE_ID, id).apply()
@@ -270,23 +265,13 @@ object SpeechRecognitionManager {
     }
 
     fun selectLocale(locale: Locale) {
+        // nanoMuse: preserve main locale restart through the same pinned owner and cleanup gate.
+        if (_state.value != RecognitionState.IDLE && captures.current("main") == null) return
         if (_locale.value.toLanguageTag() == locale.toLanguageTag()) return
         _locale.value = locale
         prefs.edit().putString(KEY_LOCALE, locale.toLanguageTag()).apply()
-        // If the user changed language mid-recording, iOS restarts the
-        // session in the new language. Matching that behavior.
-        if (_state.value == RecognitionState.RECORDING || _state.value == RecognitionState.STARTING) {
-            val cb = activeCallbacks
-            if (cb != null) {
-                currentEngine()?.cancel()
-                setState(RecognitionState.IDLE)
-                startRecording(cb.first, cb.second)
-            }
-        }
+        captures.current("main")?.let { captures.restart(it, locale) }
     }
-
-    /** Callbacks from the most recent [startRecording] so [selectLocale] can restart with them. */
-    private var activeCallbacks: Pair<(String, Boolean) -> Unit, (RecognitionError, String?) -> Unit>? = null
 
     fun availableEngines(): List<SpeechRecognitionEngine> = engines.toList()
 
@@ -305,91 +290,45 @@ object SpeechRecognitionManager {
         return engines.firstOrNull { it.isAvailable }
     }
 
-    /**
-     * Start a capture session. [onPartialOrFinal] fires with the current best
-     * transcription; the caller is responsible for delta-appending into the
-     * composer (mirrors iOS `lastRecognizedLength` algorithm).
-     *
-     * No-op if a session is already in flight.
-     */
+    // nanoMuse: compatibility calls retain main's implicit continuous policy and owner.
     fun startRecording(
         onPartialOrFinal: (text: String, isFinal: Boolean) -> Unit,
         onError: (RecognitionError, String?) -> Unit,
-    ) {
-        if (_state.value != RecognitionState.IDLE) {
-            Log.d(TAG, "startRecording ignored; state=${_state.value}")
-            return
-        }
+    ) { startOwned("main", null, onPartialOrFinal, onError) }
+
+    /** Task5B must establish visible permission + foreground service admission before this call. */
+    fun startOwned(
+        owner: String,
+        continuous: Boolean? = false,
+        onPartialOrFinal: (String, Boolean) -> Unit,
+        onError: (RecognitionError, String?) -> Unit,
+    ): VoiceLease.Ticket? {
         val engine = currentEngine()
         if (engine == null) {
-            _lastError.value = RecognitionError.OEM_NO_SERVICE
             onError(RecognitionError.OEM_NO_SERVICE, "No recognition engine available")
-            return
+            return null
         }
-
-        // [T-android-tts-stop-on-capture] Silence read-aloud BEFORE the engine
-        // opens the mic. Done here rather than at the UI call sites so every
-        // entry point is covered — the voice panel, the voice_chat shortcut and
-        // hands-free re-arm all funnel through startRecording.
-        //
-        // Ordering matters: this runs before STARTING is published, so playback
-        // is already stopping by the time the recognizer warms up, rather than
-        // racing the first audio frames.
-        VoiceOutputState.suspendAllForCapture()
-
-        setState(RecognitionState.STARTING)
-        _recognizedText.value = ""
-        _lastError.value = null
-        resetLevels()
-        activeCallbacks = onPartialOrFinal to onError
-
+        val port = object : CaptureEngine {
+            override fun start(locale: Locale, continuous: Boolean?, listener: SpeechRecognitionEngine.Listener) =
+                engine.startOwned(locale, continuous, listener)
+            override fun stop() = engine.stop()
+            override suspend fun cancelAndJoin() = engine.cancelAndJoin()
+        }
         val listener = object : SpeechRecognitionEngine.Listener {
-            override fun onReadyForSpeech() {
-                setState(RecognitionState.RECORDING)
-            }
-
-            override fun onPartial(text: String) {
-                _recognizedText.value = text
-                onPartialOrFinal(text, false)
-            }
-
-            override fun onFinal(text: String) {
-                if (text.isNotEmpty()) _recognizedText.value = text
-                onPartialOrFinal(text, true)
-                setState(RecognitionState.IDLE)
-                resetLevels()
-                refreshAvailability()
-            }
-
+            override fun onPartial(text: String) { _recognizedText.value = text; onPartialOrFinal(text, false) }
+            override fun onFinal(text: String) { _recognizedText.value = text; onPartialOrFinal(text, true) }
             override fun onError(error: RecognitionError, message: String?) {
-                _lastError.value = error
-                setState(RecognitionState.IDLE)
-                resetLevels()
+                // Busy requests must not overwrite the current capture's error/state.
+                if (error != RecognitionError.RECOGNIZER_BUSY) _lastError.value = error
                 onError(error, message)
-                refreshAvailability()
             }
-
-            override fun onRmsDb(rms: Float) { pushLevel(rms) }
+            override fun onRmsDb(rms: Float) = pushLevel(rms)
         }
-
-        try {
-            engine.start(_locale.value, listener)
-        } catch (e: Throwable) {
-            setState(RecognitionState.IDLE)
-            _lastError.value = RecognitionError.UNKNOWN
-            onError(RecognitionError.UNKNOWN, e.message)
-        }
+        return captures.start(owner, port, _locale.value, continuous, listener)
     }
 
-    fun stopRecording() {
-        if (_state.value != RecognitionState.RECORDING && _state.value != RecognitionState.STARTING) return
-        setState(RecognitionState.FINISHING)
-        currentEngine()?.stop()
-    }
-
-    fun cancelRecording() {
-        currentEngine()?.cancel()
-        setState(RecognitionState.IDLE)
-        _recognizedText.value = ""
-    }
+    fun stopRecording() { captures.current("main")?.let(captures::stop) }
+    fun cancelRecording() { captures.current("main")?.let(captures::cancel) }
+    fun stopOwned(ticket: VoiceLease.Ticket) = captures.stop(ticket)
+    fun cancelOwned(ticket: VoiceLease.Ticket) = captures.cancel(ticket)
 }
