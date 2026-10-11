@@ -1,0 +1,11 @@
+acb33d200432f4d81df2fb465d5ff12484f899be5a8e78d13b710e66b924b46a 4854 .superpowers/sdd/2026-10-10-android-dot-care/work/dot-ui-acceptance/fix-round-4/compile-owned.log
+9a7cebb403c983ed2e4d91dfb80a0d477a16c53dd3fa761de520c5c0b8dbf0e4 4426 .superpowers/sdd/2026-10-10-android-dot-care/work/dot-ui-acceptance/fix-round-4/compile-sandbox-startup-blocked.log
+f3d319a003b82d8763c87c90db4537902eacd1fe9532e2f0505f0d42c2764bd3 706 .superpowers/sdd/2026-10-10-android-dot-care/work/dot-ui-acceptance/fix-round-4/compile-inputs.txt
+c246919d91909baf3e9c88623ef72d4b29984df277fcdee74cfb2c831295adf3 12331 .superpowers/sdd/2026-10-10-android-dot-care/work/dot-ui-acceptance/fix-round-4/preservation-receipt.json
+ea4c632afa40ddca8c9458b214bf57d8d4f80fa33c2af5e4b5c22e9af109fa2a 30850 .superpowers/sdd/2026-10-10-android-dot-care/work/dot-ui-acceptance/fix-round-4/primary-api-bytecode.txt
+18b275acd3d799303c8f7a9fc51831ceaf4f9d92172b788f3c779c2ce83ab6d8 639 .superpowers/sdd/2026-10-10-android-dot-care/work/dot-ui-acceptance/fix-round-4/primary-api-origins.txt
+656b9c791aab254769a3456b34d732ff7ec772c47a0971e6914829d795581baa 6958 .superpowers/sdd/2026-10-10-android-dot-care/dot-ui-acceptance-fix3-review.md
+a2d2b05eec09a14a1c2b0999568572a546d1d5ac4ca9e34d01c7e73aedd74b42 6503 .superpowers/sdd/2026-10-10-android-dot-care/dot-ui-acceptance-fix4-report.md
+f3d319a003b82d8763c87c90db4537902eacd1fe9532e2f0505f0d42c2764bd3 706 .superpowers/sdd/2026-10-10-android-dot-care/dot-ui-acceptance-fix4-source-manifest.txt
+14e5af9accc57ec7a1d5a5286413e76a13af7eaff4046617dab0d37b44581f57 536111 android/src/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+b29acc93017e26d48731889237feeeae862f1cbd11e0ddd6f1943851f44fab29 428 android/src/android/app/build/outputs/apk/androidTest/debug/output-metadata.json

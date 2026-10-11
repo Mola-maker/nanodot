@@ -289,15 +289,16 @@ class DotForegroundAcceptanceTest {
         check(enabledServices() == original) { "Service list changed; preserve for controller" }
         if (MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true) return
         // Remove only our dead binding, retaining every unrelated component verbatim and in order.
+        // UiAutomation passes argv directly; the validated list needs no literal shell quotes.
         if (removed == null) shell("settings delete secure enabled_accessibility_services")
-        else shell("settings put secure enabled_accessibility_services '$removed'")
+        else shell("settings put secure enabled_accessibility_services $removed")
         waitFor("own service binding removed") {
             shell("dumpsys accessibility").lineSequence().filter {
                 it.contains("Bound services:") || it.contains("Binding services:")
             }.none { it.contains(MinisAccessibilityService::class.java.simpleName) }
         }
         check(enabledServices() == removed) { "Service list changed during rebind; preserve for controller" }
-        shell("settings put secure enabled_accessibility_services '$original'")
+        shell("settings put secure enabled_accessibility_services $original")
         shell("settings put secure accessibility_enabled 1")
         check(enabledServices() == original)
         check(shell("settings get secure accessibility_enabled").trim() == "1")
