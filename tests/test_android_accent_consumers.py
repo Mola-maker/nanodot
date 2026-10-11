@@ -22,7 +22,6 @@ GLYPHS = (
     "ui/settings/MountedFoldersScreen.kt",
     "ui/settings/AgentLoopAddSheets.kt",
     "ui/settings/MinisSkillsBrowserScreen.kt",
-    "ui/settings/backup/RestoreBrowseScreen.kt",
 )
 
 
@@ -33,6 +32,7 @@ def fixture(tmp_path, legacy=False):
         PICKER,
         DETAIL,
         *GLYPHS,
+        "ui/settings/backup/RestoreBrowseScreen.kt",
         "MainActivity.kt",
         "ui/theme/Theme.kt",
         "ui/settings/AppearanceScreen.kt",
@@ -252,6 +252,44 @@ def test_semantic_consumers_follow_alternate_profiles_without_rewriting_preferen
     assert apply_brand(root, alternate) == []
     apply_brand(root, original)
     assert apply_brand(root, original) == []
+    assert (
+        root / "profile.json"
+    ).read_text() == '{"theme_mode":2,"avatar":"custom-ice","color":"#123456"}'
+
+
+@pytest.mark.parametrize("input_revision", ["historical", "fix1", "current"])
+@pytest.mark.parametrize("saved_mode,system_dark", [(1, True), (2, False), (0, False), (0, True)])
+def test_restore_entry_preserves_fixed_fill_and_white_glyph(
+    tmp_path, input_revision, saved_mode, system_dark
+):
+    root, brand = fixture(tmp_path)
+    name = "ui/settings/backup/RestoreBrowseScreen.kt"
+    filename = (
+        "RestoreBrowseScreen.kt" if input_revision == "historical" else "RestoreBrowseScreenFix1.kt"
+    )
+    source = (
+        ROOT / JAVA / name
+        if input_revision == "current"
+        else ROOT / "tests/fixtures/android_accent_consumers" / filename
+    )
+    target = root / JAVA / name
+    target.write_bytes(source.read_bytes())
+    apply_brand(root, brand)
+    text = target.read_text()
+    entry = text[text.index("private fun EntryRow(") :]
+    fill = re.search(r"if \(entry.isDirectory\) (Color\(0xFF[0-9A-Fa-f]+\)) else ([^\n]+)", entry)
+    assert fill, "EntryRow must retain its explicit directory/file fill branches"
+    assert fill[1] == "Color(0xFF8E8E93)"
+    file_fill = fill[2].split("//")[0].rstrip(", ")
+    ink = expression_after(entry, "Icons.Outlined.Inventory2", field="tint")
+    mode = actual_mode(root, saved_mode, system_dark)
+    palette = brand.themeColors[mode]
+    background = rgba(file_fill, palette)
+    foreground = rgba(ink, palette)
+    assert contrast(over(foreground, background), background[:3]) >= 3
+    assert file_fill == "Color(0xFF2D6396)"
+    assert ink == "Color.White"
+    assert apply_brand(root, brand) == []
     assert (
         root / "profile.json"
     ).read_text() == '{"theme_mode":2,"avatar":"custom-ice","color":"#123456"}'

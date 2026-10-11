@@ -362,7 +362,6 @@ def _android_semantic_accents(upstream, primary, edit) -> None:
         "ui/settings/MountedFoldersScreen.kt",
         "ui/settings/AgentLoopAddSheets.kt",
         "ui/settings/MinisSkillsBrowserScreen.kt",
-        "ui/settings/backup/RestoreBrowseScreen.kt",
         "ui/settings/SkillRowItem.kt",
     )
     for name in foreground_files:
@@ -375,6 +374,19 @@ def _android_semantic_accents(upstream, primary, edit) -> None:
                 )
             ],
         )
+    # Restore EntryRow uses a filled circle with white ink, not a foreground accent.
+    # Repair the prior generated theme-role state as well as preserving literal inputs.
+    edit(
+        upstream / "ui/settings/backup/RestoreBrowseScreen.kt",
+        [
+            (
+                r"(if \(entry\.isDirectory\) Color\(0xFF8E8E93\) else )"
+                r"androidx\.compose\.material3\.MaterialTheme\.colorScheme\.primary,"
+                r"(?: // nanoMuse: active-theme foreground accent\.)?",
+                rf"\g<1>Color(0xFF{primary[1:]}),",
+            )
+        ],
+    )
     edit(
         upstream / "ui/chat/ChatAssistantMessageUI.kt",
         [
