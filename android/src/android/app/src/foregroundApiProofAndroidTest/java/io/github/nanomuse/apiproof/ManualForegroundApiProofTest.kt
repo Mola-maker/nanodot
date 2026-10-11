@@ -422,15 +422,20 @@ class ManualForegroundApiProofTest {
             if(installed) {
                 var failures=0
                 fun restore(action:()->Unit) { try { action() } catch(_:Throwable) { failures++ } }
+                restore { inst.runOnMainSync { emit("before_cleanup") } }
                 restore { inst.runOnMainSync {
-                    emit("before_cleanup")
-                    (field(controller,"work") as? Job)?.let(jobs::add)
-                    session.disconnect()
+                    (field(controller,"work") as? Job)?.let { jobs.add(it); it.cancel() }
                 } }
+                restore { inst.runOnMainSync {
+                    ownedWindow?.let { window ->
+                        (field(window,"job") as? Job)?.let { jobs.add(it); it.cancel() }
+                    }
+                } }
+                restore { inst.runOnMainSync { session.disconnect() } }
                 restore { inst.runOnMainSync {
                     check(field(actual.dotInteraction,"careWindow")===ownedWindow) // Never close another owner's window.
                     ownedWindow?.let { window ->
-                        (field(window,"job") as? Job)?.let(jobs::add); window.close()
+                        window.close()
                         set(actual.dotInteraction,"careWindow",null)
                     }
                 } }
@@ -447,7 +452,7 @@ class ManualForegroundApiProofTest {
                 } }
                 restore { await("Public host focus did not return after diagnostic") { host(actual) } }
                 restore { inspectBothPublicFields(actual) } // Same strict public whitelist; both fields remain unfocused.
-                android.util.Log.i("ForegroundCareKeyless",JSONObject().put("phase","cleanup_finished").put("cleanupFailures",failures).toString())
+                restore { android.util.Log.i("ForegroundCareKeyless",JSONObject().put("phase","cleanup_finished").put("cleanupFailures",failures).toString()) }
                 check(failures==0) { "Keyless Care cleanup incomplete" }
             }
         }
