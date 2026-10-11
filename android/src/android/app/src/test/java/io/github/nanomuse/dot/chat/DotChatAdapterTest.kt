@@ -19,6 +19,8 @@ class DotChatAdapterTest {
         var stages = 0; var sends = 0; var stops = 0
         var durable: File? = null
         var hasComposerAttachment = true
+        val consumed = MutableStateFlow<Map<String,String>>(emptyMap())
+        override val consumedAttachments = consumed
         override fun hasAttachment(id: String) = hasComposerAttachment
         override fun input(text: String) { inputText.value = text }
         override fun stage(file: File): DotOwnedAttachment {
@@ -34,6 +36,24 @@ class DotChatAdapterTest {
     private fun shot(generation: Long, at: Long = 1234) = ScreenSnapshot("fixture", generation, at,
         SceneKey("fixture.host", 7, 0, 1), RectPx(0f,0f,48f,48f),0,RectPx(0f,0f,0f,0f),null,
         emptyList(),null,ScreenTransform(RectPx(0f,0f,48f,48f),48,48))
+    @Test fun switchingWithoutScreenshotCancelsOldOwnerButAliasRebindDoesNot() {
+        val aliases = mutableMapOf<String,String>()
+        val sessions = mutableMapOf<String,Session>()
+        val adapter = DotChatAdapter({aliases[it] ?: it},{sessions.getOrPut(it){Session()}},{error("No capture expected")})
+        val a = adapter.bind("__new__A")
+        assertTrue(adapter.send(a,"plain text"))
+        val old = sessions.getValue("__new__A")
+        aliases["__new__A"] = "A"
+        assertEquals(a,adapter.bind("A"))
+        assertEquals("Promotion keeps the same operation",0,old.stops)
+        val b = adapter.bind("B")
+        assertEquals("Switch must revoke old work even without an owned screenshot",1,old.stops)
+        assertFalse(old.isStreaming.value)
+        assertEquals(0,sessions.getValue("B").stops)
+        adapter.cancel(a)
+        assertEquals(0,sessions.getValue("B").stops)
+        adapter.cancel(b)
+    }
     @Test fun lateCaptureCannotAttachToChangedOrCancelledSession() {
         val sessions = mutableMapOf<String,Session>()
         var staged = 0
@@ -84,6 +104,7 @@ class DotChatAdapterTest {
         assertEquals(draft,adapter.bind("A")); assertSame(session,adapter.session)
         assertTrue(adapter.send(draft,"inspect"))
         session.messages.value = listOf(ChatMessage("persisted", "user", "inspect"))
+        session.consumed.value = mapOf("owned" to "persisted")
         adapter.releaseConsumedFiles()
         assertFalse(session.durable!!.exists())
         assertEquals(1,session.messages.value.size)
@@ -122,6 +143,9 @@ class DotChatAdapterTest {
     @Test fun errorReleasesInboundButNeverDeletesConfirmedHistoricalMedia() {
         val session = Session()
         val historical = File.createTempFile("dot-history", ".png")
+        // The real file is represented in this session's canonical history, not an unrelated file.
+        val history = ChatMessage("history", "user", "prior image", attachmentNames = listOf(historical.toURI().toString()))
+        session.messages.value = listOf(history)
         val adapter = DotChatAdapter({it},{session},{File.createTempFile("dot-preview", ".png")})
         val a = adapter.bind("A")
         assertTrue(adapter.attach(a,shot(a.generation)))
@@ -131,10 +155,31 @@ class DotChatAdapterTest {
         session.error.value = "local failure"
         adapter.releaseConsumedFiles()
         assertFalse(inbound.exists())
-        assertTrue(historical.exists())
+        assertEquals(listOf(history),session.messages.value)
+        assertTrue(File(java.net.URI(session.messages.value.single().attachmentNames.single())).exists())
         historical.delete()
     }
-
+    @Test fun queuedAndUnrelatedUserRowsCannotConsumePendingScreenshot() {
+        val session = Session()
+        val adapter = DotChatAdapter({it},{session},{File.createTempFile("dot-preview", ".png")})
+        val a = adapter.bind("A")
+        assertTrue(adapter.attach(a,shot(a.generation)))
+        assertTrue(adapter.send(a,"inspect"))
+        val inbound = session.durable!!
+        session.messages.value = listOf(ChatMessage("queued", "user", "next", isQueued = true))
+        adapter.releaseConsumedFiles()
+        assertTrue("Queued publication is not screenshot persistence",inbound.exists())
+        session.messages.value += ChatMessage("unrelated", "user", "another main-app send")
+        adapter.releaseConsumedFiles()
+        assertTrue("Unrelated user row cannot consume this attachment",inbound.exists())
+        session.consumed.value = mapOf("owned" to "queued")
+        adapter.releaseConsumedFiles()
+        assertTrue("Receipt still requires a nonqueued persisted row",inbound.exists())
+        session.consumed.value = mapOf("owned" to "screenshot-send")
+        session.messages.value += ChatMessage("screenshot-send", "user", "inspect")
+        adapter.releaseConsumedFiles()
+        assertFalse("Exact persisted nonqueued receipt transfers ownership",inbound.exists())
+    }
     @Test fun removingOwnedAttachmentInCanonicalComposerReleasesInboundCopy() {
         val session = Session()
         val adapter = DotChatAdapter({it},{session},{File.createTempFile("dot-preview", ".png")})

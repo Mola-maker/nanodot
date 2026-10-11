@@ -32,8 +32,12 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit) {
     val deltas by session.deltas.collectAsState()
     val vm = adapter.businessViewModel
     val attachments by (vm?.attachments ?: remember { kotlinx.coroutines.flow.MutableStateFlow(emptyList<com.openminis.app.ui.chat.InputAttachment>()) }).collectAsState()
+    val compacting by (vm?.isCompacting ?: remember { kotlinx.coroutines.flow.MutableStateFlow(false) }).collectAsState()
+    val pendingCompactSend by (vm?.pendingCompactSend ?: remember { kotlinx.coroutines.flow.MutableStateFlow(false) }).collectAsState()
+    val busy = streaming || compacting || pendingCompactSend
+    val consumed by session.consumedAttachments.collectAsState()
     val compact by (vm?.showCompactBeforeSendPrompt ?: remember { kotlinx.coroutines.flow.MutableStateFlow(false) }).collectAsState()
-    LaunchedEffect(messages, error, streaming, attachments) { adapter.releaseConsumedFiles() }
+    LaunchedEffect(messages, error, streaming, attachments, consumed) { adapter.releaseConsumedFiles() }
     Surface(Modifier.fillMaxSize(), tonalElevation = 4.dp) {
         Column(Modifier.fillMaxSize().padding(DotTokens.Space.S16), verticalArrangement = Arrangement.spacedBy(DotTokens.Space.S8)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -72,7 +76,7 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit) {
                         if (configured.isNullOrBlank()) Text(stringResource(R.string.nm_chat_no_model), fontSize = DotTokens.Type.Body)
                         error?.let {
                             Text(it, fontSize = DotTokens.Type.Body)
-                            TextButton(onClick = session::retry, enabled = !streaming && !configured.isNullOrBlank(), modifier = Modifier.heightIn(min = DotTokens.TouchTarget)) {
+                            TextButton(onClick = session::retry, enabled = !busy && !configured.isNullOrBlank(), modifier = Modifier.heightIn(min = DotTokens.TouchTarget)) {
                                 Text(stringResource(R.string.nm_dot_chat_retry), fontSize = DotTokens.Type.Body)
                             }
                         }
@@ -86,10 +90,10 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit) {
             OutlinedTextField(text, session::input, Modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget).testTag("dot_composer"),
                 label = { Text(stringResource(R.string.nm_dot_chat_message), fontSize = DotTokens.Type.Body) },
                 textStyle = LocalTextStyle.current.copy(fontSize = DotTokens.Type.Body), maxLines = 4)
-            Button(onClick = { binding?.let { if (streaming) { adapter.cancel(it); adapter.bind(it.sessionId) } else adapter.send(it,text) } },
-                enabled = binding != null && (streaming || !configured.isNullOrBlank() && (text.isNotBlank() || preview != null)),
+            Button(onClick = { binding?.let { if (busy) { adapter.cancel(it); adapter.bind(it.sessionId) } else adapter.send(it,text) } },
+                enabled = binding != null && (busy || !configured.isNullOrBlank() && (text.isNotBlank() || preview != null)),
                 modifier = Modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget)) {
-                Text(stringResource(if (streaming) R.string.nm_dot_chat_stop else R.string.nm_dot_chat_send), fontSize = DotTokens.Type.Body)
+                Text(stringResource(if (busy) R.string.nm_dot_chat_stop else R.string.nm_dot_chat_send), fontSize = DotTokens.Type.Body)
             }
         }
     }

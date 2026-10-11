@@ -26,6 +26,7 @@ interface DotChatSession {
     val error: StateFlow<String?>
     val configured: StateFlow<String?>
     val deltas: StateFlow<Map<String, StreamingDelta>>
+    val consumedAttachments: StateFlow<Map<String,String>>
     fun hasAttachment(id: String): Boolean = true
     fun input(text: String)
     fun stage(file: File): DotOwnedAttachment?
@@ -48,13 +49,15 @@ class DotChatAdapter(
     var session: DotChatSession? = null
         private set
     val businessViewModel: ChatViewModel? get() = (session as? CanonicalSession)?.vm
-    private data class Owned(val attachment: DotOwnedAttachment, val messageIds: Set<String>)
+    private data class Owned(val attachment: DotOwnedAttachment)
     private var owned: Owned? = null
 
     fun bind(sessionId: String): SessionBinding {
         val next = gate.bind(sessionId)
         if (binding.value != next) {
-            discardOwned(cancelPending = true)
+            // A switch revokes canonical work even when the send has no screenshot.
+            session?.cancel()
+            discardOwned(cancelPending = false)
             removePreview()
             session = sessionFactory(canonical(sessionId))
             captureError.value = false
@@ -91,7 +94,7 @@ class DotChatAdapter(
             // One owned inbound copy at a time; repeated taps must never duplicate an attachment.
             if (owned != null) return false
             val attachment = target.stage(local.file) ?: return false
-            owned = Owned(attachment, target.messages.value.map { it.id }.toSet())
+            owned = Owned(attachment)
             removePreview()
         }
         try {
@@ -119,10 +122,13 @@ class DotChatAdapter(
         local?.file?.delete()
     }
 
-    /** ChatVM publishes the user only after prepareUserAttachments persisted its media copies. */
+    /** Only an exact durable-media receipt and its nonqueued user row transfer ownership. */
     fun releaseConsumedFiles() {
         val inbound = owned ?: return
-        if (session?.messages?.value?.any { it.role == "user" && it.id !in inbound.messageIds } == true) {
+        val consumedMessageId = session?.consumedAttachments?.value?.get(inbound.attachment.id)
+        if (consumedMessageId != null && session?.messages?.value?.any {
+                it.role == "user" && !it.isQueued && it.id == consumedMessageId
+            } == true) {
             owned = null
             inbound.attachment.file.delete()
         } else if (session?.isStreaming?.value == false && (session?.error?.value != null || session?.hasAttachment(inbound.attachment.id) == false)) {
@@ -185,6 +191,7 @@ private class CanonicalSession(val vm: ChatViewModel) : DotChatSession {
     override val error = vm.error
     override val configured: StateFlow<String?> = vm.modelName
     override val deltas = vm.streamingById
+    override val consumedAttachments = vm.consumedAttachmentMessages
     override fun hasAttachment(id: String) = vm.attachments.value.any { it.id == id }
     override fun input(text: String) = vm.setInputText(text)
     override fun stage(file: File): DotOwnedAttachment? = vm.addAttachmentFromStagedShare(file)?.let {
@@ -196,7 +203,7 @@ private class CanonicalSession(val vm: ChatViewModel) : DotChatSession {
     override fun cancel() {
         // Closing an idle draft must not turn its welcome message into an interrupted reply.
         if (vm.isStreaming.value) vm.cancelStream()
-        if (vm.isCompacting.value) vm.cancelCompact()
+        if (vm.isCompacting.value || vm.pendingCompactSend.value) vm.cancelCompact()
         if (vm.showCompactBeforeSendPrompt.value) vm.cancelCompactBeforeSend()
     }
     override fun retry() = vm.retryLast()
