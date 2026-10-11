@@ -552,3 +552,116 @@ API request, Flow collection, model invocation, helper/reviewer dispatch, push/C
 or attempt reservation; supplied shared count remains1/15. Independently approved
 fix2 at6d3cbfb0 and loggerbe882 remain approved facts; these newly appended fixtures
 are a pending candidate until root review. No actual/native proof is claimed here.
+
+
+## Public native hardlink capability diagnostic appendix
+
+BASE `5713591014c3f3a666ccafb4cbd302b5eea53262`. Root received FULL SAME-reviewer
+`api-proof-native-runtime-review.md`, SHA256
+`6e0172b01b049cc058f8f95acdc978aee6ce78fa45403322327818730a30a5a9`,
+Approved C0/I0/newM0 for the two public native runtime preflight methods. That source
+gate is approved, while those methods' native execution remains pending per root.
+This appendix neither reopens their implementation nor changes any security helper.
+
+Root reported an actual native failure on its OLD signed6d APK: unaliased and
+rename/replacement cases passed, absent-input was -4 skipped before provider, but
+hardlink fixture failed at alias.readText with ENOENT. That evidence is root-owned
+`work/private/android-api-public-native/instrumentation.txt`; this worker did not
+read broader private data, alter that file or independently rerun a native case.
+The observation DOES NOT establish that Os.link succeeded. Existing runCatching
+wrapped callback errors into the same consumer fixed rejection, so a native Os.link
+failure could satisfy the refusal assertions and only fail at later alias reading.
+No SELinux/backing-filesystem/permission cause is inferred from ENOENT alone.
+
+Only the same manual TEST-ONLY file changed. Existing
+publicSyntheticHardlinkRaceIsRejected now sets linkCompleted only AFTER successful
+Os.link, records its ErrnoException.errno if that operation throws, and requires
+linkCompleted BEFORE any claim of expected consumer rejection/alias survival.
+Its fixed public assertion includes errno (or null for unknown failure), directs
+root to the diagnostic and never silently skips or reports green on a failed
+callback. Consumer error sanitation, post-removal zero-link condition, metadata
+checks and security algorithms are unchanged. Unknown callback failure also leaves
+linkCompleted=false and fails rather than being accepted.
+
+Added ONE `publicSyntheticHardlinkCapabilityDiagnostic`. It exclusively creates
+`nanodot-api-proof.public-link-source` and `nanodot-api-proof.public-link-alias` in
+the target app's same cache; both must be absent before any create and no existing
+entry is removed. These distinct PUBLIC paths never touch the fixed credential
+input/result. Source is exclusive O_NOFOLLOW/O_CLOEXEC0600 and contains only
+`public-link-diagnostic`. The same live source FD is held by FileOutputStream through
+metadata, Os.link, source removal and alias cleanup. Initial fstat/lstat device/inode
+identity and nlink1 are checked. Actual Os.link success requires alias original-inode
+identity and both alias/fd nlink2; explicit Os.link ErrnoException is captured only
+around that operation, requires absent alias and original fd nlink1. Removing the
+original pathname then requires fd nlink1 if alias exists, otherwise0; removing an
+owned alias finally requires same fd nlink0 before descriptor closure.
+
+The diagnostic sends instrumentation progress status2 with key
+`public-link-diagnostic`. Value is a JSON object containing ONLY public errno and
+boolean observations (no paths, inode numbers, content, credentials or exception
+messages). `errno` is actual Os.link errno,0 for completed link; `linkCompleted`
+is the operation outcome. Other booleans establish fd/path identity, initial one
+link, alias/same inode and two links on success, or alias absence/single link on
+refusal, then original-path removal and zero-link cleanup. Cleanup ErrnoException
+adds only integer cleanupErrno and fails fixed. Unexpected metadata/setup/refusal
+ambiguity fails with a fixed message/no raw cause; it is not classified as capability
+refusal. Exclusive owned public paths are removed on failure where created, and the
+FD is closed by use. Instrumentation progress contains no real key or API outcome.
+
+An explicit Os.link capability refusal may complete this diagnostic characterization
+with linkCompleted=false/nonzeroerrno; that is **not** a hardlink-guard PASS. Root
+must interpret the public record together with JUnit completion:
+
+- If linkCompleted=true, errno0 and all identity/count/cleanup checks pass, root can
+  next run the CORRECTED hardlink race fixture to establish post-link guard behavior.
+- If linkCompleted=false with nonzeroerrno, alias absent, single-before-removal and
+  zero-after-cleanup checks pass, root has actual capability-refusal evidence. Keep
+  native hardlink-guard acceptance unproven; preserve host POSIX ownership proof and
+  seek an explicit bounded acceptance ruling or further public-path diagnosis.
+  Do not rename the diagnostic PASS into security-guard PASS or silently waive it.
+- If JUnit fails, errno0/noncompletion, ambiguous alias/count or cleanup failure,
+  do not infer capability/security behavior. Inspect only this public diagnostic
+  record and retain the failure before deciding the next bounded observation.
+
+The approved two public runtime methods plus their private reflection bridge were
+verified byte-identical to BASE. PrivateProofInput, ProofInputConsumption,
+ApiProofTransport, provider/business source and all22 unit sources are unchanged.
+No callback test was artificially broken to fabricate RED: root's original native
+failure motivated this diagnostic; the implementation worker compiles only.
+
+### Verification and scope
+
+One necessary OWN4 compile-only invocation used the same approvedSDK/JDK/owned2G
+cache/user directories, offline/no-daemon, no unit rerun:
+
+```sh
+./android/src/android/gradlew -p android/src/android \
+  :app:compileDebugAndroidTestKotlin \
+  -I "$PWD/work/api-proof/native-link-diagnostic/fixture-only.init.gradle" \
+  --offline --console=plain --no-daemon -Pnm.abi=x86_64
+```
+
+Exit0/BUILD SUCCESSFUL8s,30tasks (2executed/28up-to-date). Executed Kotlin compile
+printed the same exact FOUR owned filenames/two roots; byte-identical filter SHA256
+remains `35d87a7b736724b640c7dd97be96d8fed3e89a3de3216062096ba8a521a7f050`.
+Main/all unit sources remain unfiltered, sourceSets/versions unchanged. Known8legacy
+mountedSessionId full instrumentation errors remain binding/unwaived; this compile
+is never a full instrumentation PASS. `git diff --check` passed. ExistingSDK/AGP
+warnings remain, no upgrades/suppression.
+
+Ignored `work/api-proof/native-link-diagnostic/` preserves compile.log, unchanged
+filter and BASE full report. Adjacent `api-proof-native-link-source-manifest.txt`
+has11 full candidate source entries; `api-proof-native-link-evidence-manifest.txt`
+has3 evidence entries. Both use sha256sum text:64hex, two spaces, WT-relative path,
+one entry per line. Original16 +fix1 18 +fix2 13 +native-preflight3 evidence hashes
+all matched unchanged; original22 host GREEN and every historical failure remain.
+Root's native failure evidence is separately owned and was not read/modified here.
+
+This diagnostic/callback-tightening candidate needs scoped source review, then root
+runs ONLY the diagnostic method first. No native success, capability outcome or
+hardlink cause is claimed by compilation. Root alone holds device/native execution,
+real-key/API and attempt authority. This worker performed no input/.env/private-state
+read, provider/Flow/model/API/native/ADB/device operation, helper/reviewer dispatch,
+push/CI/deploy or counter reservation; supplied shared actual count remains1/15.
+Approved source facts at loggerbe882, fix2 6d3cbfb0 and runtimepreflight57135910 remain;
+this new candidate is pending root review independently of those approvals.

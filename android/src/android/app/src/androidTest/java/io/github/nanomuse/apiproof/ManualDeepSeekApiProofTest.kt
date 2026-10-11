@@ -154,7 +154,14 @@ class ManualDeepSeekApiProofTest {
     }
 
     @Test fun publicSyntheticHardlinkRaceIsRejected() = withPublicInput { context, input, alias ->
-        val failure = runCatching { PrivateProofInput.consume(context) { Os.link(input.path, alias.path) } }.exceptionOrNull()
+        var linkCompleted = false
+        var linkErrno: Int? = null
+        val failure = runCatching { PrivateProofInput.consume(context) {
+            try { Os.link(input.path, alias.path); linkCompleted = true }
+            catch (error: ErrnoException) { linkErrno = error.errno; throw error }
+        } }.exceptionOrNull()
+        // A failed callback is not evidence that the post-unlink hardlink guard ran.
+        assertTrue("Public Os.link did not complete (errno=$linkErrno); run capability diagnostic", linkCompleted)
         assertNotNull(failure)
         assertEquals("Proof input rejected", failure!!.message)
         assertNull(failure.cause)
@@ -231,5 +238,74 @@ class ManualDeepSeekApiProofTest {
         method.isAccessible = true
         try { method.invoke(transport, line) }
         catch (failure: java.lang.reflect.InvocationTargetException) { throw failure.targetException }
+    }
+
+    /** Diagnostic only: an explicit capability refusal is recorded, never called hardlink-guard success. */
+    @Test fun publicSyntheticHardlinkCapabilityDiagnostic() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val cache = instrumentation.targetContext.cacheDir
+        val source = File(cache, "nanodot-api-proof.public-link-source")
+        val alias = File(cache, "nanodot-api-proof.public-link-alias")
+        fun absent(file: File): Boolean = try { Os.lstat(file.path); false } catch (error: ErrnoException) {
+            if (error.errno == OsConstants.ENOENT) true else throw IllegalStateException("Public diagnostic metadata failed")
+        }
+        check(absent(source) && absent(alias)) { "Public diagnostic requires absent paths" }
+        val observed = JSONObject().put("errno", 0).put("linkCompleted", false)
+        var sourceCreated = false
+        var aliasCreated = false
+        try {
+            val fd = Os.open(source.path, OsConstants.O_WRONLY or OsConstants.O_CREAT or OsConstants.O_EXCL or
+                OsConstants.O_NOFOLLOW or OsConstants.O_CLOEXEC, 384)
+            sourceCreated = true
+            FileOutputStream(fd).use { stream ->
+                stream.write("public-link-diagnostic".toByteArray(Charsets.US_ASCII))
+                val original = Os.fstat(fd)
+                val pathStat = Os.lstat(source.path)
+                val identity = original.st_dev == pathStat.st_dev && original.st_ino == pathStat.st_ino
+                val single = original.st_nlink == 1L && pathStat.st_nlink == 1L
+                observed.put("fdPathIdentity", identity).put("initialSingleLink", single)
+                check(identity && single) { "Public diagnostic initial metadata differs" }
+                var errno = 0
+                try { Os.link(source.path, alias.path); aliasCreated = true }
+                catch (error: ErrnoException) { errno = error.errno }
+                observed.put("errno", errno).put("linkCompleted", aliasCreated)
+                if (aliasCreated) {
+                    val aliasStat = Os.lstat(alias.path)
+                    val same = aliasStat.st_dev == original.st_dev && aliasStat.st_ino == original.st_ino
+                    val two = aliasStat.st_nlink == 2L && Os.fstat(fd).st_nlink == 2L
+                    observed.put("aliasSameInode", same).put("linkedCountTwo", two)
+                    check(same && two) { "Public diagnostic linked metadata differs" }
+                } else {
+                    val absentAlias = absent(alias)
+                    val stillSingle = Os.fstat(fd).st_nlink == 1L
+                    observed.put("aliasAbsentAfterRefusal", absentAlias).put("singleAfterRefusal", stillSingle)
+                    check(errno != 0 && absentAlias && stillSingle) { "Public diagnostic refusal is ambiguous" }
+                }
+                Os.remove(source.path)
+                sourceCreated = false
+                val remaining = Os.fstat(fd).st_nlink == if (aliasCreated) 1L else 0L
+                observed.put("originalPathRemoved", absent(source)).put("fdLinksAfterOriginalRemoval", remaining)
+                check(absent(source) && remaining) { "Public diagnostic removal metadata differs" }
+                if (aliasCreated) { Os.remove(alias.path); aliasCreated = false }
+                val zero = Os.fstat(fd).st_nlink == 0L
+                observed.put("fdZeroLinksAfterCleanup", zero)
+                check(zero) { "Public diagnostic cleanup left a link" }
+            }
+        } catch (_: Exception) {
+            throw IllegalStateException("Public link diagnostic failed")
+        } finally {
+            // Only paths exclusively created by this public diagnostic; no fixed credential input is touched.
+            try {
+                if (aliasCreated) Os.remove(alias.path)
+                if (sourceCreated) Os.remove(source.path)
+            } catch (error: ErrnoException) {
+                observed.put("cleanupErrno", error.errno)
+                throw IllegalStateException("Public link diagnostic cleanup failed")
+            } finally {
+                instrumentation.sendStatus(2, android.os.Bundle().apply {
+                    putString("public-link-diagnostic", observed.toString()) // PUBLIC errno/booleans only.
+                })
+            }
+        }
     }
 }
