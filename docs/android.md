@@ -122,7 +122,7 @@ steps the caller declares previously verified. It calls the selected existing
 `ThinkingLevel.OFF`; it has no Hands, gesture, input, clipboard or agent-loop executor,
 and performs no planner retry or provider fallback. A provider may materialize its
 own transport stream; OFF is an interface request, not proof of every remote model's
-reasoning behavior. This foundation is not yet connected to the orb, care UI or verifier.
+reasoning behavior. The planner and controller foundations are not yet connected to the orb or care UI.
 
 The request is JSON in a user message, with a fixed system contract: goals, node text
 and past steps are quoted, untrusted context, never system instructions. Only enabled,
@@ -142,7 +142,7 @@ each also has its `type`. A clarification has only `type: "Clarify"` and `questi
 Obvious script forms, extra fields, bare coordinates, duplicate keys, stale scenes/references,
 password targets, nonfinite values or confidence below 0.7 are rejected. Focus/text
 expectation references must equal the current target. These are user intents and
-observable postconditions, not action handlers; the later verifier owns completion.
+observable postconditions, not action handlers; the verifier owns completion.
 
 Script refusal also recognizes unfenced calls (including whitespace-separated numeric
 arguments), member/index assignments, function bodies,
@@ -158,16 +158,51 @@ a 2,048-character goal, 1,024-character instruction/expectation text and 2,048-c
 copy text. A known model context window is checked conservatively against request UTF-8
 bytes plus the output allowance. Oversize context is rejected instead of truncating
 identity or text. At most the last eight structurally valid declared steps with an older
-scene version and different snapshot ID are sent as past context; this is not independent
+or equal scene version and different snapshot ID are sent as past context; this is not independent
 proof of their completion. Malformed, unsupported, truncated, tool or media output returns
 `recovering_invalid_proposal`; timeout, provider and budget failures have data-only codes
 for the later controller's localized Recovering state. Caller cancellation propagates.
 
 Fake-provider unit results validate request isolation and schema rejection only. A real
 model response targeting a current fixture node, native care interaction, TalkBack and
-evidence-based advancement remain separate pending gates; no fixed fake proposal counts
+evidence-based advancement require separate gates; no fixed fake proposal counts
 as model success. The default service and existing stored credentials are unchanged.
 
+## Care evidence controller foundation {#care-evidence-controller}
+
+The source-only `CareController` exposes a state flow for observing, clarifying, guiding,
+waiting, verifying, recovering, pausing and ending a task. It does not click, type, paste,
+read the clipboard or run Hands. Its caller owns one coroutine scope and supplies fresh
+screen sampling, the read-only planner and the current host scene. Accessibility events
+only request a debounced sample; elapsed time never completes a step.
+
+`CareVerifier` compares the proposal's original snapshot with fresh host evidence. It
+relinks a unique target using its view ID and Android class, or a stable accessible
+label when no view ID exists. Snapshot-local references and old bounds are never reused.
+Only a newly focused correct field or a readable change to the expected field text can
+advance automatically. An already satisfied condition, wrong field, unrelated scroll,
+advertisement refresh or changed app/window/display does not establish completion.
+
+The current node DTO has no trustworthy page-title, result-query or clipboard metadata.
+Open, Search and Copy therefore require explicit confirmation when their condition
+cannot be established. Matching page text alone cannot prove navigation or search
+results. A ref-free `pendingInstruction` exposes only the current confirmation text, and
+clears on pause, goal change or ending. Confirmation resamples the current host and records
+its origin as user-confirmed; it does not claim automatic evidence or invent a scene
+version. The planner can retain caller-declared confirmed history at the same scene
+version with a different snapshot ID. Current-snapshot IDs and future versions remain excluded; this
+is quoted past context and cannot override current screen evidence.
+
+Pause and automatic-operation admission clear the target and reject pending replies.
+Stopping automatic operation does not resume care by itself. Explicit resume observes
+again. Goal changes and cancellation invalidate late captures and model replies, and
+owned snapshots close after use. Protected, blank, unavailable and empty captures
+recover without recording a successful step. Ending a task is an explicit user decision.
+
+This foundation is covered by deterministic JVM tests using the public snapshot DTO.
+The focus overlay, goal dialog, service ownership and confirmation controls belong to
+later UI integration. Native wrong-target/advertisement checks, TalkBack and a full
+care task remain separate acceptance gates; unit tests do not establish those results.
 
 ## Install
 
