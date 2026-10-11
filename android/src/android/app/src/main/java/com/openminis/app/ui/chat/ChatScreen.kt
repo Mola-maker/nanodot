@@ -2606,6 +2606,9 @@ fun ChatScreen(
         topBar = {
             TopAppBar(
                 title = {
+                    // nanoMuse: host title override keeps the canonical chat menu/model logic intact.
+                    val homeTitle = nmHome?.title
+                    if (homeTitle != null) homeTitle() else
                     // iOS-style centered layout: "Nanodot" + group row + provider·model row
                     Box(
                         modifier = Modifier.fillMaxWidth(),
@@ -3027,6 +3030,10 @@ fun ChatScreen(
                     }
                 },
                 actions = {
+                    // nanoMuse: direct new-session action in the compact home header.
+                    if (nmHome?.title != null) IconButton(onClick = onNewChat) {
+                        Icon(Icons.Default.Add, contentDescription = stringResource(R.string.nm_drawer_new_chat))
+                    }
                     // iOS: "..." circle button → dropdown menu
                     Box {
                         // nanoMuse: Muse's round "•••" when hosted in the home shell.
@@ -3353,6 +3360,8 @@ fun ChatScreen(
                 // main chat's disc (76dp) needs more, a side chat's one-line
                 // title less.
                 expandedHeight = when {
+                    // nanoMuse: system-scaled title/status, without changing the saved avatar preference.
+                    nmHome?.title != null -> 72.dp * androidx.compose.ui.platform.LocalDensity.current.fontScale
                     nmHome == null -> 108.dp
                     // nanoMuse: disc (per the Avatar size setting; 10dp spacer when hidden)
                     // + the two-line name tag area, + the model rows when on.

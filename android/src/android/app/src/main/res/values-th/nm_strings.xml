@@ -1104,4 +1104,6 @@
     <string name="nm_models_search_clear">ล้างการค้นหา</string>
     <string name="nm_models_no_match">ไม่มีโมเดลที่ตรงกัน</string>
     <string name="nm_update_manual">ปิดการอัปเดตอัตโนมัติแล้ว เปิดหน้ารุ่นของ Nanodot เพื่อตรวจสอบด้วยตนเอง</string>
+    <string name="nm_tab_tasks">งาน</string>
+    <string name="nm_task_library">คลัง</string>
 </resources>

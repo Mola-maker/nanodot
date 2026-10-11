@@ -1104,4 +1104,6 @@
     <string name="nm_models_search_clear">Hapus pencarian</string>
     <string name="nm_models_no_match">Tidak ada model yang cocok</string>
     <string name="nm_update_manual">Pembaruan otomatis nonaktif. Buka halaman rilis Nanodot untuk memeriksa secara manual.</string>
+    <string name="nm_tab_tasks">Tugas</string>
+    <string name="nm_task_library">Pustaka</string>
 </resources>

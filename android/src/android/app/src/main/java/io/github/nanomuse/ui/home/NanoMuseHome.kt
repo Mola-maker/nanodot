@@ -1,6 +1,15 @@
 package io.github.nanomuse.ui.home
 
 import android.widget.Toast
+import io.github.nanomuse.dot.ui.DotHomeShell
+import io.github.nanomuse.dot.ui.DotHomeHeader
+import io.github.nanomuse.dot.ui.DotHomeRoute
+import io.github.nanomuse.dot.ui.DotTaskHub
+import io.github.nanomuse.dot.ui.DotTokens
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -10,26 +19,16 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MoreHoriz
-import androidx.compose.material.icons.outlined.Call
-import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
@@ -78,7 +77,6 @@ import io.github.nanomuse.ui.avatar.rememberAgentMood
 import io.github.nanomuse.ui.feed.FeedTab
 import io.github.nanomuse.ui.feed.FeedUi
 import io.github.nanomuse.ui.goals.GoalsTab
-import io.github.nanomuse.ui.header.openSoulSettings
 import io.github.nanomuse.ui.header.rememberNanoMuseStatusLine
 import io.github.nanomuse.ui.ideas.IdeasTab
 import io.github.nanomuse.ui.library.LibraryTab
@@ -90,11 +88,9 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 /**
- * nanoMuse's home, in Muse's shape: the app opens on a conversation, not a list. A bottom bar
- * switches between the chat and the Ideas / Goals / Library pages, a drawer holds the main chat
- * and the side chats, and everything that used to be the OpenMinis session list is one tap
- * further in (the archive glyph in the drawer). Rendered by `Routes.SESSION_LIST` in compact
- * windows; wide windows keep the upstream list/detail split.
+ * Nanodot home at every window size: chat, task hub, devices and settings. Expanded windows
+ * show the existing session list beside the conversation; smaller panes use the same drawer.
+ * Routes.SESSION_LIST remains the canonical host, and HomeTab/HomeBus aliases stay intact.
  *
  * The chat tab stays composed while another tab is showing (hidden under it), so switching
  * tabs never rebuilds the conversation, drops the composer text or loses the scroll position.
@@ -113,6 +109,7 @@ fun NanoMuseHome(
     val focusManager = LocalFocusManager.current
 
     var tab by rememberSaveable { mutableStateOf(HomeTab.CHAT) }
+    var taskTab by rememberSaveable { mutableStateOf(HomeTab.FEED) }
     var chatSessionId by rememberSaveable { mutableStateOf<String?>(null) }
     val mainSessionId by MainChat.sessionId.collectAsState()
 
@@ -160,7 +157,10 @@ fun NanoMuseHome(
     LaunchedEffect(Unit) {
         HomeBus.requests.collect { req ->
             when (req) {
-                is HomeBus.Request.ShowTab -> tab = req.tab
+                is HomeBus.Request.ShowTab -> {
+                    tab = req.tab
+                    if (req.tab != HomeTab.CHAT) taskTab = req.tab
+                }
                 is HomeBus.Request.ShowSession -> showSession(req.sessionId)
                 is HomeBus.Request.PrefillComposer -> {
                     showMain()
@@ -244,18 +244,31 @@ fun NanoMuseHome(
         pendingPrefill = null
         vm.nmPrefillComposer(text)
     }
-    val streaming by (mainVm?.isStreaming ?: remember { kotlinx.coroutines.flow.MutableStateFlow(false) }).collectAsState()
-    val error by (mainVm?.error ?: remember { kotlinx.coroutines.flow.MutableStateFlow<String?>(null) }).collectAsState()
+    // Status follows the shown canonical session, using ChatScreen's existing process owner.
+    // The main VM above remains the target for Feed/Ideas/Goals actions.
+    val shownId = chatSessionId?.let { ChatViewModelStore.rememberPersistedId(it) }
+    val statusVm: ChatViewModel? = if (phase != HomePhase.HOME) null else shownId?.let { id ->
+        viewModel(
+            viewModelStoreOwner = ChatViewModelStore.ownerFor(id),
+            factory = ChatViewModel.factory(
+                sessionId = id, chatRepository = chatRepository, providerRepository = providerRepository,
+                appContext = context.applicationContext, memoryRepository = memoryRepository,
+                skillRepository = skillRepository, mcpRepository = mcpRepository,
+            ),
+        )
+    }
+    val streaming by (statusVm?.isStreaming ?: remember { kotlinx.coroutines.flow.MutableStateFlow(false) }).collectAsState()
+    val error by (statusVm?.error ?: remember { kotlinx.coroutines.flow.MutableStateFlow<String?>(null) }).collectAsState()
     val mood = rememberAgentMood(streaming, error)
     // The same account of the work the chat header gives: the step, the reply arriving, or the request it is on.
-    val replying by remember(mainVm) {
-        mainVm?.streamingById?.let { flow ->
+    val replying by remember(statusVm) {
+        statusVm?.streamingById?.let { flow ->
             flow.map { stream ->
                 stream.values.any { d -> !d.isAwaitingModelResponse && d.toolBlocks.lastOrNull()?.let { it.kind == "text" && it.content.isNotEmpty() } == true }
             }.distinctUntilChanged()
         } ?: kotlinx.coroutines.flow.flowOf(false)
     }.collectAsState(initial = false)
-    val homeMessages by (mainVm?.uiMessages ?: remember { kotlinx.coroutines.flow.MutableStateFlow(emptyList<com.openminis.app.ui.chat.ChatMessage>()) }).collectAsState()
+    val homeMessages by (statusVm?.uiMessages ?: remember { kotlinx.coroutines.flow.MutableStateFlow(emptyList<com.openminis.app.ui.chat.ChatMessage>()) }).collectAsState()
     val requestBrief = remember(homeMessages) { io.github.nanomuse.ui.header.requestBrief(homeMessages.lastOrNull { it.role == "user" }?.content) }
     val statusLine = rememberNanoMuseStatusLine(streaming, mood, replying = replying, request = requestBrief)
     val soul by SoulStore.cachedMetadata.collectAsState()
@@ -322,27 +335,19 @@ fun NanoMuseHome(
     fun closeDrawer() = scope.launch { drawerState.close() }
 
     // Back: close the drawer → leave a non-chat tab → leave a side chat → (system) leave the app.
-    val homeShown = phase == HomePhase.HOME
+    val homeShown = phase != HomePhase.LOADING
     BackHandler(enabled = homeShown && drawerState.isOpen) { closeDrawer() }
     BackHandler(enabled = homeShown && !drawerState.isOpen && tab != HomeTab.CHAT) { tab = HomeTab.CHAT }
     BackHandler(enabled = homeShown && !drawerState.isOpen && tab == HomeTab.CHAT && !isMainChat && mainSessionId != null) { showMain() }
 
     // The drawer + tab shell, as a local composable so it can share every piece of state above
     // and still be one branch of the phase switch below.
-    val homeShell: @Composable () -> Unit = {
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        gesturesEnabled = drawerState.isOpen || tab == HomeTab.CHAT,
-        drawerContent = {
-            ModalDrawerSheet(
-                drawerContainerColor = MuseTones.surface,
-                drawerShape = androidx.compose.foundation.shape.RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp),
-            ) {
+    val sessionList: @Composable () -> Unit = {
                 SideChatDrawer(
                     agentName = agentName,
                     chatRepository = chatRepository,
-                    mainSessionId = mainSessionId,
-                    currentSessionId = chatSessionId,
+                    mainSessionId = mainSessionId?.let { ChatViewModelStore.rememberPersistedId(it) },
+                    currentSessionId = chatSessionId?.let { ChatViewModelStore.rememberPersistedId(it) },
                     onOpenMain = { closeDrawer(); showMain() },
                     onOpenSession = { id -> closeDrawer(); showSession(id) },
                     onNewChat = { closeDrawer(); showSession("__new__${UUID.randomUUID()}") },
@@ -353,47 +358,66 @@ fun NanoMuseHome(
                     onDevices = { closeDrawer(); navController.safeNavigate(io.github.nanomuse.ui.cloud.ROUTE_CLOUD_ACCOUNT) },
                     onCoding = { closeDrawer(); navController.safeNavigate(io.github.nanomuse.ui.coding.ROUTE_CODING) },
                 )
+    }
+
+    val setupScreen: @Composable () -> Unit = {
+        FirstRunSetupScreen(
+            agentName = agentName, signedIn = signedIn == true, hasGroups = hasGroups, hasProviders = hasProviders,
+            onSignIn = { navController.safeNavigate(io.github.nanomuse.ui.cloud.ROUTE_CLOUD_SIGN_IN) },
+            onAddProvider = { navController.safeNavigate(Routes.ADD_PROVIDER) },
+            onSelectModels = { navController.safeNavigate(Routes.ONBOARDING_MODELS) },
+            onStart = { FirstRunSetup.markDone(context); setupDone = true },
+            onSettings = { navController.safeNavigate(Routes.SETTINGS) },
+        )
+    }
+
+    val homeShell: @Composable () -> Unit = {
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        gesturesEnabled = drawerState.isOpen || tab == HomeTab.CHAT,
+        drawerContent = {
+            ModalDrawerSheet(
+                drawerContainerColor = MuseTones.surface,
+                drawerShape = androidx.compose.foundation.shape.RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp),
+            ) {
+                sessionList()
             }
         },
     ) {
-        Scaffold(
-            containerColor = ChatColors.background,
-            contentWindowInsets = WindowInsets(0),
-            bottomBar = {
-                MuseBottomBar(selected = tab, onSelect = { picked ->
-                    if (picked == HomeTab.CHAT && tab == HomeTab.CHAT && !isMainChat) {
-                        showMain()
-                    } else {
-                        focusManager.clearFocus(force = true)
-                        tab = picked
-                    }
-                })
+        DotHomeShell(
+            route = tab.primaryRoute,
+            onRoute = { picked ->
+                focusManager.clearFocus(force = true)
+                when (picked) {
+                    DotHomeRoute.Chat -> if (tab == HomeTab.CHAT && !isMainChat) showMain() else tab = HomeTab.CHAT
+                    DotHomeRoute.Tasks -> tab = taskTab
+                    DotHomeRoute.Devices -> navController.safeNavigate(io.github.nanomuse.ui.cloud.ROUTE_CLOUD_ACCOUNT)
+                    DotHomeRoute.Settings -> navController.safeNavigate(Routes.SETTINGS)
+                }
             },
-        ) { padding ->
-            val bottom = padding.calculateBottomPadding()
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = bottom)
-                    .consumeWindowInsets(PaddingValues(bottom = bottom)),
-            ) {
+            conversationList = sessionList,
+        ) {
+            Box(Modifier.fillMaxSize()) {
                 // Chat tab — always composed, hidden while another tab is on top.
                 val chatVisible = tab == HomeTab.CHAT
                 // Fades a touch slower than the page above it fades in, so the switch reads as
                 // one cross-fade rather than a cut to the canvas.
                 val chatAlpha by animateFloatAsState(
                     targetValue = if (chatVisible) 1f else 0f,
-                    animationSpec = tween(if (chatVisible) 120 else 220),
+                    animationSpec = tween(DotTokens.Motion.Page),
                     label = "chatAlpha",
                 )
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .zIndex(0f)
-                        .graphicsLayer { alpha = chatAlpha },
+                        .graphicsLayer { alpha = chatAlpha }
+                        .then(if (chatVisible) Modifier else Modifier.clearAndSetSemantics {}),
                 ) {
                     val sid = chatSessionId
-                    if (sid != null) {
+                    if (phase == HomePhase.SETUP) {
+                        setupScreen()
+                    } else if (sid != null) {
                         ChatScreen(
                             sessionId = sid,
                             chatRepository = chatRepository,
@@ -414,7 +438,22 @@ fun NanoMuseHome(
                                 navController.safeNavigate(Routes.FILE_PREVIEW)
                             },
                             onModelGroupsClick = { navController.safeNavigate(Routes.MODEL_GROUPS) },
-                            nmHome = NmHomeChrome(isMainChat = isMainChat, onOpenDrawer = { openDrawer() }),
+                            nmHome = NmHomeChrome(
+                                isMainChat = isMainChat, onOpenDrawer = { openDrawer() },
+                                title = {
+                                    androidx.compose.material3.TextButton(
+                                        onClick = { navController.safeNavigate(io.github.nanomuse.ui.profile.ROUTE_AGENT_PROFILE) },
+                                    ) {
+                                        androidx.compose.foundation.layout.Column {
+                                            Text(agentName, style = MaterialTheme.typography.titleMedium)
+                                            if (!statusLine.isNullOrBlank()) Text(statusLine,
+                                                style = MaterialTheme.typography.bodyMedium, maxLines = 2,
+                                                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                        }
+                                    }
+                                },
+                            ),
                         )
                     }
                 }
@@ -422,42 +461,39 @@ fun NanoMuseHome(
                 val holder = rememberSaveableStateHolder()
                 // The page that is (or was last) on top of the chat. Keeping it while the
                 // sheet fades back to the chat means the content does not blink to empty.
-                var pageTab by remember { mutableStateOf(if (tab == HomeTab.CHAT) HomeTab.FEED else tab) }
+                var pageTab by rememberSaveable { mutableStateOf(taskTab) }
                 if (tab != HomeTab.CHAT) pageTab = tab
                 AnimatedVisibility(
                     visible = !chatVisible,
-                    enter = fadeIn(tween(160)),
-                    exit = fadeOut(tween(120)),
+                    enter = fadeIn(tween(DotTokens.Motion.Page)),
+                    exit = fadeOut(tween(DotTokens.Motion.Page)),
                     modifier = Modifier.fillMaxSize().zIndex(1f),
                 ) {
                     Surface(
                         color = ChatColors.background,
                         modifier = Modifier.fillMaxSize(),
                     ) {
-                        // Pages cross-fade; the header sits at the same spot on every page,
-                        // so only the content below it appears to change.
+                        DotTaskHub(
+                            selected = pageTab,
+                            onSelect = { taskTab = it; tab = it },
+                            header = {
+                                TabHeader(tab = pageTab, name = agentName, statusLine = statusLine,
+                                    onNameClick = { navController.safeNavigate(io.github.nanomuse.ui.profile.ROUTE_AGENT_PROFILE) },
+                                    onOpenDrawer = { openDrawer() },
+                                    onNewChat = { showSession("__new__${UUID.randomUUID()}") },
+                                    navController = navController, mainSessionId = mainSessionId)
+                            },
+                        ) {
                         AnimatedContent(
                             targetState = pageTab,
                             transitionSpec = {
-                                (fadeIn(tween(160)) togetherWith fadeOut(tween(120)))
+                                (fadeIn(tween(DotTokens.Motion.Page)) togetherWith fadeOut(tween(DotTokens.Motion.Page)))
                                     .using(SizeTransform(clip = false))
                             },
                             label = "nmTab",
                         ) { page ->
                         holder.SaveableStateProvider(page.name) {
-                            val header: @Composable () -> Unit = {
-                                TabHeader(
-                                    tab = page,
-                                    mood = mood,
-                                    name = agentName,
-                                    statusLine = statusLine,
-                                    onAvatarClick = { navController.safeNavigate(io.github.nanomuse.ui.profile.ROUTE_AGENT_PROFILE) },
-                                    onNameClick = { navController.safeNavigate(io.github.nanomuse.ui.profile.ROUTE_AGENT_PROFILE) },
-                                    onOpenDrawer = { openDrawer() },
-                                    navController = navController,
-                                    mainSessionId = mainSessionId,
-                                )
-                            }
+                            val header: @Composable () -> Unit = {}
                             when (page) {
                                 HomeTab.FEED -> FeedTab(
                                     header = header,
@@ -491,6 +527,7 @@ fun NanoMuseHome(
                             }
                         }
                         }
+                        }
                     }
                 }
             }
@@ -498,72 +535,33 @@ fun NanoMuseHome(
     }
     } // homeShell
 
-    AnimatedContent(
-        targetState = phase,
-        transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(160)) },
-        label = "nmHomePhase",
-    ) { current ->
-        when (current) {
-            HomePhase.LOADING -> Surface(color = MuseTones.surface, modifier = Modifier.fillMaxSize()) {}
-            HomePhase.SETUP -> FirstRunSetupScreen(
-                agentName = agentName,
-                signedIn = signedIn == true,
-                hasGroups = hasGroups,
-                hasProviders = hasProviders,
-                onSignIn = { navController.safeNavigate(io.github.nanomuse.ui.cloud.ROUTE_CLOUD_SIGN_IN) },
-                onAddProvider = { navController.safeNavigate(Routes.ADD_PROVIDER) },
-                onSelectModels = { navController.safeNavigate(Routes.ONBOARDING_MODELS) },
-                onStart = { FirstRunSetup.markDone(context); setupDone = true },
-                onSettings = { navController.safeNavigate(Routes.SETTINGS) },
-            )
-            HomePhase.HOME -> homeShell()
-        }
+    if (phase == HomePhase.LOADING) {
+        Surface(color = MuseTones.surface, modifier = Modifier.fillMaxSize()) {}
+    } else {
+        // Model setup is still the Chat panel. All primary paths stay available without credentials.
+        homeShell()
     }
+
 }
 
 private enum class HomePhase { LOADING, SETUP, HOME }
 
-/** The big-face header on the four pages, with Muse's round hamburger and "•••" (sliders on the feed). */
+/** Compact task header, retaining every existing context-menu action. */
 @Composable
 private fun TabHeader(
     tab: HomeTab,
-    mood: io.github.nanomuse.ui.avatar.AgentMood,
     name: String,
     statusLine: String?,
-    onAvatarClick: () -> Unit,
     onNameClick: () -> Unit,
     onOpenDrawer: () -> Unit,
+    onNewChat: () -> Unit,
     navController: NavHostController,
     mainSessionId: String?,
 ) {
     var menu by remember { mutableStateOf(false) }
-    MuseHeader(
-        mood = mood,
-        name = name,
-        statusLine = statusLine,
-        onAvatarClick = onAvatarClick,
-        onNameClick = onNameClick,
-        leading = {
-            MuseRoundButton(
-                icon = Icons.Filled.Menu,
-                contentDescription = stringResource(R.string.nm_open_drawer),
-                onClick = onOpenDrawer,
-            )
-        },
-        trailing = {
-            if (tab == HomeTab.FEED) {
-                MuseRoundButton(
-                    icon = Icons.Outlined.Tune,
-                    contentDescription = stringResource(R.string.nm_feed_settings_title),
-                    onClick = { FeedUi.settingsOpen.value = true },
-                )
-            } else Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box {
-                MuseRoundButton(
-                    icon = Icons.Filled.MoreHoriz,
-                    contentDescription = stringResource(R.string.nm_more),
-                    onClick = { menu = true },
-                )
+    Box {
+        DotHomeHeader(name, statusLine, onNameClick, onOpenDrawer, onNewChat,
+            onMore = { if (tab == HomeTab.FEED) FeedUi.settingsOpen.value = true else menu = true })
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                     if (tab == HomeTab.CHAT) {
                         DropdownMenuItem(
@@ -601,8 +599,5 @@ private fun TabHeader(
                         onClick = { menu = false; navController.safeNavigate(Routes.SETTINGS) },
                     )
                 }
-                }
-            }
-        },
-    )
+    }
 }

@@ -1108,4 +1108,6 @@
     <string name="nm_models_search_clear">Aramayı temizle</string>
     <string name="nm_models_no_match">Eşleşen model yok</string>
     <string name="nm_update_manual">Otomatik güncellemeler kapalı. Nanodot sürüm sayfasını elle kontrol edin.</string>
+    <string name="nm_tab_tasks">Görevler</string>
+    <string name="nm_task_library">Kitaplık</string>
 </resources>

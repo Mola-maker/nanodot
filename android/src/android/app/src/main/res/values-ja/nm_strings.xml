@@ -1104,4 +1104,6 @@
     <string name="nm_models_search_clear">検索をクリア</string>
     <string name="nm_models_no_match">一致するモデルはありません</string>
     <string name="nm_update_manual">自動更新はオフです。Nanodot のリリースページで手動で確認してください。</string>
+    <string name="nm_tab_tasks">タスク</string>
+    <string name="nm_task_library">ライブラリ</string>
 </resources>

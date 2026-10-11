@@ -27,13 +27,16 @@ import io.github.nanomuse.ui.home.MuseTones
 /**
  * Passed to `ChatScreen` when it is hosted inside the home shell (`io.github.nanomuse.ui.home`).
  * It swaps the back arrow for Muse's hamburger, the kebab for a round button, and — for the
- * main chat — grows the header into Muse's big-face layout; side chats get their title instead.
+ * legacy main chat — keeps Muse's face layout when no host title is supplied. The adaptive
+ * home supplies its compact name/status title for main and side chats.
  * It also switches the conversation to Muse's dress: grey bubbles for the agent, the one-row
  * composer pill, no per-message name.
  */
 data class NmHomeChrome(
     val isMainChat: Boolean,
     val onOpenDrawer: () -> Unit,
+    /** The host owns the header; ChatScreen retains its original session menu. */
+    val title: (@Composable () -> Unit)? = null,
 )
 
 /**

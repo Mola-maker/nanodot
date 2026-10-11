@@ -1116,4 +1116,6 @@
     <string name="nm_models_search_clear">Очистить поиск</string>
     <string name="nm_models_no_match">Ни одна модель не подходит</string>
     <string name="nm_update_manual">Автоматические обновления отключены. Проверьте страницу выпусков Nanodot вручную.</string>
+    <string name="nm_tab_tasks">Задачи</string>
+    <string name="nm_task_library">Библиотека</string>
 </resources>

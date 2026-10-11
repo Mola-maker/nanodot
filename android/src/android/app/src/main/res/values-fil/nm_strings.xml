@@ -1108,4 +1108,6 @@
     <string name="nm_models_search_clear">I-clear ang paghahanap</string>
     <string name="nm_models_no_match">Walang tumutugmang modelo</string>
     <string name="nm_update_manual">Naka-off ang awtomatikong update. Buksan ang release page ng Nanodot para tingnan nang manu-mano.</string>
+    <string name="nm_tab_tasks">Mga gawain</string>
+    <string name="nm_task_library">Library</string>
 </resources>

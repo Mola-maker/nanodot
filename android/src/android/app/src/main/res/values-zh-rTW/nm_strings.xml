@@ -1074,4 +1074,6 @@
     <string name="nm_models_search_clear">清除搜尋</string>
     <string name="nm_models_no_match">沒有符合的模型</string>
     <string name="nm_update_manual">自動更新已關閉。開啟 Nanodot 發布頁手動查看更新。</string>
+    <string name="nm_tab_tasks">任務</string>
+    <string name="nm_task_library">資料</string>
 </resources>

@@ -1,17 +1,21 @@
 package io.github.nanomuse.ui.home
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -44,8 +48,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
@@ -97,7 +105,7 @@ fun SideChatDrawer(
     }
     // nanoMuse: a chat from another device of the account is the same chat here (contract C8) — no
     // badge per chat; the turns written elsewhere carry "From Pixel 8" in the bubble instead
-    var query by remember { mutableStateOf("") }
+    var query by rememberSaveable { mutableStateOf("") }
     val sideChats = remember(sessions, mainSessionId, query) {
         sessions
             .filter { it.id != mainSessionId }
@@ -105,12 +113,16 @@ fun SideChatDrawer(
             .sortedWith(compareByDescending<ChatSessionEntity> { it.pinnedAt ?: 0L }.thenByDescending { it.updatedAt })
     }
 
+    val searchLabel = stringResource(R.string.nm_drawer_search)
+    BoxWithConstraints(Modifier.fillMaxSize().background(MuseTones.surface)) {
+    val scrollControls = maxHeight < 480.dp && LocalDensity.current.fontScale >= 1.5f
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MuseTones.surface)
             .statusBarsPadding()
-            .navigationBarsPadding(),
+            .navigationBarsPadding()
+            .then(if (scrollControls) Modifier.verticalScroll(rememberScrollState()) else Modifier),
     ) {
         Text(
             text = agentName,
@@ -225,7 +237,7 @@ fun SideChatDrawer(
 
         if (sideChats.isEmpty()) {
             Column(
-                modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 32.dp),
+                modifier = (if (scrollControls) Modifier.heightIn(min = 120.dp) else Modifier.weight(1f)).fillMaxWidth().padding(horizontal = 32.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -251,7 +263,7 @@ fun SideChatDrawer(
                 )
             }
         } else {
-            LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 4.dp)) {
+            LazyColumn(modifier = (if (scrollControls) Modifier.height(160.dp) else Modifier.weight(1f)).fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 4.dp)) {
                 items(sideChats, key = { it.id }) { session ->
                     SideChatRow(
                         session = session,
@@ -282,17 +294,17 @@ fun SideChatDrawer(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .weight(1f)
-                    .height(40.dp)
+                    .heightIn(min = 48.dp)
                     .clip(CircleShape)
                     .background(MuseTones.fill)
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = 12.dp, vertical = if (scrollControls) 8.dp else 0.dp),
             ) {
                 Icon(Icons.Outlined.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.size(8.dp))
                 Box(Modifier.weight(1f)) {
                     if (query.isEmpty()) {
                         Text(
-                            stringResource(R.string.nm_drawer_search),
+                            searchLabel,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 15.sp,
                         )
@@ -303,7 +315,7 @@ fun SideChatDrawer(
                         singleLine = true,
                         textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface, fontSize = 15.sp),
                         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).semantics { contentDescription = searchLabel },
                     )
                 }
             }
@@ -311,6 +323,7 @@ fun SideChatDrawer(
                 Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.nm_drawer_new_chat), tint = MaterialTheme.colorScheme.onSurface)
             }
         }
+    }
     }
 }
 

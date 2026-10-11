@@ -1108,4 +1108,6 @@
     <string name="nm_models_search_clear">Suche löschen</string>
     <string name="nm_models_no_match">Kein Modell passt</string>
     <string name="nm_update_manual">Automatische Updates sind aus. Auf der Nanodot-Release-Seite manuell nachsehen.</string>
+    <string name="nm_tab_tasks">Aufgaben</string>
+    <string name="nm_task_library">Bibliothek</string>
 </resources>

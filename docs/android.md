@@ -29,6 +29,24 @@ the installed build next to the newest release (`nanomuse.cn/dl/index.json` firs
 repository's GitHub Releases second: *Latest 0.1.x, you have it* / *0.1.x is out, tap to
 update*) and offers the download.
 
+## App navigation
+
+The Android home has four labeled destinations: **Chat**, **Tasks**, **Devices** and
+**Settings**. Tasks contains the existing Feed, Ideas, Goals and Library pages. Returning
+from another destination keeps the selected task page and conversation draft. An active reply
+continues while Tasks is open. Settings
+continues to provide models, terminal, skills, connectors, memory, files, backup and
+permissions; the session drawer retains the complete chat archive and profile paths.
+Model setup stays in the Chat panel while the other destinations remain available.
+
+Navigation adapts to the allocated window: below 600 dp it uses bottom navigation,
+600–839 dp a labeled rail, and from 840 dp a session list beside the conversation.
+Large system text can collapse the conversation list into the drawer to keep enough room
+for the composer. Bottom labels use two rows at 150% and 200%; rail labels stay visible.
+Back closes the drawer, returns from Tasks to Chat, then returns a side conversation to
+the main conversation. Existing session links still target the same home host across
+rotation and window resizing; session IDs and stored model settings are unchanged.
+
 ## Dot orb gesture foundation
 
 The pure `io.github.nanomuse.dot.gesture.DotGestureReducer` prepares gesture arbitration

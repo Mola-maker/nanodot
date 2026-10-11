@@ -39,6 +39,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ### Android
 
+- Unified Android home navigation into labeled Chat, Tasks, Devices and Settings destinations, retained Feed/Ideas/Goals/Library inside Tasks, and adapted the same session host to bottom navigation, rail and conversation-list panes.
+
 - Fixed stopping an Android OpenAI stream leaving its HTTP reader active until EOF. Kept reasoning output while omitting unsupported reasoning history only for the exact Nanodot HTTPS gateway origin.
 - Prepared pure Dot orb gesture arbitration with exclusive single/double/triple taps, drag trajectories, and cancellation; the future orb UI remains disabled.
 - **The app starts beside OpenMinis.** Both apps bound the same Linux abstract socket, `native-offload`, for the sandbox's calls back into the app, and abstract sockets are one namespace for every app on the device, so whichever app started second failed to bind and died before its first screen. nanoMuse's socket is now `io.github.nanomuse.app.native-offload`; when even that is still held by a previous process of ours, the app binds a per-process name and tells proot that one instead of crashing (#271).

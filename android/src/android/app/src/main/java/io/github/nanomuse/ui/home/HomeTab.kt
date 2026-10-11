@@ -16,8 +16,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.openminis.app.R
 
 /**
- * The bottom bar, in Muse's order: chat, feed, ideas, goals, library. Icons are outlined at rest
- * and filled when selected, no labels — the bar reads as glyphs, the way Muse draws it.
+ * Legacy tab names remain the task subroutes and HomeBus wire vocabulary.
  */
 enum class HomeTab(
     @StringRes val label: Int,
@@ -28,5 +27,12 @@ enum class HomeTab(
     FEED(R.string.nm_tab_feed, Icons.AutoMirrored.Outlined.Feed, Icons.AutoMirrored.Filled.Feed),
     IDEAS(R.string.nm_tab_ideas, Icons.Outlined.Lightbulb, Icons.Filled.Lightbulb),
     GOALS(R.string.nm_tab_goals, Icons.Outlined.CheckBox, Icons.Filled.CheckBox),
-    LIBRARY(R.string.nm_tab_library, Icons.Outlined.Category, Icons.Filled.Category),
+    LIBRARY(R.string.nm_task_library, Icons.Outlined.Category, Icons.Filled.Category);
+
+    val primaryRoute: io.github.nanomuse.dot.ui.DotHomeRoute
+        get() = if (this == CHAT) io.github.nanomuse.dot.ui.DotHomeRoute.Chat else io.github.nanomuse.dot.ui.DotHomeRoute.Tasks
+
+    companion object {
+        val taskEntries = listOf(FEED, IDEAS, GOALS, LIBRARY)
+    }
 }

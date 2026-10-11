@@ -1104,4 +1104,6 @@
     <string name="nm_models_search_clear">검색 지우기</string>
     <string name="nm_models_no_match">일치하는 모델이 없습니다</string>
     <string name="nm_update_manual">자동 업데이트가 꺼져 있습니다. Nanodot 릴리스 페이지에서 직접 확인하세요.</string>
+    <string name="nm_tab_tasks">작업</string>
+    <string name="nm_task_library">보관함</string>
 </resources>

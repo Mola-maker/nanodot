@@ -1104,4 +1104,6 @@
     <string name="nm_models_search_clear">Kosongkan carian</string>
     <string name="nm_models_no_match">Tiada model yang sepadan</string>
     <string name="nm_update_manual">Kemas kini automatik dimatikan. Buka halaman keluaran Nanodot untuk menyemak secara manual.</string>
+    <string name="nm_tab_tasks">Tugas</string>
+    <string name="nm_task_library">Pustaka</string>
 </resources>
