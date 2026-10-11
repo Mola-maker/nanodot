@@ -127,10 +127,17 @@ Output is a single strict JSON object, with case-sensitive values. A step has ex
 `copyText`, `expectation`, and `confidence`. Expectations are `PageContains` with `text`,
 `Focused` with `ref`, `TextEquals` with `ref` and `text`, or `ResultsFor` with `query`;
 each also has its `type`. A clarification has only `type: "Clarify"` and `question`.
-No scripts, extra fields, bare coordinates, duplicate keys, stale scenes/references,
-password targets, nonfinite values or confidence below 0.7 are accepted. Focus/text
+Obvious script forms, extra fields, bare coordinates, duplicate keys, stale scenes/references,
+password targets, nonfinite values or confidence below 0.7 are rejected. Focus/text
 expectation references must equal the current target. These are user intents and
 observable postconditions, not action handlers; the later verifier owns completion.
+
+Script refusal also recognizes unfenced calls, member/index assignments, function bodies,
+arrow functions and variable declarations, independent of specific function names. Ordinary
+Chinese queries, numbers, prose and HTTP(S) URLs remain data. This conservative check may
+refuse an ordinary label that resembles code; rephrase it. Finite static recognition does
+not prove that every encoded program or language is script-free. Output remains plain
+user guidance and can never enter an executor.
 
 One call is limited to 30 seconds, at most 1,024 output tokens (or the provider's smaller
 ceiling), 32,768 total request characters, 8,192 response characters, 128 eligible nodes,

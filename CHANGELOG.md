@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Rejected plainly executable unfenced code in Android care proposals while preserving ordinary text and URL guidance; documented the conservative recognition boundary.
+
 - Added a node-grounded Android care planner foundation that prepared one user instruction through a bounded read-only model request and rejected stale or unsupported proposals; real-model, care UI and evidence-advancement acceptance remained pending.
 
 - Masked sensitive Android LLM request headers before retaining debug logs and exporting request or agent traces; later caller mutations no longer changed logged headers.

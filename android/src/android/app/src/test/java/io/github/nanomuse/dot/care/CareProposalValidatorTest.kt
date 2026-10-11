@@ -45,6 +45,39 @@ class CareProposalValidatorTest {
             assertFalse(validator.validate(proposal().copy(expectation=CareExpectation.PageContains(it)),snapshot()))
         }
     }
+    @Test fun refusesUnfencedPropertyAssignments() {
+        // Removing member-assignment refusal must permit a code-containing current proposal.
+        listOf("document.body.innerHTML = 'hello';", "settings.profile.name = 'changed'",
+            "form['value'] = 3;").forEach(::assertScriptRejected)
+    }
+    @Test fun refusesUnfencedFunctionCode() {
+        listOf("function greet(){ alert('hi'); }", "function add(a, b) { return a + b; }",
+            "const sum = (a, b) => a + b;", "def greet():\n    print('hi')").forEach(::assertScriptRejected)
+    }
+    @Test fun refusesUnfencedInvocations() {
+        listOf("alert('hi')", "console.log('hello');", "document.querySelector('#field').focus()",
+            "notify () ;", "const answer = 42;").forEach(::assertScriptRejected)
+    }
+    @Test fun ordinaryQueriesUrlsNumbersAndProseRemainValidCurrentProposals() {
+        listOf("啤酒", "搜索无酒精啤酒 330ml", "123.45", "1 + 1 = 2", "Tea (hot)",
+            "Copy the label, then open Search.", "https://example.org/search?q=tea&page=2",
+            "https://example.org/search?view.name=tea(2)&page=1").forEach { text ->
+            assertTrue("Ordinary instruction rejected: $text",validator.validate(proposal().copy(instruction=text),snapshot()))
+            assertTrue("Ordinary copy text rejected: $text",validator.validate(proposal().copy(action=CareAction.Paste,
+                copyText=text,expectation=CareExpectation.TextEquals("n1",text)),snapshot()))
+            assertTrue("Ordinary query rejected: $text",validator.validate(proposal().copy(action=CareAction.Search,
+                expectation=CareExpectation.ResultsFor(text)),snapshot()))
+        }
+    }
+    private fun assertScriptRejected(code:String) {
+        assertFalse("Executable instruction accepted: $code",validator.validate(proposal().copy(instruction=code),snapshot()))
+        assertFalse("Executable copy text accepted: $code",validator.validate(proposal().copy(action=CareAction.Paste,
+            copyText=code),snapshot()))
+        assertFalse("Executable text condition accepted: $code",validator.validate(proposal().copy(action=CareAction.Paste,
+            copyText="hello",expectation=CareExpectation.TextEquals("n1",code)),snapshot()))
+        assertFalse("Executable page condition accepted: $code",validator.validate(proposal().copy(expectation=CareExpectation.PageContains(code)),snapshot()))
+        assertFalse("Executable query condition accepted: $code",validator.validate(proposal().copy(expectation=CareExpectation.ResultsFor(code)),snapshot()))
+    }
     @Test fun focusedAndTextExpectationsMustReferToSameCurrentTarget() {
         assertTrue(validator.validate(proposal().copy(action=CareAction.Focus,
             expectation=CareExpectation.Focused("n1")),snapshot()))

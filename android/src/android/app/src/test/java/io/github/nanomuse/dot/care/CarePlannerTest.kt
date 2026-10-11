@@ -83,6 +83,62 @@ class CarePlannerTest {
             assertEquals(1,provider.requests.size)
         }
     }
+    @Test fun unfencedPropertyAssignmentJsonRecoversWithoutRetry()=runTest {
+        listOf("document.body.innerHTML = 'hello';", "settings.profile.name = 'changed'",
+            "form['value'] = 3;").forEach { assertCodeJsonRecovers(it) }
+    }
+    @Test fun unfencedFunctionJsonRecoversWithoutRetry()=runTest {
+        listOf("function greet(){ alert('hi'); }", "function add(a, b) { return a + b; }",
+            "const sum = (a, b) => a + b;", "def greet():\n    print('hi')").forEach { assertCodeJsonRecovers(it) }
+    }
+    @Test fun unfencedInvocationJsonRecoversWithoutRetry()=runTest {
+        listOf("alert('hi')", "console.log('hello');", "document.querySelector('#field').focus()",
+            "notify () ;", "const answer = 42;").forEach { assertCodeJsonRecovers(it) }
+    }
+    @Test fun ordinaryModelTextRemainsAValidatedCurrentStep()=runTest {
+        listOf("啤酒", "搜索无酒精啤酒 330ml", "123.45", "1 + 1 = 2", "Tea (hot)",
+            "Copy the label, then open Search.", "https://example.org/search?q=tea&page=2",
+            "https://example.org/search?view.name=tea(2)&page=1").forEach { text ->
+            val provider=FakeProvider(textProposalJson(text))
+            val result=CarePlanner(provider,"Which control can you see?").next("Find tea",snapshot(),emptyList())
+            assertEquals(proposal().copy(action=CareAction.Paste,instruction=text,copyText=text,
+                expectation=CareExpectation.TextEquals("n1",text)),(result as CarePlanResult.Step).proposal)
+            assertEquals(1,provider.requests.size)
+            assertTrue(provider.requests.single().tools.isEmpty())
+        }
+    }
+    private suspend fun assertCodeJsonRecovers(code:String) {
+        // Exercise parsed proposal data, not the pattern implementation: all identities/bounds are valid.
+        val base=Json.parseToJsonElement(validJson).jsonObject
+        val outputs=listOf(
+            JsonObject(base + ("instruction" to JsonPrimitive(code))).toString(),
+            JsonObject(base + mapOf("action" to JsonPrimitive("Copy"),"instruction" to JsonPrimitive("Copy this text"),
+                "copyText" to JsonPrimitive(code))).toString(),
+            JsonObject(base + mapOf("action" to JsonPrimitive("Paste"),"instruction" to JsonPrimitive("Paste this text"),
+                "copyText" to JsonPrimitive("hello"),"expectation" to buildJsonObject {
+                    put("type","TextEquals");put("ref","n1");put("text",code)
+                })).toString(),
+            JsonObject(base + mapOf("action" to JsonPrimitive("Paste"),"instruction" to JsonPrimitive("Paste this text"),
+                "copyText" to JsonPrimitive(code),"expectation" to buildJsonObject {
+                    put("type","TextEquals");put("ref","n1");put("text",code)
+                })).toString(),
+            JsonObject(base + ("expectation" to buildJsonObject { put("type","ResultsFor");put("query",code) })).toString(),
+        )
+        for (output in outputs) {
+            val provider=FakeProvider(output)
+            assertEquals("Executable model output accepted: $code",CarePlanResult.Unavailable("recovering_invalid_proposal"),
+                CarePlanner(provider,"Which control can you see?").next("Find tea",snapshot(),emptyList()))
+            assertEquals(1,provider.requests.size)
+            assertTrue(provider.requests.single().tools.isEmpty())
+        }
+    }
+    private fun textProposalJson(text:String):String {
+        val base=Json.parseToJsonElement(validJson).jsonObject
+        return JsonObject(base + mapOf("action" to JsonPrimitive("Paste"),"instruction" to JsonPrimitive(text),
+            "copyText" to JsonPrimitive(text),"expectation" to buildJsonObject {
+                put("type","TextEquals");put("ref","n1");put("text",text)
+            })).toString()
+    }
     @Test fun requestBudgetRefusesOversizedGoalNodesAndContextBeforeCalling()=runTest {
         listOf("x".repeat(2049) to snapshot(), "tea" to snapshot((1..129).map { node("n$it") }),
             "tea" to snapshot(listOf(node().copy(text="x".repeat(32769))))).forEach { (goal,s) ->

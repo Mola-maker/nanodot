@@ -40,7 +40,7 @@ class CareProposalValidator {
 
     internal fun safeText(text: String, limit: Int = 1024): Boolean =
         text.isNotBlank() && text.length <= limit && !executable.containsMatchIn(text) &&
-            text.none { it == '\u0000' }
+            !executableShape.containsMatchIn(webUrl.replace(text, " ")) && text.none { it == '\u0000' }
 
     private fun identity(value: String): Boolean = safeText(value, 256)
     private fun validRect(rect: RectPx): Boolean =
@@ -50,6 +50,24 @@ class CareProposalValidator {
     private companion object {
         // This is a conservative refusal of executable content, not an execution sandbox.
         // Unknown JSON fields are refused separately; no output is ever evaluated as code.
+        // Refuse ordinary unfenced code shapes without enumerating function/member names.
+        // HTTP(S) URL tokens are quoted data: query keys and parentheses are not assignments/calls.
+        // This intentionally also refuses some code-like labels; it cannot classify every encoded
+        // program or language, and must never be used to make output executable.
+        val webUrl = Regex("https?://[^\\s<>\"'`]+", RegexOption.IGNORE_CASE)
+        const val identifier = "[A-Za-z_$][A-Za-z0-9_$]*"
+        val member = "(?:\\s*\\.\\s*$identifier|\\s*\\[[^\\r\\n]+?\\])"
+        val executableShape = Regex(
+            "\\b$identifier(?:$member)+\\s*(?:=(?!=)|[+*/-]=|\\+\\+|--)|" +
+                "\\bfunction\\s*\\*?\\s*(?:$identifier\\s*)?\\([^\\r\\n)]*\\)\\s*\\{|" +
+                "\\bdef\\s+$identifier\\s*\\([^\\r\\n)]*\\)\\s*:|" +
+                "\\b(?:const|let|var)\\s+$identifier\\s*=|" +
+                "\\b$identifier(?:\\s*\\.\\s*$identifier)*\\(|" +
+                "\\b$identifier(?:\\s*\\.\\s*$identifier)+\\s*\\(|" +
+                "\\b$identifier\\s+\\([^\\r\\n)]*\\)\\s*[;{]|" +
+                "\\b$identifier\\s+\\(\\s*(?:['\"]|\\))|" +
+                "(?:\\([^\\r\\n)]*\\)|\\b$identifier)\\s*=>",
+        )
         val executable = Regex(
             "```|<\\s*script\\b|javascript\\s*:|\\b(?:Hands\\s*\\.\\s*run|dispatchGesture|setText)\\s*\\(|" +
                 "\\b(?:eval|exec|system|Runtime\\s*\\.\\s*getRuntime)\\s*\\(|" +
