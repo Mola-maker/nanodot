@@ -1093,4 +1093,10 @@
     <string name="nm_dot_components">元件</string>
     <string name="nm_dot_empty">這裡還沒有內容。</string>
     <string name="nm_dot_attach">加入檔案</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">新增至%1$s</string>
+    <string name="nm_goal_completion">目標已完成：%1$s</string>
+    <string name="nm_feed_like_post">喜歡貼文：%1$s</string>
+    <string name="nm_feed_post_info">貼文資訊：%1$s</string>
 </resources>

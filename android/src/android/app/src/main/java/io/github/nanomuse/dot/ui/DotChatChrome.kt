@@ -4,9 +4,10 @@ import android.database.ContentObserver
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -22,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.unit.dp
 import com.openminis.app.R
 
 val LocalDotMotionEnabled = staticCompositionLocalOf { true }
@@ -52,14 +54,18 @@ fun DotChatChrome(isStreaming: Boolean, hasContent: Boolean, onSend: () -> Unit,
     val pressed by interactions.collectIsPressedAsState()
     val focused by interactions.collectIsFocusedAsState()
     val colors = MaterialTheme.colorScheme
-    val target = when { pressed -> colors.primaryContainer; focused -> colors.secondaryContainer; else -> colors.primary }
-    val background by animateColorAsState(target, tween(if (!LocalDotMotionEnabled.current) 0 else if (focused && !pressed) DotTokens.Motion.Focus else DotTokens.Motion.Press), label = "dotChatAction")
+    // Keep the paired action colors throughout interaction; native ripple supplies press feedback.
+    // Animate only the focus/press cue, so no intermediate foreground/background loses contrast.
+    val cue by animateFloatAsState(if (pressed || focused) 1f else 0f,
+        tween(if (!LocalDotMotionEnabled.current) 0 else if (focused && !pressed) DotTokens.Motion.Focus else DotTokens.Motion.Press),
+        label = "dotChatActionCue")
     IconButton(
         onClick = if (stop) onStop else onSend,
         enabled = stop || hasContent,
         interactionSource = interactions,
         modifier = Modifier.size(DotTokens.TouchTarget)
-            .background(if (stop || hasContent) background else colors.surfaceVariant, CircleShape)
+            .background(if (stop || hasContent) colors.primary else colors.surfaceVariant, CircleShape)
+            .border(2.dp, colors.onPrimary.copy(alpha = cue), CircleShape)
             .semantics { if (isStreaming) stateDescription = working },
         colors = IconButtonDefaults.iconButtonColors(contentColor = colors.onPrimary, disabledContentColor = colors.onSurfaceVariant),
     ) {

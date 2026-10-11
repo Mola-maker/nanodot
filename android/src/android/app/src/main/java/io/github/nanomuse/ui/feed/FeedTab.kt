@@ -19,8 +19,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,6 +39,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -58,6 +59,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
@@ -264,13 +268,13 @@ private fun PostCard(
                     tween(if (motionEnabled) DotTokens.Motion.Page else 0),
                     label = "heartTint",
                 )
-                FooterAction(
-                    icon = if (post.liked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                    tint = heartTint,
-                    label = null,
-                    onClick = onLike,
-                    iconModifier = Modifier.graphicsLayer { scaleX = heartScale.value; scaleY = heartScale.value },
-                )
+                IconToggleButton(checked = post.liked, onCheckedChange = { onLike() },
+                    modifier = Modifier.size(DotTokens.TouchTarget)) {
+                    Icon(if (post.liked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = stringResource(R.string.nm_feed_like_post, post.title),
+                        tint = heartTint,
+                        modifier = Modifier.graphicsLayer { scaleX = heartScale.value; scaleY = heartScale.value }.size(22.dp))
+                }
                 Spacer(Modifier.width(6.dp))
                 FooterAction(
                     icon = Icons.Outlined.ChatBubbleOutline,
@@ -279,7 +283,8 @@ private fun PostCard(
                     onClick = onDiscuss,
                 )
                 Spacer(Modifier.weight(1f))
-                FooterAction(icon = Icons.Outlined.Info, tint = MaterialTheme.colorScheme.onSurface, label = null, onClick = onInfo)
+                FooterAction(icon = Icons.Outlined.Info, tint = MaterialTheme.colorScheme.onSurface,
+                    label = stringResource(R.string.nm_feed_post_info, post.title), showLabel = false, onClick = onInfo)
             }
         }
     }
@@ -289,18 +294,20 @@ private fun PostCard(
 private fun FooterAction(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     tint: Color,
-    label: String?,
+    label: String,
     onClick: () -> Unit,
-    iconModifier: Modifier = Modifier,
+    showLabel: Boolean = true,
 ) {
     Row(
         modifier = Modifier
-            .clickable(onClick = onClick)
+            .clickable(role = Role.Button, onClick = onClick)
+            .sizeIn(minWidth = DotTokens.TouchTarget, minHeight = DotTokens.TouchTarget)
+            .semantics { contentDescription = label }
             .padding(horizontal = DotTokens.Space.S8, vertical = DotTokens.Space.S8),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(icon, contentDescription = label, tint = tint, modifier = iconModifier.size(22.dp))
-        if (label != null) {
+        Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(22.dp))
+        if (showLabel) {
             Spacer(Modifier.width(6.dp))
             Text(label, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
         }

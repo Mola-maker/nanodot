@@ -1123,4 +1123,10 @@
     <string name="nm_dot_components">Komponen</string>
     <string name="nm_dot_empty">Belum ada apa pun di sini.</string>
     <string name="nm_dot_attach">Lampirkan berkas</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">Tambahkan ke %1$s</string>
+    <string name="nm_goal_completion">Tujuan selesai: %1$s</string>
+    <string name="nm_feed_like_post">Sukai postingan: %1$s</string>
+    <string name="nm_feed_post_info">Informasi postingan: %1$s</string>
 </resources>

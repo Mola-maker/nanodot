@@ -1127,4 +1127,10 @@
     <string name="nm_dot_components">Componentes</string>
     <string name="nm_dot_empty">Ainda não há nada aqui.</string>
     <string name="nm_dot_attach">Anexar um arquivo</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">Adicionar a %1$s</string>
+    <string name="nm_goal_completion">Meta concluída: %1$s</string>
+    <string name="nm_feed_like_post">Curtir publicação: %1$s</string>
+    <string name="nm_feed_post_info">Informações da publicação: %1$s</string>
 </resources>

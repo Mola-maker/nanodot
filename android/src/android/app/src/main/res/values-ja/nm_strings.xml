@@ -1123,4 +1123,10 @@
     <string name="nm_dot_components">コンポーネント</string>
     <string name="nm_dot_empty">まだ何もありません。</string>
     <string name="nm_dot_attach">ファイルを添付</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">%1$sに追加</string>
+    <string name="nm_goal_completion">完了した目標：%1$s</string>
+    <string name="nm_feed_like_post">投稿にいいね：%1$s</string>
+    <string name="nm_feed_post_info">投稿の情報：%1$s</string>
 </resources>

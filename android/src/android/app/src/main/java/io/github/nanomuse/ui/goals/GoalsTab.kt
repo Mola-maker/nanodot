@@ -46,6 +46,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Switch
@@ -295,8 +296,8 @@ private fun SectionHeader(
         }
         Text(label, fontSize = DotTokens.Type.Body, fontWeight = FontWeight.SemiBold, color = labelColor, modifier = Modifier.weight(1f))
         trailing?.invoke()
-        IconButton(onClick = onAdd) {
-            Icon(Icons.Filled.Add, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        IconButton(onClick = onAdd, modifier = Modifier.size(DotTokens.TouchTarget)) {
+            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.nm_task_add_section, label), tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -334,13 +335,14 @@ private fun GoalRow(goal: Goal, onOpenSession: (String) -> Unit) {
             )
             .padding(start = DotTokens.Space.S16, end = DotTokens.Space.S4, top = DotTokens.Space.S8, bottom = DotTokens.Space.S12),
     ) {
-        IconButton(
-            onClick = { GoalFlow.markDone(context, goal, !done) },
-            modifier = Modifier.size(28.dp),
+        IconToggleButton(
+            checked = done,
+            onCheckedChange = { GoalFlow.markDone(context, goal, it) },
+            modifier = Modifier.size(DotTokens.TouchTarget),
         ) {
             Icon(
                 if (done) Icons.Outlined.CheckBox else Icons.Outlined.CheckBoxOutlineBlank,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.nm_goal_completion, goal.title),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(22.dp),
             )
@@ -530,8 +532,8 @@ private fun CategoryRow(category: GoalCategory, onClick: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f),
         )
-        IconButton(onClick = onClick) {
-            Icon(Icons.Filled.Add, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        IconButton(onClick = onClick, modifier = Modifier.size(DotTokens.TouchTarget)) {
+            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.nm_task_add_section, GoalFlow.categoryLabel(context, category)), tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

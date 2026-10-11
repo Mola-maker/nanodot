@@ -9,6 +9,8 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,6 +51,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -246,7 +249,7 @@ fun CloudSignInScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MuseTones.fill, RoundedCornerShape(12.dp))
-                    .padding(3.dp),
+                    .padding(3.dp).selectableGroup(),
             ) {
                 ModeTab(stringResource(R.string.nm_cloud_mode_code), selected = !byPassword, modifier = Modifier.weight(1f)) {
                     byPassword = false; error = null
@@ -555,7 +558,8 @@ private fun ModeTab(label: String, selected: Boolean, modifier: Modifier = Modif
         modifier = modifier
             .clip(RoundedCornerShape(10.dp))
             .background(if (selected) MuseTones.surface else Color.Transparent)
-            .clickable(onClick = onClick)
+            .heightIn(min = DotTokens.TouchTarget)
+            .selectable(selected = selected, role = Role.Tab, onClick = onClick)
             .padding(vertical = DotTokens.Space.S8),
         contentAlignment = Alignment.Center,
     ) {
