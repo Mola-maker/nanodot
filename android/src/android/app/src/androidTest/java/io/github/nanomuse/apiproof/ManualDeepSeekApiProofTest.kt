@@ -174,4 +174,62 @@ class ManualDeepSeekApiProofTest {
         assertFalse(input.exists())
         assertEquals("synthetic-proof-key", alias.readText(Charsets.US_ASCII))
     }
+
+    /** Characterizes the actual native provider/reflection/JSON paths without a Flow or HTTP call. */
+    @Test fun publicSyntheticRuntimeProviderAndStandardJsonPreflight() {
+        val key = "synthetic-proof-key"
+        val transport = ApiProofTransport("https://public.invalid/chat/completions".toHttpUrl(), key)
+        try {
+            val provider = transport.provider(key, "https://public.invalid")
+            val ownedClient = ApiProofTransport::class.java.getDeclaredField("client").apply { isAccessible = true }.get(transport)
+            val providerClient = provider.javaClass.getDeclaredField("client").apply { isAccessible = true }.get(provider)
+            assertSame(ownedClient, providerClient) // provider() also executes its type and exact identity checks.
+            publicRuntimeJsonPrecheck(transport,
+                """data: {"choices":[],"public":{"url":"https://public.invalid/a/b","path":"a\/b"}}""")
+            assertTrue(transport.tokenizerReached) // Returning successfully also proves native JSONObject/traversal ran.
+            assertFalse(transport.sawDone)
+            assertEquals(0, transport.httpStatus)
+            assertEquals(0, transport.exchangeCount)
+        } finally {
+            transport.close()
+            assertTrue(transport.isClosed)
+            assertEquals(0, transport.exchangeCount)
+        }
+    }
+
+    @Test fun publicSyntheticRuntimeDecodedEchoAndCommentPreflight() {
+        val publicPayloads = listOf(
+            """{"choices":[],"public":{"echo":"synthetic\u002dproof-key"}}""" to true,
+            """{"choices":[],"public":{"synthetic\u002dproof-key":"public"}}""" to true,
+            ("{\"ignored\":/*\"*/" + "[".repeat(33) + "0" + "]".repeat(33) + "/*\"*/}") to false,
+        )
+        for ((payload, reachesTokenizer) in publicPayloads) {
+            assertFalse(payload.contains("synthetic-proof-key"))
+            // Fresh owned instance per payload: the observation is monotonic and must start false.
+            val transport = ApiProofTransport("https://public.invalid/chat/completions".toHttpUrl(), "synthetic-proof-key")
+            try {
+                assertFalse(transport.tokenizerReached)
+                val failure = runCatching { publicRuntimeJsonPrecheck(transport, "data: $payload") }.exceptionOrNull()
+                assertTrue(failure is IllegalStateException)
+                assertNull(failure!!.cause)
+                assertFalse(failure.message.orEmpty().contains("synthetic-proof-key"))
+                assertEquals(reachesTokenizer, transport.tokenizerReached)
+                assertFalse(transport.sawDone)
+                assertEquals(0, transport.httpStatus)
+                assertEquals(0, transport.exchangeCount)
+            } finally {
+                transport.close()
+                assertTrue(transport.isClosed)
+                assertEquals(0, transport.exchangeCount)
+            }
+        }
+    }
+
+    private fun publicRuntimeJsonPrecheck(transport: ApiProofTransport, line: String) {
+        // Invoke the SAME test-only implementation; no copied scanner or native parser substitute.
+        val method = ApiProofTransport::class.java.getDeclaredMethod("validateSseData", String::class.java)
+        method.isAccessible = true
+        try { method.invoke(transport, line) }
+        catch (failure: java.lang.reflect.InvocationTargetException) { throw failure.targetException }
+    }
 }

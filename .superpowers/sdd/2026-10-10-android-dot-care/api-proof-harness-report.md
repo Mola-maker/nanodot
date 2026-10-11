@@ -454,3 +454,101 @@ only public synthetic loopback data: real credential reads/API/native/device
 operations0, shared actual budget unchanged1/15. Logger be882 C0/I0/M1 independent
 approval remains valid. No helper/reviewer dispatch, push/CI/deploy or actual proof
 claim. Root alone owns eventual native/real-provider execution.
+
+
+## Public native runtime preflight fixture appendix
+
+BASE `6d3cbfb08521c736e1ebd2025f6c2d34aacf9338`. Root reported SAME-reviewer
+136ce777 source approval for fix2 and successful own test APK assembly. This new
+acceptance-preparation task does not reopen the approved slash fix or I1/I2.
+The implementer did not independently execute native cases or claim root's runtime
+results. The existing public filesystem3 cases and no-input skip do not establish
+Android JSONObject or actual reflected-client identity, so root explicitly requested
+two public-only characterization methods before any actual input handoff.
+
+Only `ManualDeepSeekApiProofTest.kt` received code additions, appended after its
+existing methods. Existing four test bodies and their helper prefix are byte-for-byte
+unchanged, checked against BASE; PrivateProofInput, ProofInputConsumption,
+ApiProofTransport and unit tests are unchanged. No main/release API, dependency,
+sourceSets, fixture filename/filter list or provider behavior changed.
+
+`publicSyntheticRuntimeProviderAndStandardJsonPreflight` constructs the existing
+owned ApiProofTransport with the public constant `synthetic-proof-key` and an inert
+`https://public.invalid/chat/completions` URL. It invokes actual provider(), whose
+existing reflection checks require field type/owned client identity, then independently
+asserts the exact owned-client reference equals the provider's private client.
+No Flow is created or collected and no HTTP Call is created/executed. It reflectively
+invokes the SAME private validateSseData with standard JSON choices[]/public.url
+`https://public.invalid/a/b`/public.path `a\/b`, requires successful return and
+`tokenizerReached=true`, no DONE, HTTPstatus0 and exchangeCount0. A successful native
+execution will characterize actual Android JSONTokener/JSONObject/traversal, while
+this compile alone does not establish that success. Finally closes only owned
+resources and requires isClosed plus exchangeCount0; the original shared provider
+pool/dispatcher remain untouched by the existing helper's ownership policy.
+
+`publicSyntheticRuntimeDecodedEchoAndCommentPreflight` uses three separately owned
+fresh transports so the monotonic tokenizer observation starts false per input:
+standard JSON with Unicode-escaped synthetic credential in decoded STRING value;
+standard JSON with that escaped credential in a decoded object key; exact
+comment-shielded33-array negative from fix2. All raw payloads lack the literal
+synthetic credential. Direct precheck rejection must be IllegalStateException with
+no cause and no synthetic key in its message. Decoded-key/string cases require
+tokenizerReached=true, while the exact comment-shielded payload requires false,
+characterizing native parser reach versus pre-parser refusal without copying the
+scanner, substituting JSON classes or adding a business DI/API seam. Each requires
+HTTPstatus0/exchangeCount0/no DONE; finally ownedclose/isClosed/zeroexchange.
+
+The private fixture bridge uses reflected validateSseData and unwraps only
+InvocationTargetException to its actual target exception for assertions. It does
+not print exception data or write results. These are bounded public precheck inputs;
+the bridge deliberately bypasses the response source's outer fixed IOException
+wrapper and byte-forwarding layer. Consequently these new methods characterize
+native JSON validation/reflection/ownership only, not SSE transport, raw error
+rendering, a network model response or the actual manual proof. The earlier22 host
+controls and native runtime/actual proof remain distinct evidence boundaries.
+Neither method accesses context/cache/PrivateProofInput, preferences/session/DAO,
+result storage, real credentials or attempt reservation. Constructing URL objects
+is not a URL visit; no DNS/HTTP operation is invoked.
+
+### Scoped compilation and preserved evidence
+
+Root explicitly requested characterization with no artificial RED: existing behavior
+is observed on Android later, not deliberately broken here. No unit suite was rerun
+because shared code/22 unit sources did not change. One necessary offline OWN4 compile
+was executed using the approved SDK/JDK, same existing owned2G Gradle profile and
+own Gradle/Android-user directories:
+
+```sh
+./android/src/android/gradlew -p android/src/android \
+  :app:compileDebugAndroidTestKotlin \
+  -I "$PWD/work/api-proof/native-runtime-preflight/fixture-only.init.gradle" \
+  --offline --console=plain --no-daemon -Pnm.abi=x86_64
+```
+
+Exit0/BUILD SUCCESSFUL9s,30tasks (2executed/28up-to-date). Executed Kotlin compile
+printed exactly ManualDeepSeekApiProofTest.kt, PrivateProofInput.kt,
+ApiProofTransport.kt and ProofInputConsumption.kt from the same two source roots.
+Filter is byte-identical to fix2/fix1, SHA256
+`35d87a7b736724b640c7dd97be96d8fed3e89a3de3216062096ba8a521a7f050`;
+main/all unit compilation remains unfiltered. Known8legacy mountedSessionId full
+instrumentation errors remain binding/unwaived. This is ONLY the owned4-file compile,
+not full instrumentation success, APK assembly or native test execution.
+`git diff --check` passed. Existing SDK/AGP warning boundaries remain; no upgrade or
+warning suppression. No new failed build/test artifact arose in this appendix.
+
+Ignored evidence directory `work/api-proof/native-runtime-preflight/` holds only
+compile.log, byte-identical fixture-only.init.gradle and baseline-report.md.
+Adjacent new source11/evidence3 manifests hash the full candidate source list and
+those immutable artifacts. Original16 + fix1 18 + fix2 13 evidence entries were
+re-hashed and all matched. Original22/0 GREEN plus every RED/error/fixture failure
+is preserved. The report's old native-pending assertions are superseded only by
+root's separately verified later runtime evidence, never by this worker.
+
+Root must obtain one scoped source review of these appended public cases, assemble
+its owned test APK and select the TWO exact new methods only for the additional
+runtime checks. Root owns native execution/device5580 and the actual credential/API
+budget. This worker performed no device/ADB/native test, key/.env/private-state read,
+API request, Flow collection, model invocation, helper/reviewer dispatch, push/CI/deploy
+or attempt reservation; supplied shared count remains1/15. Independently approved
+fix2 at6d3cbfb0 and loggerbe882 remain approved facts; these newly appended fixtures
+are a pending candidate until root review. No actual/native proof is claimed here.
