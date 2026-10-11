@@ -48,6 +48,7 @@ class OwnedCapture(private val scope: CoroutineScope, val lease: VoiceLease, pri
                 if (!capture.finishing) state(RecognitionState.RECORDING)
                 listener.onReadyForSpeech()
             }
+            override fun onFinishing() = event(capture) { beginFinishing(capture, requestStop = false) }
             override fun onFinal(text: String) = event(capture) {
                 terminate(capture) { listener.onFinal(text) }
             }
@@ -74,23 +75,29 @@ class OwnedCapture(private val scope: CoroutineScope, val lease: VoiceLease, pri
         }
     }
     fun stop(ticket: VoiceLease.Ticket) {
-        val capture = active?.takeIf { it.ticket === ticket && !it.ending && !it.finishing } ?: return
+        val capture = active?.takeIf { it.ticket === ticket } ?: return
+        beginFinishing(capture, requestStop = true)
+    }
+    private fun beginFinishing(capture: Capture, requestStop: Boolean) {
+        if (active !== capture || capture.ending || capture.finishing) return
         capture.finishing = true
         state(RecognitionState.FINISHING)
         scope.launch {
             capture.preparation?.join()
-            if (!accepts(ticket)) return@launch
+            if (!accepts(capture.ticket)) return@launch
             capture.finishTimeout = scope.launch {
                 delay(15_000)
                 terminate(capture) { capture.listener.onError(RecognitionError.UNKNOWN, null) }
             }
-            try { capture.engine.stop() } catch (failure: Throwable) {
+            try { if (requestStop) capture.engine.stop() } catch (failure: Throwable) {
                 terminate(capture) { capture.listener.onError(RecognitionError.UNKNOWN, failure.message) }
             }
         }
     }
     fun restart(ticket: VoiceLease.Ticket, locale: Locale) {
-        val capture = active?.takeIf { it.ticket === ticket && !it.ending && !it.finishing } ?: return
+        val capture = active?.takeIf { it.ticket === ticket && !it.cancelled } ?: return
+        // Only an already authorized restart can be coalesced while cleanup is in flight.
+        if ((capture.ending || capture.finishing) && capture.restartLocale == null) return
         capture.restartLocale = locale
         terminate(capture) {}
     }

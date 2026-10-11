@@ -62,7 +62,8 @@ class OwnedCaptureTest {
         val old = core.start("dot", a, Locale.US, false, Listener())!!; runCurrent(); core.cancel(old); runCurrent()
         val b = Engine(); val l = Listener(); val current = core.start("dot", b, Locale.US, false, l)!!; runCurrent()
         a.listener.onPartial("old"); a.listener.onFinal("old"); a.listener.onError(RecognitionError.NETWORK)
-        core.cancel(old); core.stop(old); runCurrent()
+        a.listener.onFinishing()
+        core.cancel(old); core.stop(old); runCurrent(); advanceTimeBy(15_001); runCurrent()
         assertTrue(b.live); assertEquals(0, b.closes); assertTrue(l.text.isEmpty()); assertTrue(l.errors.isEmpty())
         assertEquals(1, output.resumes); core.cancel(current); runCurrent()
     }

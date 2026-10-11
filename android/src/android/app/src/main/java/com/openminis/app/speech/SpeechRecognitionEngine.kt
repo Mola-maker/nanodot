@@ -100,6 +100,9 @@ interface SpeechRecognitionEngine {
         /** Audio level in dB for UI animation; safe to ignore. */
         fun onRmsDb(rms: Float) {}
 
+        // nanoMuse: engine endpointing must share the owner's bounded final-result wait.
+        fun onFinishing() {}
+
         /** Fires when the engine starts actually listening (after warmup). */
         fun onReadyForSpeech() {}
     }
