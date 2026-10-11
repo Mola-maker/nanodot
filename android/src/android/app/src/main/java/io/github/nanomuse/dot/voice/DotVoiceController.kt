@@ -57,7 +57,7 @@ class DotVoiceController(
         val ownedSession = DotVoiceSession(object : DotVoiceSession.Port {
             override fun start(continuous: Boolean, text: (String, Boolean) -> Unit,
                 error: (RecognitionError, String?) -> Unit): VoiceLease.Ticket? =
-                SpeechRecognitionManager.startOwned("dot", continuous, text, error, pinned)
+                SpeechRecognitionManager.startOwned("dot", continuous, text, error, pinned, retrySelectedEngine = true)
             override fun stop(ticket: VoiceLease.Ticket) = SpeechRecognitionManager.stopOwned(ticket)
             override fun cancel(ticket: VoiceLease.Ticket) = SpeechRecognitionManager.cancelOwned(ticket)
         }, adapter::accepts, { adapter.voiceInput(it) }, adapter::writeVoiceInput,

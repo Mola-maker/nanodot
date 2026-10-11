@@ -4,6 +4,7 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Fixed Android Dot dictation retries after transient recognition errors and preserved reply playback cleanup failures across Stop and panel closure before microphone admission.
 - Connected Android Dot overlay dictation and explicit reply read-aloud to the shared voice manager, with a visible permission Activity, private microphone service, Stop notification and generation-scoped cancellation; native and genuine Chinese ASR/TTS acceptance remained pending.
 
 - Added Android capture tickets, awaited recorder/synthesis cleanup and guarded late voice callbacks; floating voice UI, permission/service integration and real ASR/TTS acceptance remained pending.

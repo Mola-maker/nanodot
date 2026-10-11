@@ -325,9 +325,16 @@ object SpeechRecognitionManager {
         onError: (RecognitionError, String?) -> Unit,
         selection: VoiceSelection? = null,
         onTicket: (VoiceLease.Ticket) -> Unit = {},
+        retrySelectedEngine: Boolean = false,
     ): VoiceLease.Ticket? {
         // nanoMuse: configuration and admission are one main-thread operation; busy callers cannot mutate engines.
         if (occupied()) { onError(RecognitionError.RECOGNIZER_BUSY, null); return null }
+        // nanoMuse: only an explicit authorized Dot request opts in. Busy/finishing leases reject above,
+        // before changing an engine. Clearing degradation does not override installation availability.
+        if (retrySelectedEngine && selection != null) {
+            engines.firstOrNull { it.id == selection.engineId }?.clearDegraded()
+            refreshAvailability()
+        }
         val engine = if (selection == null) currentEngine() else engines.firstOrNull { it.id == selection.engineId && it.isAvailable }
         val pinnedLocale = selection?.locale ?: _locale.value
         val offline = selection?.preferOffline

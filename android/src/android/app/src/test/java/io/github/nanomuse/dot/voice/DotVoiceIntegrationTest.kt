@@ -33,7 +33,10 @@ class DotVoiceIntegrationTest {
     }
     private class Engine : SpeechRecognitionEngine {
         override val id = "system"; override val displayName = id
-        override val isAvailable = true; override val supportedLocales = emptyList<Locale>()
+        var degraded = false; var installed = true; var resets = 0
+        override val isAvailable get() = installed && !degraded
+        override fun clearDegraded() { resets++; degraded = false }
+        override val supportedLocales = emptyList<Locale>()
         override val supportsPartialResults = true
         lateinit var listener: SpeechRecognitionEngine.Listener
         var starts = 0; var closes = 0; var stops = 0
@@ -65,7 +68,7 @@ class DotVoiceIntegrationTest {
         }
         fun admit(): VoiceStartGate.Request {
             voice.start(); val r=pending; gate.visible(r,true); check(gate.begin(r,true))
-            check(gate.admit(r.id,true) === r); check(voice.foreground(r) { foregroundEnds++ }); return r
+            check(gate.admit(r.id,true) === r); voice.foreground(r) { foregroundEnds++ }; return r
         }
     }
     @Test fun pendingCancellationAndPermissionDenialLeaveKeyboardUsable() = runTest {
@@ -166,6 +169,118 @@ class DotVoiceIntegrationTest {
             main.start(pending,VoiceSelection("system",Locale.US,false),{_,_->fail("stale main")},{_,_->fail("stale error")})
             runCurrent(); assertEquals(0,f.engine.starts)
         } finally { Dispatchers.resetMain() }
+    }
+
+    @Test fun explicitRetryRecoversSelectedDegradationButHonorsRealAvailability() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val f=Fixture(backgroundScope)
+        try {
+            f.admit(); runCurrent()
+            f.engine.degraded=true
+            f.engine.listener.onError(RecognitionError.AUDIO_ERROR); runCurrent()
+            assertFalse(SpeechRecognitionManager.occupied())
+            f.admit(); runCurrent()
+            assertEquals("explicit Dot retry must reach recovered selected engine",2,f.engine.starts)
+            f.voice.cancel(); runCurrent()
+            f.engine.installed=false; f.engine.degraded=true
+            f.admit(); runCurrent()
+            assertEquals(2,f.engine.starts)
+            assertEquals(DotVoiceController.Phase.ERROR,f.voice.ui.value.phase)
+        } finally { f.voice.cancel(); SpeechRecognitionManager.ownedState.value.ticket?.let(SpeechRecognitionManager::cancelOwned); runCurrent(); Dispatchers.resetMain() }
+    }
+    @Test fun retryDoesNotMutateLiveOrFinishingMainEngine() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val f=Fixture(backgroundScope)
+        val main=MainVoiceInput()
+        try {
+            main.start(main.pending(),VoiceSelection("system",Locale.US,false),{_,_->},{_,_->}); runCurrent()
+            f.engine.degraded=true; val resets=f.engine.resets
+            f.voice.start(); assertEquals(resets,f.engine.resets)
+            f.engine.cleanup=CompletableDeferred(); main.close(); runCurrent()
+            f.voice.start(); assertEquals(resets,f.engine.resets)
+            assertTrue(f.engine.degraded); assertEquals(DotVoiceController.Phase.BUSY,f.voice.ui.value.phase)
+        } finally { f.engine.cleanup?.complete(Unit); main.close(); runCurrent(); Dispatchers.resetMain() }
+    }
+    @Test fun actualReplyStopFailureBlocksDictateAndStillReleasesPlayer() = cleanupBoundary(false, true, false)
+    @Test fun actualPanelTeardownReleaseFailureBlocksNextDictate() = cleanupBoundary(true, false, true)
+    @Test fun cancelledReplyFinallyKeepsCaptureExclusive() = cleanupBoundary(false, false, false)
+    @Test fun completedTeardownFailureIsStillSeenByNextDictate() = cleanupBoundary(true, false, true, true)
+    @Test fun completedTeardownStopFailureIsStillSeenByNextDictate() = cleanupBoundary(true, true, false, true)
+    private fun cleanupBoundary(teardown: Boolean, stopFails: Boolean, releaseFails: Boolean, completedFirst: Boolean = false) = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val f=Fixture(backgroundScope)
+        val done=CompletableDeferred<Unit>()
+        val mp=ControlledReplyMediaPlayer().apply { failStop=stopFails; failRelease=releaseFails }
+        val job=backgroundScope.launch {
+            try { awaitCancellation() } finally { withContext(NonCancellable) { done.await() } }
+        }
+        val player=ReplyCleanupFixture.player(mp,job)
+        VoiceOutputState.registerPlayer(player); f.adapter.speaker.value=player
+        try {
+            runCurrent()
+            if (teardown) f.adapter.closeSpeech() else f.adapter.stopReply()
+            if (completedFirst) { done.complete(Unit); runCurrent() }
+            // Same actions as the production Dictate control, including its ordinary Stop.
+            f.adapter.stopReply(); f.admit(); runCurrent()
+            assertEquals(0,f.engine.starts)
+            if (!completedFirst) {
+                assertTrue(SpeechRecognitionManager.occupied())
+                var busy: RecognitionError?=null
+                SpeechRecognitionManager.startOwned("main",null,{_,_->},{e,_->busy=e})
+                assertEquals(RecognitionError.RECOGNIZER_BUSY,busy)
+            }
+            done.complete(Unit); runCurrent()
+            assertTrue("release must be attempted even if stop fails",mp.releases > 0)
+            assertEquals(if (stopFails || releaseFails) 0 else 1,f.engine.starts)
+            if (stopFails || releaseFails) {
+                assertEquals(DotVoiceController.Phase.ERROR,f.voice.ui.value.phase)
+                // A repeated failed release must still reject another recording attempt.
+                if (releaseFails) { f.admit(); runCurrent(); assertEquals(0,f.engine.starts) }
+                // A still-unreleased resource is retried; observing a prior error alone never loses it.
+                mp.failStop=false; mp.failRelease=false
+                f.admit(); runCurrent()
+                assertEquals(1,f.engine.starts)
+            }
+        } finally {
+            done.complete(Unit); mp.failStop=false; mp.failRelease=false
+            f.voice.cancel(); SpeechRecognitionManager.ownedState.value.ticket?.let(SpeechRecognitionManager::cancelOwned); runCurrent()
+            runCatching { player.suspendForCaptureAndJoin() }
+            VoiceOutputState.unregisterPlayer(player); runCurrent(); Dispatchers.resetMain()
+        }
+    }
+
+    @Test fun mainAdmissionDuringPermissionWindowRejectsRetryBeforeEngineReset() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val f=Fixture(backgroundScope); val main=MainVoiceInput()
+        try {
+            f.voice.start(); val r=f.pending
+            main.start(main.pending(),VoiceSelection("system",Locale.US,false),{_,_->},{_,_->}); runCurrent()
+            f.engine.degraded=true; val resets=f.engine.resets
+            f.gate.visible(r,true); check(f.gate.begin(r,true)); check(f.gate.admit(r.id,true) === r)
+            f.voice.foreground(r) { f.foregroundEnds++ }; runCurrent()
+            assertEquals(resets,f.engine.resets); assertTrue(f.engine.degraded)
+            assertEquals(1,f.engine.starts); assertEquals(DotVoiceController.Phase.BUSY,f.voice.ui.value.phase)
+        } finally { main.close(); f.voice.cancel(); runCurrent(); Dispatchers.resetMain() }
+    }
+
+    @Test fun selectedEngineRetryCannotMutateLiveOrFinishingDotOwner() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val f=Fixture(backgroundScope)
+        try {
+            f.admit(); runCurrent(); f.engine.degraded=true
+            val resets=f.engine.resets
+            fun competingRetry() {
+                var failure: RecognitionError?=null
+                SpeechRecognitionManager.startOwned("dot-other",false,{_,_->},{e,_->failure=e},
+                    VoiceSelection("system",Locale.JAPAN,true),retrySelectedEngine=true)
+                assertEquals(RecognitionError.RECOGNIZER_BUSY,failure)
+                assertEquals(resets,f.engine.resets); assertTrue(f.engine.degraded)
+                assertEquals(Locale.CHINA,f.engine.locale)
+            }
+            competingRetry()
+            f.engine.cleanup=CompletableDeferred(); f.voice.cancel(); runCurrent()
+            competingRetry()
+        } finally { f.engine.cleanup?.complete(Unit); f.voice.cancel(); runCurrent(); Dispatchers.resetMain() }
     }
 
 }

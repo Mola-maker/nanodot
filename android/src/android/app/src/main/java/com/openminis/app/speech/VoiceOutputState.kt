@@ -120,17 +120,22 @@ object VoiceOutputState {
      * identity so a mid-stack player leaving doesn't disturb the rest.
      */
     private val players = ArrayDeque<ReadAloudPlayer>()
+    // nanoMuse: removed UI owners can still have unfinished/failed cleanup. They do not own the capsule.
+    private val retiredPlayers = mutableSetOf<ReadAloudPlayer>()
 
     val activePlayer: ReadAloudPlayer?
         get() = synchronized(players) { players.lastOrNull() }
 
     fun registerPlayer(player: ReadAloudPlayer) = synchronized(players) {
+        retiredPlayers.remove(player)
         players.remove(player)
         players.addLast(player)
     }
 
     fun unregisterPlayer(player: ReadAloudPlayer) = synchronized(players) {
         players.remove(player)
+        if (player.hasPendingCaptureCleanup) retiredPlayers.add(player) else retiredPlayers.remove(player)
+        Unit
     }
 
     /** True when [player] currently owns the capsule — gates the live-state
@@ -162,10 +167,15 @@ object VoiceOutputState {
 
     suspend fun suspendAllForCaptureAndJoin() {
         captureSuppressed = true
-        val live = synchronized(players) { players.toList() }
+        val live = synchronized(players) { (players.toList() + retiredPlayers).distinct() }
         var failure: Throwable? = null
         for (player in live) {
             try { player.suspendForCaptureAndJoin() } catch (t: Throwable) { failure = t }
+            finally {
+                synchronized(players) {
+                    if (!player.hasPendingCaptureCleanup) retiredPlayers.remove(player)
+                }
+            }
         }
         failure?.let { throw it }
     }
@@ -181,6 +191,8 @@ object VoiceOutputState {
         captureSuppressed = false
         val live = synchronized(players) { players.toList() }
         live.forEach { runCatching { it.resumeAfterCapture() } }
+        // nanoMuse: reset retired pause state for a later explicit cleanup retry; shutdown blocks enqueue.
+        synchronized(players) { retiredPlayers.toList() }.forEach { runCatching { it.resumeAfterCapture() } }
     }
 
     fun init(context: Context) {

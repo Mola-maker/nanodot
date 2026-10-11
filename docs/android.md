@@ -110,6 +110,11 @@ speaking and failure states in the overlay. Playback is explicit and does not en
 waits for controlled synthesis cleanup. Closing or switching the panel stops its reply playback.
 A system TTS stop acknowledgement does not prove acoustic silence.
 
+Reply Stop and panel closure retain playback cleanup failures for the next recording attempt.
+Dictation waits for cancelled speech cleanup and does not start when that cleanup fails. An explicit
+Dictate retry refreshes the selected recognition engine after transient failure, once no other
+capture owns the microphone; returning from Settings does not start recording.
+
 This is source integration for Task5B, not native/audio acceptance or completion of Task5.
 Target35 visible-permission/foreground-service, notification/lock/revocation and microphone release
 checks on the selected virtual device remain pending. Genuine Chinese ASR and audible Chinese

@@ -82,6 +82,20 @@ class ReadAloudPlayer(context: Context) {
 
     /** Currently playing provider audio, if any — held so [stop] can cancel it. */
     private var player: MediaPlayer? = null
+    // nanoMuse: a UI Stop is not proof of cleanup. Keep failures until microphone preparation observes them.
+    private var cleanupFailure: Throwable? = null
+    private var shutdownRequested = false
+    private var releasePending = false
+    private var systemCleanupPending = false
+    private var shutdownPending = false
+    internal val hasPendingCaptureCleanup: Boolean
+        get() = player != null || focusRequest != null || systemCleanupPending || shutdownPending ||
+            cleanupFailure != null || utteranceJob?.isCompleted == false
+
+    private fun retainCleanupFailure(failure: Throwable) {
+        if (cleanupFailure == null) cleanupFailure = failure
+        playbackFailed.value = true
+    }
 
     /**
      * Completes the in-flight [playBytes] suspension when [stop] tears the
@@ -247,6 +261,8 @@ class ReadAloudPlayer(context: Context) {
         // isEnabled && !isMuted` gates production. Dropping here rather than at
         // playback keeps a long mute from piling up a backlog that would all
         // blurt out on un-mute.
+        // nanoMuse: failed resources cannot be overwritten by a new utterance.
+        if (shutdownRequested || releasePending || systemCleanupPending || shutdownPending) return
         if (!explicit && !VoiceOutputState.canPlay) return
         // [T-android-tts-scope-align] Mic-capture suppression, from iOS
         // canSpeakNow (feedDynamicTTS logs "DROP — read-replies off
@@ -303,13 +319,9 @@ class ReadAloudPlayer(context: Context) {
         heldForCapture.addAll(held)
 
         playbackFinisher?.invoke()
-        var playbackFailure: Throwable? = null
-        try { playback?.stop() } catch (t: Throwable) { playbackFailure = t }
-        try { playback?.release() } catch (t: Throwable) { playbackFailure = t }
-        abandonAudioFocus()
-        // nanoMuse: a failed stop must not be interpreted as microphone-ready.
-        system.stop(requireAcknowledgement = true)
-        playbackFailure?.let { throw it }
+        releasePlayer(playback)
+        // nanoMuse: both provider and system cleanup are attempted, regardless of either failure.
+        stopSystemForCleanup()
         pending.set(0)
         _isSpeaking.value = false
         if (ownsCapsule()) {
@@ -322,6 +334,12 @@ class ReadAloudPlayer(context: Context) {
     // nanoMuse: await synthesis/playback coroutine finally after invalidating late bytes.
     suspend fun suspendForCaptureAndJoin() {
         io.github.nanomuse.dot.voice.CapturePause.await(utteranceJob) { suspendForCapture() }
+        if (shutdownRequested && shutdownPending) shutdownSystem()
+        // Cancellation handlers/finally can add failures while the join is suspended.
+        // Report once; an unreleased resource remains owned and is retried on the next attempt.
+        val failure = cleanupFailure
+        cleanupFailure = null
+        failure?.let { throw it }
     }
 
     /** Re-queue whatever [suspendForCapture] held back. */
@@ -353,7 +371,7 @@ class ReadAloudPlayer(context: Context) {
         // MediaPlayer will never deliver.
         playbackFinisher?.invoke()
         releasePlayer()
-        system.stop()
+        stopSystemForCleanup()
         pending.set(0)
         _isSpeaking.value = false
         if (ownsCapsule()) {
@@ -370,11 +388,13 @@ class ReadAloudPlayer(context: Context) {
 
     /** Release both engines. Call from the owner's DisposableEffect. */
     fun shutdown() {
+        // nanoMuse: teardown cannot permit another utterance while cleanup remains owned.
+        shutdownRequested = true
         stop()
         worker?.cancel()
         queue.close()
         scope.cancel()
-        system.shutdown()
+        shutdownSystem()
         // Deregister by identity: removing a mid-stack player leaves the rest
         // intact, and dropping the top hands the capsule back to the player
         // beneath (typically the reply channel) instead of orphaning it.
@@ -684,13 +704,29 @@ class ReadAloudPlayer(context: Context) {
     private fun estimatedSpeechMs(text: String): Long =
         (text.length * 90L + 400L).coerceIn(600L, 30_000L)
 
-    private fun releasePlayer() {
-        player?.runCatching {
-            if (isPlaying) stop()
-            release()
+    // nanoMuse: stop/release failure evidence survives UI Stop and owner teardown.
+    private fun stopSystemForCleanup() {
+        try { system.stop(requireAcknowledgement = true); systemCleanupPending = false }
+        catch (t: Throwable) { systemCleanupPending = true; retainCleanupFailure(t) }
+    }
+
+    private fun shutdownSystem() {
+        try { system.shutdown(); shutdownPending = false; systemCleanupPending = false }
+        catch (t: Throwable) { shutdownPending = true; retainCleanupFailure(t) }
+    }
+
+    private fun releasePlayer(playback: MediaPlayer? = player) {
+        if (player === playback) player = null
+        // Reading state / stopping may throw on OEMs. Release must still be attempted.
+        try { if (playback?.isPlaying == true) playback.stop() }
+        catch (t: Throwable) { retainCleanupFailure(t) }
+        try { playback?.release(); if (playback != null) releasePending = false }
+        catch (t: Throwable) {
+            releasePending = true
+            player = playback // Keep the failed resource reachable for a later cleanup attempt.
+            retainCleanupFailure(t)
         }
-        player = null
-        abandonAudioFocus()
+        try { abandonAudioFocus() } catch (t: Throwable) { retainCleanupFailure(t) }
     }
 
     /**
