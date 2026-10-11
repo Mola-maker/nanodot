@@ -69,7 +69,16 @@ class CareNativeHarness : TestRule {
                 // Close care windows in each body first; restoration needs focused framework host.
                 if (backupRequested) attempt("clipboardRestore") { restoreClipboard() }
                 if (hostStarted) attempt("hostBackDispatched") {
-                    check(automation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK))
+                    cleanup.putBoolean("hostBackOwnershipVerified", false)
+                    cleanup.putBoolean("hostCleanupRequiresRoot", true)
+                    instrumentation.runOnMainSync {
+                        // Re-observe immediately before Back: a prior launch/ack does not own
+                        // whatever window is focused now. Unknown focus is never navigated.
+                        check(currentFocusedWindowIsOwnedHost()) { "Owned host not focused; root cleanup required" }
+                        cleanup.putBoolean("hostBackOwnershipVerified", true)
+                        check(automation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK))
+                        cleanup.putBoolean("hostCleanupRequiresRoot", false)
+                    }
                 }
                 originalFlags?.let { flags -> attempt("automationFlagsRestored") {
                     automation.serviceInfo = automation.serviceInfo.apply { this.flags = flags }
@@ -207,6 +216,36 @@ class CareNativeHarness : TestRule {
         stage("host_scene_observed", fields = Bundle().apply {
             putBoolean("actualHostActiveFocused", true)
         })
+    }
+
+    private fun currentFocusedWindowIsOwnedHost(): Boolean {
+        automation.clearCache()
+        fun hasPublicTarget(node: android.view.accessibility.AccessibilityNodeInfo): Boolean {
+            if (node.isVisibleToUser && node.contentDescription?.toString() == "CARE_TOUCH_TARGET") return true
+            for (index in 0 until node.childCount) {
+                val child = node.getChild(index) ?: continue
+                try { if (hasPublicTarget(child)) return true } finally { child.recycle() }
+            }
+            return false
+        }
+        val activeRoot = automation.rootInActiveWindow ?: return false
+        try {
+            if (activeRoot.packageName?.toString() != instrumentation.context.packageName ||
+                !hasPublicTarget(activeRoot)) return false
+            val windows = automation.windows
+            try {
+                return windows.any { candidate ->
+                    if (!candidate.isActive || !candidate.isFocused || candidate.id != activeRoot.windowId) false
+                    else {
+                        val root = candidate.root
+                        try {
+                            root != null && root.packageName?.toString() == instrumentation.context.packageName &&
+                                hasPublicTarget(root)
+                        } finally { root?.recycle() }
+                    }
+                }
+            } finally { windows.forEach { it.recycle() } }
+        } finally { activeRoot.recycle() }
     }
 
     private fun host(operation: String): Bundle {

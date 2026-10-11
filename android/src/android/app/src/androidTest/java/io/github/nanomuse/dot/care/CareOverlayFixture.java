@@ -98,7 +98,7 @@ public final class CareOverlayFixture extends Activity {
             try {
                 if ("smoke".equals(op)) result.setText("CARE_TOUCH_PENDING");
                 if ("backup".equals(op)) backup(directory, owner, source);
-                if ("restore".equals(op)) restore(directory, owner, source);
+                if ("restore".equals(op)) restore(directory, owner, source, request);
                 status.putBoolean("ok", true);
             } catch (Exception failure) {
                 // Never include an exception message, ClipData text, MIME, label or size.
@@ -250,7 +250,7 @@ public final class CareOverlayFixture extends Activity {
         return true;
     }
 
-    private void restore(File directory, String owner, String source) throws Exception {
+    private void restore(File directory, String owner, String source, String request) throws Exception {
         AtomicFile file = new AtomicFile(new File(directory, "clipboard.opaque"));
         // Missing/corrupt/wrong-owner backup is a failure, never a guessed empty clipboard.
         ClipData original = decode(file.readFully(), owner, source);
@@ -260,6 +260,7 @@ public final class CareOverlayFixture extends Activity {
                 || clipboard.hasPrimaryClip() != (original != null)) throw new IllegalStateException();
         // Durable readback receipt precedes deletion, so interruption is explicitly recoverable.
         JSONObject restored = new JSONObject().put("owner", owner).put("source", source)
+                .put("request", request).put("operation", "restore")
                 .put("payloadRestored", true).put("timestampExact", false);
         write(new AtomicFile(new File(directory, "clipboard-restored.json")),
                 restored.toString().getBytes(StandardCharsets.UTF_8));
