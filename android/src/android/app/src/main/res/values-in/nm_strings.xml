@@ -1125,4 +1125,20 @@
     <string name="nm_dot_capture_stop">Hentikan tangkapan</string>
     <string name="nm_dot_capture_explain">Pada versi Android ini, Dot dapat membaca teks aksesibilitas. Izinkan tangkapan layar secara terpisah untuk juga berbagi gambar. Android akan meminta izin.</string>
     <string name="nm_dot_capture_allow">Izinkan tangkapan layar</string>
+
+    <!-- Dot foreground conversation; captures stay local until explicit Send. -->
+    <string name="nm_dot_chat_empty">Tulis ke Dot untuk memulai percakapan ini.</string>
+    <string name="nm_dot_chat_message">Pesan</string>
+    <string name="nm_dot_chat_send">Kirim</string>
+    <string name="nm_dot_chat_stop">Hentikan</string>
+    <string name="nm_dot_chat_retry">Coba lagi</string>
+    <string name="nm_dot_chat_collapse">Tutup percakapan</string>
+    <string name="nm_dot_chat_remove">Hapus pratinjau</string>
+    <string name="nm_dot_chat_capturing">Membaca layar…</string>
+    <string name="nm_dot_chat_capture_failed">Tangkapan layar tidak tersedia. Coba lagi di layar asal.</string>
+    <string name="nm_dot_chat_historical">Diambil %1$s · lampiran sebelumnya</string>
+    <string name="nm_dot_chat_text_only">Hanya teks · tanpa tangkapan layar</string>
+    <string name="nm_dot_chat_voice_pending">Suara belum tersedia.</string>
+    <string name="nm_dot_chat_compact">Ringkas dan kirim</string>
+    <string name="nm_dot_chat_cancel">Batal</string>
 </resources>

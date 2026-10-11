@@ -1125,4 +1125,20 @@
     <string name="nm_dot_capture_stop">取得を停止</string>
     <string name="nm_dot_capture_explain">この Android バージョンでは、Dot はアクセシビリティのテキストを読み取れます。画像も共有するには、画面取得を別途許可してください。Android が許可を求めます。</string>
     <string name="nm_dot_capture_allow">画面取得を許可</string>
+
+    <!-- Dot foreground conversation; captures stay local until explicit Send. -->
+    <string name="nm_dot_chat_empty">Dot にメッセージを送って会話を始めましょう。</string>
+    <string name="nm_dot_chat_message">メッセージ</string>
+    <string name="nm_dot_chat_send">送信</string>
+    <string name="nm_dot_chat_stop">停止</string>
+    <string name="nm_dot_chat_retry">再試行</string>
+    <string name="nm_dot_chat_collapse">会話を閉じる</string>
+    <string name="nm_dot_chat_remove">プレビューを削除</string>
+    <string name="nm_dot_chat_capturing">画面を読み取り中…</string>
+    <string name="nm_dot_chat_capture_failed">画面を取得できません。元の画面で再試行してください。</string>
+    <string name="nm_dot_chat_historical">取得 %1$s · 過去の添付</string>
+    <string name="nm_dot_chat_text_only">テキストのみ · スクリーンショットなし</string>
+    <string name="nm_dot_chat_voice_pending">音声はまだ利用できません。</string>
+    <string name="nm_dot_chat_compact">圧縮して送信</string>
+    <string name="nm_dot_chat_cancel">キャンセル</string>
 </resources>

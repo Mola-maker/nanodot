@@ -1095,4 +1095,20 @@
     <string name="nm_dot_capture_stop">停止擷取</string>
     <string name="nm_dot_capture_explain">在此 Android 版本上，Dot 可以讀取無障礙文字。如需分享螢幕圖片，請單獨授權螢幕擷取。Android 會請求你的許可。</string>
     <string name="nm_dot_capture_allow">允許螢幕擷取</string>
+
+    <!-- Dot foreground conversation; captures stay local until explicit Send. -->
+    <string name="nm_dot_chat_empty">傳訊息給 Dot，開始這段對話。</string>
+    <string name="nm_dot_chat_message">訊息</string>
+    <string name="nm_dot_chat_send">傳送</string>
+    <string name="nm_dot_chat_stop">停止</string>
+    <string name="nm_dot_chat_retry">重試</string>
+    <string name="nm_dot_chat_collapse">收起對話</string>
+    <string name="nm_dot_chat_remove">移除預覽</string>
+    <string name="nm_dot_chat_capturing">正在查看螢幕…</string>
+    <string name="nm_dot_chat_capture_failed">目前無法擷取螢幕。請回到原本頁面後重試。</string>
+    <string name="nm_dot_chat_historical">擷取於 %1$s · 歷史附件</string>
+    <string name="nm_dot_chat_text_only">僅文字 · 無螢幕截圖</string>
+    <string name="nm_dot_chat_voice_pending">語音功能尚未開放。</string>
+    <string name="nm_dot_chat_compact">壓縮並傳送</string>
+    <string name="nm_dot_chat_cancel">取消</string>
 </resources>

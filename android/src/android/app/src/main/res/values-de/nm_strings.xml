@@ -1129,4 +1129,20 @@
     <string name="nm_dot_capture_stop">Aufnahme stoppen</string>
     <string name="nm_dot_capture_explain">Auf dieser Android-Version kann Dot zugänglichen Text lesen. Erlaube die Bildschirmaufnahme separat, um auch Bildinhalte zu teilen. Android fragt nach deiner Erlaubnis.</string>
     <string name="nm_dot_capture_allow">Bildschirmaufnahme erlauben</string>
+
+    <!-- Dot foreground conversation; captures stay local until explicit Send. -->
+    <string name="nm_dot_chat_empty">Schreibe Dot, um dieses Gespräch zu beginnen.</string>
+    <string name="nm_dot_chat_message">Nachricht</string>
+    <string name="nm_dot_chat_send">Senden</string>
+    <string name="nm_dot_chat_stop">Stoppen</string>
+    <string name="nm_dot_chat_retry">Erneut versuchen</string>
+    <string name="nm_dot_chat_collapse">Gespräch einklappen</string>
+    <string name="nm_dot_chat_remove">Vorschau entfernen</string>
+    <string name="nm_dot_chat_capturing">Bildschirm wird gelesen…</string>
+    <string name="nm_dot_chat_capture_failed">Bildschirmaufnahme nicht verfügbar. Versuche es auf dem ursprünglichen Bildschirm erneut.</string>
+    <string name="nm_dot_chat_historical">Aufgenommen %1$s · frühere Anlage</string>
+    <string name="nm_dot_chat_text_only">Nur Text · kein Bildschirmfoto</string>
+    <string name="nm_dot_chat_voice_pending">Sprache ist noch nicht verfügbar.</string>
+    <string name="nm_dot_chat_compact">Komprimieren und senden</string>
+    <string name="nm_dot_chat_cancel">Abbrechen</string>
 </resources>

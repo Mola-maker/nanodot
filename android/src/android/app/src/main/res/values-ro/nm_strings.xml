@@ -1133,4 +1133,20 @@
     <string name="nm_dot_capture_stop">Oprește captura</string>
     <string name="nm_dot_capture_explain">În această versiune Android, Dot poate citi text accesibil. Permite separat captura de ecran pentru a partaja și imagini. Android îți va cere permisiunea.</string>
     <string name="nm_dot_capture_allow">Permite captura de ecran</string>
+
+    <!-- Dot foreground conversation; captures stay local until explicit Send. -->
+    <string name="nm_dot_chat_empty">Scrie către Dot pentru a începe conversația.</string>
+    <string name="nm_dot_chat_message">Mesaj</string>
+    <string name="nm_dot_chat_send">Trimite</string>
+    <string name="nm_dot_chat_stop">Oprește</string>
+    <string name="nm_dot_chat_retry">Reîncearcă</string>
+    <string name="nm_dot_chat_collapse">Restrânge conversația</string>
+    <string name="nm_dot_chat_remove">Elimină previzualizarea</string>
+    <string name="nm_dot_chat_capturing">Se citește ecranul…</string>
+    <string name="nm_dot_chat_capture_failed">Captura nu este disponibilă. Reîncearcă pe ecranul original.</string>
+    <string name="nm_dot_chat_historical">Capturat %1$s · atașament anterior</string>
+    <string name="nm_dot_chat_text_only">Doar text · fără captură</string>
+    <string name="nm_dot_chat_voice_pending">Vocea nu este încă disponibilă.</string>
+    <string name="nm_dot_chat_compact">Comprimă și trimite</string>
+    <string name="nm_dot_chat_cancel">Anulează</string>
 </resources>

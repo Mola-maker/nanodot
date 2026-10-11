@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Added a real Android accessibility-overlay conversation sharing the main chat ViewModel. Double tap captured the host before opening the panel and kept a timestamped removable preview local until Send, with session-generation guards and temporary-file cleanup. Native panel and live gateway acceptance remained separate.
+
 - Added an optional Nanodot · Workers AI connection with dedicated project credentials and UUID ownership across clients. Project credentials remain bound during native provider edits, and unsaved Web keys are cleared before a changed destination is previewed. Connecting preserves existing Cloud accounts and model selections; local protocol fixtures pass, while deployment and live model/voice acceptance remain pending.
 
 - Prevented product-site builds from deleting source trees through custom output paths while preserving the dedicated generated output and external temporary builds.

@@ -1106,4 +1106,20 @@
     <string name="nm_dot_capture_stop">Stop capture</string>
     <string name="nm_dot_capture_explain">On this Android version, Dot can read accessible text. Allow screen capture separately to also share pixels. Android will ask for permission.</string>
     <string name="nm_dot_capture_allow">Allow screen capture</string>
+
+    <!-- Dot foreground conversation; captures stay local until explicit Send. -->
+    <string name="nm_dot_chat_empty">Write to Dot to start this conversation.</string>
+    <string name="nm_dot_chat_message">Message</string>
+    <string name="nm_dot_chat_send">Send</string>
+    <string name="nm_dot_chat_stop">Stop</string>
+    <string name="nm_dot_chat_retry">Retry</string>
+    <string name="nm_dot_chat_collapse">Collapse conversation</string>
+    <string name="nm_dot_chat_remove">Remove preview</string>
+    <string name="nm_dot_chat_capturing">Reading the screen…</string>
+    <string name="nm_dot_chat_capture_failed">Screen capture is unavailable. Try again on the host screen.</string>
+    <string name="nm_dot_chat_historical">Captured %1$s · historical attachment</string>
+    <string name="nm_dot_chat_text_only">Text only · no screenshot</string>
+    <string name="nm_dot_chat_voice_pending">Voice is not available yet.</string>
+    <string name="nm_dot_chat_compact">Compact and send</string>
+    <string name="nm_dot_chat_cancel">Cancel</string>
 </resources>

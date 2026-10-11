@@ -37,6 +37,18 @@ class ScreenRepository(private val service: AccessibilityService, private val ov
         if (connected && !locked()) readScene()?.use { tracker.observe(it.frame) }
     }
 
+    /** Passive current host frame; no screenshot, projection or stale snapshot reuse. */
+    fun hostWindowId(): Int? = if (connected && !locked()) readScene()?.use { it.frame.windowId } else null
+
+    fun hostViewport(windowId: Int? = null): RectPx? = if (connected && !locked()) readScene(windowId)?.use {
+        val host = it.frame.bounds
+        val ime = it.frame.imeBounds
+        // Keep the host's screen origin in multiwindow; an overlapping IME limits its bottom.
+        if (ime != null && ime.left < host.right && ime.right > host.left && ime.top < host.bottom && ime.bottom > host.top) {
+            host.copy(bottom = maxOf(host.top,ime.top))
+        } else host
+    } else null
+
     suspend fun capture(purpose: CapturePurpose, generation: Long): CaptureOutcome = sample(purpose,generation,true)
 
     /** Explicit fresh text fallback; never reuses nodes from a failed pixel attempt. */
@@ -126,11 +138,12 @@ class ScreenRepository(private val service: AccessibilityService, private val ov
         override fun close() { windows.forEach { it.recycle() } }
     }
     @Suppress("DEPRECATION")
-    private fun readScene(): Observed? {
+    private fun readScene(preferredWindowId: Int? = null): Observed? {
         val windows = service.windows.orEmpty()
         var handedOff = false
         try {
-        val host = windows.filter { it.type == AccessibilityWindowInfo.TYPE_APPLICATION && !overlays.ownsWindow(it) }
+        val host = windows.filter { it.type == AccessibilityWindowInfo.TYPE_APPLICATION && !overlays.ownsWindow(it) &&
+            (preferredWindowId == null || it.id == preferredWindowId) }
             .sortedWith(compareByDescending<AccessibilityWindowInfo> { it.isActive }.thenByDescending { it.isFocused }.thenByDescending { it.layer })
             .firstOrNull() ?: return null
         val root = host.root ?: return null

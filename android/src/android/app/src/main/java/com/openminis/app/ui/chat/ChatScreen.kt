@@ -763,6 +763,8 @@ fun ChatScreen(
     val tHangDiagAppContext = androidx.compose.ui.platform.LocalContext.current.applicationContext
     androidx.compose.runtime.DisposableEffect(sessionId) {
         ChatViewModelStore.setActiveSession(sessionId)
+        // nanoMuse: a real main-app session switch invalidates late Dot attachments.
+        com.openminis.app.accessibility.MinisAccessibilityService.getInstance()?.dotInteraction?.onChatEntered(sessionId)
         // [T-HANG-DIAG] enter / dispose markers around the ChatScreen lifetime
         // so we can correlate "user tapped session X" → loadSession timings
         // and any subsequent hang record. Removable by grepping out

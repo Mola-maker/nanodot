@@ -1129,4 +1129,20 @@
     <string name="nm_dot_capture_stop">Yakalamayı durdur</string>
     <string name="nm_dot_capture_explain">Bu Android sürümünde Dot erişilebilir metni okuyabilir. Görüntüleri de paylaşmak için ekran yakalamaya ayrıca izin verin. Android izin isteyecek.</string>
     <string name="nm_dot_capture_allow">Ekran yakalamaya izin ver</string>
+
+    <!-- Dot foreground conversation; captures stay local until explicit Send. -->
+    <string name="nm_dot_chat_empty">Bu konuşmayı başlatmak için Dot’a yazın.</string>
+    <string name="nm_dot_chat_message">Mesaj</string>
+    <string name="nm_dot_chat_send">Gönder</string>
+    <string name="nm_dot_chat_stop">Durdur</string>
+    <string name="nm_dot_chat_retry">Yeniden dene</string>
+    <string name="nm_dot_chat_collapse">Konuşmayı daralt</string>
+    <string name="nm_dot_chat_remove">Önizlemeyi kaldır</string>
+    <string name="nm_dot_chat_capturing">Ekran okunuyor…</string>
+    <string name="nm_dot_chat_capture_failed">Ekran yakalama kullanılamıyor. Asıl ekranda yeniden deneyin.</string>
+    <string name="nm_dot_chat_historical">Yakalandı %1$s · geçmiş ek</string>
+    <string name="nm_dot_chat_text_only">Yalnızca metin · ekran görüntüsü yok</string>
+    <string name="nm_dot_chat_voice_pending">Ses henüz kullanılamıyor.</string>
+    <string name="nm_dot_chat_compact">Sıkıştır ve gönder</string>
+    <string name="nm_dot_chat_cancel">İptal</string>
 </resources>

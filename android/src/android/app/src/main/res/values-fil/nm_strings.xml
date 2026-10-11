@@ -1129,4 +1129,20 @@
     <string name="nm_dot_capture_stop">Ihinto ang pagkuha</string>
     <string name="nm_dot_capture_explain">Sa bersyong ito ng Android, mababasa ng Dot ang accessible na teksto. Hiwalay na payagan ang pagkuha ng screen upang magbahagi rin ng larawan. Hihingi ng pahintulot ang Android.</string>
     <string name="nm_dot_capture_allow">Payagan ang pagkuha ng screen</string>
+
+    <!-- Dot foreground conversation; captures stay local until explicit Send. -->
+    <string name="nm_dot_chat_empty">Sumulat kay Dot upang simulan ang usapang ito.</string>
+    <string name="nm_dot_chat_message">Mensahe</string>
+    <string name="nm_dot_chat_send">Ipadala</string>
+    <string name="nm_dot_chat_stop">Ihinto</string>
+    <string name="nm_dot_chat_retry">Subukang muli</string>
+    <string name="nm_dot_chat_collapse">Isara ang usapan</string>
+    <string name="nm_dot_chat_remove">Alisin ang preview</string>
+    <string name="nm_dot_chat_capturing">Binabasa ang screen…</string>
+    <string name="nm_dot_chat_capture_failed">Hindi makuha ang screen. Subukang muli sa orihinal na screen.</string>
+    <string name="nm_dot_chat_historical">Kinuha %1$s · dating kalakip</string>
+    <string name="nm_dot_chat_text_only">Teksto lang · walang screenshot</string>
+    <string name="nm_dot_chat_voice_pending">Hindi pa available ang boses.</string>
+    <string name="nm_dot_chat_compact">Paikliin at ipadala</string>
+    <string name="nm_dot_chat_cancel">Kanselahin</string>
 </resources>
