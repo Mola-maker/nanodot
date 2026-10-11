@@ -358,6 +358,8 @@ class ManualForegroundApiProofTest {
         val originalSequence=field(conversation,"userSequence") as Long
         val owners=field(CareOperationGate,"owners")!!
         var samples=0; var plans=0; var ownedWindow:CareOverlayWindow?=null; var installed=false; var publicHost:Int?=null
+        var focusProbe=false
+        val focusInstruction="Focus FOREGROUND_FOCUS_ONE."
         val jobs=mutableListOf<Job>()
         var originalOwners=0; var originalAutomatic=false
         val observed=JSONObject().put("probe","initial").put("sampleOutcome","NotSampled").put("sampleCode","none")
@@ -436,7 +438,14 @@ class ManualForegroundApiProofTest {
                 val accepted=runCatching { publicSnapshot(actual,snapshot) }.isSuccess
                 observed.put("publicCheckPassed",accepted)
                 emit("strict_public_check")
-                CarePlanResult.Unavailable(if(accepted) "keyless_plan_reached" else "keyless_public_check_failed")
+                if(focusProbe) {
+                    val target=publicSnapshot(actual,snapshot).first
+                    check(!target.focused && controller.verifiedSteps.value.isEmpty())
+                    val proposal=CareProposal(snapshot.id,snapshot.scene,target.ref,CareAction.Focus,focusInstruction,null,
+                        CareExpectation.Focused(target.ref),1f)
+                    check(CareProposalValidator().validate(proposal,snapshot))
+                    CarePlanResult.Step(proposal)
+                } else CarePlanResult.Unavailable(if(accepted) "keyless_plan_reached" else "keyless_public_check_failed")
             }
             inst.runOnMainSync {
                 installed=true; set(controller,"sample",sample); set(controller,"plan",plan)
@@ -483,6 +492,67 @@ class ManualForegroundApiProofTest {
                 samples>firstSamples && plans>firstPlans && controller.state.value.state in setOf(CareState.Recovering,CareState.Paused)
             }
             inst.runOnMainSync { emit("settled_reobserve") }
+            inst.runOnMainSync {
+                check(ownedCardFocused() && field(owners,"count")==0 && field(controller,"automatic")==false)
+                check(field(controller,"active")==true && controller.state.value.state==CareState.Recovering)
+                (field(controller,"work") as? Job)?.let { jobs.add(it) }
+                focusProbe=true; observed.put("probe","valid_focus_ui")
+                session.reobserve()
+            }
+            await("Local valid Focus did not reach actual AwaitingUser",10000) { controller.state.value.state==CareState.AwaitingUser }
+            fun focusConditions():JSONObject {
+                val state=controller.state.value; val target=state.target; val proposal=state.proposal
+                val window=ownedWindow; val exactWindow=field(actual.dotInteraction,"careWindow")===window && window!=null
+                val card=window?.let { field(it,"card") as? View }
+                val measured=card?.takeIf { it.isAttachedToWindow && it.width>0 && it.height>0 }?.let(::rect)
+                val bubble=window?.let { field(it.focus,"instruction") as? RectPx }
+                val descriptionMatch=target?.description==ForegroundApiHostFixture.ONE
+                val refMatch=target!=null && proposal!=null && proposal.targetRef==target.ref
+                val instructionMatch=proposal?.instruction==focusInstruction
+                val publicTarget=descriptionMatch && refMatch && instructionMatch && target!=null &&
+                    proposal?.expectation==CareExpectation.Focused(target.ref)
+                val awaiting=state.state==CareState.AwaitingUser
+                val boundsMatch=window!=null && target!=null && window.focus.bounds==target.bounds
+                val keyMatch=window!=null && field(window.focus,"identity")==session.instructionKey()
+                val focusAttached=window?.focus?.view?.isAttachedToWindow==true
+                val bubblePositive=bubble!=null && bubble.width>0 && bubble.height>0
+                val contained=bubble!=null && measured!=null && bubble.left>=measured.left && bubble.top>=measured.top &&
+                    bubble.right<=measured.right && bubble.bottom<=measured.bottom
+                val above=measured!=null && target!=null && measured.bottom<=target.bounds.top
+                val goalText=card?.isAttachedToWindow==true && overlayText(actual,GOAL,card)
+                val instructionText=card?.isAttachedToWindow==true && overlayText(actual,focusInstruction,card)
+                val guide=awaiting && target?.description==ForegroundApiHostFixture.ONE && boundsMatch && keyMatch && focusAttached &&
+                    bubblePositive && contained && above && goalText && instructionText
+                val result=JSONObject().put("phase","valid_focus_ui").put("state",state.state.name)
+                    .put("code",state.errorCode?.let { if(it in codes) it else "other" } ?: "none")
+                    .put("samples",samples).put("plans",plans).put("verifiedSteps",controller.verifiedSteps.value.size)
+                    .put("exactWindow",exactWindow).put("publicTargetAndRef",publicTarget).put("awaitingUser",awaiting)
+                    .put("targetDescriptionMatch",descriptionMatch).put("targetRefMatch",refMatch).put("instructionMatch",instructionMatch)
+                    .put("cardAttached",card?.isAttachedToWindow==true).put("cardMeasured",measured!=null)
+                    .put("focusBoundsMatch",boundsMatch).put("instructionKeyMatch",keyMatch).put("focusAttached",focusAttached)
+                    .put("bubblePresent",bubble!=null).put("bubblePositive",bubblePositive).put("bubbleContained",contained)
+                    .put("panelAboveTarget",above).put("goalAxText",goalText).put("instructionAxText",instructionText)
+                    .put("ownCardActiveFocused",exactWindow && ownedCardFocused()).put("strictHost",host(actual)).put("guidePassed",guide)
+                fun geometry(name:String,bounds:RectPx?) {
+                    if(bounds!=null && listOf(bounds.left,bounds.top,bounds.right,bounds.bottom).all { it.isFinite() })
+                        result.put(name,JSONArray(listOf(bounds.left,bounds.top,bounds.right,bounds.bottom)))
+                }
+                if(publicTarget) { geometry("targetBounds",target?.bounds); geometry("cardBounds",measured); geometry("bubbleBounds",bubble) }
+                return result
+            }
+            val until=SystemClock.uptimeMillis()+10000
+            var focusResult=JSONObject()
+            inst.runOnMainSync {
+                android.util.Log.i("ForegroundCareFocusKeyless",focusConditions().put("phase","valid_focus_ui_enter").toString())
+            }
+            do {
+                inst.runOnMainSync { focusResult=focusConditions() }
+                SystemClock.sleep(50)
+            } while(SystemClock.uptimeMillis()<until)
+            inst.runOnMainSync {
+                check(controller.verifiedSteps.value.isEmpty())
+                android.util.Log.i("ForegroundCareFocusKeyless",focusResult.toString())
+            }
         } finally {
             if(installed) {
                 var failures=0
