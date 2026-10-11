@@ -29,7 +29,7 @@ class LegacyProjectionPermissionActivity : Activity() {
         setContentView(LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL; setBackgroundColor(background.toArgb()); setPadding(spacing,spacing,spacing,spacing)
             addView(TextView(this@LegacyProjectionPermissionActivity).apply {
-                text = getString(R.string.nm_dot_capture_explain); textSize = 18f; setTextColor(textColor.toArgb())
+                text = getString(R.string.nm_dot_capture_explain); textSize = 16f; setTextColor(textColor.toArgb())
             })
             addView(Button(this@LegacyProjectionPermissionActivity).apply {
                 text = getString(R.string.nm_dot_capture_allow); textSize = 16f; minHeight = (48 * resources.displayMetrics.density).toInt()
