@@ -1116,4 +1116,11 @@
     <string name="nm_dot_action_unavailable">이 Dot 기능은 아직 사용할 수 없습니다.</string>
     <string name="nm_tab_tasks">작업</string>
     <string name="nm_task_library">보관함</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">불러오는 중…</string>
+    <string name="nm_dot_load_failed">이 페이지를 불러오지 못했습니다.</string>
+    <string name="nm_dot_components">구성 요소</string>
+    <string name="nm_dot_empty">아직 내용이 없습니다.</string>
+    <string name="nm_dot_attach">파일 첨부</string>
 </resources>

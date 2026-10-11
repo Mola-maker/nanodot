@@ -1120,4 +1120,11 @@
     <string name="nm_dot_action_unavailable">Esta función de Dot aún no está disponible.</string>
     <string name="nm_tab_tasks">Tareas</string>
     <string name="nm_task_library">Biblioteca</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Cargando…</string>
+    <string name="nm_dot_load_failed">No se pudo cargar esta página.</string>
+    <string name="nm_dot_components">Componentes</string>
+    <string name="nm_dot_empty">Aún no hay nada aquí.</string>
+    <string name="nm_dot_attach">Adjuntar un archivo</string>
 </resources>

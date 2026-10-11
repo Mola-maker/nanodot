@@ -1097,4 +1097,11 @@
     <string name="nm_dot_action_unavailable">This Dot action is not available yet.</string>
     <string name="nm_tab_tasks">Tasks</string>
     <string name="nm_task_library">Library</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Loading…</string>
+    <string name="nm_dot_load_failed">Could not load this page.</string>
+    <string name="nm_dot_components">Components</string>
+    <string name="nm_dot_empty">Nothing here yet.</string>
+    <string name="nm_dot_attach">Attach a file</string>
 </resources>

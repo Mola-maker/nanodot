@@ -171,7 +171,7 @@ fun SettingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable(onClick = onModelsClick) // nanoMuse: the Models page, not the model groups
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                        .padding(horizontal = io.github.nanomuse.dot.ui.DotTokens.Space.S16, vertical = io.github.nanomuse.dot.ui.DotTokens.Space.S16), // nanoMuse: shared page spacing
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(Modifier.weight(1f)) {

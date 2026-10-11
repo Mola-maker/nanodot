@@ -1093,4 +1093,11 @@
     <string name="nm_dot_action_unavailable">此 Dot 功能暂未开放。</string>
     <string name="nm_tab_tasks">任务</string>
     <string name="nm_task_library">资料</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">正在加载…</string>
+    <string name="nm_dot_load_failed">无法加载此页面。</string>
+    <string name="nm_dot_components">组件</string>
+    <string name="nm_dot_empty">这里还没有内容。</string>
+    <string name="nm_dot_attach">添加文件</string>
 </resources>

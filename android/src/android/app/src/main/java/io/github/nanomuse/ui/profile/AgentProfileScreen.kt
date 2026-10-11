@@ -1,5 +1,12 @@
 package io.github.nanomuse.ui.profile
 
+import io.github.nanomuse.dot.ui.*
+import kotlinx.coroutines.CancellationException
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.layout.heightIn
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -116,18 +123,18 @@ fun AgentProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // ×, the face with its pen, share.
-            Box(Modifier.fillMaxWidth().padding(top = 6.dp)) {
+            Box(Modifier.fillMaxWidth().padding(top = DotTokens.Space.S8)) {
                 MuseRoundButton(
                     icon = Icons.Outlined.Close,
                     contentDescription = stringResource(R.string.nm_back),
                     onClick = onBack,
-                    modifier = Modifier.align(Alignment.TopStart).padding(start = 16.dp),
+                    modifier = Modifier.align(Alignment.TopStart).padding(start = DotTokens.Space.S16),
                 )
                 MuseRoundButton(
                     icon = Icons.Outlined.Share,
                     contentDescription = stringResource(R.string.nm_avatar_share_button),
                     onClick = { share = true },
-                    modifier = Modifier.align(Alignment.TopEnd).padding(end = 16.dp),
+                    modifier = Modifier.align(Alignment.TopEnd).padding(end = DotTokens.Space.S16),
                 )
                 Box(Modifier.align(Alignment.TopCenter)) {
                     AgentAvatar(
@@ -143,7 +150,7 @@ fun AgentProfileScreen(
                             shape = CircleShape,
                             color = MuseTones.surface,
                             shadowElevation = 2.dp,
-                            modifier = Modifier.size(24.dp),
+                            modifier = Modifier.size(DotTokens.TouchTarget),
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.nm_profile_edit), modifier = Modifier.size(13.dp), tint = MaterialTheme.colorScheme.onSurface)
@@ -203,17 +210,17 @@ private fun PaneSwitch(selected: Int, onSelect: (Int) -> Unit, icons: List<Image
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = MuseTones.surface,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = DotTokens.Space.S16),
     ) {
-        Row(Modifier.padding(4.dp)) {
+        Row(Modifier.padding(DotTokens.Space.S4).selectableGroup()) {
             icons.forEachIndexed { i, icon ->
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(44.dp)
+                        .heightIn(min = DotTokens.TouchTarget)
                         .clip(RoundedCornerShape(13.dp))
                         .background(if (i == selected) MuseTones.fill else Color.Transparent)
-                        .clickable { onSelect(i) },
+                        .selectable(selected = i == selected, role = Role.Tab, onClick = { onSelect(i) }),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(icon, contentDescription = labels.getOrNull(i), tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(22.dp))
@@ -227,21 +234,15 @@ private fun PaneSwitch(selected: Int, onSelect: (Int) -> Unit, icons: List<Image
 private fun SectionLabel(text: String) {
     Text(
         text = text,
-        fontSize = 15.sp,
+        fontSize = DotTokens.Type.Body,
         color = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S8),
     )
 }
 
 @Composable
 private fun EmptyNote(text: String) {
-    Text(
-        text = text,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-    )
+    DotStatusSurface(DotPageState.Empty(text), {}) {}
 }
 
 // ── activity ────────────────────────────────────────────────────────────────
@@ -252,13 +253,20 @@ private data class ActivityEntry(val time: Long, val title: String, val subtitle
 private fun ActivityPane(chatRepository: ChatRepository, onOpenSession: (String) -> Unit) {
     val context = LocalContext.current
     val sessions by chatRepository.observeSessions().collectAsState(initial = null)
-    val entries by produceState<List<ActivityEntry>?>(initialValue = null, sessions) {
+    var loadAttempt by remember { mutableStateOf(0) }
+    var loadError by remember { mutableStateOf<String?>(null) }
+    val entries by produceState<List<ActivityEntry>?>(initialValue = null, sessions, loadAttempt) {
         val list = sessions ?: return@produceState
-        value = withContext(Dispatchers.IO) { loadActivity(chatRepository, list) }
+        loadError = null
+        value = null
+        try { value = withContext(Dispatchers.IO) { loadActivity(chatRepository, list) } }
+        catch (e: CancellationException) { throw e }
+        catch (e: Exception) { loadError = e.message?.takeIf { it.isNotBlank() } ?: context.getString(R.string.nm_dot_load_failed) }
     }
     val list = entries
     when {
-        list == null -> Unit
+        loadError != null -> DotStatusSurface(DotPageState.Error(loadError!!, true), { loadAttempt++ }) {}
+        list == null -> DotStatusSurface(DotPageState.Loading, {}) {}
         list.isEmpty() -> EmptyNote(stringResource(R.string.nm_profile_activity_empty))
         else -> {
             val groups = list.groupBy { dayLabel(context, it.time) }
@@ -269,7 +277,7 @@ private fun ActivityPane(chatRepository: ChatRepository, onOpenSession: (String)
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onOpenSession(e.sessionId) }
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                            .padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S12),
                         verticalAlignment = Alignment.Top,
                     ) {
                         Box(
@@ -280,7 +288,7 @@ private fun ActivityPane(chatRepository: ChatRepository, onOpenSession: (String)
                         }
                         Spacer(Modifier.width(14.dp))
                         Column(Modifier.weight(1f)) {
-                            Text(e.title, fontSize = 16.sp, lineHeight = 21.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                            Text(e.title, fontSize = DotTokens.Type.Body, lineHeight = 21.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, maxLines = 2, overflow = TextOverflow.Ellipsis)
                             if (e.subtitle.isNotBlank()) {
                                 Spacer(Modifier.height(2.dp))
                                 Text(e.subtitle, fontSize = 14.sp, lineHeight = 19.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -409,7 +417,7 @@ private fun ApprovalsPane(onOpenPermissions: () -> Unit) {
 private fun GrantRow(g: Grant) {
     val context = LocalContext.current
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S12),
         verticalAlignment = Alignment.Top,
     ) {
         Box(
@@ -425,7 +433,7 @@ private fun GrantRow(g: Grant) {
         Column(Modifier.weight(1f)) {
             Text(
                 g.label.ifBlank { RiskText.classLabel(context, g.riskClass) },
-                fontSize = 16.sp, lineHeight = 21.sp, fontWeight = FontWeight.Medium,
+                fontSize = DotTokens.Type.Body, lineHeight = 21.sp, fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface, maxLines = 2, overflow = TextOverflow.Ellipsis,
             )
             Spacer(Modifier.height(2.dp))
@@ -445,10 +453,10 @@ private fun ManageRow(text: String, onClick: () -> Unit) {
         onClick = onClick,
         shape = RoundedCornerShape(16.dp),
         color = MuseTones.surface,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = DotTokens.Space.S16),
     ) {
-        Row(Modifier.padding(horizontal = 16.dp).heightIn(min = 50.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(text, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+        Row(Modifier.padding(horizontal = DotTokens.Space.S16).heightIn(min = 50.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(text, fontSize = DotTokens.Type.Body, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
             Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f))
         }
     }
@@ -473,7 +481,7 @@ private fun DailyPane(onOpenRoutines: () -> Unit) {
 @Composable
 private fun RoutineRow(t: ScheduledTask, onClick: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 10.dp),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S12),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -484,7 +492,7 @@ private fun RoutineRow(t: ScheduledTask, onClick: () -> Unit) {
         }
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
-            Text(t.label, fontSize = 16.sp, lineHeight = 21.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(t.label, fontSize = DotTokens.Type.Body, lineHeight = 21.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(2.dp))
             Text(
                 if (t.enabled) formatScheduleSummary(t) else stringResource(R.string.nm_routine_paused) + " · " + formatScheduleSummary(t),
@@ -506,16 +514,16 @@ private fun SoulPane(name: String, onEditName: () -> Unit, onOpenSystemFile: (Sy
         onClick = onEditName,
         shape = RoundedCornerShape(16.dp),
         color = MuseTones.surface,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = DotTokens.Space.S16),
     ) {
         Row(Modifier.height(50.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Outlined.Edit, contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurface)
             Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.nm_profile_edit), fontSize = 15.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+            Text(stringResource(R.string.nm_profile_edit), fontSize = DotTokens.Type.Body, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
         }
     }
     Spacer(Modifier.height(16.dp))
-    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    Row(Modifier.fillMaxWidth().padding(horizontal = DotTokens.Space.S16), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         val fmt = remember { DateFormat.getDateInstance(DateFormat.SHORT) }
         FileCard(
             title = stringResource(R.string.nm_profile_card_soul),
@@ -542,7 +550,7 @@ private fun FileCard(title: String, date: String, colors: List<Color>, modifier:
             .clip(RoundedCornerShape(18.dp))
             .background(Brush.verticalGradient(colors))
             .clickable(onClick = onClick)
-            .padding(14.dp),
+            .padding(DotTokens.Space.S16),
     ) {
         Column {
             Text(title, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = Color.White)

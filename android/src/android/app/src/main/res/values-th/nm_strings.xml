@@ -1116,4 +1116,11 @@
     <string name="nm_dot_action_unavailable">ฟังก์ชัน Dot นี้ยังไม่พร้อมใช้งาน</string>
     <string name="nm_tab_tasks">งาน</string>
     <string name="nm_task_library">คลัง</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">กำลังโหลด…</string>
+    <string name="nm_dot_load_failed">ไม่สามารถโหลดหน้านี้ได้</string>
+    <string name="nm_dot_components">ส่วนประกอบ</string>
+    <string name="nm_dot_empty">ยังไม่มีเนื้อหาที่นี่</string>
+    <string name="nm_dot_attach">แนบไฟล์</string>
 </resources>

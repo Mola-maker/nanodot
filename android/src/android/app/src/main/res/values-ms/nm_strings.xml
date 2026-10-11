@@ -1116,4 +1116,11 @@
     <string name="nm_dot_action_unavailable">Ciri Dot ini belum tersedia.</string>
     <string name="nm_tab_tasks">Tugas</string>
     <string name="nm_task_library">Pustaka</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Memuatkan…</string>
+    <string name="nm_dot_load_failed">Halaman ini tidak dapat dimuatkan.</string>
+    <string name="nm_dot_components">Komponen</string>
+    <string name="nm_dot_empty">Belum ada kandungan di sini.</string>
+    <string name="nm_dot_attach">Lampirkan fail</string>
 </resources>

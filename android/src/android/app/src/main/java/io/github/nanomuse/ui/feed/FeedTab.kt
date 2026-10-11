@@ -1,5 +1,8 @@
 package io.github.nanomuse.ui.feed
 
+import io.github.nanomuse.dot.ui.*
+import androidx.compose.foundation.layout.heightIn
+
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
@@ -98,6 +101,7 @@ fun FeedTab(
     header: @Composable () -> Unit,
     onDiscuss: (FeedPost) -> Unit,
     onEditRoutine: (String) -> Unit,
+    onOpenSession: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
     val posts by FeedStore.posts.collectAsState()
@@ -114,21 +118,21 @@ fun FeedTab(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().background(MuseTones.canvas),
-        contentPadding = PaddingValues(bottom = 28.dp),
+        contentPadding = PaddingValues(bottom = DotTokens.Space.S32),
     ) {
         item(key = "header") { header() }
 
         if (days.isEmpty()) {
             item(key = "today-title") { DayTitle(dayLabel(todayKey(), System.currentTimeMillis())) }
             if (!introAck) item(key = "intro") { IntroCard(onEdit = { editPrefs = true }, onAck = { FeedFlow.acknowledgeIntro(context) }) }
-            item(key = "empty") { EmptyState(generating = generating, onWriteNow = { FeedFlow.generateNow(context) }) }
+            item(key = "empty") { EmptyState(generating = generating, onWriteNow = { FeedFlow.generateNow(context) }, onOpenSession = onOpenSession) }
         } else {
             days.forEachIndexed { i, (day, dayPosts) ->
                 item(key = "day-$day") { DayTitle(dayLabel(day, dayPosts.first().createdAt)) }
                 if (i == 0 && !introAck) {
                     item(key = "intro") { IntroCard(onEdit = { editPrefs = true }, onAck = { FeedFlow.acknowledgeIntro(context) }) }
                 }
-                if (i == 0 && generating) item(key = "generating") { Box(Modifier.animateItem()) { GeneratingCard() } }
+                if (i == 0 && generating) item(key = "generating") { Box(Modifier.animateItem()) { GeneratingCard(onOpenSession) } }
                 items(dayPosts, key = { it.id }) { post -> // the model leads with what matters most
                     PostCard(
                         post = post,
@@ -156,7 +160,7 @@ fun FeedTab(
             sheetState = sheetState,
             containerColor = ChatColors.background,
         ) {
-            Column(Modifier.padding(horizontal = 24.dp).padding(bottom = 28.dp)) {
+            Column(Modifier.padding(horizontal = DotTokens.Space.S24).padding(bottom = DotTokens.Space.S32)) {
                 Text(post.title, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.height(12.dp))
                 InfoRow(stringResource(R.string.nm_feed_info_type), typeLabel(post.type))
@@ -176,7 +180,7 @@ fun FeedTab(
 
 @Composable
 private fun InfoRow(label: String, value: String) {
-    Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.Top) {
+    Row(Modifier.fillMaxWidth().padding(vertical = DotTokens.Space.S8), verticalAlignment = Alignment.Top) {
         Text(label, fontSize = 13.sp, color = ChatColors.secondaryText, modifier = Modifier.width(72.dp))
         Text(value, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
     }
@@ -190,7 +194,7 @@ private fun DayTitle(text: String) {
         lineHeight = 28.sp,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 8.dp),
+        modifier = Modifier.padding(start = DotTokens.Space.S24, end = DotTokens.Space.S24, top = DotTokens.Space.S16, bottom = DotTokens.Space.S8),
     )
 }
 
@@ -202,7 +206,7 @@ private fun FeedCard(modifier: Modifier = Modifier, content: @Composable () -> U
         color = MuseTones.surface,
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 6.dp)
+            .padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S8)
             .animateContentSize(),
     ) { content() }
 }
@@ -216,7 +220,7 @@ private fun PostCard(
     modifier: Modifier = Modifier,
 ) {
     FeedCard(modifier) {
-        Column(Modifier.padding(start = 14.dp, end = 10.dp, top = 14.dp, bottom = 6.dp)) {
+        Column(Modifier.padding(start = DotTokens.Space.S16, end = DotTokens.Space.S12, top = DotTokens.Space.S16, bottom = DotTokens.Space.S8)) {
             Row(verticalAlignment = Alignment.Top) {
                 Box(
                     modifier = Modifier
@@ -230,7 +234,7 @@ private fun PostCard(
                 Column(Modifier.weight(1f)) {
                     Text(
                         post.title,
-                        fontSize = 16.sp,
+                        fontSize = DotTokens.Type.Body,
                         lineHeight = 22.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -239,23 +243,25 @@ private fun PostCard(
                     MarkdownText(
                         markdown = post.body,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.86f),
-                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp, lineHeight = 22.sp),
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = DotTokens.Type.Body, lineHeight = 22.sp),
                     )
                 }
             }
             Spacer(Modifier.height(6.dp))
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 // The heart pops when it fills, the way a like should feel.
+                val motionEnabled = LocalDotMotionEnabled.current
                 val heartScale = remember { Animatable(1f) }
-                LaunchedEffect(post.liked) {
-                    if (post.liked) {
+                LaunchedEffect(post.liked, motionEnabled) {
+                    heartScale.snapTo(1f)
+                    if (post.liked && motionEnabled) {
                         heartScale.snapTo(0.7f)
-                        heartScale.animateTo(1f, spring(dampingRatio = 0.35f, stiffness = 800f))
+                        heartScale.animateTo(1f, tween(DotTokens.Motion.Press))
                     }
                 }
                 val heartTint by animateColorAsState(
                     if (post.liked) likeRed else MaterialTheme.colorScheme.onSurface,
-                    tween(180),
+                    tween(if (motionEnabled) DotTokens.Motion.Page else 0),
                     label = "heartTint",
                 )
                 FooterAction(
@@ -290,7 +296,7 @@ private fun FooterAction(
     Row(
         modifier = Modifier
             .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+            .padding(horizontal = DotTokens.Space.S8, vertical = DotTokens.Space.S8),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(icon, contentDescription = label, tint = tint, modifier = iconModifier.size(22.dp))
@@ -307,20 +313,20 @@ private fun IntroCard(onEdit: () -> Unit, onAck: () -> Unit) {
     val prefs by FeedStore.preferences.collectAsState()
     FeedCard {
         Column {
-            Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
+            Column(Modifier.padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S16)) {
                 Text(stringResource(R.string.nm_feed_intro_title), fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.height(4.dp))
                 Text(stringResource(R.string.nm_feed_intro_desc), fontSize = 13.sp, lineHeight = 18.sp, color = ChatColors.secondaryText)
             }
             HorizontalDivider(color = MuseTones.hairline, thickness = 1.dp)
-            Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
-                Text(prefs, fontSize = 15.sp, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onSurface)
+            Column(Modifier.padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S16)) {
+                Text(prefs, fontSize = DotTokens.Type.Body, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.height(14.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     Surface(onClick = onEdit, shape = CircleShape, color = MuseTones.fill) {
                         Text(
                             stringResource(R.string.nm_feed_edit),
-                            fontSize = 15.sp,
+                            fontSize = DotTokens.Type.Body,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(horizontal = 26.dp, vertical = 11.dp),
@@ -330,7 +336,7 @@ private fun IntroCard(onEdit: () -> Unit, onAck: () -> Unit) {
                     Surface(onClick = onAck, shape = CircleShape, color = MuseTones.action) {
                         Text(
                             stringResource(R.string.nm_feed_got_it),
-                            fontSize = 15.sp,
+                            fontSize = DotTokens.Type.Body,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White,
                             modifier = Modifier.padding(horizontal = 26.dp, vertical = 11.dp),
@@ -343,39 +349,44 @@ private fun IntroCard(onEdit: () -> Unit, onAck: () -> Unit) {
 }
 
 @Composable
-private fun EmptyState(generating: Boolean, onWriteNow: () -> Unit) {
+private fun EmptyState(generating: Boolean, onWriteNow: () -> Unit, onOpenSession: (String) -> Unit) {
     val context = LocalContext.current
     val task = remember { FeedFlow.task(context) }
     val time = task?.let { "%02d:%02d".format(it.timeOfDayHour, it.timeOfDayMinute) } ?: "%02d:%02d".format(FeedFlow.DEFAULT_HOUR, FeedFlow.DEFAULT_MINUTE)
     StaticCard("🖼️", stringResource(R.string.nm_feed_empty_title), stringResource(R.string.nm_feed_empty_body, time))
     StaticCard("📝", stringResource(R.string.nm_feed_empty_how_title), stringResource(R.string.nm_feed_empty_how_body))
     FeedCard {
-        Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(Modifier.padding(DotTokens.Space.S16), horizontalAlignment = Alignment.CenterHorizontally) {
             if (generating) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = MuseTones.action)
-                    Spacer(Modifier.width(10.dp))
-                    Text(stringResource(R.string.nm_feed_generating), fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
-                }
+                FeedGenerationStatus(onOpenSession)
             } else {
                 Button(
                     onClick = onWriteNow,
                     shape = CircleShape,
                     colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
-                    modifier = Modifier.fillMaxWidth().height(46.dp),
-                ) { Text(stringResource(R.string.nm_feed_write_now), fontSize = 15.sp, fontWeight = FontWeight.SemiBold) }
+                    modifier = Modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget),
+                ) { Text(stringResource(R.string.nm_feed_write_now), fontSize = DotTokens.Type.Body, fontWeight = FontWeight.SemiBold) }
             }
         }
     }
 }
 
 @Composable
-private fun GeneratingCard() {
-    FeedCard {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = MuseTones.action)
-            Spacer(Modifier.width(10.dp))
-            Text(stringResource(R.string.nm_feed_generating), fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+private fun GeneratingCard(onOpenSession: (String) -> Unit) {
+    FeedCard { FeedGenerationStatus(onOpenSession) }
+}
+
+@Composable
+private fun FeedGenerationStatus(onOpenSession: (String) -> Unit) {
+    val context = LocalContext.current
+    Column(Modifier.padding(DotTokens.Space.S16)) {
+        // This queue also carries scheduled work; there is no owned per-run cancel handle.
+        DotStatusSurface(DotPageState.Loading, {}) {}
+        Text(stringResource(R.string.nm_feed_generating), style = MaterialTheme.typography.bodyLarge)
+        FeedFlow.sessionId(context)?.let { id ->
+            TextButton(onClick = { onOpenSession(id) }, modifier = Modifier.heightIn(min = DotTokens.TouchTarget)) {
+                Text(stringResource(R.string.nm_library_open_chat))
+            }
         }
     }
 }
@@ -383,15 +394,15 @@ private fun GeneratingCard() {
 @Composable
 private fun StaticCard(emoji: String, title: String, body: String) {
     FeedCard {
-        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.Top) {
+        Row(Modifier.padding(DotTokens.Space.S16), verticalAlignment = Alignment.Top) {
             Box(Modifier.size(44.dp).background(MuseTones.fill, RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
                 Text(emoji, fontSize = 22.sp)
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(title, fontSize = 16.sp, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                Text(title, fontSize = DotTokens.Type.Body, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.height(4.dp))
-                Text(body, fontSize = 15.sp, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.86f))
+                Text(body, fontSize = DotTokens.Type.Body, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.86f))
             }
         }
     }
@@ -411,7 +422,7 @@ private fun FeedSettingsSheet(onDismiss: () -> Unit, onEditRoutine: (String) -> 
     val generating by FeedFlow.generating.collectAsState()
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState, containerColor = ChatColors.background) {
-        Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
+        Column(Modifier.padding(horizontal = DotTokens.Space.S24).padding(bottom = DotTokens.Space.S24)) {
             Text(stringResource(R.string.nm_feed_settings_title), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             Spacer(Modifier.height(4.dp))
             Text(stringResource(R.string.nm_feed_intro_desc), fontSize = 13.sp, lineHeight = 18.sp, color = ChatColors.secondaryText)
@@ -426,14 +437,14 @@ private fun FeedSettingsSheet(onDismiss: () -> Unit, onEditRoutine: (String) -> 
                     unfocusedBorderColor = MuseTones.hairline,
                 ),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default),
-                textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp, lineHeight = 22.sp),
+                textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = DotTokens.Type.Body, lineHeight = 22.sp),
             )
             Spacer(Modifier.height(16.dp))
             Surface(shape = RoundedCornerShape(14.dp), color = MuseTones.fill, modifier = Modifier.fillMaxWidth()) {
                 Column {
-                    Row(Modifier.padding(horizontal = 14.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S8), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
-                            Text(stringResource(R.string.nm_feed_routine_switch), fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+                            Text(stringResource(R.string.nm_feed_routine_switch), fontSize = DotTokens.Type.Body, color = MaterialTheme.colorScheme.onSurface)
                             val time = task?.let { "%02d:%02d".format(it.timeOfDayHour, it.timeOfDayMinute) }
                             Text(
                                 if (time != null) stringResource(R.string.nm_feed_routine_time, time) else stringResource(R.string.nm_feed_routine_needs_model),
@@ -446,17 +457,17 @@ private fun FeedSettingsSheet(onDismiss: () -> Unit, onEditRoutine: (String) -> 
                         }
                         Switch(checked = task?.enabled == true, enabled = task != null, onCheckedChange = { FeedFlow.setEnabled(context, it) })
                     }
-                    HorizontalDivider(color = MuseTones.hairline, modifier = Modifier.padding(horizontal = 14.dp))
+                    HorizontalDivider(color = MuseTones.hairline, modifier = Modifier.padding(horizontal = DotTokens.Space.S16))
                     Row(
                         Modifier
                             .fillMaxWidth()
                             .clickable(enabled = !generating) { FeedFlow.generateNow(context); onDismiss() }
-                            .padding(horizontal = 14.dp, vertical = 14.dp),
+                            .padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S16),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
                             stringResource(if (generating) R.string.nm_feed_generating else R.string.nm_feed_write_now),
-                            fontSize = 15.sp,
+                            fontSize = DotTokens.Type.Body,
                             color = if (generating) ChatColors.secondaryText else MuseTones.action,
                             fontWeight = FontWeight.Medium,
                         )
@@ -468,8 +479,8 @@ private fun FeedSettingsSheet(onDismiss: () -> Unit, onEditRoutine: (String) -> 
                 onClick = { FeedStore.savePreferences(text); FeedFlow.acknowledgeIntro(context); onDismiss() },
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
-                modifier = Modifier.fillMaxWidth().height(46.dp),
-            ) { Text(stringResource(R.string.nm_feed_save), fontSize = 15.sp, fontWeight = FontWeight.SemiBold) }
+                modifier = Modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget),
+            ) { Text(stringResource(R.string.nm_feed_save), fontSize = DotTokens.Type.Body, fontWeight = FontWeight.SemiBold) }
         }
     }
 }

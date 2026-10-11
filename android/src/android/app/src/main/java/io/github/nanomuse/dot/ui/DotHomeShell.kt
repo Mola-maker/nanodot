@@ -34,6 +34,7 @@ fun DotHomeShell(
         val layout = DotNavigationPolicy.layout(maxWidth.value.toInt(), scale)
         val compact = layout == DotLayout.Compact
         val shortWindow = maxHeight < 480.dp
+        val chatIme = route == DotHomeRoute.Chat && WindowInsets.ime.getBottom(LocalDensity.current) > 0
         val showList = route == DotHomeRoute.Chat && conversationList != null &&
             DotNavigationPolicy.showConversationList(maxWidth.value.toInt(), scale)
         Row(Modifier.fillMaxSize()) {
@@ -59,7 +60,7 @@ fun DotHomeShell(
             }
             Column(Modifier.weight(1f).fillMaxHeight()) {
                 Box(Modifier.weight(1f).fillMaxWidth()) { content() }
-                if (compact) MuseBottomBar(selected = route, onSelect = onRoute)
+                if (compact && !chatIme) MuseBottomBar(selected = route, onSelect = onRoute)
             }
         }
     }

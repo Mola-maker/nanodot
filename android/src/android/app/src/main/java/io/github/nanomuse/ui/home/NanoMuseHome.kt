@@ -372,6 +372,7 @@ fun NanoMuseHome(
     }
 
     val homeShell: @Composable () -> Unit = {
+    val motionEnabled = io.github.nanomuse.dot.ui.LocalDotMotionEnabled.current
     ModalNavigationDrawer(
         drawerState = drawerState,
         gesturesEnabled = drawerState.isOpen || tab == HomeTab.CHAT,
@@ -404,7 +405,7 @@ fun NanoMuseHome(
                 // one cross-fade rather than a cut to the canvas.
                 val chatAlpha by animateFloatAsState(
                     targetValue = if (chatVisible) 1f else 0f,
-                    animationSpec = tween(DotTokens.Motion.Page),
+                    animationSpec = tween(if (motionEnabled) DotTokens.Motion.Page else 0),
                     label = "chatAlpha",
                 )
                 Box(
@@ -465,8 +466,8 @@ fun NanoMuseHome(
                 if (tab != HomeTab.CHAT) pageTab = tab
                 AnimatedVisibility(
                     visible = !chatVisible,
-                    enter = fadeIn(tween(DotTokens.Motion.Page)),
-                    exit = fadeOut(tween(DotTokens.Motion.Page)),
+                    enter = fadeIn(tween(if (motionEnabled) DotTokens.Motion.Page else 0)),
+                    exit = fadeOut(tween(if (motionEnabled) DotTokens.Motion.Page else 0)),
                     modifier = Modifier.fillMaxSize().zIndex(1f),
                 ) {
                     Surface(
@@ -487,7 +488,7 @@ fun NanoMuseHome(
                         AnimatedContent(
                             targetState = pageTab,
                             transitionSpec = {
-                                (fadeIn(tween(DotTokens.Motion.Page)) togetherWith fadeOut(tween(DotTokens.Motion.Page)))
+                                (fadeIn(tween(if (motionEnabled) DotTokens.Motion.Page else 0)) togetherWith fadeOut(tween(if (motionEnabled) DotTokens.Motion.Page else 0)))
                                     .using(SizeTransform(clip = false))
                             },
                             label = "nmTab",
@@ -497,6 +498,7 @@ fun NanoMuseHome(
                             when (page) {
                                 HomeTab.FEED -> FeedTab(
                                     header = header,
+                                    onOpenSession = { showSession(it) },
                                     onDiscuss = { discussPost(it) },
                                     onEditRoutine = { navController.safeNavigate(Routes.scheduledTaskEdit(it)) },
                                 )
@@ -561,7 +563,7 @@ private fun TabHeader(
     var menu by remember { mutableStateOf(false) }
     Box {
         DotHomeHeader(name, statusLine, onNameClick, onOpenDrawer, onNewChat,
-            onMore = { if (tab == HomeTab.FEED) FeedUi.settingsOpen.value = true else menu = true })
+            onMore = { if (tab == HomeTab.FEED) FeedUi.settingsOpen.value = true else menu = true }) {
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                     if (tab == HomeTab.CHAT) {
                         DropdownMenuItem(
@@ -599,5 +601,6 @@ private fun TabHeader(
                         onClick = { menu = false; navController.safeNavigate(Routes.SETTINGS) },
                     )
                 }
+        }
     }
 }

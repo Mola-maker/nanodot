@@ -31,6 +31,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import io.github.nanomuse.dot.ui.DotTokens
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,7 +75,7 @@ fun MuseTopAppBar(
         modifier = modifier
             .fillMaxWidth()
             .windowInsetsPadding(windowInsets)
-            .height(expandedHeight),
+            .heightIn(min = expandedHeight * LocalDensity.current.fontScale.coerceAtLeast(1f)),
     ) {
         // The title first and centred on the whole bar, as Muse centres it on the screen, not
         // between the buttons.
@@ -116,13 +118,13 @@ fun MuseTopAppBar(
 
 /**
  * The white disc Muse puts under a bar glyph. The slot is a Material `IconButton` on upstream
- * screens (48dp touch target); the disc clips its ripple to 40dp and stays tappable.
+ * screens (48dp touch target); the disc preserves the entire 48dp native touch target.
  */
 @Composable
 fun MuseDisc(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Box(
         modifier = modifier
-            .size(40.dp)
+            .size(DotTokens.TouchTarget)
             .shadow(2.dp, CircleShape, clip = false, ambientColor = Color.Black.copy(alpha = 0.16f), spotColor = Color.Black.copy(alpha = 0.16f))
             .clip(CircleShape)
             .background(MuseTones.surface),

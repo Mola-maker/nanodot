@@ -1,5 +1,7 @@
 package io.github.nanomuse.ui.goals
 
+import io.github.nanomuse.dot.ui.*
+
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -129,7 +131,7 @@ fun GoalsTab(
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize().background(ChatColors.background),
-        contentPadding = PaddingValues(bottom = 24.dp),
+        contentPadding = PaddingValues(bottom = DotTokens.Space.S24),
     ) {
         item(key = "header") { header() }
         item(key = "title") {
@@ -147,12 +149,7 @@ fun GoalsTab(
         }
         if (activeGoals.isEmpty()) {
             item(key = "tracking-empty") {
-                Text(
-                    stringResource(R.string.nm_goals_tracking_empty),
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 12.dp),
-                )
+                DotStatusSurface(DotPageState.Empty(stringResource(R.string.nm_goals_tracking_empty)), {}) {}
             }
         } else {
             items(activeGoals, key = { "goal-" + it.id }) { goal ->
@@ -165,7 +162,7 @@ fun GoalsTab(
             item(key = "star-goal-done") {
                 io.github.nanomuse.community.StarNudgeCard(
                     text = remember(goalStarAsk) { io.github.nanomuse.community.StarPrompt.text(context, goalStarAsk) },
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                    modifier = Modifier.padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S8),
                     onDone = { starAsk = null },
                 )
             }
@@ -184,13 +181,7 @@ fun GoalsTab(
         }
         if (visibleRoutines.isEmpty()) {
             item(key = "routines-empty") {
-                Text(
-                    stringResource(R.string.nm_goals_routines_empty),
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 12.dp),
-                )
+                DotStatusSurface(DotPageState.Empty(stringResource(R.string.nm_goals_routines_empty)), {}) {}
             }
         } else {
             items(visibleRoutines, key = { "routine-" + it.id }) { task ->
@@ -206,10 +197,10 @@ fun GoalsTab(
         // ── Create a goal ────────────────────────────────────────────
         item(key = "create") {
             HorizontalDivider(
-                modifier = Modifier.padding(top = 10.dp, bottom = 14.dp),
+                modifier = Modifier.padding(top = DotTokens.Space.S12, bottom = DotTokens.Space.S16),
                 color = io.github.nanomuse.ui.home.MuseTones.hairline,
             )
-            Column(Modifier.padding(horizontal = 20.dp)) {
+            Column(Modifier.padding(horizontal = DotTokens.Space.S24)) {
                 Text(
                     stringResource(R.string.nm_goals_create),
                     fontSize = 17.sp,
@@ -241,8 +232,8 @@ fun GoalsTab(
             val label = GoalFlow.categoryLabel(context, category)
             Column(
                 Modifier
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 20.dp)
+                    .padding(horizontal = DotTokens.Space.S24)
+                    .padding(bottom = DotTokens.Space.S24)
                     .navigationBarsPadding(),
             ) {
                 Text(
@@ -254,14 +245,14 @@ fun GoalsTab(
                 Spacer(Modifier.height(14.dp))
                 Text(
                     stringResource(R.string.nm_goal_sheet_body1),
-                    fontSize = 15.sp,
+                    fontSize = DotTokens.Type.Body,
                     lineHeight = 22.sp,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Spacer(Modifier.height(14.dp))
                 Text(
                     stringResource(R.string.nm_goal_sheet_body2),
-                    fontSize = 15.sp,
+                    fontSize = DotTokens.Type.Body,
                     lineHeight = 22.sp,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -277,7 +268,7 @@ fun GoalsTab(
                 ) {
                     Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.nm_goal_sheet_go), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.nm_goal_sheet_go), fontSize = DotTokens.Type.Body, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -296,13 +287,13 @@ private fun SectionHeader(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 20.dp, end = 8.dp, top = 4.dp),
+            .padding(start = DotTokens.Space.S24, end = DotTokens.Space.S8, top = DotTokens.Space.S4),
     ) {
         if (dot != null) {
             Box(Modifier.size(8.dp).background(dot, CircleShape))
             Spacer(Modifier.width(10.dp))
         }
-        Text(label, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = labelColor, modifier = Modifier.weight(1f))
+        Text(label, fontSize = DotTokens.Type.Body, fontWeight = FontWeight.SemiBold, color = labelColor, modifier = Modifier.weight(1f))
         trailing?.invoke()
         IconButton(onClick = onAdd) {
             Icon(Icons.Filled.Add, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -341,7 +332,7 @@ private fun GoalRow(goal: Goal, onOpenSession: (String) -> Unit) {
                 onClick = { goal.sessionId?.let(onOpenSession) },
                 onLongClick = { menu = true },
             )
-            .padding(start = 18.dp, end = 4.dp, top = 8.dp, bottom = 10.dp),
+            .padding(start = DotTokens.Space.S16, end = DotTokens.Space.S4, top = DotTokens.Space.S8, bottom = DotTokens.Space.S12),
     ) {
         IconButton(
             onClick = { GoalFlow.markDone(context, goal, !done) },
@@ -358,7 +349,7 @@ private fun GoalRow(goal: Goal, onOpenSession: (String) -> Unit) {
         Column(Modifier.weight(1f).padding(top = 3.dp)) {
             Text(
                 goal.title,
-                fontSize = 15.sp,
+                fontSize = DotTokens.Type.Body,
                 fontWeight = FontWeight.SemiBold,
                 color = if (done) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
                 maxLines = 2,
@@ -442,7 +433,7 @@ private fun RoutineRow(
         modifier = Modifier
             .fillMaxWidth()
             .combinedClickable(onClick = onEdit, onLongClick = { menu = true })
-            .padding(start = 20.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
+            .padding(start = DotTokens.Space.S24, end = DotTokens.Space.S4, top = DotTokens.Space.S8, bottom = DotTokens.Space.S8),
     ) {
         Icon(
             if (task.enabled) Icons.Outlined.Bolt else Icons.Outlined.RadioButtonUnchecked,
@@ -454,7 +445,7 @@ private fun RoutineRow(
         Column(Modifier.weight(1f)) {
             Text(
                 task.label,
-                fontSize = 15.sp,
+                fontSize = DotTokens.Type.Body,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
@@ -472,7 +463,7 @@ private fun RoutineRow(
         Switch(
             checked = task.enabled,
             onCheckedChange = { ScheduledTaskManager(context).setEnabled(task.id, it) },
-            modifier = Modifier.padding(start = 8.dp),
+            modifier = Modifier.padding(start = DotTokens.Space.S8),
         )
         Box {
             IconButton(onClick = { menu = true }) {
@@ -527,14 +518,14 @@ private fun CategoryRow(category: GoalCategory, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(start = 20.dp, end = 8.dp)
+            .padding(start = DotTokens.Space.S24, end = DotTokens.Space.S8)
             .height(50.dp),
     ) {
         Icon(category.icon(), contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(14.dp))
         Text(
             GoalFlow.categoryLabel(context, category),
-            fontSize = 15.sp,
+            fontSize = DotTokens.Type.Body,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f),

@@ -1120,4 +1120,11 @@
     <string name="nm_dot_action_unavailable">Bu Dot özelliği henüz kullanılamıyor.</string>
     <string name="nm_tab_tasks">Görevler</string>
     <string name="nm_task_library">Kitaplık</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Yükleniyor…</string>
+    <string name="nm_dot_load_failed">Bu sayfa yüklenemedi.</string>
+    <string name="nm_dot_components">Bileşenler</string>
+    <string name="nm_dot_empty">Henüz burada içerik yok.</string>
+    <string name="nm_dot_attach">Dosya ekle</string>
 </resources>

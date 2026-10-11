@@ -18,7 +18,7 @@ import com.openminis.app.R
 /** Compact task-page header. The saved agent identity stays intact. */
 @Composable
 fun DotHomeHeader(name: String, status: String?, onProfile: () -> Unit, onSessions: () -> Unit,
-                  onNewChat: () -> Unit, onMore: (() -> Unit)? = null) {
+                  onNewChat: () -> Unit, onMore: (() -> Unit)? = null, moreContent: @Composable () -> Unit = {}) {
     Surface(color = MaterialTheme.colorScheme.background) {
         Row(Modifier.fillMaxWidth().statusBarsPadding().padding(DotTokens.Space.S4),
             verticalAlignment = Alignment.CenterVertically) {
@@ -31,8 +31,9 @@ fun DotHomeHeader(name: String, status: String?, onProfile: () -> Unit, onSessio
                 }
             }
             IconButton(onClick = onNewChat) { Icon(Icons.Default.Add, stringResource(R.string.nm_drawer_new_chat)) }
-            if (onMore != null) IconButton(onClick = onMore) {
-                Icon(Icons.Default.MoreHoriz, stringResource(R.string.nm_more))
+            if (onMore != null) Box {
+                IconButton(onClick = onMore) { Icon(Icons.Default.MoreHoriz, stringResource(R.string.nm_more)) }
+                moreContent()
             }
         }
     }

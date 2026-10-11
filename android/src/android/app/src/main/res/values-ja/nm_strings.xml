@@ -1116,4 +1116,11 @@
     <string name="nm_dot_action_unavailable">この Dot 機能はまだ利用できません。</string>
     <string name="nm_tab_tasks">タスク</string>
     <string name="nm_task_library">ライブラリ</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">読み込み中…</string>
+    <string name="nm_dot_load_failed">このページを読み込めませんでした。</string>
+    <string name="nm_dot_components">コンポーネント</string>
+    <string name="nm_dot_empty">まだ何もありません。</string>
+    <string name="nm_dot_attach">ファイルを添付</string>
 </resources>

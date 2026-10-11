@@ -1124,4 +1124,11 @@
     <string name="nm_dot_action_unavailable">Această funcție Dot nu este încă disponibilă.</string>
     <string name="nm_tab_tasks">Sarcini</string>
     <string name="nm_task_library">Bibliotecă</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Se încarcă…</string>
+    <string name="nm_dot_load_failed">Această pagină nu a putut fi încărcată.</string>
+    <string name="nm_dot_components">Componente</string>
+    <string name="nm_dot_empty">Nu există încă nimic aici.</string>
+    <string name="nm_dot_attach">Atașează un fișier</string>
 </resources>

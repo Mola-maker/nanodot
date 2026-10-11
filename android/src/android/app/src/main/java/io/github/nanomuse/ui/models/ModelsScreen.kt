@@ -1,5 +1,7 @@
 package io.github.nanomuse.ui.models
 
+import io.github.nanomuse.dot.ui.DotTokens
+
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -103,7 +105,7 @@ fun ModelsScreen(
             fontSize = 14.sp,
             lineHeight = 20.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 16.dp).padding(top = 12.dp),
+            modifier = Modifier.padding(horizontal = DotTokens.Space.S16).padding(top = DotTokens.Space.S12),
         )
         // Signed in: the one switch for the Cloud as a model source. It is upstream's
         // `isEnabled` on the Cloud provider instance, so the automatic order, the pickers, the
@@ -130,7 +132,7 @@ fun ModelsScreen(
                         fontSize = 13.sp,
                         lineHeight = 18.sp,
                         color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 12.dp),
+                        modifier = Modifier.padding(horizontal = DotTokens.Space.S16).padding(bottom = DotTokens.Space.S12),
                     )
                 }
             }
@@ -193,6 +195,6 @@ fun RecommendedMark() {
         fontSize = 11.sp,
         fontWeight = FontWeight.Medium,
         color = MuseTones.action,
-        modifier = Modifier.padding(end = 8.dp),
+        modifier = Modifier.padding(end = DotTokens.Space.S8),
     )
 }

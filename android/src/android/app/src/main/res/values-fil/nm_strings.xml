@@ -1120,4 +1120,11 @@
     <string name="nm_dot_action_unavailable">Hindi pa magagamit ang feature na ito ng Dot.</string>
     <string name="nm_tab_tasks">Mga gawain</string>
     <string name="nm_task_library">Library</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Naglo-load…</string>
+    <string name="nm_dot_load_failed">Hindi ma-load ang pahinang ito.</string>
+    <string name="nm_dot_components">Mga bahagi</string>
+    <string name="nm_dot_empty">Wala pang laman dito.</string>
+    <string name="nm_dot_attach">Maglakip ng file</string>
 </resources>

@@ -1086,4 +1086,11 @@
     <string name="nm_dot_action_unavailable">此 Dot 功能尚未開放。</string>
     <string name="nm_tab_tasks">任務</string>
     <string name="nm_task_library">資料</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">正在載入…</string>
+    <string name="nm_dot_load_failed">無法載入此頁面。</string>
+    <string name="nm_dot_components">元件</string>
+    <string name="nm_dot_empty">這裡還沒有內容。</string>
+    <string name="nm_dot_attach">加入檔案</string>
 </resources>

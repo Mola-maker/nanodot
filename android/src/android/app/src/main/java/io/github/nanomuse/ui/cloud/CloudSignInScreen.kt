@@ -1,5 +1,10 @@
 package io.github.nanomuse.ui.cloud
 
+import io.github.nanomuse.dot.ui.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import androidx.compose.foundation.layout.heightIn
+
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -94,6 +99,7 @@ fun CloudSignInScreen(
     // A friend's invite code: counts for a new account only, so it sits behind a small link.
     var invite by remember { mutableStateOf("") }
     var inviteOpen by remember { mutableStateOf(false) }
+    var operation by remember { mutableStateOf<Job?>(null) }
     var sending by remember { mutableStateOf(false) }
     var verifying by remember { mutableStateOf(false) }
     var byPassword by remember { mutableStateOf(false) }
@@ -120,15 +126,16 @@ fun CloudSignInScreen(
         if (sending || identifier.isBlank() || phoneAbroad) return
         error = null
         sending = true
-        scope.launch {
+        operation = scope.launch {
             try {
                 NanoMuseCloud.requestCode(context, identifier)
                 codeSent = true
                 countdown = 60
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 error = NanoMuseCloud.describe(context, e)
-            }
-            sending = false
+            } finally { sending = false }
         }
     }
 
@@ -136,14 +143,15 @@ fun CloudSignInScreen(
         if (verifying || code.length < 4) return
         error = null
         verifying = true
-        scope.launch {
+        operation = scope.launch {
             try {
                 NanoMuseCloud.verify(context, identifier, code, invite)
                 onSignedIn()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 error = NanoMuseCloud.describe(context, e)
-                verifying = false
-            }
+            } finally { verifying = false }
         }
     }
 
@@ -151,14 +159,15 @@ fun CloudSignInScreen(
         if (verifying || identifier.isBlank() || password.isEmpty()) return
         error = null
         verifying = true
-        scope.launch {
+        operation = scope.launch {
             try {
                 NanoMuseCloud.login(context, identifier, password)
                 onSignedIn()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 error = NanoMuseCloud.describe(context, e)
-                verifying = false
-            }
+            } finally { verifying = false }
         }
     }
 
@@ -191,7 +200,7 @@ fun CloudSignInScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = DotTokens.Space.S24),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(Modifier.height(12.dp))
@@ -227,7 +236,7 @@ fun CloudSignInScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(MuseTones.fill, RoundedCornerShape(12.dp))
-                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                        .padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S12),
                 )
             }
             Spacer(Modifier.height(24.dp))
@@ -278,7 +287,7 @@ fun CloudSignInScreen(
                     fontSize = 13.sp,
                     lineHeight = 18.sp,
                     color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.fillMaxWidth().padding(top = 6.dp, start = 4.dp, end = 4.dp),
+                    modifier = Modifier.fillMaxWidth().padding(top = DotTokens.Space.S8, start = DotTokens.Space.S4, end = DotTokens.Space.S4),
                 )
             }
             Spacer(Modifier.height(12.dp))
@@ -332,14 +341,12 @@ fun CloudSignInScreen(
                         .weight(1f)
                         .semantics { contentType = ContentType.SmsOtpCode },
                 )
-                Spacer(Modifier.padding(horizontal = 6.dp))
+                Spacer(Modifier.padding(horizontal = DotTokens.Space.S8))
                 TextButton(
                     onClick = { sendCode() },
                     enabled = identifier.isNotBlank() && countdown == 0 && !sending && !verifying && !phoneAbroad,
                 ) {
-                    if (sending) {
-                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = MuseTones.action)
-                    } else {
+                    run {
                         Text(
                             text = when {
                                 countdown > 0 -> stringResource(R.string.nm_cloud_resend_in, countdown)
@@ -388,15 +395,11 @@ fun CloudSignInScreen(
                 RelayServerForm(enabled = !verifying && !sending, onClose = { serverOpen = false })
             }
 
-            error?.let {
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    text = it,
-                    color = MaterialTheme.colorScheme.error,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
-                    textAlign = TextAlign.Center,
-                )
+            when {
+                sending || verifying -> DotOperationStatus(DotPageState.Loading, ::submit, onCancel = {
+                    operation?.cancel()
+                })
+                error != null -> DotStatusSurface(DotPageState.Error(error!!, retryable = true), ::submit) {}
             }
 
             Spacer(Modifier.height(24.dp))
@@ -405,14 +408,12 @@ fun CloudSignInScreen(
                 enabled = canSubmit,
                 shape = RoundedCornerShape(50),
                 colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
-                modifier = Modifier.fillMaxWidth().height(50.dp),
+                modifier = Modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget),
             ) {
-                if (verifying) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = Color.White)
-                } else {
+                run {
                     Text(
                         text = if (byPassword || codeSent) stringResource(R.string.nm_cloud_verify) else stringResource(R.string.nm_cloud_send_code),
-                        fontSize = 16.sp,
+                        fontSize = DotTokens.Type.Body,
                         fontWeight = FontWeight.Medium,
                     )
                 }
@@ -506,10 +507,10 @@ private fun RelayServerForm(enabled: Boolean, onClose: () -> Unit) {
                 text = stringResource(R.string.nm_cloud_server_now, RelayAddress.display(inUse)),
                 fontSize = 12.sp,
                 color = muted,
-                modifier = Modifier.weight(1f).padding(start = 4.dp),
+                modifier = Modifier.weight(1f).padding(start = DotTokens.Space.S4),
             )
             TextButton(onClick = { check() }, enabled = enabled && !checking && text.isNotBlank()) {
-                if (checking) CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = MuseTones.action)
+                if (checking && io.github.nanomuse.dot.ui.LocalDotMotionEnabled.current) CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = MuseTones.action)
                 else Text(stringResource(R.string.nm_cloud_server_check), color = MuseTones.action, fontSize = 13.sp)
             }
             TextButton(
@@ -528,7 +529,7 @@ private fun RelayServerForm(enabled: Boolean, onClose: () -> Unit) {
                 fontSize = 12.sp,
                 lineHeight = 16.sp,
                 color = if (bad) MaterialTheme.colorScheme.error else muted,
-                modifier = Modifier.padding(horizontal = 4.dp),
+                modifier = Modifier.padding(horizontal = DotTokens.Space.S4),
             )
         }
         if (!RelayAddress.isDefault(inUse)) {
@@ -555,7 +556,7 @@ private fun ModeTab(label: String, selected: Boolean, modifier: Modifier = Modif
             .clip(RoundedCornerShape(10.dp))
             .background(if (selected) MuseTones.surface else Color.Transparent)
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
+            .padding(vertical = DotTokens.Space.S8),
         contentAlignment = Alignment.Center,
     ) {
         Text(

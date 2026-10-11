@@ -45,6 +45,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ### Android
 
+- Kept the Android composer and Send/Stop reachable with large text and a shown landscape keyboard, added shared accessible page states and native selected controls, and bound Cloud/Network cancellation to actual requests while preserving input and error details.
+
 - Unified Android home navigation into labeled Chat, Tasks, Devices and Settings destinations, retained Feed/Ideas/Goals/Library inside Tasks, and adapted the same session host to bottom navigation, rail and conversation-list panes.
 
 - Fixed stopping an Android OpenAI stream leaving its HTTP reader active until EOF. Kept reasoning output while omitting unsupported reasoning history only for the exact Nanodot HTTPS gateway origin.
