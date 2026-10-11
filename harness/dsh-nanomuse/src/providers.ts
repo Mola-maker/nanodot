@@ -175,6 +175,8 @@ export async function loadCatalogue(path?: string | URL): Promise<ProviderEntry[
 export interface OwnProvider {
   /** The catalogue entry it came from (`custom` for a hand-made endpoint, `chatgpt` for the sign-in). */
   provider: string
+  /** Persistent UUID for the isolated gateway credential origin. */
+  instanceId?: string
   label: string
   protocol: Protocol
   baseURL: string
@@ -191,15 +193,19 @@ export interface OwnModel {
   name: string
   /** Takes pictures: the hands may see the screen with it. */
   vision: boolean
-  kind: 'chat' | 'image' | 'video'
+  kind: 'chat' | 'image' | 'video' | 'voice'
   /** The thinking levels the endpoint's own list gave for it (OpenRouter); the catalogue's rules otherwise. */
   reasoning?: ModelReasoning
+  inputModalities?: string[]
+  outputModalities?: string[]
 }
 
 /** One row of an endpoint's model list: the id, and what it said about thinking levels when it did. */
 export interface ListedModel {
   id: string
   reasoning?: ModelReasoning
+  inputModalities?: string[]
+  outputModalities?: string[]
 }
 
 /**
@@ -242,17 +248,19 @@ export function modelsOf(entry: ProviderEntry, listed: (string | ListedModel)[])
   const rows: ListedModel[] = listed.length ? listed.map((m) => (typeof m === 'string' ? { id: m } : m)) : Object.values(entry.defaults).filter((id): id is string => Boolean(id)).map((id) => ({ id }))
   const seen = new Set<string>()
   const out: OwnModel[] = []
-  for (const { id, reasoning } of rows) {
+  for (const { id, reasoning, inputModalities, outputModalities } of rows) {
     if (!id || seen.has(id)) continue
     seen.add(id)
-    let kind = kindOf(id)
+    const gateway = entry.id === 'nanodot-workers'
+    if (gateway && (!inputModalities?.length || !outputModalities?.length)) continue
+    let kind: OwnModel['kind'] = gateway && (inputModalities?.includes('audio') || outputModalities?.includes('audio')) ? 'voice' : kindOf(id)
     if (id === entry.defaults.image) kind = 'image'
     if (id === entry.defaults.video) kind = 'video'
     if (kind === 'image' && !entry.capabilities.includes('image')) continue
     if (kind === 'video' && !entry.capabilities.includes('video')) continue
     // what the list said about levels is kept only where the catalogue reads the list for them
     const listedLevels = kind === 'chat' && entry.reasoning?.listed ? reasoning : undefined
-    out.push({ id, name: id, vision: kind === 'chat' && sighted(entry, id), kind, ...(listedLevels ? { reasoning: listedLevels } : {}) })
+    out.push({ id, name: id, vision: kind === 'chat' && (gateway ? Boolean(inputModalities?.includes('image')) : sighted(entry, id)), kind, ...(gateway ? { inputModalities, outputModalities } : {}), ...(listedLevels ? { reasoning: listedLevels } : {}) })
   }
   return out
 }
@@ -355,7 +363,11 @@ export async function listModelRows(protocol: Protocol, baseURL: string, apiKey:
       const id = typeof r.id === 'string' ? r.id : typeof r.name === 'string' ? r.name.replace(/^models\//, '') : ''
       if (!id) continue
       const reasoning = parseListedReasoning(r.reasoning)
-      out.push(reasoning ? { id, reasoning } : { id })
+      const modalities = (v: unknown): string[] | undefined => Array.isArray(v) ? v.filter((m): m is string => typeof m === 'string') : undefined
+      const wire = row as { input_modalities?: unknown; output_modalities?: unknown; architecture?: { input_modalities?: unknown; output_modalities?: unknown } }
+      const inputModalities = modalities(wire.input_modalities ?? wire.architecture?.input_modalities)
+      const outputModalities = modalities(wire.output_modalities ?? wire.architecture?.output_modalities)
+      out.push({ id, ...(reasoning ? { reasoning } : {}), ...(inputModalities ? { inputModalities } : {}), ...(outputModalities ? { outputModalities } : {}) })
     }
     return out.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
   } catch {

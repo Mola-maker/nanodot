@@ -1114,4 +1114,6 @@
     <string name="nm_dot_view_screen">Lihat skrin</string>
     <string name="nm_dot_start_care">Mulakan sokongan</string>
     <string name="nm_dot_action_unavailable">Ciri Dot ini belum tersedia.</string>
+    <string name="nm_gateway_key_required">Memerlukan key khusus projek. Tetapan dan model pilihan dikekalkan. Pengesahan perkhidmatan sebenar masih belum selesai.</string>
+    <string name="nm_gateway_connection_failed">Tidak dapat menyambung. Semak key projek dan rangkaian.</string>
 </resources>

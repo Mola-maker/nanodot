@@ -68,6 +68,9 @@ enum NanoMuseVendorSetup {
     /// and the wrong key would have gone unnoticed until the first chat.
     @discardableResult
     static func install(_ vendor: NanoMuseVendor, apiKey: String, mainland: Bool, chinese: Bool) async throws -> ProviderInstance? {
+        if vendor.id == NanodotGateway.presetID {
+            return try await NanodotGateway.connect(credential: apiKey)
+        }
         let key = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !key.isEmpty else { return nil }
         let store = ProviderConfigStore.shared
@@ -292,7 +295,7 @@ struct NanoMuseVendorSheet: View {
                     VStack(alignment: .leading, spacing: 6) {
                         if let message { Text(message).foregroundStyle(.red) }
                         Text(AppLocalized("The phone must reach the computer: the same Wi-Fi, or a tunnel. Nothing leaves your network."))
-                        let note = vendor.note(chinese: chinese)
+                        let note = vendor.id == NanodotGateway.presetID ? AppLocalized("Requires a dedicated project key. Existing settings and selected models are kept. Live service acceptance is pending.") : vendor.note(chinese: chinese)
                         if !note.isEmpty { Text(note) }
                     }
                 }
@@ -328,7 +331,7 @@ struct NanoMuseVendorSheet: View {
                         } else {
                             Text(String(format: AppLocalized("The key stays on this phone and is sent only to %@. Covers %@."), NanoMuseProxy.hostOf(vendor.baseURL(mainland: mainland)) ?? name, NanoMuseCatalogue.covers(vendor.capabilities)))
                         }
-                        let note = vendor.note(chinese: chinese)
+                        let note = vendor.id == NanodotGateway.presetID ? AppLocalized("Requires a dedicated project key. Existing settings and selected models are kept. Live service acceptance is pending.") : vendor.note(chinese: chinese)
                         if !note.isEmpty { Text(note) }
                     }
                 }

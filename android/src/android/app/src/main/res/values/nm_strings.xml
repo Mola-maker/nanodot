@@ -1095,4 +1095,6 @@
     <string name="nm_dot_view_screen">View screen</string>
     <string name="nm_dot_start_care">Start care</string>
     <string name="nm_dot_action_unavailable">This Dot action is not available yet.</string>
+    <string name="nm_gateway_key_required">Requires a dedicated project key. Existing settings and selected models are kept. Live service acceptance is pending.</string>
+    <string name="nm_gateway_connection_failed">Could not connect. Check the project key and network.</string>
 </resources>

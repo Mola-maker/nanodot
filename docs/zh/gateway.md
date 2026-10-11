@@ -84,3 +84,15 @@ npm --prefix gateway run dry-run
 使用 Node 22：`NANODOT_DOCS_BASE=/docs/ npm --prefix website run docs:build`，然后 `node scripts/site/build.mjs`。可选的 `NANODOT_DOCS_BASE` 覆盖新根部署的文档 base，保留已有 `DOCS_BASE` 行为及默认 `/nanodot/docs/`。导出的 `buildSite({outDir, docsDir})` 将已编译文档复制到 `/docs/`，将原创离线 Dot 图形复制到专用输出，默认 `gateway/public/`。删除前核对真实文件系统路径，仓库内仅允许输出到 `gateway/public`，仓库外独立临时输出仍可用；源码树与已编译文档输入不得与输出重叠。不执行部署。运行 `node --test site/tests/*.test.mjs` 和网关测试；本地路由检查需要本地监听端口，省略 AI binding，不调用真实模型。
 
 接入指南不接收凭据输入。隐私页说明用户主动触发的图片/音频发送到 Cloudflare、项目不持久存储 payload 与供应商自己的数据政策。已有 Cloud/服务商数据流保持独立。
+
+## 可选客户端接入 {#optional-client-connection}
+
+自带 key 列表新增 **Nanodot · Workers AI**（`nanodot-workers`）。`verified` 月份只表示源码与协议检查，不表示真实服务已验收。Android、iOS 和桌面的账号／自带 key 页面提供项目 key 入口，Web 控制台在「连接」页面提供入口。需要操作者发放的专用项目 key。添加连接时，原有 Cloud 登录、token、origin、头像、模型组和选中的模型均保持原状。真实验收之前，新安装默认值也保持原状。
+
+手机等待服务商配置加载后，以独立 UUID 创建规范 origin 的 OpenAI Chat Completions 连接。重复接入沿用 UUID，不重复创建服务商。Android 使用原有加密服务商仓库，iOS 使用原有按实例隔离的 Keychain helper，桌面使用 UUID 专属引用写入 harness 凭据存储。Python 将元数据保存为 `gateway-profile.json`，项目 key 通过 UUID 专属引用保存到原有加密保险库。客户端资源和 profile 元数据不保存明文 key。模型刷新失败保留已有模型条目。iOS、桌面和 Python 验证模型列表成功后才替换保存的 key；Android 沿用仓库原有刷新行为。
+
+模型列表的 `architecture.input_modalities` 与 `output_modalities` 决定模型能否接收图像或音频。不能因为 Qwen 的名称就将其视为视觉模型；只有列表声明图像输入时，才将 Gemma 提供给图像功能。Whisper 属于语音模型，不进入桌面／Web 的对话模型选择器。生产门禁为 false 时，不提供中文 TTS。桌面与 Python 当前记录音频模型元数据；本次变更未新增桌面／Web 的麦克风或音频播放实现。
+
+连接与选择模型是两个动作。手机／桌面通过原有模型设置或明确的「用于」选项选择模型。Web 控制台的「用项目 key 连接」仅保存独立连接；「使用所选网关模型」由用户明确选择已列出的对话模型。即使通过自定义表单输入该 origin，网关预览与选用也不能借用旧 slot 的 key。运行时已鉴权的 `POST /api/connections/gateway` 接收 `api_key`，随后原有的显式模型选择路由解析独立保险库引用。Python 的隐式项目 key 不会沿用到单独配置的 embedding origin；显式配置的 embedding key 保持不变。此 origin 不提供账号注册、匿名推理，也不迁移 Cloud token。
+
+本地 JVM、Node 与 Python fixture 测试证明存储和协议行为。iOS XCTest 需要 macOS 与兼容的原生依赖。Android、桌面、Web、iOS 各自的真实模型列表与文字 SSE 验收仍待 Gateway Task 6 完成；一个平台成功不代表其他平台成功。语音 fixture 请求不代表真实 ASR 或中文 TTS 验收。

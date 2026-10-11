@@ -25,6 +25,7 @@ import { openLink } from './bridge.ts'
 import { settingsBus } from './bus.ts'
 import { IconCheck, IconGlobe, IconKey } from './icons.tsx'
 import { useLive } from './live.ts'
+import { NanodotConnection } from './NanodotConnection.tsx'
 
 export type { Capability, ProviderEntry, Region }
 
@@ -39,7 +40,7 @@ export interface OwnProvider {
   baseURL: string
   keyRef: string
   capabilities: Capability[]
-  models: { id: string; name: string; vision: boolean; kind: 'chat' | 'image' | 'video' }[]
+  models: { id: string; name: string; vision: boolean; kind: 'chat' | 'image' | 'video' | 'voice' }[]
   at: number
 }
 
@@ -146,7 +147,7 @@ function KeyForm({ t, entry, region, configured, onSaved, onCancel }: { t: Trans
     call<OwnProvider & { offer?: SlotOffer }>('providers/save', body)
       .then((saved) => onSaved(saved.models.length ? t('ownKeySaved', { n: saved.models.length }) : t('ownKeySavedNone'), { label: saved.label, offer: saved.offer ?? {} }))
       .catch((err: unknown) => {
-        if (errorCode(err) === 'no_models') { setAskModels(true); setError(t('ownKeyNoModels')); return }
+        if (entry.id !== 'nanodot-workers' && errorCode(err) === 'no_models') { setAskModels(true); setError(t('ownKeyNoModels')); return }
         setError(failureText(t, err))
       })
       .finally(() => setBusy(false))
@@ -331,10 +332,12 @@ export function WaysOnRows({ t, view, groups = ALL_GROUPS, signInRow = true, hea
   const chatgptEntry = signInRow ? view.catalogue.find((p) => p.auth.includes('oauth-chatgpt')) : undefined
   const chatgptInFirst = Boolean(chatgptEntry && g.first.some((p) => p.id === chatgptEntry.id))
   const out: ReactNode[] = []
+  const gateway = view.catalogue.find((p) => p.id === 'nanodot-workers')
   if (groups.includes('account') && view.cloud.signedIn) {
     out.push(heading(t('ownKeyAccountGroup')))
     out.push(h(AccountRow, { key: 'account', t, view }))
   }
+  if (gateway) out.push(h(NanodotConnection, { key: gateway.id, t, children: rowOf(gateway) }))
   if (groups.includes('first') && g.first.length) {
     out.push(heading(view.region === 'cn' ? t('ownKeyRegionCn') : t('ownKeyRegionGlobal')))
     for (const p of g.first) {
@@ -349,7 +352,7 @@ export function WaysOnRows({ t, view, groups = ALL_GROUPS, signInRow = true, hea
   }
   if (groups.includes('rest') && g.rest.length) {
     out.push(heading(t('ownKeyRestGroup')))
-    for (const p of g.rest) out.push(rowOf(p))
+    for (const p of g.rest) if (p.id !== 'nanodot-workers') out.push(rowOf(p))
   }
   if (groups.includes('local') && g.local.length) {
     out.push(heading(t('ownKeyLocalGroup')))

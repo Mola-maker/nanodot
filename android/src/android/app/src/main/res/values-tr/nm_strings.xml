@@ -1118,4 +1118,6 @@
     <string name="nm_dot_view_screen">Ekranı görüntüle</string>
     <string name="nm_dot_start_care">Desteği başlat</string>
     <string name="nm_dot_action_unavailable">Bu Dot özelliği henüz kullanılamıyor.</string>
+    <string name="nm_gateway_key_required">Projeye özel bir anahtar gerekir. Ayarlar ve seçili modeller korunur. Gerçek hizmet doğrulaması henüz tamamlanmadı.</string>
+    <string name="nm_gateway_connection_failed">Bağlanılamadı. Proje anahtarını ve ağı kontrol edin.</string>
 </resources>

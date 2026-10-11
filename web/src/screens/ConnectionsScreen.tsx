@@ -147,6 +147,7 @@ export function ModelCard({
     )?.[0] ??
     (data.llm.base_url ? "custom" : "deepseek");
   const [preset, setPreset] = useState(currentPreset);
+  const [gatewayConnected, setGatewayConnected] = useState(false);
   const [model, setModel] = useState(data.llm.model);
   const [baseUrl, setBaseUrl] = useState(data.llm.base_url);
   const [key, setKey] = useState("");
@@ -338,6 +339,13 @@ export function ModelCard({
     setSaving(true);
     setTest(null);
     try {
+      if (preset === "nanodot-workers") {
+        await api.connectGateway(key);
+        setGatewayConnected(true);
+        setKey("");
+        toast(t("Gateway connected; existing model selection kept"));
+        return;
+      }
       if (p?.cloud) {
         // the account's key stays the key; only the model is chosen here
         await api.cloudUseAsModel(model.trim());
@@ -364,6 +372,19 @@ export function ModelCard({
     } finally {
       setSaving(false);
     }
+  };
+
+  const selectGatewayModel = async () => {
+    setSaving(true);
+    try {
+      await api.setLLM({ provider: "nanodot-workers", model: model.trim(), base_url: "https://molamaker.si/v1" });
+      invalidateProviders();
+      onChange();
+      toast(t("Model saved"));
+      if (!compact) setOpen(false);
+    } catch (error) {
+      toast((error as Error).message);
+    } finally { setSaving(false); }
   };
 
   const runTest = async () => {
@@ -777,7 +798,7 @@ export function ModelCard({
       <div className="flex gap-2 pt-1">
         <button
           type="button"
-          disabled={saving || !model.trim() || (needsUrl && !baseUrl.trim())}
+          disabled={saving || (preset === "nanodot-workers" ? !key.trim() : !model.trim()) || (needsUrl && !baseUrl.trim())}
           onClick={() => void save()}
           className={primaryBtn}
         >
@@ -786,8 +807,13 @@ export function ModelCard({
           ) : (
             <Check size={16} />
           )}{" "}
-          {t("Save")}
+          {t(preset === "nanodot-workers" ? "Connect with project key" : "Save")}
         </button>
+        {preset === "nanodot-workers" && (gatewayConnected || p?.gateway_connected) && (
+          <button type="button" disabled={saving || !model.trim()} onClick={() => void selectGatewayModel()} className={secondaryBtn}>
+            {t("Use selected gateway model")}
+          </button>
+        )}
         <button
           type="button"
           disabled={testing}

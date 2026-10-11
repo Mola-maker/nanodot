@@ -123,7 +123,8 @@ fun AllowanceWaysCard(
         Ways.resolve(info.guidance ?: NanoMuseCloud.guidance(context), ProviderCatalogue.load(context), mainland, chinese)
     }
     val guideUrl = info.ownKeyDocs.ifBlank { account?.ownKeyDocs.orEmpty() }.ifBlank { ways.docs }.ifBlank { OWN_KEY_DOCS }
-    val vendors = ways.vendors
+    val gateway = ProviderCatalogue.byId(context, io.github.nanomuse.dot.gateway.GatewayConnection.PRESET_ID)
+    val vendors = ways.vendors + listOfNotNull(gateway).filter { candidate -> ways.vendors.none { it.id == candidate.id } }
     val signIns = ways.signIns
     val locals = ways.locals
     val signedIn = remember { NanoMuseCloud.isSignedIn(context) }

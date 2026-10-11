@@ -56,6 +56,7 @@ import { AvatarMotion, ANIMATED, type MotionMood, type MotionView } from './moti
 import { DEFAULT_VIDEO_MODEL, hostOf, KNOWN_DASHSCOPE_MODELS, looksLikeVideoModel, probe as probeVideoModel, speaksDashScope, type VideoEndpoint } from './video.ts'
 import { editImage as ownEditImage, generateImage as ownGenerateImage, imageShapeOf, type ImageEndpoint } from './images.ts'
 import { checkMove, checkScreenshot, displayInfo, isBlack, runtimeInfo, screenHead, type MoveCheck, type RuntimeInfo, type ScreenshotCheck } from './hands-check.ts'
+import { gatewayBase, GATEWAY_ID, gatewayKeyRef } from './gateway-origin.ts'
 import { apiOf, baseUrlFor, CAPABILITIES, capabilitiesForAuth, capabilitiesOf, CHATGPT_KEY_REF, CHATGPT_PROVIDER, ChatGptDesk, keyRefFor, listModelRows, listModels, loadCatalogue, modelsOf, ownProviderRow, parseModelReasoning, regionOf, typedModelIds, type Capability, type ChatGptState, type LoginView, type OwnModel, type OwnProvider, type ProviderEntry, type Region } from './providers.ts'
 
 declare module '@deepseek-ai/cordis' {
@@ -465,6 +466,7 @@ function ownProvidersOf(raw: Record<string, unknown>): Record<string, OwnProvide
     const p = value as Partial<OwnProvider>
     if (typeof p.baseURL !== 'string' || !Array.isArray(p.capabilities)) continue
     out[id] = {
+      ...(typeof p.instanceId === 'string' ? { instanceId: p.instanceId } : {}),
       provider: typeof p.provider === 'string' && p.provider ? p.provider : id,
       label: typeof p.label === 'string' && p.label ? p.label : id,
       protocol: p.protocol === 'anthropic' || p.protocol === 'gemini' || p.protocol === 'openai-responses' ? p.protocol : 'openai',
@@ -473,7 +475,7 @@ function ownProvidersOf(raw: Record<string, unknown>): Record<string, OwnProvide
       capabilities: p.capabilities.filter((c): c is Capability => (CAPABILITIES as readonly string[]).includes(c)),
       models: Array.isArray(p.models) ? p.models.filter((m): m is OwnModel => Boolean(m) && typeof m.id === 'string').map((m) => {
         const reasoning = parseModelReasoning(m.reasoning)
-        return { id: m.id, name: typeof m.name === 'string' && m.name ? m.name : m.id, vision: m.vision === true, kind: m.kind === 'image' || m.kind === 'video' ? m.kind : 'chat', ...(reasoning ? { reasoning } : {}) }
+        return { id: m.id, name: typeof m.name === 'string' && m.name ? m.name : m.id, vision: m.vision === true, kind: m.kind === 'image' || m.kind === 'video' || m.kind === 'voice' ? m.kind : 'chat', ...(reasoning ? { reasoning } : {}), ...(Array.isArray(m.inputModalities) ? { inputModalities: m.inputModalities } : {}), ...(Array.isArray(m.outputModalities) ? { outputModalities: m.outputModalities } : {}) }
       }) : [],
       at: Number(p.at) || 0,
     }
@@ -640,6 +642,8 @@ export default class NanomuseCloud extends Service {
     })
   }
 
+  private gatewayConfigLoaded = false
+
   async [Service.init](): Promise<void> {
     this.state = await this.readState()
     if (!this.state.deviceId) {
@@ -647,6 +651,7 @@ export default class NanomuseCloud extends Service {
       await this.writeState()
     }
     this.catalogue = await loadCatalogue()
+    this.gatewayConfigLoaded = true
     if (!this.catalogue.length) this.ctx.logger.warn('nanomuse: assets/providers.json missing or empty; the own-key step lists nothing')
     // Keys saved before the catalogue learned a vendor's thinking levels get them on this start.
     this.refreshOwnRows()
@@ -1418,8 +1423,11 @@ export default class NanomuseCloud extends Service {
     const entry = this.catalogue.find((p) => p.id === id)
     if (!entry) throw new RelayError(404, 'unknown_provider', 'Not in the catalogue')
     const region = this.region(input.lang ?? '')
-    const baseURL = (input.baseURL ?? '').trim().replace(/\/+$/, '') || baseUrlFor(entry, region)
+    const gateway = id === GATEWAY_ID
+    if (gateway && !this.gatewayConfigLoaded) throw new RelayError(409, 'config_loading', 'Provider configuration is still loading')
+    let baseURL = (input.baseURL ?? '').trim().replace(/\/+$/, '') || baseUrlFor(entry, region)
     if (!/^https?:\/\//.test(baseURL)) throw new RelayError(400, 'bad_url', 'The address must start with http:// or https://')
+    if (gateway) baseURL = gatewayBase(baseURL) // reject edits that could move this dedicated credential
     const apiKey = (input.apiKey ?? '').trim()
     if (!apiKey && !entry.auth.includes('none')) throw new RelayError(400, 'no_key', 'This provider needs a key')
     // not `bad_key`: the client reads that code as a retired sign-in
@@ -1435,19 +1443,24 @@ export default class NanomuseCloud extends Service {
     // list also has keeps what the list said about it (OpenRouter's thinking levels).
     const typed = typedModelIds(input.models)
     let models = modelsOf({ ...entry, capabilities }, [...typed.map((id) => listed.find((m) => m.id === id) ?? { id }), ...listed.filter((m) => !typed.includes(m.id))])
+    if (gateway && !listed.length) throw new RelayError(400, 'no_models', 'The gateway did not list its models; existing models were kept')
     if (entry.user_capabilities) models = models.map((m) => ({ ...m, vision: capabilities.includes('vision') }))
     // A row with no chat model cannot be served (the model adapter refuses a route that resolves
     // no models) and nothing could pick from it: a plain sentence, before anything is written.
     if (!models.some((m) => m.kind === 'chat')) throw new RelayError(400, 'no_models', 'The endpoint did not list its models (GET /models). Type the ids of the models it serves, separated by commas.')
-    const keyRef = apiKey ? keyRefFor(id) : ''
+    const previous = this.state.providers?.[id]
+    const instanceId = gateway ? (previous?.instanceId ?? randomUUID()) : undefined
+    const keyRef = apiKey ? (gateway ? gatewayKeyRef(instanceId!) : keyRefFor(id)) : ''
     if (keyRef) await this.ctx.credentials.set(credentialRef(keyRef), apiKey)
     const label = (input.label ?? '').trim() || (input.lang?.toLowerCase().startsWith('zh') ? entry.name_zh : entry.name)
-    const row: OwnProvider = { provider: id, label, protocol: entry.protocol, baseURL, keyRef, capabilities, models, at: Date.now() }
+    const row: OwnProvider = { provider: id, ...(instanceId ? { instanceId } : {}), label, protocol: entry.protocol, baseURL, keyRef, capabilities, models, at: Date.now() }
     await this.ctx.settings.update(LLM_ROW, { providers: { [id]: ownProviderRow(row, entry.reasoning) } })
     this.state = { ...this.state, providers: { ...this.state.providers, [id]: row } }
     await this.writeState()
-    await this.adoptOwnDefault(id, row)
-    await this.writeHands()
+    if (!gateway) {
+      await this.adoptOwnDefault(id, row)
+      await this.writeHands()
+    }
     this.broadcast()
     return row
   }

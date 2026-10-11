@@ -423,6 +423,11 @@ private fun ConfigureProviderScreen(
     onBack: () -> Unit,
     onSaved: () -> Unit,
 ) {
+    // nanoMuse: the project preset has its own loaded-config gate and UUID ownership; generic forms keep their old behavior.
+    if (voiceTemplate?.id == io.github.nanomuse.dot.gateway.GatewayConnection.PRESET_ID) {
+        io.github.nanomuse.dot.gateway.GatewayConnectionScreen(providerRepository, onBack, onSaved)
+        return
+    }
     // Compute default label with auto-increment (e.g. "OpenAI", "OpenAI 2", ...)
     // A voice template preseeds its vendor name instead of the protocol name.
     val config by providerRepository.config.collectAsState()

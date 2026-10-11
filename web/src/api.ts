@@ -331,6 +331,7 @@ export const api = {
   /** The address the browser landed on, pasted by hand when the runtime could not take the callback itself. */
   chatgptCallback: (url: string) => request<{ ok: boolean }>("/api/chatgpt/callback", json({ url })),
   chatgptLogout: () => request<{ ok: boolean; was_signed_in?: boolean }>("/api/chatgpt/logout", json({})),
+  connectGateway: (api_key: string) => request<Record<string, unknown>>("/api/connections/gateway", json({ api_key })),
   setLLM: (body: Record<string, unknown>) =>
     request<ConnectionsData["llm"]>("/api/connections/llm", { method: "PUT", body: JSON.stringify(body) }),
   testLLM: () => request<TestResult>("/api/connections/llm/test", { method: "POST" }),

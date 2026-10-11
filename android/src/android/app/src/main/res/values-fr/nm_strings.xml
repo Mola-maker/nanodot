@@ -1118,4 +1118,6 @@
     <string name="nm_dot_view_screen">Voir l’écran</string>
     <string name="nm_dot_start_care">Démarrer l’accompagnement</string>
     <string name="nm_dot_action_unavailable">Cette fonction de Dot n’est pas encore disponible.</string>
+    <string name="nm_gateway_key_required">Une clé dédiée au projet est requise. Les réglages et modèles sélectionnés sont conservés. La validation du service réel reste à effectuer.</string>
+    <string name="nm_gateway_connection_failed">Connexion impossible. Vérifiez la clé du projet et le réseau.</string>
 </resources>

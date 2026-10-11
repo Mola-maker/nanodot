@@ -1091,4 +1091,6 @@
     <string name="nm_dot_view_screen">查看屏幕</string>
     <string name="nm_dot_start_care">开始关怀</string>
     <string name="nm_dot_action_unavailable">此 Dot 功能暂未开放。</string>
+    <string name="nm_gateway_key_required">需要专用项目 key。保留已有设置和选中的模型。真实服务验收待完成。</string>
+    <string name="nm_gateway_connection_failed">无法连接。请检查项目 key 和网络。</string>
 </resources>

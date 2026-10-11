@@ -1114,4 +1114,6 @@
     <string name="nm_dot_view_screen">Lihat layar</string>
     <string name="nm_dot_start_care">Mulai pendampingan</string>
     <string name="nm_dot_action_unavailable">Fitur Dot ini belum tersedia.</string>
+    <string name="nm_gateway_key_required">Memerlukan key khusus proyek. Pengaturan dan model yang dipilih tetap disimpan. Validasi layanan nyata masih tertunda.</string>
+    <string name="nm_gateway_connection_failed">Tidak dapat terhubung. Periksa key proyek dan jaringan.</string>
 </resources>

@@ -1114,4 +1114,6 @@
     <string name="nm_dot_view_screen">ดูหน้าจอ</string>
     <string name="nm_dot_start_care">เริ่มการดูแล</string>
     <string name="nm_dot_action_unavailable">ฟังก์ชัน Dot นี้ยังไม่พร้อมใช้งาน</string>
+    <string name="nm_gateway_key_required">ต้องใช้คีย์เฉพาะโครงการ การตั้งค่าและโมเดลที่เลือกไว้จะคงอยู่ การตรวจสอบบริการจริงยังไม่เสร็จสิ้น</string>
+    <string name="nm_gateway_connection_failed">เชื่อมต่อไม่ได้ โปรดตรวจสอบคีย์โครงการและเครือข่าย</string>
 </resources>

@@ -683,6 +683,9 @@ const zhCN: Record<string, string> = {
   "Auto uses the API's function calling and falls back to describing tools in the prompt when the endpoint rejects them. Prompt: for endpoints that silently ignore tools.":
     "自动：使用 API 的函数调用，当端点拒绝时回退为在提示词中描述工具。提示词：用于会静默忽略工具的端点。",
   Test: "测试",
+  "Connect with project key": "用项目 key 连接",
+  "Use selected gateway model": "使用所选网关模型",
+  "Gateway connected; existing model selection kept": "网关已连接；保留已选模型",
   "Model saved": "模型已保存",
   "Replied \"{reply}\" in {ms} ms": "在 {ms} 毫秒内回复了“{reply}”",
   "Email connected": "邮件已连接",

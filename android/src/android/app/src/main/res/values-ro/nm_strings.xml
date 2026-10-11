@@ -1122,4 +1122,6 @@
     <string name="nm_dot_view_screen">Vezi ecranul</string>
     <string name="nm_dot_start_care">Începe sprijinul</string>
     <string name="nm_dot_action_unavailable">Această funcție Dot nu este încă disponibilă.</string>
+    <string name="nm_gateway_key_required">Este necesară o cheie dedicată proiectului. Setările și modelele selectate sunt păstrate. Validarea serviciului real este în așteptare.</string>
+    <string name="nm_gateway_connection_failed">Conectarea a eșuat. Verifică cheia proiectului și rețeaua.</string>
 </resources>

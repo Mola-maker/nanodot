@@ -248,7 +248,12 @@ final class ProviderConfigStore: ObservableObject {
     /// authoritative, replace the JSON-seeded config with its dump. Extracted
     /// verbatim from init's completion closure so degraded-load recovery can
     /// re-run the same adoption after protected data becomes available.
+    // nanoMuse: gateway onboarding waits for authoritative config adoption, including degraded-load recovery.
+    @Published private(set) var gatewayConfigLoaded = false
+
     private func adoptDB(_ db: ProviderConfigDB?) async {
+                // nanoMuse: an unreadable store remains unready; no gateway write may adopt its empty placeholder.
+                defer { gatewayConfigLoaded = loadDegradation == .none }
                 self.db = db
                 guard let db else { return }
                 // [T-thinking-rules-phase2] Prime the synchronous thinking-rule cache the
