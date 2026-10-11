@@ -98,6 +98,13 @@ jobs:
           export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/$NDK_VERSION"
           ./gradlew :app:testDebugUnitTest --tests 'io.github.nanomuse.*' --console=plain --no-daemon
 
+      # Compile every instrumentation source; runtime validation still requires a device.
+      - name: Compile instrumentation tests
+        working-directory: android/src/android
+        run: |
+          export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/$NDK_VERSION"
+          ./gradlew :app:compileDebugAndroidTestKotlin --console=plain --no-daemon
+
       - uses: actions/upload-artifact@v7
         with:
           name: Nanodot-debug-arm64
