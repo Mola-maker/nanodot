@@ -29,8 +29,11 @@
 首次 Worker 创建、SQLite 迁移、secret 与两个域名使用已登录 dashboard，在审查资源差异后执行。
 不能为了初始化创建持久宽权限 token。真实 namespace/version/domain ID 在创建后写入忽略的证据，不提前编造。
 
-后续 CI 的 GitHub `gateway-production` environment 必须先配置人工 required reviewers、禁止自己批准、
-部署分支仅 `main`，然后才存储 `CLOUDFLARE_API_TOKEN` secret 和 `CLOUDFLARE_ACCOUNT_ID` environment variable。
+后续 CI 必须先创建并核验受保护的 GitHub `gateway-production` environment，然后才存储 secret。
+required human reviewer 为 `Mola-maker`（GitHub 用户 ID `229602071`），设置
+`prevent_self_review=false`，使用自定义部署分支规则，仅允许 `main`。
+所有者明确允许发起人审批自己的部署；每次部署仍须由 Mola-maker 本人实际批准，代理不得代为提交审批。
+仅存储 `CLOUDFLARE_API_TOKEN` secret 和 `CLOUDFLARE_ACCOUNT_ID` environment variable。
 使用短期 account API token，仅对已存在的 `nanodot-gateway` 授予 **Editor**。CI 仅上传/激活版本，
 不创建 Worker、不改域名/路由、不迁移存储、不设置项目 secret、不部署操作服务。
 
