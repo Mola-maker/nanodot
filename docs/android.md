@@ -229,8 +229,9 @@ competing Care. Locking, hiding Dot or losing the service clears its windows and
 
 Real Hands runs, permitted remote shell/open/task calls, and accessibility action commands
 pause Care before acting. Overlapping operation owners keep it paused until every owner
-releases; their completion never automatically resumes Care. Existing permission and risk
-checks remain in place. Read-only accessibility node/screenshot requests need no action lease.
+releases; their completion never automatically resumes Care. A remote timeout or a cancelled
+UI status still waits for actual VM jobs and their cleanup to complete before releasing
+ownership. Existing permission and risk checks remain in place. Read-only accessibility node/screenshot requests need no action lease.
 
 The native fixture uses an inert public provider and a disposable test host. Native touch,
 copy, Back, TalkBack, light/dark, portrait/landscape and 100/150/200% font acceptance are

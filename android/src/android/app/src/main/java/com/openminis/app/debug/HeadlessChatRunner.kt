@@ -216,9 +216,8 @@ internal object HeadlessChatRunner {
         }
         for (att in attachments) vm.addAttachment(att)
         try { vm.sendMessage(text) } finally {
-            // nanoMuse: the VM can outlive the RPC timeout, including compact-then-send.
-            onOperationState?.invoke(io.github.nanomuse.dot.care.careOperationActivity(vm.isStreaming,vm.isCompacting,
-                vm.pendingCompactSend,vm.showCompactBeforeSendPrompt))
+            // nanoMuse: actual VM jobs outlive UI cancellation flags and the RPC wait.
+            onOperationState?.invoke(vm.careOperationBusy)
         }
         if (!wait) return@withContext PromptResult(status = "Running", responseText = null, timedOut = false)
 

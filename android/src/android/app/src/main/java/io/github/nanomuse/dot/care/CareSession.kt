@@ -4,12 +4,7 @@ import io.github.nanomuse.dot.screen.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.map
 
 /** Serial service owner; the controller owns evidence, this owner owns UI admission. */
 class CareSession(val controller: CareController, private val clearFocus: () -> Unit, private val stopSpeech: () -> Unit) {
@@ -85,20 +80,5 @@ class CareOperationOwners {
                 if (count == 0) listener?.invoke(false)
             }
         }
-    }
-}
-
-/** Called on Main immediately after send. Keep that real initial state and sample updates
- * after the current Main mutation batch, so prompt→compact→stream cannot expose a transient
- * empty combined tuple. The lifetime collector also lives on Main, independent of the RPC.
- */
-internal fun careOperationActivity(vararg states: StateFlow<Boolean>): Flow<Boolean> {
-    val initial = states.any { it.value }
-    return flow {
-        emit(initial)
-        emitAll(combine(states.toList()) { Unit }.map {
-            yield()
-            states.any { it.value }
-        })
     }
 }

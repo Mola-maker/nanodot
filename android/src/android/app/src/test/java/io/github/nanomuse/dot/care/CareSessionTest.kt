@@ -89,48 +89,51 @@ class CareSessionTest {
     @Test fun timedOutCallerDoesNotReleaseRunningRemoteWork() = runTest {
         val r=Rig(backgroundScope); val owners=CareOperationOwners(); owners.observe(r.session::automatic)
         r.controller.start("Find tea"); runCurrent()
-        val busy=kotlinx.coroutines.flow.MutableStateFlow(true)
+        val vm=CareJobLifetime(); val exit=CompletableDeferred<Unit>()
+        vm.launch(backgroundScope) { exit.await() }
         try {
             withTimeout(50) {
                 owners.acquire().use {
-                    owners.retainUntilIdle(backgroundScope,busy)
+                    owners.retainUntilIdle(backgroundScope,vm.busy)
                     delay(100)
                 }
             }
             fail("The remote wait must time out")
         } catch (_: TimeoutCancellationException) { }
         r.session.resume(); runCurrent(); assertEquals("A timed-out caller cannot release its live VM",1,r.captures)
-        busy.value=false; runCurrent()
+        exit.complete(Unit); runCurrent()
         assertEquals(CareState.Paused,r.controller.state.value.state)
         r.session.resume(); runCurrent(); assertEquals(2,r.captures)
     }
     @Test fun callerCancellationKeepsIndependentLiveOperationPaused() = runTest {
         val r=Rig(backgroundScope); val owners=CareOperationOwners(); owners.observe(r.session::automatic)
         r.controller.start("Find tea"); runCurrent()
-        val busy=kotlinx.coroutines.flow.MutableStateFlow(true)
+        val vm=CareJobLifetime(); val exit=CompletableDeferred<Unit>()
+        vm.launch(backgroundScope) { exit.await() }
         val caller=launch {
-            owners.acquire().use { owners.retainUntilIdle(backgroundScope,busy); awaitCancellation() }
+            owners.acquire().use { owners.retainUntilIdle(backgroundScope,vm.busy); awaitCancellation() }
         }
         runCurrent(); caller.cancelAndJoin()
         r.session.resume(); runCurrent(); assertEquals(1,r.captures)
-        busy.value=false; runCurrent(); assertEquals(CareState.Paused,r.controller.state.value.state)
+        exit.complete(Unit); runCurrent(); assertEquals(CareState.Paused,r.controller.state.value.state)
         r.session.resume(); runCurrent(); assertEquals(2,r.captures)
     }
     @Test fun compactConfirmationAndPendingSendRemainBusyAcrossStreamingTransitions() = runTest {
         val r=Rig(backgroundScope); val owners=CareOperationOwners(); owners.observe(r.session::automatic)
         r.controller.start("Find tea"); runCurrent()
-        val streaming=kotlinx.coroutines.flow.MutableStateFlow(false)
-        val compacting=kotlinx.coroutines.flow.MutableStateFlow(false)
-        val pending=kotlinx.coroutines.flow.MutableStateFlow(false)
-        val prompt=kotlinx.coroutines.flow.MutableStateFlow(true)
-        val busy=careOperationActivity(streaming,compacting,pending,prompt)
-        owners.retainUntilIdle(backgroundScope,busy); runCurrent()
+        val vm=CareJobLifetime(); val prompt=vm.acquire()
+        val compactExit=CompletableDeferred<Unit>(); val streamExit=CompletableDeferred<Unit>()
+        owners.retainUntilIdle(backgroundScope,vm.busy); runCurrent()
         r.session.resume(); runCurrent(); assertEquals(1,r.captures)
-        prompt.value=false; pending.value=true; compacting.value=true; runCurrent()
+        vm.launch(backgroundScope) {
+            vm.launch(backgroundScope) { compactExit.await() }.join()
+            vm.launch(backgroundScope) { streamExit.await() }
+        }
+        prompt.close(); runCurrent()
         r.session.resume(); runCurrent(); assertEquals(1,r.captures)
-        compacting.value=false; streaming.value=true; pending.value=false; runCurrent()
+        compactExit.complete(Unit); runCurrent()
         r.session.resume(); runCurrent(); assertEquals(1,r.captures)
-        streaming.value=false; runCurrent()
+        streamExit.complete(Unit); runCurrent()
         assertEquals(CareState.Paused,r.controller.state.value.state)
         r.session.resume(); runCurrent(); assertEquals(2,r.captures)
     }
@@ -143,6 +146,24 @@ class CareSessionTest {
         job.cancel(); runCurrent()
         assertEquals(CareState.Paused,r.controller.state.value.state)
         r.session.resume(); runCurrent(); assertEquals(2,r.captures)
+    }
+    @Test fun cancelledVmOwnerWithIdleUiCannotResumeCareUntilCleanupCompletes() = runTest {
+        val r=Rig(backgroundScope); val owners=CareOperationOwners(); owners.observe(r.session::automatic)
+        r.controller.start("Find tea"); runCurrent()
+        val vm=CareJobLifetime(); val cleanup=CompletableDeferred<Unit>()
+        val uiStreaming=kotlinx.coroutines.flow.MutableStateFlow(true)
+        val vmJob=vm.launch(backgroundScope) {
+            try { awaitCancellation() } finally { withContext(NonCancellable) { cleanup.await() } }
+        }
+        owners.acquire().use { owners.retainUntilIdle(backgroundScope,vm.busy) }
+        try {
+            runCurrent(); vmJob.cancel(); uiStreaming.value=false; runCurrent()
+            assertFalse(uiStreaming.value); assertFalse(vmJob.isActive); assertFalse(vmJob.isCompleted)
+            r.session.resume(); runCurrent(); assertEquals("Cancellation is not VM completion",1,r.captures)
+            cleanup.complete(Unit); runCurrent(); assertTrue(vmJob.isCompleted)
+            assertEquals(CareState.Paused,r.controller.state.value.state)
+            r.session.resume(); runCurrent(); assertEquals(2,r.captures)
+        } finally { cleanup.complete(Unit) }
     }
     @Test fun endAndDisconnectClearWindowsAndPendingEvidence() = runTest {
         val r=Rig(backgroundScope); r.controller.start("Find tea"); runCurrent(); r.session.end()
