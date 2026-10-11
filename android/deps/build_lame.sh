@@ -11,17 +11,22 @@ set -e
 #   ./build_lame.sh [clean]
 #
 # Output:
-#   deps/lame-build/lib/libmp3lame.a
-#   deps/lame-build/include/lame/lame.h
+# nanoMuse: SDK/architecture outputs, with iphoneos as the default.
+#   deps/lame-build/<SDK>/arm64/lib/libmp3lame.a
+#   deps/lame-build/<SDK>/arm64/include/lame/lame.h
 # ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LAME_VERSION="3.100"
 LAME_TARBALL="lame-${LAME_VERSION}.tar.gz"
 LAME_SRC_DIR="$SCRIPT_DIR/lame-${LAME_VERSION}"
-LAME_BUILD_DIR="$SCRIPT_DIR/lame-build"
-
-IOS_DEPLOYMENT_TARGET="14.0"
+# nanoMuse: validate SDK before tools/downloads; SDK and architecture are separate.
+IOS_TARGET_CONFIG="$(python3 "$SCRIPT_DIR/../../scripts/ios-native-target.py" \
+    "${IOS_SDK_PLATFORM-iphoneos}" --arch "${IOS_ARCH-arm64}")" || exit 1
+eval "$IOS_TARGET_CONFIG"
+IOS_DEPLOYMENT_TARGET="16.0"
+LAME_BUILD_DIR="$SCRIPT_DIR/lame-build/$IOS_OUTPUT_SUFFIX/$IOS_ARCH"
+LAME_WORK_DIR="$SCRIPT_DIR/build/lame/$IOS_OUTPUT_SUFFIX/$IOS_ARCH"
 
 # Colors for output
 RED='\033[0;31m'
@@ -38,7 +43,8 @@ log_error()   { echo -e "${RED}❌ $1${NC}"; exit 1; }
 # ============================================================================
 if [ "$1" == "clean" ]; then
     log_info "Cleaning LAME build artifacts..."
-    rm -rf "$LAME_SRC_DIR" "$LAME_BUILD_DIR"
+    # nanoMuse: clean only the selected SDK, retaining the shared source.
+    rm -rf "$LAME_WORK_DIR" "$LAME_BUILD_DIR"
     log_success "Clean completed"
     exit 0
 fi
@@ -65,16 +71,18 @@ fi
 # ============================================================================
 log_info "Configuring LAME for iOS arm64..."
 
-IOS_SDK=$(xcrun --sdk iphoneos --show-sdk-path)
-CC="$(xcrun --sdk iphoneos -f clang)"
+IOS_SDK=$(xcrun --sdk "$IOS_SDK_PLATFORM" --show-sdk-path)
+CC="$(xcrun --sdk "$IOS_SDK_PLATFORM" -f clang)"
 
 export CC
-export CFLAGS="-arch arm64 -miphoneos-version-min=$IOS_DEPLOYMENT_TARGET -isysroot $IOS_SDK -fembed-bitcode -Oz -fPIC -Wno-implicit-function-declaration"
-export LDFLAGS="-arch arm64 -miphoneos-version-min=$IOS_DEPLOYMENT_TARGET -isysroot $IOS_SDK"
+export CFLAGS="-arch $IOS_ARCH $IOS_MIN_FLAG -isysroot $IOS_SDK -fembed-bitcode -Oz -fPIC -Wno-implicit-function-declaration"
+export LDFLAGS="-arch $IOS_ARCH $IOS_MIN_FLAG -isysroot $IOS_SDK"
 
-cd "$LAME_SRC_DIR"
+# nanoMuse: keep configure/object state out of the shared source tree.
+mkdir -p "$LAME_WORK_DIR"
+cd "$LAME_WORK_DIR"
 
-./configure \
+"$LAME_SRC_DIR/configure" \
     --prefix="$LAME_BUILD_DIR" \
     --host=aarch64-apple-darwin \
     --disable-shared \

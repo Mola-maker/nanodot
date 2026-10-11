@@ -625,7 +625,7 @@
 		AA0838BF2F3B941A00049557 /* RootfsResetButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootfsResetButton.swift; sourceTree = "<group>"; };
 		AA0838CD2F3B941A00049557 /* StorageManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageManagementView.swift; sourceTree = "<group>"; };
 		AA0838D12F3B941A00049557 /* CurrentRoot.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CurrentRoot.m; sourceTree = "<group>"; };
-		AA0838D32F3B941A00049557 /* RootfsPatch.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = RootfsPatch.bundle; path = ../../deps/resources/RootfsPatch.bundle; sourceTree = SOURCE_ROOT; };
+		AA0838D32F3B941A00049557 /* RootfsPatch.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = RootfsPatch.bundle; /* nanoMuse: SDK-specific native resources. */ path = RootfsPatch.bundle; sourceTree = NANOMUSE_NATIVE_RESOURCES; };
 		AA0838D42F3B941A00049557 /* CurrentRoot.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CurrentRoot.h; sourceTree = "<group>"; };
 		AA0838FE2F3B941A00049557 /* MirrorSpeedTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirrorSpeedTestView.swift; sourceTree = "<group>"; };
 		AA26BD002F2E5F0A00AECF2D /* MinisApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MinisApp-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -699,13 +699,13 @@
 		AA71B0212F44BEB200A28A5E /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		AA8A568B2F6FBB7A00A3E54E /* MinisUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MinisUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AADDA9E02F6ECCF400B66649 /* ThumbnailCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailCache.swift; sourceTree = "<group>"; };
-		AAF00F002F50A00000049557 /* FFmpeg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FFmpeg.framework; path = ../../deps/frameworks/FFmpeg.framework; sourceTree = "<group>"; };
-		AAF10F002F50A00000049557 /* libavcodec.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libavcodec.framework; path = ../../deps/frameworks/libavcodec.framework; sourceTree = "<group>"; };
-		AAF10F042F50A00000049557 /* libavformat.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libavformat.framework; path = ../../deps/frameworks/libavformat.framework; sourceTree = "<group>"; };
-		AAF10F072F50A00000049557 /* libavutil.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libavutil.framework; path = ../../deps/frameworks/libavutil.framework; sourceTree = "<group>"; };
-		AAF10F0A2F50A00000049557 /* libavfilter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libavfilter.framework; path = ../../deps/frameworks/libavfilter.framework; sourceTree = "<group>"; };
-		AAF10F0D2F50A00000049557 /* libswresample.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libswresample.framework; path = ../../deps/frameworks/libswresample.framework; sourceTree = "<group>"; };
-		AAF10F102F50A00000049557 /* libswscale.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libswscale.framework; path = ../../deps/frameworks/libswscale.framework; sourceTree = "<group>"; };
+		AAF00F002F50A00000049557 /* FFmpeg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FFmpeg.framework; /* nanoMuse: SDK-specific native slice. */ path = FFmpeg.framework; sourceTree = NANOMUSE_NATIVE_FRAMEWORKS; };
+		AAF10F002F50A00000049557 /* libavcodec.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libavcodec.framework; /* nanoMuse: SDK-specific native slice. */ path = libavcodec.framework; sourceTree = NANOMUSE_NATIVE_FRAMEWORKS; };
+		AAF10F042F50A00000049557 /* libavformat.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libavformat.framework; /* nanoMuse: SDK-specific native slice. */ path = libavformat.framework; sourceTree = NANOMUSE_NATIVE_FRAMEWORKS; };
+		AAF10F072F50A00000049557 /* libavutil.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libavutil.framework; /* nanoMuse: SDK-specific native slice. */ path = libavutil.framework; sourceTree = NANOMUSE_NATIVE_FRAMEWORKS; };
+		AAF10F0A2F50A00000049557 /* libavfilter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libavfilter.framework; /* nanoMuse: SDK-specific native slice. */ path = libavfilter.framework; sourceTree = NANOMUSE_NATIVE_FRAMEWORKS; };
+		AAF10F0D2F50A00000049557 /* libswresample.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libswresample.framework; /* nanoMuse: SDK-specific native slice. */ path = libswresample.framework; sourceTree = NANOMUSE_NATIVE_FRAMEWORKS; };
+		AAF10F102F50A00000049557 /* libswscale.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libswscale.framework; /* nanoMuse: SDK-specific native slice. */ path = libswscale.framework; sourceTree = NANOMUSE_NATIVE_FRAMEWORKS; };
 		AC0000001 /* ProviderCustomization.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = ProviderCustomization.xcconfig; path = Configs/ProviderCustomization.xcconfig; sourceTree = "<group>"; };
 		AC0000201 /* ProviderCustomizationGenerated.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProviderCustomizationGenerated.swift; path = Generated/ProviderCustomizationGenerated.swift; sourceTree = "<group>"; };
 		B7E2CB0D0D63E6D6FDB45568 /* VoiceActivityDetector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoiceActivityDetector.swift; sourceTree = "<group>"; };
@@ -3244,11 +3244,12 @@
 					"$(inherited)",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
+				// nanoMuse: headers follow the selected native SDK/architecture.
 				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/../../deps/include",
-					"$(SRCROOT)/../../deps/include/ish",
+					"$(SRCROOT)/../../deps/include/$(NANOMUSE_NATIVE_PLATFORM)/$(NANOMUSE_NATIVE_ARCH)",
+					"$(SRCROOT)/../../deps/include/$(NANOMUSE_NATIVE_PLATFORM)/$(NANOMUSE_NATIVE_ARCH)/ish",
 					"$(SRCROOT)/NativeOffloads",
-					"$(SRCROOT)/../../deps/frameworks/FFmpeg.framework/Headers",
+					"$(NANOMUSE_NATIVE_FRAMEWORKS)/FFmpeg.framework/Headers",
 					"$(SRCROOT)/Vendor/cppjieba/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
@@ -3273,11 +3274,12 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				// nanoMuse: headers follow the selected native SDK/architecture.
 				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/../../deps/include",
-					"$(SRCROOT)/../../deps/include/ish",
+					"$(SRCROOT)/../../deps/include/$(NANOMUSE_NATIVE_PLATFORM)/$(NANOMUSE_NATIVE_ARCH)",
+					"$(SRCROOT)/../../deps/include/$(NANOMUSE_NATIVE_PLATFORM)/$(NANOMUSE_NATIVE_ARCH)/ish",
 					"$(SRCROOT)/NativeOffloads",
-					"$(SRCROOT)/../../deps/frameworks/FFmpeg.framework/Headers",
+					"$(NANOMUSE_NATIVE_FRAMEWORKS)/FFmpeg.framework/Headers",
 					"$(SRCROOT)/Vendor/cppjieba/include",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
@@ -3353,6 +3355,14 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				// nanoMuse: arm64 device and Simulator are distinct SDK slices.
+				NANOMUSE_NATIVE_PLATFORM = iphoneos;
+				"NANOMUSE_NATIVE_PLATFORM[sdk=iphoneos*]" = iphoneos;
+				"NANOMUSE_NATIVE_PLATFORM[sdk=iphonesimulator*]" = iphonesimulator;
+				NANOMUSE_NATIVE_ARCH = arm64;
+				NANOMUSE_NATIVE_FRAMEWORKS = "$(SRCROOT)/../../deps/frameworks/$(NANOMUSE_NATIVE_PLATFORM)/$(NANOMUSE_NATIVE_ARCH)";
+				NANOMUSE_NATIVE_RESOURCES = "$(SRCROOT)/../../deps/resources/$(NANOMUSE_NATIVE_PLATFORM)/$(NANOMUSE_NATIVE_ARCH)";
+				"ARCHS[sdk=iphonesimulator*]" = arm64;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -3415,6 +3425,14 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				// nanoMuse: arm64 device and Simulator are distinct SDK slices.
+				NANOMUSE_NATIVE_PLATFORM = iphoneos;
+				"NANOMUSE_NATIVE_PLATFORM[sdk=iphoneos*]" = iphoneos;
+				"NANOMUSE_NATIVE_PLATFORM[sdk=iphonesimulator*]" = iphonesimulator;
+				NANOMUSE_NATIVE_ARCH = arm64;
+				NANOMUSE_NATIVE_FRAMEWORKS = "$(SRCROOT)/../../deps/frameworks/$(NANOMUSE_NATIVE_PLATFORM)/$(NANOMUSE_NATIVE_ARCH)";
+				NANOMUSE_NATIVE_RESOURCES = "$(SRCROOT)/../../deps/resources/$(NANOMUSE_NATIVE_PLATFORM)/$(NANOMUSE_NATIVE_ARCH)";
+				"ARCHS[sdk=iphonesimulator*]" = arm64;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
@@ -3435,15 +3453,16 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
+					"$(NANOMUSE_NATIVE_FRAMEWORKS)", // nanoMuse: select SDK before legacy framework paths.
 					"$(SRCROOT)/../../build/frameworks",
-					"$(SRCROOT)/../../deps/frameworks",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
+				// nanoMuse: headers follow the selected native SDK/architecture.
 				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/../../deps/include",
-					"$(SRCROOT)/../../deps/include/ish",
+					"$(SRCROOT)/../../deps/include/$(NANOMUSE_NATIVE_PLATFORM)/$(NANOMUSE_NATIVE_ARCH)",
+					"$(SRCROOT)/../../deps/include/$(NANOMUSE_NATIVE_PLATFORM)/$(NANOMUSE_NATIVE_ARCH)/ish",
 					"$(SRCROOT)/NativeOffloads",
-					"$(SRCROOT)/../../deps/frameworks/FFmpeg.framework/Headers",
+					"$(NANOMUSE_NATIVE_FRAMEWORKS)/FFmpeg.framework/Headers",
 					"$(SRCROOT)/Vendor/cppjieba/include",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
@@ -3459,7 +3478,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../deps/libs";
+				// nanoMuse: choose the SDK slice even when both are arm64.
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../deps/libs/$(NANOMUSE_NATIVE_PLATFORM)/$(NANOMUSE_NATIVE_ARCH)";
 				MARKETING_VERSION = 1.0.1;
 				OTHER_LDFLAGS = (
 					"-lish_emu",
@@ -3490,15 +3510,16 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
+					"$(NANOMUSE_NATIVE_FRAMEWORKS)", // nanoMuse: select SDK before legacy framework paths.
 					"$(SRCROOT)/../../build/frameworks",
-					"$(SRCROOT)/../../deps/frameworks",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
+				// nanoMuse: headers follow the selected native SDK/architecture.
 				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/../../deps/include",
-					"$(SRCROOT)/../../deps/include/ish",
+					"$(SRCROOT)/../../deps/include/$(NANOMUSE_NATIVE_PLATFORM)/$(NANOMUSE_NATIVE_ARCH)",
+					"$(SRCROOT)/../../deps/include/$(NANOMUSE_NATIVE_PLATFORM)/$(NANOMUSE_NATIVE_ARCH)/ish",
 					"$(SRCROOT)/NativeOffloads",
-					"$(SRCROOT)/../../deps/frameworks/FFmpeg.framework/Headers",
+					"$(NANOMUSE_NATIVE_FRAMEWORKS)/FFmpeg.framework/Headers",
 					"$(SRCROOT)/Vendor/cppjieba/include",
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
@@ -3514,7 +3535,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../deps/libs";
+				// nanoMuse: choose the SDK slice even when both are arm64.
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../deps/libs/$(NANOMUSE_NATIVE_PLATFORM)/$(NANOMUSE_NATIVE_ARCH)";
 				MARKETING_VERSION = 1.0.1;
 				OTHER_LDFLAGS = (
 					"-lish_emu",

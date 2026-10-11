@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Added separate iOS 16 arm64 device and Simulator native dependencies and SDK caches, with unsigned Simulator build and device archive checks; real macOS and runtime acceptance remained pending.
+
 - Corrected gateway bootstrap instructions to require specific consent for temporary Hello World public URLs, confirmed closure before existing-Worker uploads and SQLite migration, and individual Worker Editor scopes with Dashboard domain connections.
 
 - Documented Mola-maker’s required human gateway deployment approval, permitted initiator review, and main-only deployment policy.

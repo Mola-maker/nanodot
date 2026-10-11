@@ -446,8 +446,21 @@ open src/ios/Minis.xcodeproj
 ```
 
 选 **Minis** scheme，在 *Signing & Capabilities* 里设好你的团队（项目里的 `DEVELOPMENT_TEAM`
-是空的），面向真机构建：原生库只有真机版本，所以模拟器链接不了；见 BUILDING.md 的故障
-排查一节。
+是空的）。原生脚本默认使用 `IOS_SDK_PLATFORM=iphoneos`。在 Apple Silicon Mac 上构建
+arm64 模拟器应用前，先生成单独的依赖 slice：
+
+```bash
+for script in build_lame build_ffmpeg build_ish; do
+  IOS_SDK_PLATFORM=iphonesimulator IOS_ARCH=arm64 bash "deps/$script.sh"
+done
+```
+
+LAME、FFmpeg 和 iSH 的最低部署版本为 iOS 16，输出分别位于
+`deps/{lame-build,frameworks,libs,include,resources}/<SDK>/arm64`，configure 和对象文件状态
+也按 SDK 隔离。Xcode 按 SDK 选择 framework、静态库、头文件和 RootfsPatch 资源；Rclone
+保留既有真机/模拟器 XCFramework。Alpine ARM64 客户机 rootfs 共用。`IOS_ARCH` 与 SDK
+身份独立，目前只接受 `arm64`；未提供 Intel 模拟器 slice。同为 arm64 的真机库不能作为
+模拟器库链接。
 
 聊天屏幕的一条规矩，从 0.1.38 的构建 9 学来的：**不要在 `AIChatView.body` 的修饰符链末尾
 再加任何东西。** 这个 body 是一个由大约六十个链式修饰符组成的表达式；它的 getter 把不断
@@ -555,11 +568,19 @@ gh secret set IOS_DIST_P12_PASSWORD -R nano-muse/nanoMuse < dist.p12.pass
 
 ### 能编译吗？ {#does-it-compile}
 
-*Actions → iOS · unsigned build → Run workflow*（`.github/workflows/ios-check.yml`）在 Mac runner
-上关闭签名，面向 iOS 真机生成 Release 归档：不要 Apple 账号，不要 secrets。独立的真机依赖
-缓存包含 runner 架构、Go 与 Xcode 版本、固定的 iSH 修订。产物包括未签名 `.xcarchive` 和
-device `.app` ZIP、校验文件及完整 `xcodebuild` 日志。安装前需要有效 Apple 签名及描述文件；
-它们不是 Simulator 应用或可安装 IPA，TestFlight 流程仍独立。`NanoMuse/` 下的文件只要报出
+*Actions → iOS · unsigned device and Simulator build → Run workflow*
+（`.github/workflows/ios-check.yml`）在 arm64 的 `macos-26` runner 上先构建 arm64 模拟器
+应用，再归档 Release 真机应用，关闭签名。每个 SDK 使用独立缓存，key 包含 SDK、架构、
+原生源码和补丁身份、固定的 iSH revision，以及含两套 SDK 的工具链版本。真机缓存命中
+不会跳过模拟器的缓存检查或构建。缓存和链接前，流程用 `vtool -show-build` 检查每个
+静态库对象和 framework 的平台是否为 `IOS` 或 `IOSSIMULATOR`。
+
+产物包括未签名的真机 `.xcarchive`、真机 `.app`、独立的 arm64 模拟器 `.app` ZIP、校验和
+及构建日志。真机安装需要有效 Apple 签名和描述文件，这些产物不是可安装 IPA。模拟器
+应用需要 Apple Silicon Mac 和已安装的 iOS Simulator runtime。TestFlight 流程仍独立。
+Linux 的惰性工具测试只验证命令选择；真实 Mac 原生构建、平台元数据、模拟器启动和真机
+归档验收需独立运行证据。模拟器 UI 测试不能验证真机 JIT 或硬件 codec。
+`NanoMuse/` 下的文件只要报出
 一个警告，这次运行就算失败
 （上游的文件不算），所以上面「零警告」的规矩是被检查的，不只是写在这里。
 

@@ -22,17 +22,27 @@ set -e
 #   ./build_ffmpeg.sh [clean]
 #
 # Output:
-#   deps/frameworks/FFmpeg.framework/
-#   deps/frameworks/lib{avcodec,avformat,avutil,avfilter,swresample,swscale}.framework/
+# nanoMuse: SDK/architecture outputs, with iphoneos as the default.
+#   deps/frameworks/<SDK>/arm64/FFmpeg.framework/
+#   deps/frameworks/<SDK>/arm64/lib{avcodec,avformat,avutil,avfilter,swresample,swscale}.framework/
 # ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FFMPEG_DIR="$SCRIPT_DIR/ffmpeg-6.1.2"
-BUILD_DIR="$FFMPEG_DIR/build-ios"
-FRAMEWORK_DIR="$SCRIPT_DIR/frameworks/FFmpeg.framework"
-FRAMEWORKS_BASE="$SCRIPT_DIR/frameworks"
-
-IOS_DEPLOYMENT_TARGET="14.0"
+# nanoMuse: validate SDK before tools/downloads; SDK and architecture are separate.
+IOS_TARGET_CONFIG="$(python3 "$SCRIPT_DIR/../../scripts/ios-native-target.py" \
+    "${IOS_SDK_PLATFORM-iphoneos}" --arch "${IOS_ARCH-arm64}")" || exit 1
+eval "$IOS_TARGET_CONFIG"
+IOS_DEPLOYMENT_TARGET="16.0"
+BUILD_DIR="$FFMPEG_DIR/build-$IOS_OUTPUT_SUFFIX-$IOS_ARCH"
+FRAMEWORKS_BASE="$SCRIPT_DIR/frameworks/$IOS_OUTPUT_SUFFIX/$IOS_ARCH"
+FRAMEWORK_DIR="$FRAMEWORKS_BASE/FFmpeg.framework"
+LAME_BUILD_DIR="$SCRIPT_DIR/lame-build/$IOS_OUTPUT_SUFFIX/$IOS_ARCH"
+if [ "$IOS_SDK_PLATFORM" = "iphoneos" ]; then
+    IOS_BUNDLE_PLATFORM="iPhoneOS"
+else
+    IOS_BUNDLE_PLATFORM="iPhoneSimulator"
+fi
 
 # Colors for output
 RED='\033[0;31m'
@@ -68,23 +78,8 @@ clean_build() {
     rm -rf "$FRAMEWORK_DIR"
     rm -rf "$FRAMEWORKS_BASE"/lib*.framework
 
-    # Revert main rename patch if applied
-    if [ -f "$FFMPEG_DIR/fftools/ffmpeg.c" ]; then
-        cd "$FFMPEG_DIR"
-        git checkout -- fftools/ffmpeg.c 2>/dev/null || true
-        cd "$SCRIPT_DIR"
-    fi
-
-    # Revert source patches from ffmpeg-patch/*.patch (reverse order)
-    shopt -s nullglob
-    local patches=("$SCRIPT_DIR/ffmpeg-patch"/*.patch)
-    shopt -u nullglob
-    for ((i=${#patches[@]}-1; i>=0; i--)); do
-        local p="${patches[$i]}"
-        if (cd "$FFMPEG_DIR" && patch -p1 -R --dry-run -s -f < "$p") >/dev/null 2>&1; then
-            (cd "$FFMPEG_DIR" && patch -p1 -R -s < "$p")
-        fi
-    done
+    # nanoMuse: source patches are shared/idempotent; cleaning one SDK must
+    # not modify the other SDK's source or output.
 
     log_success "Clean completed"
 }
@@ -194,20 +189,21 @@ apply_source_patches() {
 configure_ffmpeg() {
     log_info "Configuring FFmpeg for iOS arm64..."
 
-    IOS_SDK=$(xcrun --sdk iphoneos --show-sdk-path)
-    CC="$(xcrun --sdk iphoneos -f clang)"
+    IOS_SDK=$(xcrun --sdk "$IOS_SDK_PLATFORM" --show-sdk-path)
+    CC="$(xcrun --sdk "$IOS_SDK_PLATFORM" -f clang)"
 
     mkdir -p "$BUILD_DIR"
 
-    cd "$FFMPEG_DIR"
+    # nanoMuse: configure/object caches are isolated per SDK/architecture.
+    cd "$BUILD_DIR"
 
-    # Check for libmp3lame (built by build_lame.sh)
+    # nanoMuse: use only libmp3lame built for the same SDK and architecture.
     LAME_FLAGS=""
-    if [ -f "$SCRIPT_DIR/lame-build/lib/libmp3lame.a" ]; then
+    if [ -f "$LAME_BUILD_DIR/lib/libmp3lame.a" ]; then
         log_info "Found libmp3lame — enabling MP3 encoding"
         LAME_FLAGS="--enable-libmp3lame"
-        LAME_CFLAGS="-I$SCRIPT_DIR/lame-build/include"
-        LAME_LDFLAGS="-L$SCRIPT_DIR/lame-build/lib"
+        LAME_CFLAGS="-I$LAME_BUILD_DIR/include"
+        LAME_LDFLAGS="-L$LAME_BUILD_DIR/lib"
     else
         log_warning "libmp3lame not found — MP3 encoding will be unavailable"
         log_warning "Run ./build_lame.sh first to enable MP3 encoding"
@@ -215,15 +211,15 @@ configure_ffmpeg() {
         LAME_LDFLAGS=""
     fi
 
-    ./configure \
+    "$FFMPEG_DIR/configure" \
         --prefix="$BUILD_DIR/install" \
         --enable-cross-compile \
-        --arch=arm64 \
+        --arch="$IOS_ARCH" \
         --target-os=darwin \
         --cc="$CC" \
         --sysroot="$IOS_SDK" \
-        --extra-cflags="-arch arm64 -miphoneos-version-min=$IOS_DEPLOYMENT_TARGET -fembed-bitcode -DCONFIG_FFMPEG_MAIN=1 $LAME_CFLAGS" \
-        --extra-ldflags="-arch arm64 -miphoneos-version-min=$IOS_DEPLOYMENT_TARGET -isysroot $IOS_SDK $LAME_LDFLAGS" \
+        --extra-cflags="-arch $IOS_ARCH $IOS_MIN_FLAG -fembed-bitcode -DCONFIG_FFMPEG_MAIN=1 $LAME_CFLAGS" \
+        --extra-ldflags="-arch $IOS_ARCH $IOS_MIN_FLAG -isysroot $IOS_SDK $LAME_LDFLAGS" \
         --enable-pic \
         --enable-videotoolbox \
         --enable-hwaccel=h264_videotoolbox \
@@ -263,7 +259,7 @@ configure_ffmpeg() {
 build_ffmpeg() {
     log_info "Building FFmpeg..."
 
-    cd "$FFMPEG_DIR"
+    cd "$BUILD_DIR"
     make -j$(sysctl -n hw.ncpu)
     make install
     cd "$SCRIPT_DIR"
@@ -277,8 +273,8 @@ build_ffmpeg() {
 build_fftools() {
     log_info "Building fftools (ffmpeg_main)..."
 
-    IOS_SDK=$(xcrun --sdk iphoneos --show-sdk-path)
-    CC="$(xcrun --sdk iphoneos -f clang)"
+    IOS_SDK=$(xcrun --sdk "$IOS_SDK_PLATFORM" --show-sdk-path)
+    CC="$(xcrun --sdk "$IOS_SDK_PLATFORM" -f clang)"
     INSTALL_DIR="$BUILD_DIR/install"
 
     FFTOOLS_OBJ_DIR="$BUILD_DIR/fftools-objs"
@@ -307,9 +303,10 @@ build_fftools() {
         fftools/opt_common.c
     )
 
-    # Common CFLAGS: use the source tree for headers (has config.h, libav* headers, and libavdevice)
-    FFTOOLS_CFLAGS="-arch arm64 -miphoneos-version-min=$IOS_DEPLOYMENT_TARGET -isysroot $IOS_SDK"
-    FFTOOLS_CFLAGS="$FFTOOLS_CFLAGS -I$FFMPEG_DIR -I$INSTALL_DIR/include"
+    # nanoMuse: generated config headers come from the SDK-specific build tree;
+    # libav* and libavdevice headers still come from the shared source tree.
+    FFTOOLS_CFLAGS="-arch $IOS_ARCH $IOS_MIN_FLAG -isysroot $IOS_SDK"
+    FFTOOLS_CFLAGS="$FFTOOLS_CFLAGS -I$BUILD_DIR -I$FFMPEG_DIR -I$INSTALL_DIR/include"
     FFTOOLS_CFLAGS="$FFTOOLS_CFLAGS -DCONFIG_FFMPEG_MAIN=1 -Oz -fPIC"
     # Force-include the stdio redirect header so all fprintf/printf/fputs/vfprintf
     # calls in fftools are transparently intercepted without modifying ffmpeg source.
@@ -328,8 +325,8 @@ build_fftools() {
     # Compile the stdio redirect implementation WITHOUT the -include flag
     # to avoid recursive macro expansion.
     log_info "  Compiling fftools/fftools_stdio_redirect.c..."
-    REDIRECT_CFLAGS="-arch arm64 -miphoneos-version-min=$IOS_DEPLOYMENT_TARGET -isysroot $IOS_SDK"
-    REDIRECT_CFLAGS="$REDIRECT_CFLAGS -I$FFMPEG_DIR -I$INSTALL_DIR/include -Oz -fPIC"
+    REDIRECT_CFLAGS="-arch $IOS_ARCH $IOS_MIN_FLAG -isysroot $IOS_SDK"
+    REDIRECT_CFLAGS="$REDIRECT_CFLAGS -I$BUILD_DIR -I$FFMPEG_DIR -I$INSTALL_DIR/include -Oz -fPIC"
     $CC $REDIRECT_CFLAGS -c fftools/fftools_stdio_redirect.c -o "$FFTOOLS_OBJ_DIR/fftools_stdio_redirect.o"
     FFTOOLS_OBJS+=("$FFTOOLS_OBJ_DIR/fftools_stdio_redirect.o")
 
@@ -347,8 +344,8 @@ package_framework() {
     log_info "Packaging individual .framework bundles + FFmpeg.framework..."
 
     INSTALL_DIR="$BUILD_DIR/install"
-    IOS_SDK=$(xcrun --sdk iphoneos --show-sdk-path)
-    CC="$(xcrun --sdk iphoneos -f clang)"
+    IOS_SDK=$(xcrun --sdk "$IOS_SDK_PLATFORM" --show-sdk-path)
+    CC="$(xcrun --sdk "$IOS_SDK_PLATFORM" -f clang)"
 
     # Clean previous output
     rm -rf "$FRAMEWORK_DIR"
@@ -399,7 +396,7 @@ package_framework() {
             cp -R "$INSTALL_DIR/include/$FW_NAME/"* "$FW_DIR/Headers/"
         fi
 
-        # Create Info.plist
+        # nanoMuse: declare the selected SDK platform and iOS 16 minimum.
         cat > "$FW_DIR/Info.plist" << PLISTEOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -422,10 +419,10 @@ package_framework() {
     <key>CFBundleVersion</key>
     <string>6.1.2</string>
     <key>MinimumOSVersion</key>
-    <string>14.0</string>
+    <string>$IOS_DEPLOYMENT_TARGET</string>
     <key>CFBundleSupportedPlatforms</key>
     <array>
-        <string>iPhoneOS</string>
+        <string>$IOS_BUNDLE_PLATFORM</string>
     </array>
 </dict>
 </plist>
@@ -447,8 +444,8 @@ PLISTEOF
 
     # Link fftools static archive into the umbrella dylib
     # -force_load ensures all symbols (including ffmpeg_main) are included
-    $CC -arch arm64 \
-        -miphoneos-version-min=$IOS_DEPLOYMENT_TARGET \
+    $CC -arch $IOS_ARCH \
+        $IOS_MIN_FLAG \
         -isysroot "$IOS_SDK" \
         -dynamiclib \
         -install_name @rpath/FFmpeg.framework/FFmpeg \
@@ -520,8 +517,8 @@ void ffmpeg_reset_statics(void);
 #endif /* FFMPEG_FRAMEWORK_H */
 EOF
 
-    # Create Info.plist
-    cat > "$FRAMEWORK_DIR/Info.plist" << 'EOF'
+    # nanoMuse: declare the selected SDK platform and iOS 16 minimum.
+    cat > "$FRAMEWORK_DIR/Info.plist" << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -543,10 +540,10 @@ EOF
     <key>CFBundleVersion</key>
     <string>6.1.2</string>
     <key>MinimumOSVersion</key>
-    <string>14.0</string>
+    <string>$IOS_DEPLOYMENT_TARGET</string>
     <key>CFBundleSupportedPlatforms</key>
     <array>
-        <string>iPhoneOS</string>
+        <string>$IOS_BUNDLE_PLATFORM</string>
     </array>
 </dict>
 </plist>

@@ -534,8 +534,22 @@ open src/ios/Minis.xcodeproj
 ```
 
 Pick the **Minis** scheme, set your team under *Signing & Capabilities* (the project ships with an
-empty `DEVELOPMENT_TEAM`), build for a device: the native libraries are device-only, so the
-simulator does not link; see the troubleshooting section of BUILDING.md.
+empty `DEVELOPMENT_TEAM`). The native scripts default to `IOS_SDK_PLATFORM=iphoneos`.
+For an arm64 Simulator build on an Apple Silicon Mac, build the separate slices first:
+
+```bash
+for script in build_lame build_ffmpeg build_ish; do
+  IOS_SDK_PLATFORM=iphonesimulator IOS_ARCH=arm64 bash "deps/$script.sh"
+done
+```
+
+LAME, FFmpeg and iSH use iOS 16 minimum deployment flags and isolate their outputs under
+`deps/{lame-build,frameworks,libs,include,resources}/<SDK>/arm64`. Their configure/object
+state is also separate per SDK. Xcode selects native frameworks, libraries, headers and
+RootfsPatch resources by SDK; Rclone keeps its existing device/Simulator XCFramework.
+The Alpine ARM64 guest rootfs is shared. `IOS_ARCH` is separate from SDK identity and
+currently accepts only `arm64`; Intel Simulator slices are not provided. An arm64 device
+library cannot link as a Simulator library.
 
 One rule of the chat screen, learnt from build 9 of 0.1.38: **nothing new goes on the end of
 `AIChatView.body`'s modifier chain.** The body is one expression of some sixty chained
@@ -657,12 +671,21 @@ certificate); the lane makes them again if they are missing.
 
 ### Does it compile?
 
-*Actions → iOS · unsigned build → Run workflow* (`.github/workflows/ios-check.yml`) archives a
-Release device build on a Mac runner with signing turned off: no Apple account, no secrets.
-Its device-dependency cache includes the runner architecture, Go version, Xcode version and
-pinned iSH revision. The artifacts include the unsigned `.xcarchive` and device `.app` ZIPs,
-checksums and full `xcodebuild` log. They need valid Apple signing and provisioning before
-installation; they are not Simulator apps or installable IPAs. TestFlight remains separate.
+*Actions → iOS · unsigned device and Simulator build → Run workflow*
+(`.github/workflows/ios-check.yml`) builds the arm64 Simulator app and then archives a
+Release device build on the arm64 `macos-26` runner, with signing turned off. Each SDK
+has an independent cache keyed by SDK, architecture, native source/patch identity, pinned
+iSH revision and toolchain versions, including both SDKs. A device cache hit never skips
+the Simulator cache/build step. Before caching or linking, the workflow checks every
+static-library object and framework with `vtool -show-build` for `IOS` or `IOSSIMULATOR`.
+
+Artifacts include the unsigned device `.xcarchive`, device `.app`, separate arm64
+Simulator `.app` ZIPs, checksums and build logs. Device installation requires valid Apple
+signing and provisioning; these artifacts are not installable IPAs. The Simulator app
+requires an Apple Silicon Mac and an installed iOS Simulator runtime. TestFlight remains
+separate. Linux inert-tool tests verify command selection only; actual Mac native builds,
+platform metadata, Simulator startup and device archive acceptance require their own run
+evidence. Simulator UI testing does not validate device JIT or hardware codecs.
 The run fails
 when a warning is reported in a file under `NanoMuse/` (upstream's files are not held to this),
 so the zero-warnings rule above is checked, not just asked for.

@@ -1,7 +1,7 @@
-name: iOS · unsigned build
+name: iOS · unsigned device and Simulator build
 
 # Build artifacts only: no Apple credentials, provisioning profiles, export IPA,
-# TestFlight upload, or GitHub release. Native libraries currently support devices.
+# TestFlight upload, or GitHub release. Device and Simulator slices stay separate.
 on:
   workflow_dispatch:
 
@@ -14,9 +14,9 @@ permissions:
 
 jobs:
   build:
-    name: Release archive (unsigned iOS device)
+    name: arm64 Simulator build and unsigned device archive
     runs-on: macos-26
-    timeout-minutes: 150
+    timeout-minutes: 240
     env:
       GO_VERSION: "1.26"
       GOTOOLCHAIN: auto
@@ -47,62 +47,177 @@ jobs:
       - name: Native cache identity and toolchain evidence
         id: native
         run: |
+          set -euo pipefail
           mkdir -p android/src/ios/build/unsigned
+          # macos-26 is an arm64 standard runner. The existing Rclone and iSH
+          # host slices are arm64; an Intel host cannot run this Simulator app.
+          test "$(uname -m)" = arm64
           echo "ish=$(git rev-parse HEAD:android/deps/ish)" >> "$GITHUB_OUTPUT"
-          echo "xcode=$(xcodebuild -version | shasum -a 256 | cut -c1-12)" >> "$GITHUB_OUTPUT"
+          {
+            xcodebuild -version
+            for sdk in iphoneos iphonesimulator; do
+              echo "SDK=$sdk ARCH=arm64"
+              xcrun --sdk "$sdk" --show-sdk-version
+              xcrun --sdk "$sdk" clang --version
+            done
+            go version
+            meson --version
+            ninja --version
+            uname -m
+          } | tee android/src/ios/build/unsigned/toolchains.log
+          echo "tools=$(shasum -a 256 android/src/ios/build/unsigned/toolchains.log | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
           {
             git rev-parse HEAD
             git submodule status --recursive
-            xcodebuild -version
-            xcrun --sdk iphoneos --show-sdk-version
-            go version
-            uname -m
-          } | tee android/src/ios/build/unsigned/toolchains.log
+          } | tee android/src/ios/build/unsigned/sources.log
 
-      - name: Native dependency cache
-        id: deps-cache
+      - name: Device native dependency cache
+        id: device-cache
         uses: actions/cache/restore@v6
         with:
           path: |
-            android/deps/libs
-            android/deps/include
-            android/deps/resources
-            android/deps/frameworks
-            android/deps/lame-build
-          # Device-only outputs must not collide with a Simulator or old Xcode cache.
-          key: ios-device-deps-v2-${{ runner.os }}-${{ runner.arch }}-${{ env.GO_VERSION }}-${{ steps.native.outputs.xcode }}-${{ steps.native.outputs.ish }}-${{ hashFiles('android/deps/*.sh', 'android/deps/ffmpeg-patch/**', 'android/deps/rclone-mobile/**') }}
+            android/deps/libs/iphoneos/arm64
+            android/deps/include/iphoneos/arm64
+            android/deps/resources/iphoneos/arm64
+            android/deps/frameworks/iphoneos/arm64
+            android/deps/lame-build/iphoneos/arm64
+            android/deps/resources/alpine-rootfs
+            android/deps/resources/alpine-rootfs.zip
+            android/deps/frameworks/Rclone.xcframework
+          key: ios-native-v3-iphoneos-arm64-${{ runner.os }}-${{ runner.arch }}-${{ env.GO_VERSION }}-${{ steps.native.outputs.tools }}-${{ steps.native.outputs.ish }}-${{ hashFiles('scripts/ios-native-target.py', 'android/deps/*.sh', 'android/deps/ffmpeg-patch/**', 'android/deps/rclone-mobile/**') }}
 
-      - name: Native dependencies (LAME → FFmpeg → iSH → Alpine rootfs → rclone)
-        if: steps.deps-cache.outputs.cache-hit != 'true'
+      - name: Simulator native dependency cache
+        id: simulator-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            android/deps/libs/iphonesimulator/arm64
+            android/deps/include/iphonesimulator/arm64
+            android/deps/resources/iphonesimulator/arm64
+            android/deps/frameworks/iphonesimulator/arm64
+            android/deps/lame-build/iphonesimulator/arm64
+          key: ios-native-v3-iphonesimulator-arm64-${{ runner.os }}-${{ runner.arch }}-${{ env.GO_VERSION }}-${{ steps.native.outputs.tools }}-${{ steps.native.outputs.ish }}-${{ hashFiles('scripts/ios-native-target.py', 'android/deps/*.sh', 'android/deps/ffmpeg-patch/**', 'android/deps/rclone-mobile/**') }}
+
+      - name: Device natives and shared ARM64 guest rootfs / dual-SDK Rclone
+        if: steps.device-cache.outputs.cache-hit != 'true'
         working-directory: android
+        env:
+          IOS_SDK_PLATFORM: iphoneos
+          IOS_ARCH: arm64
         run: |
           set -euo pipefail
           for script in build_lame build_ffmpeg build_ish prepare_alpine_rootfs build_rclone_ios; do
-            bash "deps/$script.sh" 2>&1 | tee "src/ios/build/unsigned/$script.log"
+            bash "deps/$script.sh" 2>&1 | tee "src/ios/build/unsigned/iphoneos-$script.log"
           done
 
-      - name: Check required native outputs
+      - name: Simulator natives (LAME → FFmpeg → iSH)
+        if: steps.simulator-cache.outputs.cache-hit != 'true'
+        working-directory: android
+        env:
+          IOS_SDK_PLATFORM: iphonesimulator
+          IOS_ARCH: arm64
         run: |
-          test -s android/deps/libs/libish.a
-          test -s android/deps/libs/libish_emu.a
-          test -s android/deps/libs/libfakefs.a
-          test -d android/deps/resources/alpine-rootfs
-          test -d android/deps/frameworks/FFmpeg.framework
-          test -d android/deps/frameworks/Rclone.xcframework
+          set -euo pipefail
+          for script in build_lame build_ffmpeg build_ish; do
+            bash "deps/$script.sh" 2>&1 | tee "src/ios/build/unsigned/iphonesimulator-$script.log"
+          done
 
-      # Save after native validation, before Xcode: a Swift failure must not
-      # discard an hour of successfully built native dependencies.
-      - name: Save completed native dependencies
-        if: steps.deps-cache.outputs.cache-hit != 'true'
+      - name: Validate every native Mach-O slice before caching or linking
+        run: |
+          set -euo pipefail
+          evidence="$PWD/android/src/ios/build/unsigned/native-platforms.log"
+          verify_macho() {
+            local binary="$1" expected="$2" metadata arches
+            test -s "$binary"
+            arches=$(lipo -archs "$binary")
+            test "$arches" = arm64
+            metadata=$(xcrun vtool -show-build "$binary")
+            printf '%s\n%s\n' "$binary" "$metadata" | tee -a "$evidence"
+            # Require LC_BUILD_VERSION's SDK identity, not just CPU identity.
+            grep -Eq "platform[[:space:]]+$expected$" <<< "$metadata"
+            test "$(grep -Ec 'platform[[:space:]]+' <<< "$metadata")" -eq 1
+          }
+          verify_archive() {
+            local archive="$1" expected="$2" absolute scratch member
+            test -s "$archive"
+            absolute="$PWD/$archive"
+            scratch=$(mktemp -d)
+            # Reject duplicate member names so extraction cannot silently skip
+            # an overwritten object with a different platform.
+            ar -t "$absolute" | awk '$0 != "__.SYMDEF" && $0 != "__.SYMDEF SORTED" && $0 != "/" && $0 != "//"' > "$scratch/members.txt"
+            test -s "$scratch/members.txt"
+            test -z "$(sort "$scratch/members.txt" | uniq -d)"
+            (cd "$scratch" && ar -x "$absolute")
+            while IFS= read -r member; do
+              verify_macho "$scratch/$member" "$expected"
+            done < "$scratch/members.txt"
+            rm -rf "$scratch"
+          }
+          for sdk in iphoneos iphonesimulator; do
+            platform=IOS
+            test "$sdk" != iphonesimulator || platform=IOSSIMULATOR
+            for lib in ish ish_emu fakefs; do
+              verify_archive "android/deps/libs/$sdk/arm64/lib$lib.a" "$platform"
+            done
+            verify_archive "android/deps/lame-build/$sdk/arm64/lib/libmp3lame.a" "$platform"
+            for lib in FFmpeg libavcodec libavformat libavutil libavfilter libswresample libswscale; do
+              verify_macho "$PWD/android/deps/frameworks/$sdk/arm64/$lib.framework/$lib" "$platform"
+            done
+            test -d "android/deps/resources/$sdk/arm64/RootfsPatch.bundle"
+          done
+          verify_archive android/deps/frameworks/Rclone.xcframework/ios-arm64/librclone.a IOS
+          verify_archive android/deps/frameworks/Rclone.xcframework/ios-arm64-simulator/librclone.a IOSSIMULATOR
+          test -d android/deps/resources/alpine-rootfs
+          test -s android/deps/resources/alpine-rootfs.zip
+
+      # Cache each SDK only after BOTH sets pass platform validation. A device
+      # cache hit does not bypass the independent Simulator build/cache check.
+      - name: Save completed device dependencies
+        if: steps.device-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
           path: |
-            android/deps/libs
-            android/deps/include
-            android/deps/resources
-            android/deps/frameworks
-            android/deps/lame-build
-          key: ${{ steps.deps-cache.outputs.cache-primary-key }}
+            android/deps/libs/iphoneos/arm64
+            android/deps/include/iphoneos/arm64
+            android/deps/resources/iphoneos/arm64
+            android/deps/frameworks/iphoneos/arm64
+            android/deps/lame-build/iphoneos/arm64
+            android/deps/resources/alpine-rootfs
+            android/deps/resources/alpine-rootfs.zip
+            android/deps/frameworks/Rclone.xcframework
+          key: ${{ steps.device-cache.outputs.cache-primary-key }}
+
+      - name: Save completed Simulator dependencies
+        if: steps.simulator-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            android/deps/libs/iphonesimulator/arm64
+            android/deps/include/iphonesimulator/arm64
+            android/deps/resources/iphonesimulator/arm64
+            android/deps/frameworks/iphonesimulator/arm64
+            android/deps/lame-build/iphonesimulator/arm64
+          key: ${{ steps.simulator-cache.outputs.cache-primary-key }}
+
+      - name: Build an unsigned arm64 Simulator app
+        working-directory: android/src/ios
+        run: |
+          set -euo pipefail
+          xcodebuild build \
+            -project Minis.xcodeproj -scheme Minis -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$PWD/build/SimulatorDerivedData" \
+            -resultBundlePath "$PWD/build/unsigned/Simulator.xcresult" \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= DEVELOPMENT_TEAM= \
+            -skipPackagePluginValidation -skipMacroValidation \
+            2>&1 | tee build/unsigned/simulator-xcodebuild.log
+          app="$PWD/build/SimulatorDerivedData/Build/Products/Debug-iphonesimulator/Minis.app"
+          executable=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Info.plist")
+          test "$(lipo -archs "$app/$executable")" = arm64
+          xcrun vtool -show-build "$app/$executable" | tee build/unsigned/simulator-binary-metadata.log
+          grep -Eq 'platform[[:space:]]+IOSSIMULATOR$' build/unsigned/simulator-binary-metadata.log
+          ditto -c -k --sequesterRsrc --keepParent "$app" build/unsigned/Nanodot-simulator-unsigned.app.zip
 
       - name: Archive for a device, unsigned
         working-directory: android/src/ios
@@ -156,19 +271,22 @@ jobs:
 
           Nanodot-unsigned.xcarchive.zip contains the Release archive and dSYMs.
           Nanodot-device-unsigned.app.zip contains the same unsigned device .app.
-          These are not Simulator builds or installable IPAs. To install on an
+          Nanodot-simulator-unsigned.app.zip is a separate arm64 Simulator .app;
+          run it on an Apple Silicon Mac with an installed iOS Simulator runtime.
+          A successful Simulator link does not validate device JIT or hardware codecs.
+          The device artifacts are not installable IPAs. To install on an
           iPhone, a developer must sign the app and its extensions using their
           own valid Apple certificate and matching provisioning profiles, or
           rebuild this source with their signing configuration in Xcode.
           This workflow does not export an IPA, upload to TestFlight, or publish.
           EOF
           cd build/unsigned
-          shasum -a 256 Nanodot-unsigned.xcarchive.zip Nanodot-device-unsigned.app.zip > SHA256SUMS
+          shasum -a 256 Nanodot-unsigned.xcarchive.zip Nanodot-device-unsigned.app.zip Nanodot-simulator-unsigned.app.zip > SHA256SUMS
 
       - uses: actions/upload-artifact@v7
         if: success()
         with:
-          name: nanodot-ios-device-unsigned-${{ github.run_number }}
+          name: nanodot-ios-unsigned-${{ github.run_number }}
           path: |
             android/src/ios/build/unsigned/*.zip
             android/src/ios/build/unsigned/README.txt
@@ -184,5 +302,6 @@ jobs:
             android/src/ios/build/unsigned/*.log
             android/src/ios/build/unsigned/*warnings.txt
             android/src/ios/build/unsigned/Archive.xcresult
+            android/src/ios/build/unsigned/Simulator.xcresult
           retention-days: 14
           if-no-files-found: warn

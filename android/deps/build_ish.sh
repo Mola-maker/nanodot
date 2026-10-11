@@ -21,21 +21,25 @@ set -e
 #   ./build_ish.sh [clean|debug|release]
 #
 # Output:
-#   deps/libs/      - Static libraries (.a files)
-#   deps/include/   - Header files
-#   deps/resources/ - VDSO and other resources
+# nanoMuse: SDK/architecture outputs; build state lives in deps/build/ish/.
+#   deps/libs/<SDK>/arm64/      - Static libraries (.a files)
+#   deps/include/<SDK>/arm64/   - Header files
+#   deps/resources/<SDK>/arm64/ - VDSO and other resources
 # ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ISH_DIR="$SCRIPT_DIR/ish"
-OUTPUT_LIBS="$SCRIPT_DIR/libs"
-OUTPUT_INCLUDE="$SCRIPT_DIR/include"
-OUTPUT_RESOURCES="$SCRIPT_DIR/resources"
+# nanoMuse: validate SDK before tools/downloads; SDK and architecture are separate.
+IOS_TARGET_CONFIG="$(python3 "$SCRIPT_DIR/../../scripts/ios-native-target.py" \
+    "${IOS_SDK_PLATFORM-iphoneos}" --arch "${IOS_ARCH-arm64}")" || exit 1
+eval "$IOS_TARGET_CONFIG"
+IOS_DEPLOYMENT_TARGET="16.0"
+OUTPUT_LIBS="$SCRIPT_DIR/libs/$IOS_OUTPUT_SUFFIX/$IOS_ARCH"
+OUTPUT_INCLUDE="$SCRIPT_DIR/include/$IOS_OUTPUT_SUFFIX/$IOS_ARCH"
+OUTPUT_RESOURCES="$SCRIPT_DIR/resources/$IOS_OUTPUT_SUFFIX/$IOS_ARCH"
 
 # Build configuration
 BUILD_TYPE="${1:-release}"
-ARCHS="arm64"
-IOS_DEPLOYMENT_TARGET="14.0"
 
 # Colors for output
 RED='\033[0;31m'
@@ -130,7 +134,7 @@ init_submodules() {
 clean_build() {
     log_info "Cleaning build artifacts..."
 
-    rm -rf "$ISH_DIR/build-ios"
+    rm -rf "$SCRIPT_DIR/build/ish/$IOS_OUTPUT_SUFFIX/$IOS_ARCH"
     rm -rf "$OUTPUT_LIBS"
     rm -rf "$OUTPUT_INCLUDE"
     rm -rf "$OUTPUT_RESOURCES"
@@ -144,18 +148,19 @@ clean_build() {
 setup_cross_compile() {
     log_info "Setting up iOS cross-compilation..."
 
-    BUILD_DIR="$ISH_DIR/build-ios"
+    BUILD_DIR="$SCRIPT_DIR/build/ish/$IOS_OUTPUT_SUFFIX/$IOS_ARCH"
     mkdir -p "$BUILD_DIR"
 
-    # Get iOS SDK path
-    IOS_SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+    # nanoMuse: select the requested SDK compiler/sysroot, including Simulator.
+    IOS_SDK=$(xcrun --sdk "$IOS_SDK_PLATFORM" --show-sdk-path)
+    IOS_CC=$(xcrun --sdk "$IOS_SDK_PLATFORM" -f clang)
 
     # Create cross-compilation file for meson
     CROSS_FILE="$BUILD_DIR/ios-cross.txt"
 
     cat > "$CROSS_FILE" << EOF
 [binaries]
-c = ['clang', '-arch', 'arm64', '-isysroot', '$IOS_SDK', '-miphoneos-version-min=$IOS_DEPLOYMENT_TARGET']
+c = ['$IOS_CC', '-arch', '$IOS_ARCH', '-isysroot', '$IOS_SDK', '$IOS_MIN_FLAG']
 ar = 'ar'
 strip = 'strip'
 pkg-config = 'false'
@@ -185,7 +190,7 @@ EOF
 build_ish() {
     log_info "Building iSH libraries for iOS ($BUILD_TYPE)..."
 
-    BUILD_DIR="$ISH_DIR/build-ios"
+    BUILD_DIR="$SCRIPT_DIR/build/ish/$IOS_OUTPUT_SUFFIX/$IOS_ARCH"
     CROSS_FILE="$BUILD_DIR/ios-cross.txt"
 
     cd "$ISH_DIR"
@@ -245,7 +250,7 @@ build_ish() {
 copy_outputs() {
     log_info "Copying output files..."
 
-    BUILD_DIR="$ISH_DIR/build-ios"
+    BUILD_DIR="$SCRIPT_DIR/build/ish/$IOS_OUTPUT_SUFFIX/$IOS_ARCH"
 
     # Create output directories
     mkdir -p "$OUTPUT_LIBS"
