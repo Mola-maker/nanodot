@@ -57,14 +57,14 @@ describe('private authentication', () => {
     }
   });
 
-  it('returns unavailable for authenticated inference without spending quota', async () => {
+  it('returns unavailable for unverified Chinese speech without spending quota', async () => {
     const { keys, secret } = await credentials();
     const bindings = gatewayEnv(secret);
     const idFromName = vi.fn(() => { throw new Error('Unavailable routes cannot spend quota'); });
     bindings.FREE_GATE = { idFromName, get: idFromName } as unknown as GatewayEnv['FREE_GATE'];
     const response = await dispatch(request(keys[0], 'https://example.com/v1/audio/speech'), bindings);
     expect(response.status).toBe(503);
-    expect(await response.json()).toMatchObject({ error: { code: 'inference_unavailable' } });
+    expect(await response.json()).toMatchObject({ error: { code: 'tts_unverified' } });
     expect(idFromName).not.toHaveBeenCalled();
   });
 

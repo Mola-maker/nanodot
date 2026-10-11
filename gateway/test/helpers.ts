@@ -28,3 +28,11 @@ export function request(key?: string, url = 'https://example.com/v1/chat/complet
 export function dispatch(req: Request, bindings: GatewayEnv) {
   return handle(req, bindings, createExecutionContext());
 }
+
+export function wav(seconds = 1, sampleRate = 16000): Uint8Array {
+  const data = new Uint8Array(44 + seconds * sampleRate * 2), v = new DataView(data.buffer);
+  for (const [offset, value] of [[0,'RIFF'],[8,'WAVE'],[12,'fmt '],[36,'data']] as const) data.set(new TextEncoder().encode(value),offset);
+  v.setUint32(4,data.length-8,true); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,sampleRate,true); v.setUint32(28,sampleRate*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); v.setUint32(40,data.length-44,true);
+  return data;
+}

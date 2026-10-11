@@ -11,6 +11,13 @@ import com.openminis.app.R
 import com.openminis.app.logging.AppLogger
 import com.openminis.app.provider.voice.VoiceOutputRequest
 import com.openminis.app.provider.voice.VoiceProviderFactory
+// nanoMuse: per-utterance cancellation leaves the queue worker available.
+import io.github.nanomuse.dot.gateway.VoiceGeneration
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.ensureActive
+import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -69,6 +76,9 @@ class ReadAloudPlayer(context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val queue = Channel<String>(Channel.UNLIMITED)
     private var worker: Job? = null
+    // nanoMuse: stop/pause cancel active synthesis and invalidate late callbacks.
+    private var utteranceJob: Job? = null
+    private val generation = VoiceGeneration()
 
     /** Currently playing provider audio, if any — held so [stop] can cancel it. */
     private var player: MediaPlayer? = null
@@ -141,16 +151,30 @@ class ReadAloudPlayer(context: Context) {
         // live speaking flag into the global state the capsule renders from.
         VoiceOutputState.init(appContext)
         VoiceOutputState.registerPlayer(this)
-        worker = scope.launch {
-            for (text in queue) {
-                runCatching { speakOne(text) }
-                    .onFailure { AppLogger.error(TAG, "utterance failed: $it") }
-                // Queue drained → speech is over. Counter rather than
-                // Channel.isEmpty, which is experimental API.
-                if (pending.decrementAndGet() <= 0) {
-                    _isSpeaking.value = false
-                    if (ownsCapsule()) VoiceOutputState.isSpeaking.value = false
+        // nanoMuse: queue lifetime is separate from cancellable utterance lifetime.
+        worker = scope.launch { consumeQueue() }
+    }
+
+    private suspend fun consumeQueue() {
+        for (text in queue) {
+            // nanoMuse: child cancellation cannot destroy the persistent queue worker.
+            val ticket = generation.ticket()
+            coroutineScope {
+                val utterance = launch(start = CoroutineStart.LAZY) {
+                    try { speakOne(text, ticket) }
+                    catch (cancelled: CancellationException) { throw cancelled }
+                    catch (failure: Exception) { AppLogger.error(TAG, "utterance failed: $failure") }
                 }
+                utteranceJob = utterance
+                utterance.start()
+                try { utterance.join() } finally {
+                    if (utteranceJob === utterance) utteranceJob = null
+                }
+            }
+            // nanoMuse: a stopped generation cannot decrement a newer queue's count.
+            if (generation.isCurrent(ticket) && pending.decrementAndGet() <= 0) {
+                _isSpeaking.value = false
+                if (ownsCapsule()) VoiceOutputState.isSpeaking.value = false
             }
         }
     }
@@ -249,6 +273,9 @@ class ReadAloudPlayer(context: Context) {
     fun suspendForCapture() {
         if (capturePaused) return
         capturePaused = true
+        // nanoMuse: pause cancels current synthesis; held queue remains resumable.
+        generation.invalidate()
+        utteranceJob?.cancel()
         // Drain into the holding list rather than onto the floor.
         val held = mutableListOf<String>()
         while (true) {
@@ -289,6 +316,9 @@ class ReadAloudPlayer(context: Context) {
 
     /** Stop playback and drop everything pending. */
     fun stop() {
+        // nanoMuse: cancellation reaches OkHttp and invalidates noncooperative late audio.
+        generation.invalidate()
+        utteranceJob?.cancel()
         // A real stop supersedes a capture pause: nothing held is still wanted.
         capturePaused = false
         heldForCapture.clear()
@@ -323,7 +353,7 @@ class ReadAloudPlayer(context: Context) {
 
     // -- internals --
 
-    private suspend fun speakOne(text: String) {
+    private suspend fun speakOne(text: String, ticket: Long) {
         val entry = runCatching {
             (appContext as? MinisApp)?.providerRepository?.resolveVoiceOutputEntry()
         }.getOrNull()
@@ -337,8 +367,10 @@ class ReadAloudPlayer(context: Context) {
                 VoiceOutputState.activeModelLabel.value =
                     modelEntry.model.displayName.ifBlank { modelEntry.model.id }
             }
-            val ok = runCatching { speakViaProvider(instance, modelEntry, text) }
+            val ok = runCatching { speakViaProvider(instance, modelEntry, text, ticket) }
                 .getOrElse {
+                    // nanoMuse: cancellation must never turn into device fallback speech.
+                    if (it is CancellationException) throw it
                     AppLogger.error(
                         TAG,
                         "provider TTS failed (model=${modelEntry.model.id} " +
@@ -348,6 +380,9 @@ class ReadAloudPlayer(context: Context) {
                 }
             if (ok) return
         }
+        // nanoMuse: reject superseded generations before entering system fallback.
+        generation.requireCurrent(ticket)
+        coroutineContext.ensureActive()
         if (ownsCapsule()) VoiceOutputState.activeModelLabel.value = null // system engine
         if (!speakViaSystem(text)) {
             // [T-android-tts-silent-blackhole] Terminal state: the provider path
@@ -384,6 +419,7 @@ class ReadAloudPlayer(context: Context) {
         instance: com.openminis.app.data.model.ProviderInstance,
         modelEntry: com.openminis.app.data.model.ModelEntry,
         text: String,
+        ticket: Long, // nanoMuse: validate request generation before playback.
     ): Boolean {
         // [T-android-safemode-lateinit-crash-147] `?.` guards a null
         // Application but NOT an unassigned lateinit — the getter throws.
@@ -423,8 +459,12 @@ class ReadAloudPlayer(context: Context) {
                 )
             }
         } finally {
-            VoiceOutputState.isSynthesizing.value = false
+            // nanoMuse: an old completion cannot reset a newer generation's indicator.
+            if (generation.isCurrent(ticket) && ownsCapsule()) VoiceOutputState.isSynthesizing.value = false
         }
+        // nanoMuse: discard late bytes before MediaPlayer/cache dispatch.
+        generation.requireCurrent(ticket)
+        coroutineContext.ensureActive()
         if (data.isEmpty()) {
             AppLogger.error(TAG, "provider TTS returned empty audio (model=${modelEntry.model.id})")
             return false

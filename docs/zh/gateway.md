@@ -1,6 +1,6 @@
 # 私有 Workers AI 网关
 
-`gateway/` 提供私有鉴权、持久化免费额度准入计数、白名单模型列表和聊天/视觉协议适配。配置有效时，聊天处理器可以尝试推理。转写和语音合成仍返回 `503 inference_unavailable`，不消耗准入额度。空的静态资源暂存目录不代表网站已完成。此项工作不更改已有 App 连接或 nanoMuse Cloud。
+`gateway/` 提供私有鉴权、持久化免费额度准入计数、白名单模型列表和聊天/视觉协议适配。配置有效时，聊天处理器可以尝试推理。有界WAV转写可以尝试推理；中文合成在真实验收前仍返回 `503 tts_unverified`，不消耗准入额度。空的静态资源暂存目录不代表网站已完成。此项工作不更改已有 App 连接或 nanoMuse Cloud。
 
 预定 origin 为 `https://molamaker.si`，OpenAI base URL 为 `https://molamaker.si/v1`。这只是预定部署地址，不表示已验收线上服务。已有 Cloud 和第三方服务商保留真实 origin。
 
@@ -20,7 +20,7 @@ API 使用 `Authorization: Bearer` 请求头。缺失或错误凭据返回 JSON 
 
 当日计数在 00:00 UTC 重置；滚动窗口跨午夜继续有效。每次准入检查会删除过期的分钟记录，UTC 日推进时替换唯一的当日计数行。对象被回收后，持久化计数仍然有效。服务端时钟回退不会恢复已消耗额度。存储内容只有授权客户端 ID、计数和准入时间，不包含提示词、回答或聊天记录。
 
-内部 RPC `admit(clientId, nowMs)` 必须接收鉴权所得身份和 Worker 的 `Date.now()`，不能接收请求字段或请求头中的时间。聊天处理器先验证模型、正文、格式和预算，再在实际调用 AI 前立即准入。禁用的音频路由不调用准入。
+内部 RPC `admit(clientId, nowMs)` 必须接收鉴权所得身份和 Worker 的 `Date.now()`，不能接收请求字段或请求头中的时间。聊天处理器先验证模型、正文、格式和预算，再在实际调用 AI 前立即准入。未验收的中文合成不调用准入。
 
 上述限额是应用请求策略，不是 Neuron 计量器。Cloudflare Free 的账户级免费额度为每天 **10,000 Neurons**，00:00 UTC 重置；同一账户内的其他应用也会消耗该额度。启用推理前必须核验实际登录的目标账户为 Workers Free。不得购买、升级、自动切换到 Paid 模型或改动其他项目 billing。目标非 Free 时继续禁用推理。参阅 [Cloudflare Workers AI 定价](https://developers.cloudflare.com/workers-ai/platform/pricing/)。
 
@@ -32,7 +32,7 @@ API 首先检查 secret 和 `AI`、`ASSETS`、`FREE_GATE` bindings。配置缺�
 
 ## 聊天和图片协议
 
-鉴权后的 `GET /v1/models` 返回 OpenAI 列表，包括 `id`、`name` 和 `architecture.{input_modalities,output_modalities}`。列表包含 Qwen 文字→文字、Gemma 文字+图片→文字、Whisper 音频→文字。Whisper 元数据描述模型能力，但转写路由仍不可用。MeloTTS 在中文输出实际验证前不公开。当前官方模型 schema：[Qwen](https://developers.cloudflare.com/workers-ai/models/qwen3-30b-a3b-fp8/)、[Gemma](https://developers.cloudflare.com/workers-ai/models/gemma-4-26b-a4b-it/)、[Whisper](https://developers.cloudflare.com/workers-ai/models/whisper-large-v3-turbo/)。
+鉴权后的 `GET /v1/models` 返回 OpenAI 列表，包括 `id`、`name` 和 `architecture.{input_modalities,output_modalities}`。列表包含 Qwen 文字→文字、Gemma 文字+图片→文字、Whisper 音频→文字。Whisper转写协议已实现，真实普通话识别质量仍待验收。MeloTTS 在中文输出实际验证前不公开。当前官方模型 schema：[Qwen](https://developers.cloudflare.com/workers-ai/models/qwen3-30b-a3b-fp8/)、[Gemma](https://developers.cloudflare.com/workers-ai/models/gemma-4-26b-a4b-it/)、[Whisper](https://developers.cloudflare.com/workers-ai/models/whisper-large-v3-turbo/)。
 
 `POST /v1/chat/completions` 只接受 `@cf/qwen/qwen3-30b-a3b-fp8` 和 `@cf/google/gemma-4-26b-a4b-it`。JSON 正文包含 `model`、非空 `messages`，以及可选布尔值 `stream` 和输出预算 `max_completion_tokens` 或 `max_tokens`。默认非流式、预算为 2,048 tokens；两种预算同时存在时必须相等。Qwen 使用 `max_tokens`，Gemma 使用 `max_completion_tokens`。只有验证后的消息、预算、采样参数（`temperature`、`top_p`）、function 定义和 Gemma 流式 usage 参数会传到 binding。未知顶层字段被丢弃；非文字 response format 和非 auto tool choice 在准入前被拒绝。
 
@@ -58,3 +58,21 @@ npm --prefix gateway run dry-run
 测试使用当前 Cloudflare Vitest 插件、真实的本地 SQLite Durable Object、运行时随机生成的测试凭据和 `remoteBindings: false`，不调用真实模型。共享协议 fixture 同时通过 Android 真实 `ProviderFactory.streamMessage` 和 `OpenAIModelsApi` 的 `GatewayProtocolTest` 消费，不使用自造客户端 parser。测试中不要启用远程 bindings。Dry-run 不提供 secret，也不部署资源；成功打包不能证明已经具备生产上线条件。
 
 实现参考：[SQLite 事务](https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/)、[SQLite 迁移](https://developers.cloudflare.com/durable-objects/best-practices/access-durable-objects-storage/)、[Worker 静态资源路由](https://developers.cloudflare.com/workers/static-assets/binding/) 和 [Cloudflare Vitest 集成](https://developers.cloudflare.com/workers/testing/vitest-integration/write-your-first-test/)。
+
+## 有界语音协议与验收门禁
+
+`POST /v1/audio/transcriptions` 接受 multipart 的 `file`、`model`、可选 `language`、`response_format=json`。仅允许 `@cf/openai/whisper-large-v3-turbo`。请求体不超过4 MiB；完整 RIFF/WAVE 文件不超过2 MiB，必须是16 kHz、单声道、PCM16、非空、最多30秒。服务端检查块长度、字节率和帧对齐。无效格式/重复或未知字段返回400，超体积返回413，均不计调用。`zh-CN` 或 `zh-Hans-CN` 归一为 `zh`，整份 WAV 转为base64，使用 `task=transcribe`，不会要求翻译。成功响应为 `{text,language?,duration?}`，元数据来自官方 `transcription_info`。错误 JSON、畸形输出或上游失败返回503，不伪造转写。这里已实现协议，真实普通话识别质量仍待 Task6 验收。
+
+中文云合成与目录中的音频输出继续关闭，暂存配置明确为 `TTS_ZH_VERIFIED=false`。只有人工确认的真实中文及中英混合 MP3 均完整解码、有正时长且听验通过，并记录准确 `TTS_ZH_LANG` 后，才能同时设置该值与 `TTS_ZH_VERIFIED=true`。官方 [MeloTTS 参数](https://developers.cloudflare.com/workers-ai/models/melotts/) 只规定 `prompt` 与字符串 `lang`，没有枚举中文值或提供 voice/speed/format 控制；不能根据文档或模拟音频猜测中文参数并启用能力。
+
+验收后，`POST /v1/audio/speech` 仅接受 `@cf/myshell-ai/melotts`、1–500个JavaScript字符的 `input`、模型ID或项目别名 `default` 的 `voice`（省略也使用default），`response_format=mp3`（默认），`speed` 省略或数值1。其他声音、格式、速度与字段明确返回400，不静默忽略。两个别名映射到已验证的模型语言，不虚构 speaker 参数。官方字节/base64输出经过有界MP3头检查后以 `audio/mpeg` 返回；头检查不代表解码或听验成功。
+
+两个语音路由与chat共用真实的 `global-free-tier-v1` 配额对象，验证后、单次AI调用前计数，失败/取消不退回。取消后丢弃迟到的结果。Android实际 `VoiceProviderFactory` 使用现有版本化路径；阻塞HTTP的取消观察器会取消OkHttp。朗读停止/暂停会取消当前语句并使其generation失效，同时保留长期队列worker；迟到字节不能播放，取消不能触发系统回退。正常提供商错误仍沿用现有设备回退。云中文验收前，请明确选择并实际验证设备上的系统中文声音；系统朗读不是云MeloTTS，JVM测试不能证明设备已安装中文声音或实际可听。
+
+## 后续真实音频验收（Task6）
+
+`scripts/gateway/verify-audio.mjs` 默认不发起任何调用。live模式要求明确确认Workers Free、非私人WAV与provenance哈希、所有Task6工具共同使用的JSON ledger（`totalAttempts`、`attempts`）、环境中的项目凭据以及输出目录。每次HTTP前仅计一次，失败/取消/HTTP拒绝也保留，不重试；整个Task6合计最多15次。此本地保守计数与服务端40次/日及Neuron硬限不同。
+
+准备好的普通话WAV由离线eSpeak生成，不是人声录音，真实ASR尚未运行。ASR阶段保存实际结果，可懂度仍需人工评审。候选中文合成必须经独立私有operator probe，使用专门非公开operator凭据，且明确确认绑定生产服务**同一个真实FreeGate namespace / script_name与全局对象**。Task6负责评审、创建/部署临时probe；本次没有添加生产公开probe路由，没有部署。probe用同一有界合成handler及operator指定的候选语言测试，生产目录/flag始终保持禁用；probe成功本身不等于生产能力验收。
+
+候选与已验证生产阶段各发一条中文、一条中英混合请求，要求 `audio/mpeg`，保存真实文件，使用ffprobe确认codec/时长，再用ffmpeg -xerror完整解码，随后仍等待人工听验。`--stage listen --listened-chinese-and-mixed` 只为哈希吻合、已解码的这两份文件记录操作者明确的听验确认。脚本不会自动启用生产变量、创建凭据、部署或虚构听验。缺少解码工具时在发起合成前失败。候选证据、禁用生产和最终生产验收是不同阶段；获批设置准确语言和flag后还须重新验收生产。具体选项见 `node scripts/gateway/verify-audio.mjs --help`，凭据值不得放在命令参数或报告中。

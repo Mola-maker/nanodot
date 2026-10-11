@@ -16,6 +16,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ### Cloud
 
+- Added bounded Whisper WAV transcription and gated MeloTTS speech protocols; Chinese cloud speech remained disabled pending real decoding and listening. Android voice cancellation interrupted HTTP and discarded stopped utterances.
+
 - Fixed empty tool arrays and malformed reasoning/function deltas being accepted as successful gateway streams. Genuine tool-only replies remained supported.
 - Added allowlisted Workers AI model discovery, validated chat/vision adapters and OpenAI SSE streaming, with shared fixtures tested through the real Android provider. Qwen tool history remained gated pending verification; deployment and live acceptance remained separate.
 - Added private Worker project-credential authentication and persistent SQLite admission counters (40 attempts per UTC day globally, 12 per client in a rolling minute). Inference remained disabled pending the separately verified model routes.
