@@ -138,12 +138,15 @@ class ManualForegroundApiProofTest {
     private fun secure(key: String) = Settings.Secure.getString(inst.targetContext.contentResolver,key)
     private fun putSecure(key: String,value: String?) {
         check(key in listOf("enabled_accessibility_services","accessibility_enabled"))
+        check(android.os.Looper.myLooper()!=android.os.Looper.getMainLooper())
         val pipes=automation.executeShellCommandRw("sh")
         val quote=value?.let { "'"+it.replace("'","'\"'\"'")+"'" }
         ParcelFileDescriptor.AutoCloseOutputStream(pipes[1]).use {
             it.write(((if(value==null) "settings delete secure $key" else "settings put secure $key $quote")+"\nexit\n").toByteArray())
         }
         ParcelFileDescriptor.AutoCloseInputStream(pipes[0]).use { it.readBytes() }
+        val until=SystemClock.uptimeMillis()+3000
+        while(secure(key)!=value && SystemClock.uptimeMillis()<until) SystemClock.sleep(25)
         check(secure(key)==value)
     }
     private fun connect(previous: Map<String,String?>): Int {
