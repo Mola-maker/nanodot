@@ -259,7 +259,8 @@ is bounded to the host and keyboard area; touches outside its rectangle reach th
 History and controls scroll within it, including with enlarged text.
 Short keyboard-clipped hosts use a compact collapse control beside the transcript, with a
 full 48dp scrolling control viewport; they use the available host height instead of leaving
-the chat at the ordinary proportional height cap. Enlarged text uses the same compact budget.
+the chat at the ordinary proportional height cap. Enlarged text uses the same compact budget,
+with tighter gaps to retain at least 48dp of visible history after native pixel rounding.
 Double tap keeps the existing capture-before-panel order and adds a blue display-perimeter scan owned by that
 capture request. Scanner, Dot and panel windows are hidden before pixels are captured,
 including windows still awaiting attachment. Cancellation, mode changes, lock, disable and

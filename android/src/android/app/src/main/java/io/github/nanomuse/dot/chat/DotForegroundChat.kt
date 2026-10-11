@@ -38,7 +38,8 @@ fun DotForegroundChat(status: String? = null, onCollapse: () -> Unit,
             CompositionLocalProvider(LocalTextStyle provides if (compact)
                 MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp) else LocalTextStyle.current) {
             Column(Modifier.fillMaxSize().padding(padding).padding(end = if (compact) 52.dp else 0.dp),
-                verticalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 8.dp)) {
+                // Reserve rounding headroom for the 48dp history in short hosts at enlarged fonts.
+                verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 8.dp)) {
             if (compact) {
                 status?.let { Text(it, style = MaterialTheme.typography.labelSmall, maxLines = 1,
                     overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics {
