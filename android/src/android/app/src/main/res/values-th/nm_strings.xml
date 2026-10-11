@@ -1175,4 +1175,22 @@
     <string name="nm_care_paused">พักคำแนะนำอยู่</string>
     <string name="nm_care_unavailable">อ่านหรือตรวจสอบหน้าจอนี้ไม่ได้ ดูอีกครั้ง เปลี่ยนเป้าหมาย หรือจบคำแนะนำ</string>
     <string name="nm_care_provider_missing">เลือกโมเดลข้อความที่พร้อมใช้งานใน การตั้งค่า → โมเดล แล้วดูอีกครั้ง</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">ป้อนด้วยเสียง</string>
+    <string name="nm_dot_voice_permission">อนุญาตไมโครโฟนและการแจ้งเตือนเพื่อป้อนด้วยเสียง คุณยังพิมพ์ได้</string>
+    <string name="nm_dot_voice_keyboard">ใช้แป้นพิมพ์</string>
+    <string name="nm_dot_voice_notification">ไมโครโฟน Dot</string>
+    <string name="nm_dot_voice_stop_hint">กำลังบันทึกหรือจบงาน การหยุดจะยกเลิกการบันทึกนี้</string>
+    <string name="nm_dot_voice_cancel">ยกเลิกการบันทึก</string>
+    <string name="nm_dot_voice_finish">จบการป้อนด้วยเสียง</string>
+    <string name="nm_dot_voice_starting">กำลังเริ่มไมโครโฟน…</string>
+    <string name="nm_dot_voice_recording">กำลังฟัง…</string>
+    <string name="nm_dot_voice_finishing">กำลังจบงานและคืนไมโครโฟน…</string>
+    <string name="nm_dot_voice_denied">ใช้ไมโครโฟนหรือการแจ้งเตือนไม่ได้ พิมพ์ ลองใหม่ หรือเปิดการตั้งค่า</string>
+    <string name="nm_dot_voice_busy">ไมโครโฟนกำลังใช้งาน ลองใหม่หลังหยุด</string>
+    <string name="nm_dot_voice_error">เสียงล้มเหลว คุณพิมพ์หรือลองใหม่ได้</string>
+    <string name="nm_dot_voice_read">อ่านคำตอบ</string>
+    <string name="nm_dot_voice_speaking">กำลังอ่านคำตอบ…</string>
+    <string name="nm_dot_voice_read_error">ไม่สามารถอ่านคำตอบออกเสียงได้</string>
 </resources>

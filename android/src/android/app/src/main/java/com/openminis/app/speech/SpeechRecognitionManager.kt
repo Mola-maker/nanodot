@@ -41,11 +41,29 @@ object SpeechRecognitionManager {
 
     // nanoMuse: IDLE is published only after the pinned engine's controlled cleanup.
     private val captureScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private val captures = OwnedCapture(captureScope, VoiceLease(), object : CaptureOutput {
+    private val captureLease = VoiceLease()
+    // nanoMuse: UI observes its actual ticket, never another window's microphone state.
+    private val _ownedState = MutableStateFlow(OwnedVoiceState())
+    val ownedState: StateFlow<OwnedVoiceState> = _ownedState.asStateFlow()
+    private val _mainState = MutableStateFlow(RecognitionState.IDLE)
+    val mainState: StateFlow<RecognitionState> = _mainState.asStateFlow()
+    private val _mainText = MutableStateFlow("")
+    val mainText: StateFlow<String> = _mainText.asStateFlow()
+    private val _mainLevels = MutableStateFlow(List(WAVEFORM_SIZE) { 0f })
+    val mainLevels: StateFlow<List<Float>> = _mainLevels.asStateFlow()
+    fun occupied(): Boolean = captureLease.current() != null
+    private val captures = OwnedCapture(captureScope, captureLease, object : CaptureOutput {
         override suspend fun pause() = VoiceOutputState.suspendAllForCaptureAndJoin()
         override fun resume() = VoiceOutputState.resumeAllAfterCapture()
     }) { next ->
         _state.value = next
+        val ticket = captureLease.current()
+        _ownedState.value = OwnedVoiceState(ticket, next)
+        if (ticket?.owner == "main") {
+            _mainState.value = next
+            if (next == RecognitionState.STARTING) _mainText.value = ""
+            if (next == RecognitionState.STARTING || next == RecognitionState.IDLE) _mainLevels.value = List(WAVEFORM_SIZE) { 0f }
+        }
         if (next == RecognitionState.STARTING) { _recognizedText.value = ""; _lastError.value = null; resetLevels() }
         if (next == RecognitionState.IDLE) { resetLevels(); refreshAvailability() }
     }
@@ -150,6 +168,7 @@ object SpeechRecognitionManager {
         for (i in 1 until current.size) updated.add(current[i])
         updated.add(n)
         _audioLevels.value = updated
+        if (captureLease.current()?.owner == "main") _mainLevels.value = updated
     }
 
     private fun resetLevels() {
@@ -260,6 +279,8 @@ object SpeechRecognitionManager {
      * app released the mic, provider configured).
      */
     fun clearDegradationAndRefresh() {
+        // nanoMuse: another panel entering voice mode cannot mutate an admitted engine.
+        if (occupied()) return
         engines.forEach { it.clearDegraded() }
         refreshAvailability()
     }
@@ -302,21 +323,29 @@ object SpeechRecognitionManager {
         continuous: Boolean? = false,
         onPartialOrFinal: (String, Boolean) -> Unit,
         onError: (RecognitionError, String?) -> Unit,
+        selection: VoiceSelection? = null,
+        onTicket: (VoiceLease.Ticket) -> Unit = {},
     ): VoiceLease.Ticket? {
-        val engine = currentEngine()
+        // nanoMuse: configuration and admission are one main-thread operation; busy callers cannot mutate engines.
+        if (occupied()) { onError(RecognitionError.RECOGNIZER_BUSY, null); return null }
+        val engine = if (selection == null) currentEngine() else engines.firstOrNull { it.id == selection.engineId && it.isAvailable }
+        val pinnedLocale = selection?.locale ?: _locale.value
+        val offline = selection?.preferOffline
         if (engine == null) {
             onError(RecognitionError.OEM_NO_SERVICE, "No recognition engine available")
             return null
         }
         val port = object : CaptureEngine {
-            override fun start(locale: Locale, continuous: Boolean?, listener: SpeechRecognitionEngine.Listener) =
+            override fun start(locale: Locale, continuous: Boolean?, listener: SpeechRecognitionEngine.Listener) {
+                if (offline != null && engine is SystemSpeechRecognitionEngine) engine.preferOffline = offline
                 engine.startOwned(locale, continuous, listener)
+            }
             override fun stop() = engine.stop()
             override suspend fun cancelAndJoin() = engine.cancelAndJoin()
         }
         val listener = object : SpeechRecognitionEngine.Listener {
-            override fun onPartial(text: String) { _recognizedText.value = text; onPartialOrFinal(text, false) }
-            override fun onFinal(text: String) { _recognizedText.value = text; onPartialOrFinal(text, true) }
+            override fun onPartial(text: String) { _recognizedText.value = text; if (owner == "main") _mainText.value = text; onPartialOrFinal(text, false) }
+            override fun onFinal(text: String) { _recognizedText.value = text; if (owner == "main") _mainText.value = text; onPartialOrFinal(text, true) }
             override fun onError(error: RecognitionError, message: String?) {
                 // Busy requests must not overwrite the current capture's error/state.
                 if (error != RecognitionError.RECOGNIZER_BUSY) _lastError.value = error
@@ -324,7 +353,7 @@ object SpeechRecognitionManager {
             }
             override fun onRmsDb(rms: Float) = pushLevel(rms)
         }
-        return captures.start(owner, port, _locale.value, continuous, listener)
+        return captures.start(owner, port, pinnedLocale, continuous, listener, onTicket)
     }
 
     fun stopRecording() { captures.current("main")?.let(captures::stop) }

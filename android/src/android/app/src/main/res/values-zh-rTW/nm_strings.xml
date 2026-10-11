@@ -1145,4 +1145,22 @@
     <string name="nm_care_paused">引導已暫停</string>
     <string name="nm_care_unavailable">暫時無法讀取或確認目前畫面。你可以重新辨識、修改目標或結束引導。</string>
     <string name="nm_care_provider_missing">請在設定 → 模型中選擇可用的文字模型，然後重新辨識。</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">語音輸入</string>
+    <string name="nm_dot_voice_permission">允許使用麥克風和通知以進行語音輸入，也可以繼續打字。</string>
+    <string name="nm_dot_voice_keyboard">使用鍵盤</string>
+    <string name="nm_dot_voice_notification">Dot 麥克風</string>
+    <string name="nm_dot_voice_stop_hint">正在錄音或收尾，停止將取消本次錄音。</string>
+    <string name="nm_dot_voice_cancel">取消錄音</string>
+    <string name="nm_dot_voice_finish">完成語音輸入</string>
+    <string name="nm_dot_voice_starting">正在啟動麥克風…</string>
+    <string name="nm_dot_voice_recording">正在聆聽…</string>
+    <string name="nm_dot_voice_finishing">正在完成轉寫並釋放麥克風…</string>
+    <string name="nm_dot_voice_denied">無法使用麥克風或通知，請打字、重試或開啟設定。</string>
+    <string name="nm_dot_voice_busy">麥克風正在使用中，停止後可重試。</string>
+    <string name="nm_dot_voice_error">語音失敗，可以打字或重試。</string>
+    <string name="nm_dot_voice_read">朗讀回覆</string>
+    <string name="nm_dot_voice_speaking">正在朗讀回覆…</string>
+    <string name="nm_dot_voice_read_error">無法朗讀回覆。</string>
 </resources>

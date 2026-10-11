@@ -2,10 +2,14 @@ package io.github.nanomuse.dot.voice
 
 /** Process-local exclusive capture admission. Async work must retain its ticket, not an owner string. */
 class VoiceLease {
-    class Ticket internal constructor(val owner: String, val generation: Long)
+    class Ticket internal constructor(val owner: String, val generation: Long) {
+        internal val completion = kotlinx.coroutines.CompletableDeferred<Unit>()
+        suspend fun awaitReleased() = completion.await()
+    }
     private var generation = 0L
     private var active: Ticket? = null
     private var compatibility: Ticket? = null
+    @Synchronized fun current(): Ticket? = active
 
     @Synchronized fun acquire(owner: String): Boolean {
         val ticket = acquireTicket(owner) ?: return false
@@ -25,6 +29,7 @@ class VoiceLease {
         if (active !== ticket) return
         active = null
         if (compatibility === ticket) compatibility = null
+        ticket.completion.complete(Unit)
     }
     @Synchronized fun owns(ticket: Ticket): Boolean = active === ticket
 }

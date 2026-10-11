@@ -79,22 +79,41 @@ Back first hides the keyboard, then collapses the panel to the orb. Send, Stop a
 use the existing chat pipeline. An empty conversation and an unconfigured model have
 explicit states. Older devices show a clearly labelled fresh text-only preview unless
 separate screen-capture permission is active; pixel errors may also fall back to newly
-sampled accessible text. Voice, care and screen-region selection remain unavailable.
+sampled accessible text. Voice controls are integrated as described below; native voice acceptance
+and screen-region selection remain pending.
 Showing the orb or opening conversation alone never captures, records audio or calls a
 model. Live gateway text/SSE and unique-host vision acceptance remain pending deployment.
 
 ## Voice ownership foundation
 
-The shared speech manager now holds a capture ticket until its selected engine, recorder,
-pipe and controlled jobs finish cleanup. Late callbacks cannot release a newer capture,
-and the main window keeps its existing segmented dictation policy. Dot's future capture
-port defaults to a single capture and prepares editable text through the conversation binding.
-Read-aloud pauses wait for controlled synthesis cleanup before the microphone starts;
-the system TTS stop acknowledgement does not prove physical acoustic silence.
+Dot's real overlay now has explicit **Dictate**, **Finish dictation** and **Cancel recording**
+controls. Dictate opens a visible permission Activity for microphone and notifications. That
+Activity starts a private microphone foreground service while visible and waits for foreground
+promotion before returning to the host. A visible notification can cancel the exact recording.
+Permission denial, blocked notifications or a rejected service start leave editable keyboard input,
+a retry button and an app Settings entry. Returning from Settings never starts recording by itself.
 
-This is an internal Task5A milestone. Floating voice input remains pending Task5B: the visible
-permission Activity, microphone foreground service, main/overlay controls and lifecycle hooks.
-Virtual-device permission/audio testing and genuine Chinese ASR/TTS acceptance remain pending.
+The service accepts only an unexpired in-memory request from this panel and binding. Recreated,
+missing, forged, cancelled or background-only requests cannot arm it. Panel close, keyboard edits,
+session switches, care pause, lock, service loss and permission revocation cancel that request.
+The microphone lease and foreground notification remain owned through controlled recorder, pipe,
+ASR and synthesis cleanup; an IDLE callback is not taken as proof that resources have closed.
+
+Main and Dot use the same speech manager. Each UI keeps its own generation ticket; an old Stop,
+partial result or error cannot affect a new capture. The admitted engine, locale and continuous
+policy are pinned. Main keeps its existing segmented dictation behavior; Dot defaults to one take.
+The final transcription is appended to the same editable draft, including draft-to-persisted
+promotion, and is **not sent automatically**.
+
+**Read reply** and **Stop** use the existing read-aloud player and voice-output selection, with
+speaking and failure states in the overlay. Playback is explicit and does not enable automatic reply reading. Recording pauses read-aloud and
+waits for controlled synthesis cleanup. Closing or switching the panel stops its reply playback.
+A system TTS stop acknowledgement does not prove acoustic silence.
+
+This is source integration for Task5B, not native/audio acceptance or completion of Task5.
+Target35 visible-permission/foreground-service, notification/lock/revocation and microphone release
+checks on the selected virtual device remain pending. Genuine Chinese ASR and audible Chinese
+system/cloud TTS are separate gates; successful JVM tests do not prove either audio path works.
 
 ## Dot scene sampling
 

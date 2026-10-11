@@ -19,7 +19,8 @@ interface CaptureOutput {
 class OwnedCapture(private val scope: CoroutineScope, val lease: VoiceLease, private val output: CaptureOutput,
     private val state: (RecognitionState) -> Unit = {}) {
     private class Capture(val ticket: VoiceLease.Ticket, val engine: CaptureEngine,
-        val listener: SpeechRecognitionEngine.Listener, val continuous: Boolean?) {
+        val listener: SpeechRecognitionEngine.Listener, val continuous: Boolean?,
+        val admitted: (VoiceLease.Ticket) -> Unit) {
         var preparation: Job? = null
         var finishTimeout: Job? = null
         var ending = false
@@ -33,13 +34,14 @@ class OwnedCapture(private val scope: CoroutineScope, val lease: VoiceLease, pri
     fun accepts(ticket: VoiceLease.Ticket): Boolean = active?.let { it.ticket === ticket && !it.ending } == true
 
     fun start(owner: String, engine: CaptureEngine, locale: Locale, continuous: Boolean? = null,
-        listener: SpeechRecognitionEngine.Listener): VoiceLease.Ticket? {
+        listener: SpeechRecognitionEngine.Listener, admitted: (VoiceLease.Ticket) -> Unit = {}): VoiceLease.Ticket? {
         val ticket = lease.acquireTicket(owner) ?: run {
             listener.onError(RecognitionError.RECOGNIZER_BUSY, null)
             return null
         }
-        val capture = Capture(ticket, engine, listener, continuous)
+        val capture = Capture(ticket, engine, listener, continuous, admitted)
         active = capture
+        admitted(ticket)
         state(RecognitionState.STARTING)
         val guarded = object : SpeechRecognitionEngine.Listener {
             override fun onPartial(text: String) = event(capture) { listener.onPartial(text) }
@@ -134,7 +136,7 @@ class OwnedCapture(private val scope: CoroutineScope, val lease: VoiceLease, pri
                     } finally { active = null; lease.release(capture.ticket) }
                 }
                 if (failure == null) capture.restartLocale?.let {
-                    start(capture.ticket.owner, capture.engine, it, capture.continuous, capture.listener)
+                    start(capture.ticket.owner, capture.engine, it, capture.continuous, capture.listener, capture.admitted)
                 }
             }
         }

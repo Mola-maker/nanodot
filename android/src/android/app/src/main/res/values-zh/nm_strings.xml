@@ -1152,4 +1152,22 @@
     <string name="nm_care_paused">引导已暂停</string>
     <string name="nm_care_unavailable">暂时无法读取或确认当前屏幕。你可以重新识别、修改目标或结束引导。</string>
     <string name="nm_care_provider_missing">请在设置 → 模型中选择可用的文字模型，然后重新识别。</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">语音输入</string>
+    <string name="nm_dot_voice_permission">允许使用麦克风和通知以进行语音输入，也可以继续打字。</string>
+    <string name="nm_dot_voice_keyboard">使用键盘</string>
+    <string name="nm_dot_voice_notification">Dot 麦克风</string>
+    <string name="nm_dot_voice_stop_hint">正在录音或收尾，停止将取消本次录音。</string>
+    <string name="nm_dot_voice_cancel">取消录音</string>
+    <string name="nm_dot_voice_finish">完成语音输入</string>
+    <string name="nm_dot_voice_starting">正在启动麦克风…</string>
+    <string name="nm_dot_voice_recording">正在聆听…</string>
+    <string name="nm_dot_voice_finishing">正在完成转写并释放麦克风…</string>
+    <string name="nm_dot_voice_denied">无法使用麦克风或通知，请打字、重试或打开设置。</string>
+    <string name="nm_dot_voice_busy">麦克风正在使用中，停止后可重试。</string>
+    <string name="nm_dot_voice_error">语音失败，可以打字或重试。</string>
+    <string name="nm_dot_voice_read">朗读回复</string>
+    <string name="nm_dot_voice_speaking">正在朗读回复…</string>
+    <string name="nm_dot_voice_read_error">无法朗读回复。</string>
 </resources>

@@ -1156,4 +1156,22 @@
     <string name="nm_care_paused">Guidance paused</string>
     <string name="nm_care_unavailable">I could not read or verify this screen. Look again, change the goal, or end guidance.</string>
     <string name="nm_care_provider_missing">Choose an available text model in Settings → Models, then look again.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Dictate</string>
+    <string name="nm_dot_voice_permission">Allow microphone and notifications to dictate. You can keep typing.</string>
+    <string name="nm_dot_voice_keyboard">Use keyboard</string>
+    <string name="nm_dot_voice_notification">Dot microphone</string>
+    <string name="nm_dot_voice_stop_hint">Recording or finishing. Stop cancels this recording.</string>
+    <string name="nm_dot_voice_cancel">Cancel recording</string>
+    <string name="nm_dot_voice_finish">Finish dictation</string>
+    <string name="nm_dot_voice_starting">Starting microphone…</string>
+    <string name="nm_dot_voice_recording">Listening…</string>
+    <string name="nm_dot_voice_finishing">Finishing and releasing microphone…</string>
+    <string name="nm_dot_voice_denied">Microphone or notifications unavailable. Type, retry, or open Settings.</string>
+    <string name="nm_dot_voice_busy">Microphone is in use. Retry after it stops.</string>
+    <string name="nm_dot_voice_error">Voice failed. You can type or retry.</string>
+    <string name="nm_dot_voice_read">Read reply</string>
+    <string name="nm_dot_voice_speaking">Reading reply…</string>
+    <string name="nm_dot_voice_read_error">Could not read the reply aloud.</string>
 </resources>

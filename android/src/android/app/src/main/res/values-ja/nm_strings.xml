@@ -1175,4 +1175,22 @@
     <string name="nm_care_paused">案内を一時停止中</string>
     <string name="nm_care_unavailable">この画面を読み取り、確認できませんでした。再確認するか、目標を変更するか、案内を終了してください。</string>
     <string name="nm_care_provider_missing">設定 → モデルで利用可能なテキストモデルを選び、もう一度確認してください。</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">音声入力</string>
+    <string name="nm_dot_voice_permission">音声入力にはマイクと通知を許可してください。文字入力も使えます。</string>
+    <string name="nm_dot_voice_keyboard">キーボードを使う</string>
+    <string name="nm_dot_voice_notification">Dot マイク</string>
+    <string name="nm_dot_voice_stop_hint">録音または終了処理中です。停止すると録音を取り消します。</string>
+    <string name="nm_dot_voice_cancel">録音を取り消す</string>
+    <string name="nm_dot_voice_finish">音声入力を完了</string>
+    <string name="nm_dot_voice_starting">マイクを起動中…</string>
+    <string name="nm_dot_voice_recording">聞き取り中…</string>
+    <string name="nm_dot_voice_finishing">文字起こしとマイクの解放を実行中…</string>
+    <string name="nm_dot_voice_denied">マイクまたは通知を使用できません。文字入力、再試行、設定を使えます。</string>
+    <string name="nm_dot_voice_busy">マイクは使用中です。停止後に再試行してください。</string>
+    <string name="nm_dot_voice_error">音声入力に失敗しました。文字入力または再試行ができます。</string>
+    <string name="nm_dot_voice_read">返信を読み上げる</string>
+    <string name="nm_dot_voice_speaking">返信を読み上げ中…</string>
+    <string name="nm_dot_voice_read_error">返信を読み上げられませんでした。</string>
 </resources>

@@ -1179,4 +1179,22 @@
     <string name="nm_care_paused">Naka-pause ang gabay</string>
     <string name="nm_care_unavailable">Hindi mabasa o masuri ang screen na ito. Tingnan muli, baguhin ang layunin, o tapusin ang gabay.</string>
     <string name="nm_care_provider_missing">Pumili ng magagamit na text model sa Mga Setting → Mga Modelo, pagkatapos ay tingnan muli.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Idikta</string>
+    <string name="nm_dot_voice_permission">Payagan ang mikropono at mga notification para magdikta. Maaari ka pa ring mag-type.</string>
+    <string name="nm_dot_voice_keyboard">Gamitin ang keyboard</string>
+    <string name="nm_dot_voice_notification">Mikropono ng Dot</string>
+    <string name="nm_dot_voice_stop_hint">Nagre-record o tinatapos. Kakanselahin ng paghinto ang recording.</string>
+    <string name="nm_dot_voice_cancel">Kanselahin ang recording</string>
+    <string name="nm_dot_voice_finish">Tapusin ang pagdikta</string>
+    <string name="nm_dot_voice_starting">Sinisimulan ang mikropono…</string>
+    <string name="nm_dot_voice_recording">Nakikinig…</string>
+    <string name="nm_dot_voice_finishing">Tinatapos at binibitawan ang mikropono…</string>
+    <string name="nm_dot_voice_denied">Hindi magamit ang mikropono o notification. Mag-type, subukan muli, o buksan ang Mga Setting.</string>
+    <string name="nm_dot_voice_busy">Ginagamit ang mikropono. Subukan muli kapag huminto na.</string>
+    <string name="nm_dot_voice_error">Nabigo ang boses. Maaari kang mag-type o subukan muli.</string>
+    <string name="nm_dot_voice_read">Basahin ang tugon</string>
+    <string name="nm_dot_voice_speaking">Binabasa ang tugon…</string>
+    <string name="nm_dot_voice_read_error">Hindi mabasa nang malakas ang tugon.</string>
 </resources>

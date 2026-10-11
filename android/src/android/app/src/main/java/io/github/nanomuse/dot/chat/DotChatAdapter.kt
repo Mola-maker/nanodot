@@ -12,6 +12,7 @@ import com.openminis.app.ui.chat.ChatViewModelStore
 import com.openminis.app.ui.chat.StreamingDelta
 import com.openminis.app.ui.chat.removeAttachment
 import io.github.nanomuse.dot.screen.ScreenSnapshot
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
@@ -55,6 +56,7 @@ class DotChatAdapter(
     fun bind(sessionId: String): SessionBinding {
         val next = gate.bind(sessionId)
         if (binding.value != next) {
+            voice?.cancel(); closeSpeech()
             // A switch revokes canonical work even when the send has no screenshot.
             session?.cancel()
             discardOwned(cancelPending = false)
@@ -65,6 +67,33 @@ class DotChatAdapter(
         }
         return next
     }
+
+    val speaker = MutableStateFlow<com.openminis.app.speech.ReadAloudPlayer?>(null)
+    fun readReply(context: android.content.Context, text: String) {
+        if (com.openminis.app.speech.SpeechRecognitionManager.occupied()) return
+        val player = speaker.value ?: com.openminis.app.speech.ReadAloudPlayer(context).also { speaker.value = it }
+        player.speak(text, explicit = true)
+    }
+    fun stopReply() { speaker.value?.stop() }
+    fun closeSpeech() {
+        val player = speaker.value ?: return
+        speaker.value = null
+        player.stop()
+        // Scope survives the overlay so cancellation is not mistaken for resource completion.
+        CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate).launch {
+            try { player.shutdownAndJoin() }
+            catch (_: Exception) { player.playbackFailed.value = true }
+            finally { cancel() }
+        }
+    }
+    var voice: io.github.nanomuse.dot.voice.DotVoiceController? = null
+    fun voiceInput(binding: SessionBinding): String = if (gate.accepts(binding)) session?.inputText?.value.orEmpty() else ""
+    fun writeVoiceInput(binding: SessionBinding, text: String): Boolean {
+        if (!gate.accepts(binding)) return false
+        session?.input(text) ?: return false
+        return true
+    }
+    fun editInput(text: String) { voice?.cancel(); session?.input(text) }
 
     fun accepts(binding: SessionBinding) = gate.accepts(binding)
 
@@ -85,6 +114,7 @@ class DotChatAdapter(
 
     fun send(binding: SessionBinding, text: String): Boolean {
         if (!gate.accepts(binding)) return false
+        voice?.cancel()
         val target = session ?: return false
         if (target.isStreaming.value || target.configured.value.isNullOrBlank()) return false
         releaseConsumedFiles()
@@ -109,6 +139,7 @@ class DotChatAdapter(
 
     fun cancel(binding: SessionBinding) {
         if (!gate.accepts(binding)) return
+        voice?.cancel(); closeSpeech()
         gate.cancel(binding)
         session?.cancel()
         discardOwned(cancelPending = false)

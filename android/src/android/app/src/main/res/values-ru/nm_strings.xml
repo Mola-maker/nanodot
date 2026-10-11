@@ -1187,4 +1187,22 @@
     <string name="nm_care_paused">Подсказки приостановлены</string>
     <string name="nm_care_unavailable">Не удалось прочитать или проверить экран. Посмотрите снова, измените цель или завершите подсказки.</string>
     <string name="nm_care_provider_missing">Выберите доступную текстовую модель в Настройки → Модели и посмотрите снова.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Диктовать</string>
+    <string name="nm_dot_voice_permission">Разрешите микрофон и уведомления для диктовки. Можно продолжить ввод с клавиатуры.</string>
+    <string name="nm_dot_voice_keyboard">Использовать клавиатуру</string>
+    <string name="nm_dot_voice_notification">Микрофон Dot</string>
+    <string name="nm_dot_voice_stop_hint">Идёт запись или завершение. Остановка отменяет запись.</string>
+    <string name="nm_dot_voice_cancel">Отменить запись</string>
+    <string name="nm_dot_voice_finish">Завершить диктовку</string>
+    <string name="nm_dot_voice_starting">Запуск микрофона…</string>
+    <string name="nm_dot_voice_recording">Слушаю…</string>
+    <string name="nm_dot_voice_finishing">Завершение и освобождение микрофона…</string>
+    <string name="nm_dot_voice_denied">Микрофон или уведомления недоступны. Введите текст, повторите или откройте настройки.</string>
+    <string name="nm_dot_voice_busy">Микрофон занят. Повторите после остановки.</string>
+    <string name="nm_dot_voice_error">Ошибка голоса. Введите текст или повторите.</string>
+    <string name="nm_dot_voice_read">Прочитать ответ</string>
+    <string name="nm_dot_voice_speaking">Чтение ответа…</string>
+    <string name="nm_dot_voice_read_error">Не удалось прочитать ответ вслух.</string>
 </resources>

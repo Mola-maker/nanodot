@@ -5036,7 +5036,8 @@ fun ChatScreen(
             // something to send) — on a grey capsule with no shadow. Voice,
             // recording and message editing fall back to OpenMinis' two-row
             // card. Decided here so the card's shell and its rows agree.
-            val nmRecState by com.openminis.app.speech.SpeechRecognitionManager.state.collectAsState()
+            // nanoMuse: Dot voice belongs to the overlay, not this composer.
+            val nmRecState by com.openminis.app.speech.SpeechRecognitionManager.mainState.collectAsState()
             val nmRecording = nmRecState == com.openminis.app.speech.RecognitionState.RECORDING ||
                 nmRecState == com.openminis.app.speech.RecognitionState.STARTING ||
                 nmRecState == com.openminis.app.speech.RecognitionState.FINISHING
@@ -5924,7 +5925,8 @@ fun ChatScreen(
                     // mic button's callback, so when recording ends the field
                     // shows the full recognized string automatically.
                     val recSttState by com.openminis.app.speech.SpeechRecognitionManager
-                        .state.collectAsState()
+                        // nanoMuse: owner-specific main display.
+                        .mainState.collectAsState()
                     val recIsRecording = recSttState == com.openminis.app.speech.RecognitionState.RECORDING ||
                         recSttState == com.openminis.app.speech.RecognitionState.STARTING ||
                         recSttState == com.openminis.app.speech.RecognitionState.FINISHING
@@ -6390,6 +6392,8 @@ fun ChatScreen(
                     }
                     } // nmTextField
                     if (com.openminis.app.ui.chat.voice.VoiceModePrefs.isVoiceActive) {
+                        // nanoMuse: VM identity survives draft promotion but changes for a different chat.
+                        androidx.compose.runtime.key(viewModel) {
                         com.openminis.app.ui.chat.voice.InlineVoiceInputPanel(
                             providerRepository = providerRepository,
                             inputText = inputText,
@@ -6408,11 +6412,14 @@ fun ChatScreen(
                                     .buildConversationContext(context, viewModel.messages.value)
                             },
                         )
+                        }
                     } else if (recIsRecording) {
                         val levels by com.openminis.app.speech.SpeechRecognitionManager
-                            .audioLevels.collectAsState()
+                            // nanoMuse: owner-specific levels.
+                            .mainLevels.collectAsState()
                         val partial by com.openminis.app.speech.SpeechRecognitionManager
-                            .recognizedText.collectAsState()
+                            // nanoMuse: owner-specific transcript.
+                            .mainText.collectAsState()
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -6577,7 +6584,8 @@ fun ChatScreen(
                         val sttAvailable by com.openminis.app.speech.SpeechRecognitionManager
                             .isAvailable.collectAsState()
                         val sttState by com.openminis.app.speech.SpeechRecognitionManager
-                            .state.collectAsState()
+                            // nanoMuse: owner-specific main display.
+                            .mainState.collectAsState()
                         val sttLocale by com.openminis.app.speech.SpeechRecognitionManager
                             .locale.collectAsState()
                         var showLangSheet by remember { mutableStateOf(false) }
@@ -6622,11 +6630,7 @@ fun ChatScreen(
                             if (com.openminis.app.ui.chat.voice.VoiceModePrefs.isVoiceActive) {
                                 // Exit voice → keyboard. Keep the transcript: the
                                 // composer mirrors it (iOS keyboard-text-carry).
-                                if (com.openminis.app.speech.SpeechRecognitionManager.state.value !=
-                                    com.openminis.app.speech.RecognitionState.IDLE
-                                ) {
-                                    com.openminis.app.speech.SpeechRecognitionManager.stopRecording()
-                                }
+                                // nanoMuse: InlineVoiceInputPanel disposal cancels its exact ticket.
                                 com.openminis.app.ui.chat.voice.VoiceModePrefs.isVoiceActive = false
                                 ComposerInputModePrefs.save(context, voice = false)
                                 voiceUsedSinceClear = false

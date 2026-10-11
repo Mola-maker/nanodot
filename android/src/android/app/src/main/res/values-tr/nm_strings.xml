@@ -1179,4 +1179,22 @@
     <string name="nm_care_paused">Rehberlik duraklatıldı</string>
     <string name="nm_care_unavailable">Bu ekran okunamadı veya doğrulanamadı. Yeniden bakın, hedefi değiştirin ya da rehberliği bitirin.</string>
     <string name="nm_care_provider_missing">Ayarlar → Modeller bölümünden kullanılabilir bir metin modeli seçip yeniden bakın.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Dikte et</string>
+    <string name="nm_dot_voice_permission">Dikte için mikrofon ve bildirimlere izin verin. Yazmaya devam edebilirsiniz.</string>
+    <string name="nm_dot_voice_keyboard">Klavyeyi kullan</string>
+    <string name="nm_dot_voice_notification">Dot mikrofonu</string>
+    <string name="nm_dot_voice_stop_hint">Kayıt veya tamamlama sürüyor. Durdurmak kaydı iptal eder.</string>
+    <string name="nm_dot_voice_cancel">Kaydı iptal et</string>
+    <string name="nm_dot_voice_finish">Dikteyi bitir</string>
+    <string name="nm_dot_voice_starting">Mikrofon başlatılıyor…</string>
+    <string name="nm_dot_voice_recording">Dinleniyor…</string>
+    <string name="nm_dot_voice_finishing">Tamamlanıyor ve mikrofon bırakılıyor…</string>
+    <string name="nm_dot_voice_denied">Mikrofon veya bildirimler kullanılamıyor. Yazın, yeniden deneyin veya Ayarları açın.</string>
+    <string name="nm_dot_voice_busy">Mikrofon kullanımda. Durduktan sonra yeniden deneyin.</string>
+    <string name="nm_dot_voice_error">Ses başarısız oldu. Yazabilir veya yeniden deneyebilirsiniz.</string>
+    <string name="nm_dot_voice_read">Yanıtı oku</string>
+    <string name="nm_dot_voice_speaking">Yanıt okunuyor…</string>
+    <string name="nm_dot_voice_read_error">Yanıt sesli okunamadı.</string>
 </resources>

@@ -88,6 +88,13 @@ class DotOverlayController(
         private set
     private var panelParams: WindowManager.LayoutParams? = null
     private var geometryPending = false
+    private var voicePermissionWindow = false
+    /** Keep the binding/window owners while allowing the real permission Activity to be visible. */
+    fun setVoicePermissionWindow(visible: Boolean) {
+        voicePermissionWindow = visible
+        ownedViews().forEach { it.visibility = if (visible) View.INVISIBLE else View.VISIBLE }
+        if (!visible) refreshPanelGeometry()
+    }
     private var removeBackCallback: (() -> Unit)? = null
     private var dragStarted = false
     private var downAtMs = 0L
@@ -262,6 +269,7 @@ class DotOverlayController(
 
     /** Two traversals must agree before adopting host/IME bounds, including split-screen hosts. */
     fun refreshPanelGeometry() {
+        if (voicePermissionWindow) return
         val view = panelView ?: return
         if (geometryPending) return
         geometryPending = true
@@ -269,6 +277,7 @@ class DotOverlayController(
             val first = hostViewport()
             view.postOnAnimation {
                 geometryPending = false
+                if (voicePermissionWindow) return@postOnAnimation
                 if (panelView === view && first != null && first == hostViewport()) {
                     panelParams?.let { p ->
                         p.x = first.left.roundToInt(); p.y = first.top.roundToInt()

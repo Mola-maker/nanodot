@@ -1187,4 +1187,22 @@
     <string name="nm_care_paused">Prowadzenie wstrzymane</string>
     <string name="nm_care_unavailable">Nie można odczytać lub zweryfikować tego ekranu. Spójrz ponownie, zmień cel lub zakończ prowadzenie.</string>
     <string name="nm_care_provider_missing">Wybierz dostępny model tekstowy w Ustawienia → Modele i spójrz ponownie.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Dyktuj</string>
+    <string name="nm_dot_voice_permission">Zezwól na mikrofon i powiadomienia, aby dyktować. Możesz dalej pisać.</string>
+    <string name="nm_dot_voice_keyboard">Użyj klawiatury</string>
+    <string name="nm_dot_voice_notification">Mikrofon Dot</string>
+    <string name="nm_dot_voice_stop_hint">Nagrywanie lub kończenie. Zatrzymanie anuluje nagranie.</string>
+    <string name="nm_dot_voice_cancel">Anuluj nagranie</string>
+    <string name="nm_dot_voice_finish">Zakończ dyktowanie</string>
+    <string name="nm_dot_voice_starting">Uruchamianie mikrofonu…</string>
+    <string name="nm_dot_voice_recording">Słuchanie…</string>
+    <string name="nm_dot_voice_finishing">Kończenie i zwalnianie mikrofonu…</string>
+    <string name="nm_dot_voice_denied">Mikrofon lub powiadomienia niedostępne. Pisz, ponów lub otwórz Ustawienia.</string>
+    <string name="nm_dot_voice_busy">Mikrofon zajęty. Ponów po zatrzymaniu.</string>
+    <string name="nm_dot_voice_error">Błąd głosu. Możesz pisać lub ponowić.</string>
+    <string name="nm_dot_voice_read">Czytaj odpowiedź</string>
+    <string name="nm_dot_voice_speaking">Czytanie odpowiedzi…</string>
+    <string name="nm_dot_voice_read_error">Nie udało się odczytać odpowiedzi.</string>
 </resources>

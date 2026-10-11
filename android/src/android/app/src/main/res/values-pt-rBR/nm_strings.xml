@@ -1179,4 +1179,22 @@
     <string name="nm_care_paused">Orientação pausada</string>
     <string name="nm_care_unavailable">Não foi possível ler ou verificar esta tela. Observe novamente, altere o objetivo ou encerre a orientação.</string>
     <string name="nm_care_provider_missing">Escolha um modelo de texto disponível em Configurações → Modelos e observe novamente.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Ditar</string>
+    <string name="nm_dot_voice_permission">Permita o microfone e as notificações para ditar. Você pode continuar digitando.</string>
+    <string name="nm_dot_voice_keyboard">Usar teclado</string>
+    <string name="nm_dot_voice_notification">Microfone do Dot</string>
+    <string name="nm_dot_voice_stop_hint">Gravando ou finalizando. Parar cancela esta gravação.</string>
+    <string name="nm_dot_voice_cancel">Cancelar gravação</string>
+    <string name="nm_dot_voice_finish">Concluir ditado</string>
+    <string name="nm_dot_voice_starting">Iniciando microfone…</string>
+    <string name="nm_dot_voice_recording">Ouvindo…</string>
+    <string name="nm_dot_voice_finishing">Finalizando e liberando o microfone…</string>
+    <string name="nm_dot_voice_denied">Microfone ou notificações indisponíveis. Digite, tente novamente ou abra Configurações.</string>
+    <string name="nm_dot_voice_busy">Microfone em uso. Tente novamente após parar.</string>
+    <string name="nm_dot_voice_error">Falha na voz. Você pode digitar ou tentar novamente.</string>
+    <string name="nm_dot_voice_read">Ler resposta</string>
+    <string name="nm_dot_voice_speaking">Lendo resposta…</string>
+    <string name="nm_dot_voice_read_error">Não foi possível ler a resposta em voz alta.</string>
 </resources>

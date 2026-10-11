@@ -16,7 +16,18 @@ import kotlinx.coroutines.*
 class DotInteractionCoordinator(private val service: MinisAccessibilityService) {
     private val app get() = service.application as MinisApp
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private val adapter by lazy { DotChatAdapter.create(app) }
+    private val adapter by lazy { DotChatAdapter.create(app).also { chat ->
+        chat.voice = io.github.nanomuse.dot.voice.DotVoiceController(chat,
+            io.github.nanomuse.dot.voice.DotVoiceRuntime.gate,
+            {
+                val choice = app.providerRepository.resolveVoiceInputChoice()
+                io.github.nanomuse.dot.voice.VoiceSelection(if (choice.isSystem) "system" else "provider",
+                    com.openminis.app.speech.SpeechRecognitionManager.locale.value, choice.systemPreferOffline == true)
+            },
+            { request, controller -> io.github.nanomuse.dot.voice.DotVoiceRuntime.launch(service, request, controller) },
+            service.dotOverlay::setVoicePermissionWindow,
+            io.github.nanomuse.dot.voice.DotVoiceRuntime::release)
+    } }
     private var opening: Job? = null
     private var request = 0L
     private var careWindow: CareOverlayWindow? = null
@@ -29,6 +40,7 @@ class DotInteractionCoordinator(private val service: MinisAccessibilityService) 
     }
     fun connect() { CareOperationGate.observe(careSession::automatic) }
     fun pauseCare(hide: Boolean = false) {
+        adapter.voice?.cancel(); adapter.stopReply()
         careSession.pause(hide)
         if (hide) careWindow?.hide()
     }

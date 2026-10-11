@@ -114,6 +114,8 @@ class ReadAloudPlayer(context: Context) {
      */
     private fun ownsCapsule(): Boolean = VoiceOutputState.isActivePlayer(this)
 
+    // nanoMuse: embedded Dot controls expose actual playback failure alongside Stop.
+    val playbackFailed = MutableStateFlow(false)
     private val _isSpeaking = MutableStateFlow(false)
     val isSpeaking: StateFlow<Boolean> = _isSpeaking.asStateFlow()
 
@@ -163,7 +165,11 @@ class ReadAloudPlayer(context: Context) {
                 val utterance = launch(start = CoroutineStart.LAZY) {
                     try { speakOne(text, ticket) }
                     catch (cancelled: CancellationException) { throw cancelled }
-                    catch (failure: Exception) { AppLogger.error(TAG, "utterance failed: $failure") }
+                    catch (failure: Exception) {
+                        // nanoMuse: retain an observable error when the existing player fails.
+                        if (generation.isCurrent(ticket)) playbackFailed.value = true
+                        AppLogger.error(TAG, "utterance failed: $failure")
+                    }
                 }
                 utteranceJob = utterance
                 utterance.start()
@@ -208,9 +214,12 @@ class ReadAloudPlayer(context: Context) {
     }
 
     /** Speak [text] as a single utterance, after stopping anything in flight. */
-    fun speak(text: String) {
+    // nanoMuse: a direct Dot Read reply request does not enable automatic reply reading.
+    fun speak(text: String, explicit: Boolean = false) {
+        // nanoMuse: explicit retry clears the previous playback failure.
+        playbackFailed.value = false
         stop()
-        enqueue(text)
+        enqueue(text, explicit)
     }
 
     /**
@@ -231,13 +240,14 @@ class ReadAloudPlayer(context: Context) {
         enqueue(text)
     }
 
-    private fun enqueue(raw: String) {
+    // nanoMuse: explicit playback bypasses only automatic-output preference, never capture suppression.
+    private fun enqueue(raw: String, explicit: Boolean = false) {
         // [T-android-tts-capsule] Temporary mute suppresses NEW utterances too
         // (not only current playback) — matching iOS, where `canPlay =
         // isEnabled && !isMuted` gates production. Dropping here rather than at
         // playback keeps a long mute from piling up a backlog that would all
         // blurt out on un-mute.
-        if (!VoiceOutputState.canPlay) return
+        if (!explicit && !VoiceOutputState.canPlay) return
         // [T-android-tts-scope-align] Mic-capture suppression, from iOS
         // canSpeakNow (feedDynamicTTS logs "DROP — read-replies off
         // (capturing)"): while the VAD/recognizer is actively capturing,
@@ -352,6 +362,12 @@ class ReadAloudPlayer(context: Context) {
         }
     }
 
+    // nanoMuse: Dot teardown retains registry membership until synthesis cleanup actually completes.
+    suspend fun shutdownAndJoin() {
+        try { io.github.nanomuse.dot.voice.CapturePause.await(utteranceJob) { stop() } }
+        finally { shutdown() }
+    }
+
     /** Release both engines. Call from the owner's DisposableEffect. */
     fun shutdown() {
         stop()
@@ -405,7 +421,8 @@ class ReadAloudPlayer(context: Context) {
             // why read-aloud "just works" there while Android could go silent
             // with no feedback at all — the reported OPPO symptom. Tell the user
             // once instead of swallowing it.
-            notifySpeechUnavailable(providerConfigured = entry != null)
+            // nanoMuse: a replaced reply must not publish an error into the next panel generation.
+            if (generation.isCurrent(ticket)) notifySpeechUnavailable(providerConfigured = entry != null)
         }
     }
 
@@ -413,6 +430,8 @@ class ReadAloudPlayer(context: Context) {
     private var unavailableNotified = false
 
     private fun notifySpeechUnavailable(providerConfigured: Boolean) {
+        // nanoMuse: Toast alone is not a durable error state for the Dot panel.
+        playbackFailed.value = true
         AppLogger.error(
             TAG,
             "read-aloud produced NO audio: providerConfigured=$providerConfigured " +

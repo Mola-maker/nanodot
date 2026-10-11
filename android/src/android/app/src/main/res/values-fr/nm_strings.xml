@@ -1179,4 +1179,22 @@
     <string name="nm_care_paused">Guidage en pause</string>
     <string name="nm_care_unavailable">Impossible de lire ou de vérifier cet écran. Observez à nouveau, modifiez le but ou terminez le guidage.</string>
     <string name="nm_care_provider_missing">Choisissez un modèle de texte disponible dans Paramètres → Modèles, puis observez à nouveau.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Dicter</string>
+    <string name="nm_dot_voice_permission">Autorisez le micro et les notifications pour dicter. Vous pouvez continuer à écrire.</string>
+    <string name="nm_dot_voice_keyboard">Utiliser le clavier</string>
+    <string name="nm_dot_voice_notification">Micro de Dot</string>
+    <string name="nm_dot_voice_stop_hint">Enregistrement ou finalisation. Arrêter annule cet enregistrement.</string>
+    <string name="nm_dot_voice_cancel">Annuler l’enregistrement</string>
+    <string name="nm_dot_voice_finish">Terminer la dictée</string>
+    <string name="nm_dot_voice_starting">Démarrage du micro…</string>
+    <string name="nm_dot_voice_recording">Écoute…</string>
+    <string name="nm_dot_voice_finishing">Finalisation et libération du micro…</string>
+    <string name="nm_dot_voice_denied">Micro ou notifications indisponibles. Écrivez, réessayez ou ouvrez les paramètres.</string>
+    <string name="nm_dot_voice_busy">Micro utilisé. Réessayez après son arrêt.</string>
+    <string name="nm_dot_voice_error">Échec vocal. Vous pouvez écrire ou réessayer.</string>
+    <string name="nm_dot_voice_read">Lire la réponse</string>
+    <string name="nm_dot_voice_speaking">Lecture de la réponse…</string>
+    <string name="nm_dot_voice_read_error">Impossible de lire la réponse à voix haute.</string>
 </resources>

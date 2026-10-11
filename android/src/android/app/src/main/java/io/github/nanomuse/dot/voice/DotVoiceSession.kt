@@ -29,6 +29,7 @@ class DotVoiceSession(private val port: Port, private val accepts: (SessionBindi
             if (request == generation && accepts(binding)) error(kind, message)
         })
     }
+    fun currentTicket(): VoiceLease.Ticket? = ticket
     fun stop() { ticket?.let(port::stop) }
     fun cancel() {
         ++generation

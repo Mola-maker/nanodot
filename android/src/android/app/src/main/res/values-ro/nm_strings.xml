@@ -1183,4 +1183,22 @@
     <string name="nm_care_paused">Ghidare întreruptă</string>
     <string name="nm_care_unavailable">Acest ecran nu a putut fi citit sau verificat. Privește din nou, schimbă obiectivul sau încheie ghidarea.</string>
     <string name="nm_care_provider_missing">Alege un model text disponibil în Setări → Modele, apoi privește din nou.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Dictează</string>
+    <string name="nm_dot_voice_permission">Permite microfonul și notificările pentru dictare. Poți continua să scrii.</string>
+    <string name="nm_dot_voice_keyboard">Folosește tastatura</string>
+    <string name="nm_dot_voice_notification">Microfon Dot</string>
+    <string name="nm_dot_voice_stop_hint">Înregistrare sau finalizare. Oprirea anulează înregistrarea.</string>
+    <string name="nm_dot_voice_cancel">Anulează înregistrarea</string>
+    <string name="nm_dot_voice_finish">Încheie dictarea</string>
+    <string name="nm_dot_voice_starting">Se pornește microfonul…</string>
+    <string name="nm_dot_voice_recording">Se ascultă…</string>
+    <string name="nm_dot_voice_finishing">Se finalizează și se eliberează microfonul…</string>
+    <string name="nm_dot_voice_denied">Microfonul sau notificările nu sunt disponibile. Scrie, reîncearcă sau deschide Setări.</string>
+    <string name="nm_dot_voice_busy">Microfonul este folosit. Reîncearcă după oprire.</string>
+    <string name="nm_dot_voice_error">Eroare vocală. Poți scrie sau reîncerca.</string>
+    <string name="nm_dot_voice_read">Citește răspunsul</string>
+    <string name="nm_dot_voice_speaking">Se citește răspunsul…</string>
+    <string name="nm_dot_voice_read_error">Răspunsul nu a putut fi citit cu voce tare.</string>
 </resources>

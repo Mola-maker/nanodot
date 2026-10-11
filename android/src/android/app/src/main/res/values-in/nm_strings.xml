@@ -1175,4 +1175,22 @@
     <string name="nm_care_paused">Panduan dijeda</string>
     <string name="nm_care_unavailable">Layar ini tidak dapat dibaca atau diverifikasi. Amati lagi, ubah tujuan, atau akhiri panduan.</string>
     <string name="nm_care_provider_missing">Pilih model teks yang tersedia di Setelan → Model, lalu amati lagi.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Dikte</string>
+    <string name="nm_dot_voice_permission">Izinkan mikrofon dan notifikasi untuk mendikte. Anda tetap dapat mengetik.</string>
+    <string name="nm_dot_voice_keyboard">Gunakan keyboard</string>
+    <string name="nm_dot_voice_notification">Mikrofon Dot</string>
+    <string name="nm_dot_voice_stop_hint">Merekam atau menyelesaikan. Berhenti membatalkan rekaman ini.</string>
+    <string name="nm_dot_voice_cancel">Batalkan rekaman</string>
+    <string name="nm_dot_voice_finish">Selesaikan dikte</string>
+    <string name="nm_dot_voice_starting">Memulai mikrofon…</string>
+    <string name="nm_dot_voice_recording">Mendengarkan…</string>
+    <string name="nm_dot_voice_finishing">Menyelesaikan dan melepas mikrofon…</string>
+    <string name="nm_dot_voice_denied">Mikrofon atau notifikasi tidak tersedia. Ketik, coba lagi, atau buka Setelan.</string>
+    <string name="nm_dot_voice_busy">Mikrofon sedang digunakan. Coba lagi setelah berhenti.</string>
+    <string name="nm_dot_voice_error">Suara gagal. Anda dapat mengetik atau mencoba lagi.</string>
+    <string name="nm_dot_voice_read">Bacakan balasan</string>
+    <string name="nm_dot_voice_speaking">Membacakan balasan…</string>
+    <string name="nm_dot_voice_read_error">Tidak dapat membacakan balasan.</string>
 </resources>

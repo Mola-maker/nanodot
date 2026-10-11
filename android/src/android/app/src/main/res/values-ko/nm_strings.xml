@@ -1175,4 +1175,22 @@
     <string name="nm_care_paused">안내 일시 중지</string>
     <string name="nm_care_unavailable">이 화면을 읽거나 확인할 수 없어요. 다시 확인하거나 목표를 변경하거나 안내를 종료하세요.</string>
     <string name="nm_care_provider_missing">설정 → 모델에서 사용 가능한 텍스트 모델을 선택한 후 다시 확인하세요.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">음성 입력</string>
+    <string name="nm_dot_voice_permission">음성 입력을 위해 마이크와 알림을 허용하세요. 키보드도 사용할 수 있습니다.</string>
+    <string name="nm_dot_voice_keyboard">키보드 사용</string>
+    <string name="nm_dot_voice_notification">Dot 마이크</string>
+    <string name="nm_dot_voice_stop_hint">녹음 또는 마무리 중입니다. 중지하면 녹음이 취소됩니다.</string>
+    <string name="nm_dot_voice_cancel">녹음 취소</string>
+    <string name="nm_dot_voice_finish">음성 입력 완료</string>
+    <string name="nm_dot_voice_starting">마이크 시작 중…</string>
+    <string name="nm_dot_voice_recording">듣는 중…</string>
+    <string name="nm_dot_voice_finishing">변환을 마치고 마이크 해제 중…</string>
+    <string name="nm_dot_voice_denied">마이크 또는 알림을 사용할 수 없습니다. 입력, 재시도 또는 설정을 이용하세요.</string>
+    <string name="nm_dot_voice_busy">마이크 사용 중입니다. 중지 후 다시 시도하세요.</string>
+    <string name="nm_dot_voice_error">음성 입력 실패. 직접 입력하거나 다시 시도하세요.</string>
+    <string name="nm_dot_voice_read">답변 읽기</string>
+    <string name="nm_dot_voice_speaking">답변 읽는 중…</string>
+    <string name="nm_dot_voice_read_error">답변을 읽을 수 없습니다.</string>
 </resources>

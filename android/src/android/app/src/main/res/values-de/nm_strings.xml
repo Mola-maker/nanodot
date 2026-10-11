@@ -1179,4 +1179,22 @@
     <string name="nm_care_paused">Anleitung pausiert</string>
     <string name="nm_care_unavailable">Dieser Bildschirm konnte nicht gelesen oder geprüft werden. Erneut ansehen, Ziel ändern oder Anleitung beenden.</string>
     <string name="nm_care_provider_missing">Wähle unter Einstellungen → Modelle ein verfügbares Textmodell und sieh erneut nach.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Diktieren</string>
+    <string name="nm_dot_voice_permission">Mikrofon und Benachrichtigungen zum Diktieren erlauben. Tippen bleibt möglich.</string>
+    <string name="nm_dot_voice_keyboard">Tastatur verwenden</string>
+    <string name="nm_dot_voice_notification">Dot-Mikrofon</string>
+    <string name="nm_dot_voice_stop_hint">Aufnahme oder Abschluss läuft. Stoppen verwirft die Aufnahme.</string>
+    <string name="nm_dot_voice_cancel">Aufnahme abbrechen</string>
+    <string name="nm_dot_voice_finish">Diktat abschließen</string>
+    <string name="nm_dot_voice_starting">Mikrofon wird gestartet…</string>
+    <string name="nm_dot_voice_recording">Hört zu…</string>
+    <string name="nm_dot_voice_finishing">Transkription wird beendet und Mikrofon freigegeben…</string>
+    <string name="nm_dot_voice_denied">Mikrofon oder Benachrichtigungen nicht verfügbar. Tippen, erneut versuchen oder Einstellungen öffnen.</string>
+    <string name="nm_dot_voice_busy">Mikrofon wird verwendet. Nach dem Stoppen erneut versuchen.</string>
+    <string name="nm_dot_voice_error">Spracheingabe fehlgeschlagen. Tippen oder erneut versuchen.</string>
+    <string name="nm_dot_voice_read">Antwort vorlesen</string>
+    <string name="nm_dot_voice_speaking">Antwort wird vorgelesen…</string>
+    <string name="nm_dot_voice_read_error">Antwort konnte nicht vorgelesen werden.</string>
 </resources>

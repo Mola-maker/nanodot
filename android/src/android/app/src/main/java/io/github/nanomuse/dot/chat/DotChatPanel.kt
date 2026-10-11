@@ -87,7 +87,8 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit) {
                     }
                 }
             }
-            OutlinedTextField(text, session::input, Modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget).testTag("dot_composer"),
+            io.github.nanomuse.dot.voice.DotVoiceControls(adapter)
+            OutlinedTextField(text, adapter::editInput, Modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget).testTag("dot_composer"),
                 label = { Text(stringResource(R.string.nm_dot_chat_message), fontSize = DotTokens.Type.Body) },
                 textStyle = LocalTextStyle.current.copy(fontSize = DotTokens.Type.Body), maxLines = 4)
             Button(onClick = { binding?.let { if (busy) { adapter.cancel(it); adapter.bind(it.sessionId) } else adapter.send(it,text) } },

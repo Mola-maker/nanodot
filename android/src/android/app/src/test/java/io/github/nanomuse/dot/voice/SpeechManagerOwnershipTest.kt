@@ -143,4 +143,27 @@ class SpeechManagerOwnershipTest {
         }
     }
 
+    @Test fun mainPanelTracksRestartTicketAndOldPanelCannotStopReplacement() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val engine = Engine("system"); install(engine); installPreferences()
+        val panel = MainVoiceInput()
+        try {
+            SpeechRecognitionManager.selectLocale(Locale.US)
+            panel.start(panel.pending(),VoiceSelection("system",Locale.US,false),{_,_->},{_,_->}); runCurrent()
+            val old = panel.ticket.value!!
+            engine.gate = CompletableDeferred()
+            SpeechRecognitionManager.selectLocale(Locale.FRANCE); runCurrent()
+            assertSame(old,panel.ticket.value)
+            assertFalse(old.completion.isCompleted)
+            engine.gate!!.complete(Unit); runCurrent()
+            assertNotSame(old,panel.ticket.value); assertTrue(old.completion.isCompleted)
+            panel.stop(); runCurrent(); assertEquals(1,engine.stops)
+            panel.close(); runCurrent()
+            val replacement = MainVoiceInput()
+            replacement.start(replacement.pending(),VoiceSelection("system",Locale.JAPAN,false),{_,_->},{_,_->}); runCurrent()
+            val closes = engine.closes; panel.cancel(); runCurrent(); assertEquals(closes,engine.closes)
+            replacement.close(); runCurrent()
+        } finally { engine.gate?.complete(Unit); panel.close(); SpeechRecognitionManager.cancelRecording(); runCurrent(); Dispatchers.resetMain() }
+    }
+
 }

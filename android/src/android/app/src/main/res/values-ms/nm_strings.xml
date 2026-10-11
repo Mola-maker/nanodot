@@ -1175,4 +1175,22 @@
     <string name="nm_care_paused">Panduan dijeda</string>
     <string name="nm_care_unavailable">Skrin ini tidak dapat dibaca atau disahkan. Lihat semula, ubah matlamat atau tamatkan panduan.</string>
     <string name="nm_care_provider_missing">Pilih model teks yang tersedia dalam Tetapan → Model, kemudian lihat semula.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Imlak</string>
+    <string name="nm_dot_voice_permission">Benarkan mikrofon dan pemberitahuan untuk imlak. Anda masih boleh menaip.</string>
+    <string name="nm_dot_voice_keyboard">Gunakan papan kekunci</string>
+    <string name="nm_dot_voice_notification">Mikrofon Dot</string>
+    <string name="nm_dot_voice_stop_hint">Merakam atau menyelesaikan. Berhenti membatalkan rakaman ini.</string>
+    <string name="nm_dot_voice_cancel">Batalkan rakaman</string>
+    <string name="nm_dot_voice_finish">Selesaikan imlak</string>
+    <string name="nm_dot_voice_starting">Memulakan mikrofon…</string>
+    <string name="nm_dot_voice_recording">Mendengar…</string>
+    <string name="nm_dot_voice_finishing">Menyelesaikan dan melepaskan mikrofon…</string>
+    <string name="nm_dot_voice_denied">Mikrofon atau pemberitahuan tidak tersedia. Taip, cuba lagi atau buka Tetapan.</string>
+    <string name="nm_dot_voice_busy">Mikrofon sedang digunakan. Cuba lagi selepas berhenti.</string>
+    <string name="nm_dot_voice_error">Suara gagal. Anda boleh menaip atau cuba lagi.</string>
+    <string name="nm_dot_voice_read">Baca balasan</string>
+    <string name="nm_dot_voice_speaking">Membaca balasan…</string>
+    <string name="nm_dot_voice_read_error">Tidak dapat membaca balasan dengan kuat.</string>
 </resources>
