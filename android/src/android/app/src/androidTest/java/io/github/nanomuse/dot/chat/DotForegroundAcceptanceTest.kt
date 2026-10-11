@@ -78,11 +78,33 @@ class DotForegroundAcceptanceTest {
         automation.serviceInfo = observation
         reconnectGrantedService()
         // Fail before UI/DB mutation if there is existing panel work we do not own.
-        waitFor("real framework-connected accessibility service") {
+        waitFor("real framework-connected accessibility service") { onMain {
             MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true
+        } }
+        // connect() precedes window attachment; let Android's Main traversal make the orb ready.
+        try {
+            waitFor("Controller must enable/unlock the visible Dot orb") { onMain {
+                val overlay = MinisAccessibilityService.getInstance()?.dotOverlay
+                assertNull("Existing panel belongs to the user", overlay?.panelView)
+                val orb = overlay?.orbView
+                overlay?.isConnected == true && orb?.isAttachedToWindow == true && orb.isShown &&
+                    orb.windowVisibility == android.view.View.VISIBLE && orb.alpha > 0f && orb.getGlobalVisibleRect(Rect())
+            } }
+        } catch (failure: AssertionError) {
+            onMain {
+                val current = MinisAccessibilityService.getInstance()
+                val overlay = current?.dotOverlay
+                val orb = overlay?.orbView
+                println("T4_UI_ORB_READINESS servicePresent=${current != null} connected=${overlay?.isConnected == true} " +
+                    "preferenceEnabled=${io.github.nanomuse.dot.DotPreferences(app).showOnAccessibilityConnected()} " +
+                    "keyguardLocked=${app.getSystemService(android.app.KeyguardManager::class.java).isKeyguardLocked} " +
+                    "interactive=${app.getSystemService(android.os.PowerManager::class.java).isInteractive} " +
+                    "orbCreated=${orb != null} attached=${orb?.isAttachedToWindow == true} shown=${orb?.isShown == true} " +
+                    "windowVisible=${orb?.windowVisibility == android.view.View.VISIBLE} alphaPositive=${orb != null && orb.alpha > 0f} " +
+                    "visibleBounds=${orb?.getGlobalVisibleRect(Rect()) == true}")
+            }
+            throw failure
         }
-        assertNull("Existing panel belongs to the user", service.dotOverlay.panelView)
-        assertTrue("Controller must enable/unlock the visible Dot orb", service.dotOverlay.orbView?.isAttachedToWindow == true)
         previousSession = ChatViewModelStore.activeSessionId
         originalActivities = onMain { activities() }
         check(previousSession != null || originalActivities.none { it.javaClass.name == "com.openminis.app.MainActivity" }) {
@@ -275,7 +297,7 @@ class DotForegroundAcceptanceTest {
         ParcelFileDescriptor.AutoCloseInputStream(automation.executeShellCommand(command)).use { String(it.readBytes()) }
     private fun enabledServices(): String? = shell("settings get secure enabled_accessibility_services").trim().takeUnless { it == "null" }
     private fun reconnectGrantedService() {
-        if (MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true) return
+        if (onMain { MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true }) return
         val original = requireNotNull(enabledServices()) { "Controller must grant the real service before instrumentation" }
         val components = original.split(':')
         check(components.all { it.matches(Regex("[A-Za-z0-9_.$]+/[A-Za-z0-9_.$]+")) }) {
@@ -287,7 +309,7 @@ class DotForegroundAcceptanceTest {
         val others = components.filter { ComponentName.unflattenFromString(it) != own }
         val removed = others.takeIf { it.isNotEmpty() }?.joinToString(":")
         check(enabledServices() == original) { "Service list changed; preserve for controller" }
-        if (MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true) return
+        if (onMain { MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true }) return
         // Remove only our dead binding, retaining every unrelated component verbatim and in order.
         // UiAutomation passes argv directly; the validated list needs no literal shell quotes.
         if (removed == null) shell("settings delete secure enabled_accessibility_services")
