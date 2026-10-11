@@ -1116,4 +1116,14 @@
     <string name="nm_models_search_clear">Wyczyść wyszukiwanie</string>
     <string name="nm_models_no_match">Żaden model nie pasuje</string>
     <string name="nm_update_manual">Aktualizacje automatyczne są wyłączone. Sprawdź ręcznie stronę wydań Nanodot.</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Pływający przycisk Dot</string>
+    <string name="nm_dot_show_orb">Pokaż przycisk Dot</string>
+    <string name="nm_dot_settings_footer">Pojawia się po połączeniu usługi ułatwień dostępu. Po wyłączeniu pozostaje ukryty po ponownym połączeniu.</string>
+    <string name="nm_dot_orb_description">Przycisk Dot. Otwórz rozmowę, zobacz ekran lub rozpocznij wsparcie.</string>
+    <string name="nm_dot_open_conversation">Otwórz rozmowę</string>
+    <string name="nm_dot_view_screen">Zobacz ekran</string>
+    <string name="nm_dot_start_care">Rozpocznij wsparcie</string>
+    <string name="nm_dot_action_unavailable">Ta funkcja Dot nie jest jeszcze dostępna.</string>
 </resources>

@@ -1104,4 +1104,14 @@
     <string name="nm_models_search_clear">Hapus pencarian</string>
     <string name="nm_models_no_match">Tidak ada model yang cocok</string>
     <string name="nm_update_manual">Pembaruan otomatis nonaktif. Buka halaman rilis Nanodot untuk memeriksa secara manual.</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Tombol mengambang Dot</string>
+    <string name="nm_dot_show_orb">Tampilkan tombol Dot</string>
+    <string name="nm_dot_settings_footer">Muncul saat aksesibilitas terhubung. Jika dimatikan, tetap tersembunyi setelah terhubung kembali.</string>
+    <string name="nm_dot_orb_description">Tombol Dot. Buka percakapan, lihat layar, atau mulai pendampingan.</string>
+    <string name="nm_dot_open_conversation">Buka percakapan</string>
+    <string name="nm_dot_view_screen">Lihat layar</string>
+    <string name="nm_dot_start_care">Mulai pendampingan</string>
+    <string name="nm_dot_action_unavailable">Fitur Dot ini belum tersedia.</string>
 </resources>

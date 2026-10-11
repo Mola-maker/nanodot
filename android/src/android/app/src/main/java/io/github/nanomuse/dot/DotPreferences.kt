@@ -41,6 +41,19 @@ class DotPreferences(private val context: Context) : DotPreferenceStore {
     fun showOnAccessibilityConnected(): Boolean =
         prefs.getBoolean(DotDefaults.SHOW_ON_ACCESSIBILITY_CONNECTED, true)
 
+    fun setShowOnAccessibilityConnected(enabled: Boolean) {
+        putBoolean(DotDefaults.SHOW_ON_ACCESSIBILITY_CONNECTED, enabled)
+    }
+
+    fun orbPosition(): Pair<Float, Float> =
+        prefs.getFloat("dot_orb_x", 1f).coerceIn(0f, 1f) to
+            prefs.getFloat("dot_orb_y", 0.4f).coerceIn(0f, 1f)
+
+    fun saveOrbPosition(x: Float, y: Float) {
+        prefs.edit().putFloat("dot_orb_x", x.coerceIn(0f, 1f))
+            .putFloat("dot_orb_y", y.coerceIn(0f, 1f)).apply()
+    }
+
     /** P2's voice session reads the same preference exposed through minis-config. */
     fun continuousVoice(): Boolean = prefs.getBoolean(DotDefaults.CONTINUOUS_VOICE, false)
 }

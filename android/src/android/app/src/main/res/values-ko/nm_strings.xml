@@ -1104,4 +1104,14 @@
     <string name="nm_models_search_clear">검색 지우기</string>
     <string name="nm_models_no_match">일치하는 모델이 없습니다</string>
     <string name="nm_update_manual">자동 업데이트가 꺼져 있습니다. Nanodot 릴리스 페이지에서 직접 확인하세요.</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Dot 플로팅 버튼</string>
+    <string name="nm_dot_show_orb">Dot 버튼 표시</string>
+    <string name="nm_dot_settings_footer">접근성 서비스가 연결되면 표시됩니다. 끄면 다시 연결해도 숨겨진 상태로 유지됩니다.</string>
+    <string name="nm_dot_orb_description">Dot 버튼. 대화 열기, 화면 보기 또는 케어 시작.</string>
+    <string name="nm_dot_open_conversation">대화 열기</string>
+    <string name="nm_dot_view_screen">화면 보기</string>
+    <string name="nm_dot_start_care">케어 시작</string>
+    <string name="nm_dot_action_unavailable">이 Dot 기능은 아직 사용할 수 없습니다.</string>
 </resources>

@@ -1074,4 +1074,14 @@
     <string name="nm_models_search_clear">清除搜尋</string>
     <string name="nm_models_no_match">沒有符合的模型</string>
     <string name="nm_update_manual">自動更新已關閉。開啟 Nanodot 發布頁手動查看更新。</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Dot 懸浮球</string>
+    <string name="nm_dot_show_orb">顯示 Dot 懸浮球</string>
+    <string name="nm_dot_settings_footer">無障礙服務連接後顯示。關閉後，重新連接也會保持隱藏。</string>
+    <string name="nm_dot_orb_description">Dot 懸浮球。開啟對話、檢視螢幕或開始關懷。</string>
+    <string name="nm_dot_open_conversation">開啟對話</string>
+    <string name="nm_dot_view_screen">檢視螢幕</string>
+    <string name="nm_dot_start_care">開始關懷</string>
+    <string name="nm_dot_action_unavailable">此 Dot 功能尚未開放。</string>
 </resources>

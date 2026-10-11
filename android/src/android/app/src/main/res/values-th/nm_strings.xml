@@ -1104,4 +1104,14 @@
     <string name="nm_models_search_clear">ล้างการค้นหา</string>
     <string name="nm_models_no_match">ไม่มีโมเดลที่ตรงกัน</string>
     <string name="nm_update_manual">ปิดการอัปเดตอัตโนมัติแล้ว เปิดหน้ารุ่นของ Nanodot เพื่อตรวจสอบด้วยตนเอง</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">ปุ่มลอย Dot</string>
+    <string name="nm_dot_show_orb">แสดงปุ่ม Dot</string>
+    <string name="nm_dot_settings_footer">ปรากฏเมื่อเชื่อมต่อบริการการช่วยเหลือพิเศษ เมื่อปิดแล้วจะยังซ่อนอยู่หลังเชื่อมต่อใหม่</string>
+    <string name="nm_dot_orb_description">ปุ่ม Dot เปิดการสนทนา ดูหน้าจอ หรือเริ่มการดูแล</string>
+    <string name="nm_dot_open_conversation">เปิดการสนทนา</string>
+    <string name="nm_dot_view_screen">ดูหน้าจอ</string>
+    <string name="nm_dot_start_care">เริ่มการดูแล</string>
+    <string name="nm_dot_action_unavailable">ฟังก์ชัน Dot นี้ยังไม่พร้อมใช้งาน</string>
 </resources>

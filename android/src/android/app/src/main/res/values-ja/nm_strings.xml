@@ -1104,4 +1104,14 @@
     <string name="nm_models_search_clear">検索をクリア</string>
     <string name="nm_models_no_match">一致するモデルはありません</string>
     <string name="nm_update_manual">自動更新はオフです。Nanodot のリリースページで手動で確認してください。</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Dot フローティングボタン</string>
+    <string name="nm_dot_show_orb">Dot ボタンを表示</string>
+    <string name="nm_dot_settings_footer">ユーザー補助の接続時に表示します。オフにすると再接続しても非表示のままです。</string>
+    <string name="nm_dot_orb_description">Dot ボタン。会話を開く、画面を見る、またはケアを開始。</string>
+    <string name="nm_dot_open_conversation">会話を開く</string>
+    <string name="nm_dot_view_screen">画面を見る</string>
+    <string name="nm_dot_start_care">ケアを開始</string>
+    <string name="nm_dot_action_unavailable">この Dot 機能はまだ利用できません。</string>
 </resources>

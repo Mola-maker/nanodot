@@ -1108,4 +1108,14 @@
     <string name="nm_models_search_clear">Aramayı temizle</string>
     <string name="nm_models_no_match">Eşleşen model yok</string>
     <string name="nm_update_manual">Otomatik güncellemeler kapalı. Nanodot sürüm sayfasını elle kontrol edin.</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Dot yüzen düğmesi</string>
+    <string name="nm_dot_show_orb">Dot düğmesini göster</string>
+    <string name="nm_dot_settings_footer">Erişilebilirlik bağlandığında görünür. Kapatıldığında yeniden bağlanınca da gizli kalır.</string>
+    <string name="nm_dot_orb_description">Dot düğmesi. Sohbeti aç, ekranı görüntüle veya desteği başlat.</string>
+    <string name="nm_dot_open_conversation">Sohbeti aç</string>
+    <string name="nm_dot_view_screen">Ekranı görüntüle</string>
+    <string name="nm_dot_start_care">Desteği başlat</string>
+    <string name="nm_dot_action_unavailable">Bu Dot özelliği henüz kullanılamıyor.</string>
 </resources>
