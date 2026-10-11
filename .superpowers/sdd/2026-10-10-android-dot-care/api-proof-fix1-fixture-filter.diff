@@ -1,0 +1,20 @@
+--- baseline9cdb/fixture-only.init.gradle
++++ fix1/fixture-only.init.gradle
+@@ -1,5 +1,5 @@
+-// Derived from root-authorized Task4 template; only NEW OWN proof fixture compilation.
+-// Main and ALL unit sources remain unfiltered. This is not full instrumentation compilation.
++// Root-authorized fix-round-1 OWN fixture compilation only, derived from the same Task4 template.
++// Main and ALL unit sources remain unfiltered; not full instrumentation compilation.
+ gradle.projectsEvaluated {
+     def app = rootProject.project(':app')
+     def nativeProof = new File(app.projectDir, 'src/androidTest/java/io/github/nanomuse/apiproof')
+@@ -7,7 +7,7 @@
+     app.android.sourceSets.androidTest.java.setSrcDirs([nativeProof, sharedProof])
+     app.kotlin.sourceSets.getByName('androidTest').kotlin.setSrcDirs([nativeProof, sharedProof])
+     app.tasks.named('compileDebugAndroidTestKotlin').configure {
+-        setIncludes(['**/ManualDeepSeekApiProofTest.kt', '**/PrivateProofInput.kt', '**/ApiProofTransport.kt'])
+-        doFirst { println('API_PROOF_OWN_FIXTURE_SOURCES=' + sources.files.collect { it.path }.sort().join(',')) }
++        setIncludes(['**/ManualDeepSeekApiProofTest.kt', '**/PrivateProofInput.kt', '**/ApiProofTransport.kt', '**/ProofInputConsumption.kt'])
++        doFirst { println('API_PROOF_FIX1_OWN_FIXTURE_SOURCES=' + sources.files.collect { it.path }.sort().join(',')) }
+     }
+ }

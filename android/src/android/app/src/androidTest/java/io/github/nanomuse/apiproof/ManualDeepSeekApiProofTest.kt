@@ -1,6 +1,9 @@
 package io.github.nanomuse.apiproof
 
 import android.system.Os
+import android.system.OsConstants
+import android.system.ErrnoException
+import org.junit.Assert.*
 import androidx.test.platform.app.InstrumentationRegistry
 import com.openminis.app.data.model.LLMStreamChunk
 import com.openminis.app.data.model.LLMUsage
@@ -115,5 +118,60 @@ class ManualDeepSeekApiProofTest {
             // Same-directory rename atomically replaces a stale result, without following its symlink.
             Os.rename(temporary.path, File(cache, PrivateProofInput.RESULT_NAME).path)
         } finally { temporary.delete() }
+    }
+
+    /** Public-only filesystem controls; root selects these BEFORE any real credential handoff. */
+    private fun withPublicInput(block: (android.content.Context, File, File) -> Unit) {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val input = File(context.cacheDir, PrivateProofInput.INPUT_NAME)
+        val alias = File(context.cacheDir, "nanodot-api-proof.public-alias")
+        fun absent(file: File): Boolean = try { Os.lstat(file.path); false } catch (e: ErrnoException) {
+            if (e.errno == OsConstants.ENOENT) true else throw IllegalStateException("Public fixture metadata failure")
+        }
+        // Never read/remove an existing real handoff or another run's artifact.
+        assumeTrue("Public fixture requires absent owned input and alias", absent(input) && absent(alias))
+        var created = false
+        try {
+            val fd = Os.open(input.path, OsConstants.O_WRONLY or OsConstants.O_CREAT or OsConstants.O_EXCL or
+                OsConstants.O_NOFOLLOW or OsConstants.O_CLOEXEC, 384)
+            created = true
+            FileOutputStream(fd).use { it.write("synthetic-proof-key".toByteArray(Charsets.US_ASCII)) }
+            Os.chmod(input.path, 384)
+            block(context, input, alias)
+        } finally {
+            // Only this fixture's two known public paths; the consumer never deletes unknown aliases.
+            if (created) for (file in listOf(input, alias)) {
+                try { Os.remove(file.path) } catch (e: ErrnoException) {
+                    if (e.errno != OsConstants.ENOENT) throw IllegalStateException("Public fixture cleanup failure")
+                }
+            }
+        }
+    }
+
+    @Test fun publicSyntheticUnaliasedInputIsRemoved() = withPublicInput { context, input, _ ->
+        assertEquals("synthetic-proof-key", PrivateProofInput.consume(context))
+        assertFalse(input.exists())
+    }
+
+    @Test fun publicSyntheticHardlinkRaceIsRejected() = withPublicInput { context, input, alias ->
+        val failure = runCatching { PrivateProofInput.consume(context) { Os.link(input.path, alias.path) } }.exceptionOrNull()
+        assertNotNull(failure)
+        assertEquals("Proof input rejected", failure!!.message)
+        assertNull(failure.cause)
+        assertFalse(input.exists())
+        assertEquals("synthetic-proof-key", alias.readText(Charsets.US_ASCII))
+    }
+
+    @Test fun publicSyntheticRenameReplacementRaceIsRejected() = withPublicInput { context, input, alias ->
+        val failure = runCatching { PrivateProofInput.consume(context) {
+            Os.rename(input.path, alias.path)
+            val fd = Os.open(input.path, OsConstants.O_WRONLY or OsConstants.O_CREAT or OsConstants.O_EXCL or
+                OsConstants.O_NOFOLLOW or OsConstants.O_CLOEXEC, 384)
+            FileOutputStream(fd).use { it.write("public-replacement".toByteArray(Charsets.US_ASCII)) }
+        } }.exceptionOrNull()
+        assertNotNull(failure)
+        assertEquals("Proof input rejected", failure!!.message)
+        assertFalse(input.exists())
+        assertEquals("synthetic-proof-key", alias.readText(Charsets.US_ASCII))
     }
 }

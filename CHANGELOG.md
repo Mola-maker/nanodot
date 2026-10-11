@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Required zero links on the still-open proof-input descriptor after removal and rejected JSON-escaped credential echoes before Android provider diagnostics; host controls passed while native checks remained pending.
+
 - Added a manually guarded Android provider verification fixture with private one-use credential handoff, a single-exchange test transport, sanitized results and offline protocol controls; real API and native execution remained pending.
 
 - Masked sensitive Android LLM request headers before retaining debug logs and exporting request or agent traces; later caller mutations no longer changed logged headers.

@@ -172,3 +172,154 @@ Fresh unit XML timestamp2026-10-11T08:28:19:10tests,0failures,0errors,0skips.
 Filtered native compile was up-to-date against unchanged restored strict sources;
 its prior executed successful compile and exact3-source print are preserved in
 focused-verification.log. `git diff --check` exited0. No native test was run.
+
+## Fix round1 — I1/I2, same implementer
+
+This appendix supersedes the earlier candidate's credential-safety claims where
+I1/I2 apply. Exact round base is `9cdb63014bdcac5860cf29400321858b9417c098`.
+Root supplied full formal review `api-proof-review.md`, SHA256
+`e8ca284da5451a20c3fe1256d878a7dd50a63b65571d9de9157c1e1b15b80afa`,
+verdict C0/I2/M2. It was read in full and both Important findings were reproduced
+before fixes. Root authorized the shared TEST-ONLY input consumption core,
+actual Android Os adapter, real host POSIX substitute controls, and narrowly
+scoped public native fixtures. No main/release sourceSet, dependency/version,
+business provider/body, transport ownership policy or normal-state surface changed.
+No helper/reviewer was dispatched. Review approval belongs to root's same reviewer.
+
+I1 correction: the shared `ProofInputConsumption` core opens no-follow, verifies
+the same metadata, reads/wipes bounded scratch and KEEPS that descriptor open
+through fixed-path removal and the pathname-absence check. It then fstats that
+SAME live descriptor, requires the original device/inode and nlink0, and only
+then constructs/returns the credential String. Surviving hardlinks or renamed
+originals fail closed with only `Proof input rejected`, without cause/raw OS
+message. use/finally closes the handle and wipes scratch on all paths; finally
+cleans only the fixed cache entry. The consumer never seeks/deletes unknown
+aliases. `PrivateProofInput` is the actual Android adapter: original FileDescriptor
+is passed to Os.fstat and stays owned by FileInputStream until core returns/fails;
+Os.open remains O_NOFOLLOW/O_CLOEXEC and Os.remove remains restricted to the fixed
+entry. The manual case still cannot construct provider/HTTP resources before the
+core returns successfully. Its default public-race hook is no-op.
+
+The four focused host controls run that SAME core against real Linux/JDK POSIX
+operations. No fake android.* classes or production DI were introduced.
+The owned public inode's live descriptor is found by device/inode in /proc/self/fd;
+reading Unix metadata through that descriptor link provides original-inode nlink
+after rename/unlink. Host UID/mode/symlink handling uses actual Unix metadata and
+NOFOLLOW_LINKS. A controlled after-read hook creates a hardlink, or renames original
+and installs a public replacement. Controls assert failure before handoff, original
+alias remains readable, fixed entry removed, post-removal nlink1, descriptor closed,
+and scratch zeroed. Unaliased success observes post-removal nlink0; no-file returns
+before any open. This is **actual host POSIX/shared algorithm proof**, not Android
+adapter/native filesystem permission proof.
+
+Three root-later public-only native methods were added to the SAME existing manual
+file: publicSyntheticUnaliasedInputIsRemoved, publicSyntheticHardlinkRaceIsRejected,
+publicSyntheticRenameReplacementRaceIsRejected. They assume the fixed input and
+known `nanodot-api-proof.public-alias` are absent before creating synthetic data,
+use exclusive/no-follow0600 creation and actual Os.link/Os.rename, and clean only
+those known fixture-created paths. They never construct transport/provider, read
+an existing handoff or reserve an actual attempt. They were COMPILED ONLY here;
+root must select/run them before any real credential handoff. They do not grant
+this worker native/ADB/device authority or advance the actual counter.
+
+I2 correction: the literal raw-line guard is retained. Before forwarding any data
+line, the owned stream now handles exact DONE separately, scans standard quoted
+JSON structural depth≤32 before recursive parser allocation, parses one complete
+JSONObject, and recursively inspects decoded keys and every STRING value through
+objects/arrays (≤2048 visited values). Unicode-escaped finish_reason, nested usage
+strings and nested keys containing the credential are rejected BEFORE either raw
+or decoded provider diagnostics can see the line. Malformed/non-object/trailing
+JSON data, nonstandard single-quoted data, overdeep structure or traversal overflow
+fail closed. Non-data comment/event/id/blank lines retain the literal guard and
+are not sent to a JSON parser; the provider does not parse their diagnostics.
+SSE forwarding remains incremental and byte-preserving for accepted lines,
+16KiB/line and256KiB total; no request-body rewrite, DONE/finish/usage adaptation,
+cap/thinking change or new business transport API. All parse/read failures become
+fixed `Proof stream rejected` IOException with no raw cause/message.
+
+### Round1 RED/GREEN and honest failures
+
+All new evidence is under ignored `work/api-proof/fix-round-1/`; original sixteen
+evidence-manifest entries were verified unchanged. Original10GREEN, initial RED,
+reader failure, literal mutation and invocation failure remain immutable. Original
+source-manifest hashes bind BASE9cdb blobs; the NEW11-entry fix1 source manifest
+binds the current full candidate sources/docs, including unchanged build sourceSets.
+The base full report was preserved as baseline-report.md before this append.
+
+- Initial owned-control compile failed because Android's compile classpath does
+  not expose Files.writeString/readString. Tests switched to write/readAllBytes;
+  no production fix was applied. Proper SSE newline escaping was corrected before
+  any escaped-case test executed. Compile failure log retained.
+- First targeted7 run:3 escaped finish/usage string/key assertions FAILED as
+  intended. Input controls also failed, but those input failures were fixture
+  errors rather than valid RED: a transient directory-listing descriptor number
+  could be reused by open. This was diagnosed and retained separately, not claimed
+  as ownership-race RED.
+- Corrected host fixture selects the unique PUBLIC inode by dev/ino, not descriptor
+  number-set subtraction. Input-only RED4/3 assertion failures: absent-input passed;
+  successful unaliased return lacked post-remove observation, hardlink and
+  rename/replacement each wrongly returned a key. Their XML/log were retained.
+- JSON-boundary-only RED2/2: malformed and overdeep data were forwarded instead of
+  fixed-message refusal. These run against the existing owned response boundary,
+  without requiring provider diagnostics to log untrusted malformed data.
+- Root requested no competing large compilation while its ARM64 build ran. This
+  worker prepared code/docs, then waited for root's exit0 notice before the next
+  existing2G, owned-cache Gradle invocation. No shared build/cache writes occurred.
+- GREEN focused own batch:19tests,0failures,0errors,0skips (15transport including
+  original10 plus5new, and4host ownership controls). Both XML files captured
+  fresh at2026-10-11T08:45:06/07. Executed OWN4-file filtered instrumentation
+  compile, exit0/BUILD SUCCESSFUL11s,37tasks (5executed/32up-to-date). No native
+  instrumentation/device test was executed; no whole package suite was run.
+
+Exact command from WT root, using the same approved SDK/JDK and own GRADLE/ANDROID
+user directories:
+
+```sh
+./android/src/android/gradlew -p android/src/android \
+  :app:testDebugUnitTest --tests 'io.github.nanomuse.apiproof.*' \
+  :app:compileDebugAndroidTestKotlin \
+  -I "$PWD/work/api-proof/fix-round-1/fixture-only.init.gradle" \
+  --offline --console=plain --no-daemon -Pnm.abi=x86_64
+```
+
+The filter's exact printed source list was ManualDeepSeekApiProofTest.kt,
+PrivateProofInput.kt, ApiProofTransport.kt and ProofInputConsumption.kt, from the
+same two owned source roots. api-proof-fix1-fixture-filter.diff records the exact
+change from the preserved3-file filter (whose Task4 provenance SHA remains above).
+Main and all JVM source compilation remain unfiltered; selected unit execution
+only belongs to io.github.nanomuse.apiproof. Known8legacy mountedSessionId full
+instrumentation failures remain binding/unwaived; this is never full compile PASS.
+Fresh ZIP inspection still found0proof-package classes in the production debug
+compile classes jar. No release/API/device/ADB/build scan/push/CI/deploy occurred.
+
+### M1/M2 disposition and root gates
+
+M1 is documented, without filtering any logs. The same three MockWebServer warnings
+remain in fresh15-transport XML. Two follow naturally from duplicate-collection
+and invalid-cap refusal: connection establishment precedes the network interceptor,
+but no HTTP request bytes are sent. The third is the explicit DISCONNECT_AFTER_REQUEST
+control: pinned MockWebServer4.12.0 bytecode increments atomicRequestCount and adds
+the RecordedRequest at processOneRequest offsets34/47, then that policy closes/
+returns false at86..91 BEFORE sequenceNumber increments at370. handle emits the
+same generic “didn't make a request” warning whenever sequenceNumber is0. Thus
+that warning is compatible with the test's observed one request and deliberately
+forced disconnect. This is a dependency diagnostic distinction, not evidence of
+an extra request/retry. The immutable JAR SHA is
+`6784673687f4ac8f21679b9d4bc7cdb46e1a1ce1be9d3133b36bede59a741561`;
+its focused javap output is retained. Unexpected warnings are neither discarded
+nor reclassified by a global logger change.
+
+M2 remains inherited SDK XML/AGP8.7.3/SDK36, manifest and main Kotlin warnings;
+current scoped run re-emits SDK/AGP warnings while cached main avoids repeating
+its compiler warnings. No upgrades or warning-free assertion.
+
+Fix1 source/evidence hashes and exact filter diff are adjacent to this report;
+fix1 inert host-handoff.TEMPLATE.sh remains comments+exit64 and adds only root-later
+public case selection and same-FD zero-link gate notes. New evidence does not claim
+native Os behavior, Android JSONObject execution, reflection or native no-file
+skip passed. Root must perform same-reviewer re-review, native public controls,
+no-input skip, exact target/header-mask provenance, normal-state baseline/after
+checks and device ownership/release before supplying one private input and
+reserving the actual case. Worker actual credential reads/API/native actions0;
+shared actual counter remains root-supplied1/15. Independent logger approval at
+be882 C0/I0/M1 is unchanged. This implementer does not approve its own fixes.

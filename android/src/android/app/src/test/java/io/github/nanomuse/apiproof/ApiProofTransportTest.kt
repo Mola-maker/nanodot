@@ -201,4 +201,62 @@ class ApiProofTransportTest {
             }
         }
     }
+
+    private fun assertEscapedEchoRejected(payload: String) = runBlocking {
+        MockWebServer().use { server ->
+            // This contains only public synthetic data, never a credential from the handoff.
+            assertFalse(payload.contains("synthetic-proof-key"))
+            server.enqueue(MockResponse().setBody("data: $payload\n\ndata: [DONE]\n\n"))
+            server.start()
+            ApiProofTransport(server.url("/chat/completions"), "synthetic-proof-key").use { transport ->
+                val chunks = mutableListOf<LLMStreamChunk>()
+                val failure = runCatching {
+                    transport.flow(transport.provider("synthetic-proof-key", server.url("/").toString().trimEnd('/'))).collect { chunks.add(it) }
+                }.exceptionOrNull()
+                assertNotNull(failure)
+                assertFalse(chunks.any { it is LLMStreamChunk.Finished || it is LLMStreamChunk.Usage || it is LLMStreamChunk.Text })
+                assertFalse(transport.sawDone)
+                assertTrue(transport.responseClosed)
+                assertEquals(1, server.requestCount)
+            }
+        }
+    }
+
+    @Test fun `escaped finish reason credential is rejected before provider diagnostics`() = assertEscapedEchoRejected(
+        """{"choices":[{"index":0,"delta":{},"finish_reason":"synthetic\u002dproof-key"}]}""",
+    )
+
+    @Test fun `escaped nested usage string credential is rejected before provider diagnostics`() = assertEscapedEchoRejected(
+        """{"choices":[],"usage":{"prompt_tokens":10,"completion_tokens":2,"public":{"nested":["synthetic\u002dproof-key"]}}}""",
+    )
+
+    @Test fun `escaped nested usage key credential is rejected before provider diagnostics`() = assertEscapedEchoRejected(
+        """{"choices":[],"usage":{"prompt_tokens":10,"completion_tokens":2,"public":[{"synthetic\u002dproof-key":"public"}]}}""",
+    )
+
+    private fun assertMalformedBoundaryRejected(payload: String) {
+        MockWebServer().use { server ->
+            server.enqueue(MockResponse().setBody("data: $payload\n\ndata: [DONE]\n\n"))
+            server.start()
+            ApiProofTransport(server.url("/chat/completions"), "synthetic-proof-key").use { transport ->
+                val request = Request.Builder().url(server.url("/chat/completions"))
+                    .post("""{"model":"deepseek-flash","stream":true,"max_tokens":64,"max_completion_tokens":64,"thinking":{"type":"disabled"},"messages":[{"role":"user","content":"Reply with the word READY."}]}""".toRequestBody("application/json".toMediaType())).build()
+                val field = ApiProofTransport::class.java.getDeclaredField("client").apply { isAccessible = true }
+                (field.get(transport) as OkHttpClient).newCall(request).execute().use { response ->
+                    val failure = runCatching { response.body!!.string() }.exceptionOrNull()
+                    assertNotNull(failure)
+                    assertEquals("Proof stream rejected", failure!!.message)
+                    assertNull(failure.cause)
+                }
+                assertFalse(transport.sawDone)
+                assertTrue(transport.responseClosed)
+            }
+        }
+    }
+
+    @Test fun `malformed JSON data is rejected at owned boundary with fixed failure`() =
+        assertMalformedBoundaryRejected("""{"choices":[]""")
+
+    @Test fun `excessive JSON nesting is rejected before parsing or forwarding`() =
+        assertMalformedBoundaryRejected("{\"ignored\":" + "[".repeat(33) + "\"public\"" + "]".repeat(33) + "}")
 }

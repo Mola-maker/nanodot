@@ -395,7 +395,10 @@ is a manually selected instrumentation case. Ordinary runs without the fixed
 `nanodot-api-proof.input` file in the target application's private cache skip before
 constructing a provider. The input must be a regular, non-symlink, single-link file,
 owned by the target UID with exactly mode `0600`; the test reads it once and removes
-it before constructing HTTP resources. It accepts no key or endpoint through test
+it before constructing HTTP resources. The original descriptor stays open through
+removal; its post-removal fstat must show zero links before credential handoff. A
+surviving hard link or renamed original fails closed; unknown aliases are not
+deleted. It accepts no key or endpoint through test
 arguments, preferences or APK assets. Only the operator responsible for the shared
 attempt budget may hand off a credential and run this case after source review and
 device ownership checks. A failed HTTP status, cancellation or timeout ends that
@@ -414,7 +417,10 @@ The original client's shared resources are never closed or evicted.
 
 Response diagnostics are intentionally changed in this test: headers are stripped,
 non-success bodies become a fixed error, and bounded SSE lines containing the
-credential are rejected before reaching provider logs. Successful SSE still passes
+credential are rejected before reaching provider logs. Decoded JSON keys and
+string values are checked recursively too, including Unicode escapes. JSON nesting
+is limited to32 before parsing and traversal to2048 values; malformed data fails
+with a fixed message. Successful SSE still passes
 through the actual parser, including final-choice usage and `[DONE]`. The fixed
 `nanodot-api-proof.result.json` cache artifact is written atomically with mode
 `0600`; it contains only fixed endpoint/model/configuration, sanitized status,
@@ -424,7 +430,14 @@ Credentials remain in process memory only for that run; immutable JVM strings
 cannot be explicitly erased, so the operator must finish the test process afterward.
 
 The local `ApiProofTransportTest` uses only loopback MockWebServer and synthetic
-credentials. Its checks establish request serialization, current SSE parsing,
+credentials. Host filesystem controls run the same shared consumption algorithm
+against Linux/JDK POSIX operations and stat the same live descriptor through
+`/proc/self/fd`; this substitutes for Android Os and does not prove that adapter.
+Three public-only native cases in the manual class test unaliased removal, a
+hardlink race and a rename/replacement race. They require absent owned input/alias
+paths, create only public synthetic data, clean their known paths, and never
+construct transport or reserve an API attempt. Root selects them before any real
+credential handoff. The checks establish request serialization, current SSE parsing,
 exchange prevention, response sanitation and owned cleanup. They do not establish
 Android reflection/file-permission behavior or actual vendor compatibility.
 Compiling only these owned instrumentation fixtures through a documented source

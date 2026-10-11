@@ -21,6 +21,8 @@ import okio.Source
 import okio.Timeout
 import okio.buffer
 import org.json.JSONObject
+import org.json.JSONArray
+import org.json.JSONTokener
 import java.io.Closeable
 import java.io.IOException
 import java.net.Proxy
@@ -123,6 +125,50 @@ class ApiProofTransport(private val endpoint: HttpUrl, private val credential: S
         } catch (_: Exception) { throw IOException("Invalid proof request body") }
     }
 
+    /** Decode only data JSON before any line can reach the provider's raw/decoded diagnostics. */
+    private fun validateSseData(line: String) {
+        if (!line.startsWith("data:")) return // Comments/event/id/blank lines have no parsed JSON diagnostics.
+        val payload = line.removePrefix("data:").let { if (it.startsWith(" ")) it.removePrefix(" ") else it }
+        if (payload == "[DONE]") { sawDone = true; return }
+        // Bound nesting BEFORE JSONObject/JSONTokener recursively allocate or parse.
+        var depth = 0
+        var quoted = false
+        var escaped = false
+        for (char in payload) {
+            if (quoted) {
+                if (escaped) escaped = false
+                else if (char == '\\') escaped = true
+                else if (char == '"') quoted = false
+            } else when (char) {
+                '"' -> quoted = true
+                '{', '[' -> { depth++; check(depth <= 32) }
+                '}', ']' -> { depth--; check(depth >= 0) }
+                '\'' -> error("Nonstandard proof JSON")
+            }
+        }
+        check(!quoted && depth == 0)
+        val parser = JSONTokener(payload)
+        val parsed = parser.nextValue()
+        check(parsed is JSONObject && parser.nextClean() == '\u0000')
+        var inspected = 0
+        fun inspect(value: Any?, nesting: Int) {
+            check(nesting <= 32 && ++inspected <= 2048)
+            when (value) {
+                is String -> check(!value.contains(credential))
+                is JSONObject -> {
+                    val keys = value.keys()
+                    while (keys.hasNext()) {
+                        val key = keys.next()
+                        check(!key.contains(credential))
+                        inspect(value.get(key), nesting + 1)
+                    }
+                }
+                is JSONArray -> for (index in 0 until value.length()) inspect(value.get(index), nesting + 1)
+            }
+        }
+        inspect(parsed, 0)
+    }
+
     private fun sanitizedStream(body: ResponseBody): ResponseBody = object : ResponseBody() {
         private val upstream = body.source()
         private val source = object : Source {
@@ -139,7 +185,7 @@ class ApiProofTransport(private val endpoint: HttpUrl, private val credential: S
                         if (line.contains(credential)) throw IOException("Credential echo rejected")
                         totalBytes += line.toByteArray(Charsets.UTF_8).size + 1
                         if (totalBytes > 262_144) throw IOException("Proof stream limit")
-                        if (line.removePrefix("data:").trimStart() == "[DONE]" && line.startsWith("data:")) sawDone = true
+                        validateSseData(line)
                         pending.writeUtf8(line).writeByte(10)
                     }
                     return pending.read(sink, minOf(byteCount, pending.size))
