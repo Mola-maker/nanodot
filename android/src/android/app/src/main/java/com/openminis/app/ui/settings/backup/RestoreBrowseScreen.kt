@@ -270,7 +270,7 @@ private fun EntryRow(
         ) {
             Box(
                 Modifier.size(30.dp).background(
-                    if (entry.isDirectory) Color(0xFF8E8E93) else Color(0xFF2D6396),
+                    if (entry.isDirectory) Color(0xFF8E8E93) else androidx.compose.material3.MaterialTheme.colorScheme.primary, // nanoMuse: active-theme foreground accent.
                     CircleShape,
                 ),
                 contentAlignment = Alignment.Center,

@@ -1487,9 +1487,10 @@ private fun LazyRevealToolText(
         chunks.take(revealed.coerceIn(1, total.coerceAtLeast(1))).joinToString("\n")
     }
     val urlClick = LocalMarkdownUrlClickHandler.current
-    val displayed = remember(shownText, urlClick, linkify) {
+    val linkColor = androidx.compose.material3.MaterialTheme.colorScheme.primary // nanoMuse: active themed link, including saved overrides.
+    val displayed = remember(shownText, urlClick, linkify, linkColor) {
         if (linkify && urlClick != null) {
-            com.openminis.app.ui.util.linkifyUrls(text = shownText, onClick = urlClick)
+            com.openminis.app.ui.util.linkifyUrls(text = shownText, onClick = urlClick, linkColor = linkColor)
         } else androidx.compose.ui.text.AnnotatedString(shownText)
     }
 

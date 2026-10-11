@@ -348,6 +348,80 @@ def _manual_update_strings(res, write) -> None:
         write(path, text)
 
 
+def _android_semantic_accents(upstream, primary, edit) -> None:
+    """Only foreground consumers: retain fixed fills paired with white badge/terminal ink."""
+    role = "androidx.compose.material3.MaterialTheme.colorScheme.primary"
+    # These call sites are already composable. The picker also has one matching low-alpha tint.
+    foreground_files = (
+        "ui/chat/ChatAssistantMessageUI.kt",
+        "ui/chat/ChatModelPickerSheet.kt",
+        "ui/components/ModelEntryPicker.kt",
+        "ui/components/UnifiedModelPickerSheet.kt",
+        "ui/settings/MountDetailScreen.kt",
+        "ui/settings/SharedFolderDetailScreen.kt",
+        "ui/settings/MountedFoldersScreen.kt",
+        "ui/settings/AgentLoopAddSheets.kt",
+        "ui/settings/MinisSkillsBrowserScreen.kt",
+        "ui/settings/backup/RestoreBrowseScreen.kt",
+        "ui/settings/SkillRowItem.kt",
+    )
+    for name in foreground_files:
+        edit(
+            upstream / name,
+            [
+                (
+                    rf"(^[^\n]*?)Color\(0xFF{primary[1:]}\)([^\n]*)$",
+                    rf"\g<1>{role}\g<2> // nanoMuse: active-theme foreground accent.",
+                )
+            ],
+        )
+    edit(
+        upstream / "ui/chat/ChatAssistantMessageUI.kt",
+        [
+            (
+                r"((?:color|tint) = )thinkingBlue\.copy\(alpha = 0\.[56]f\),",
+                r"\g<1>thinkingBlue, // nanoMuse: full-opacity small text and control glyph.",
+            )
+        ],
+    )
+    edit(
+        upstream / "ui/settings/SkillRowItem.kt",
+        [
+            (
+                r"(?<!@Composable // nanoMuse: active palette for source glyphs.\n)"
+                r"^fun sourceIconAndColor\(",
+                "@Composable // nanoMuse: active palette for source glyphs.\nfun sourceIconAndColor(",
+            )
+        ],
+    )
+    edit(
+        upstream / "ui/settings/SharedFoldersScreen.kt",
+        [
+            (
+                r"tint = folder\.iconColor,",
+                f'tint = if (folder.id == "shared") {role} else folder.iconColor, '
+                "// nanoMuse: active-theme shared-folder glyph.",
+            )
+        ],
+    )
+    # Keep the explicit pale-blue terminal pair; only generic themed tool text uses this role.
+    detail = upstream / "ui/chat/ChatToolDetailUI.kt"
+    edit(
+        detail,
+        [
+            (
+                r"    val displayed = remember\(shownText, urlClick, linkify\) \{",
+                f"    val linkColor = {role} // nanoMuse: active themed link, including saved overrides.\n"
+                "    val displayed = remember(shownText, urlClick, linkify, linkColor) {",
+            ),
+            (
+                r"linkifyUrls\(text = shownText, onClick = urlClick\)",
+                "linkifyUrls(text = shownText, onClick = urlClick, linkColor = linkColor)",
+            ),
+        ],
+    )
+
+
 def _android_colors(java, res, brand, edit, write) -> None:
     light, dark = brand.themeColors["light"], brand.themeColors["dark"]
     upstream = java / "com/openminis/app"
@@ -546,6 +620,7 @@ def _android_colors(java, res, brand, edit, write) -> None:
     )
     # Both UI and P0 branding use the same renderer; never restore a stale M3 mapping.
     write(java / "io/github/nanomuse/dot/DotColors.kt", render_dot_colors(brand))
+    _android_semantic_accents(upstream, light["primary"], edit)
 
 
 def _ios_brand(ios, brand, edit, write) -> None:

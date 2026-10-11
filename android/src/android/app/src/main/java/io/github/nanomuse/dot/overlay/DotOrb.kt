@@ -6,6 +6,9 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -59,7 +62,7 @@ fun DotOrb(
             CustomAccessibilityAction(care) { onIntent(DotIntent.Triple); true },
         )
     }) {
-        fun frame(index: Int, alpha: Float) {
+        fun drawFrame(index: Int, alpha: Float, mode: BlendMode = BlendMode.SrcOver) {
             val cell = CrystalFrames.rect(atlas.width, atlas.height, index)
             // Fixed crop removes only outer padding: ~40dp visible crystal in a 48dp hitbox.
             // Both source edges remain inside this cell, including odd-sized final cells.
@@ -67,11 +70,22 @@ fun DotOrb(
             val insetY = (cell.bottom - cell.top) / 10
             drawImage(atlas, srcOffset = IntOffset(cell.left + insetX, cell.top + insetY),
                 srcSize = IntSize(cell.right - cell.left - insetX * 2, cell.bottom - cell.top - insetY * 2),
-                dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()), alpha = alpha)
+                dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()), alpha = alpha,
+                blendMode = mode)
         }
         val current = CrystalFrames.index(elapsed, motion, active)
-        frame(current, 1f)
-        if (motion && active) frame((current + 1) % 16, (elapsed % 200) / 200f)
+        if (motion && active) {
+            CrystalBlend.draw(current, (elapsed % 200) / 200f, object : CrystalBlendCanvas {
+                override fun isolatedLayer(draw: () -> Unit) {
+                    val canvas = drawContext.canvas
+                    canvas.saveLayer(Rect(0f, 0f, size.width, size.height), Paint())
+                    try { draw() } finally { canvas.restore() }
+                }
+                override fun frame(index: Int, weight: Float, mode: BlendMode) {
+                    drawFrame(index, weight, mode)
+                }
+            })
+        } else drawFrame(0, 1f)
         if (pressed || dragging) {
             drawCircle(Color(0xFFCFE8FF).copy(alpha = if (dragging) .18f else .10f), radius = size.minDimension * .40f)
             drawCircle(Color(0xFF6E9FC9), radius = size.minDimension * .44f, style = Stroke(1.dp.toPx()))

@@ -417,7 +417,7 @@ private fun SelectionDot(isSelected: Boolean) {
     Icon(
         if (isSelected) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
         contentDescription = null,
-        tint = if (isSelected) Color(0xFF2D6396)
+        tint = if (isSelected) androidx.compose.material3.MaterialTheme.colorScheme.primary // nanoMuse: active-theme foreground accent.
         else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
         modifier = Modifier.size(20.dp),
     )

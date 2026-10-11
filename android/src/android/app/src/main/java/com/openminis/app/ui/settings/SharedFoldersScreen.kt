@@ -124,7 +124,7 @@ private fun SharedFolderRow(
         Icon(
             imageVector = folder.icon,
             contentDescription = null,
-            tint = folder.iconColor,
+            tint = if (folder.id == "shared") androidx.compose.material3.MaterialTheme.colorScheme.primary else folder.iconColor, // nanoMuse: active-theme shared-folder glyph.
             modifier = Modifier.size(28.dp),
         )
         Spacer(Modifier.width(12.dp))

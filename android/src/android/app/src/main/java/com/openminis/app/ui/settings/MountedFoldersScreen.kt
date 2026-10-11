@@ -528,7 +528,7 @@ private fun MountRow(
         Icon(
             imageVector = Icons.Outlined.Folder,
             contentDescription = null,
-            tint = Color(0xFF2D6396),
+            tint = androidx.compose.material3.MaterialTheme.colorScheme.primary, // nanoMuse: active-theme foreground accent.
             modifier = Modifier.size(28.dp),
         )
         Spacer(Modifier.width(12.dp))

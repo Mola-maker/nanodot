@@ -65,6 +65,8 @@ focus and its temporary window closes after fading. Cancel, lock, disable, captu
 display changes and disconnect clear it. Turning off Android animator duration scale
 holds frame zero and removes the trail; static touch and care cues remain.
 The shared light/dark palette is blue, including chat cards, buttons and care outlines.
+Frame transitions preserve the crystal’s transparency on light and dark content.
+Small thinking and model-picker text follows the selected light/dark appearance.
 Theme overrides and custom avatar choices are preserved.
 Settings → Appearance → Show Dot orb hides it immediately and preserves that choice
 across service reconnects. Locking the phone, disabling accessibility, or rotating the

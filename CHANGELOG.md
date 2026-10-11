@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Preserved crystal transparency across breathing frame transitions and made Android thinking/model-picker text and control accents follow the selected theme without low-opacity small text.
+
 - Replaced the Android Dot orb with a packaged ice-blue crystal breathing atlas and short, touch-through drag trails that stop with reduced motion or overlay cleanup; unified shared light/dark colors in blue while retaining theme and avatar preferences.
 
 - Kept Android care paused until remote VM jobs and cancellation cleanup actually completed, including compact/send handoffs and intercepted prompt jobs.
