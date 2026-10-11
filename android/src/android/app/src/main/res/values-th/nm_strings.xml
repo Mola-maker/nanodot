@@ -1114,4 +1114,11 @@
     <string name="nm_dot_view_screen">ดูหน้าจอ</string>
     <string name="nm_dot_start_care">เริ่มการดูแล</string>
     <string name="nm_dot_action_unavailable">ฟังก์ชัน Dot นี้ยังไม่พร้อมใช้งาน</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">การจับภาพหน้าจอสำหรับ Dot</string>
+    <string name="nm_dot_capture_active">ใช้การจับภาพหน้าจอได้จนกว่าคุณจะหยุด</string>
+    <string name="nm_dot_capture_stop">หยุดการจับภาพ</string>
+    <string name="nm_dot_capture_explain">บน Android รุ่นนี้ Dot อ่านข้อความการช่วยเหลือพิเศษได้ อนุญาตการจับภาพหน้าจอแยกต่างหากเพื่อแชร์รูปภาพด้วย Android จะขอสิทธิ์จากคุณ</string>
+    <string name="nm_dot_capture_allow">อนุญาตการจับภาพหน้าจอ</string>
 </resources>

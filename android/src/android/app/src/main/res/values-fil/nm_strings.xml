@@ -1118,4 +1118,11 @@
     <string name="nm_dot_view_screen">Tingnan ang screen</string>
     <string name="nm_dot_start_care">Simulan ang paggabay</string>
     <string name="nm_dot_action_unavailable">Hindi pa magagamit ang feature na ito ng Dot.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Pagkuha ng screen para sa Dot</string>
+    <string name="nm_dot_capture_active">Magagamit ang pagkuha ng screen hanggang ihinto mo ito.</string>
+    <string name="nm_dot_capture_stop">Ihinto ang pagkuha</string>
+    <string name="nm_dot_capture_explain">Sa bersyong ito ng Android, mababasa ng Dot ang accessible na teksto. Hiwalay na payagan ang pagkuha ng screen upang magbahagi rin ng larawan. Hihingi ng pahintulot ang Android.</string>
+    <string name="nm_dot_capture_allow">Payagan ang pagkuha ng screen</string>
 </resources>

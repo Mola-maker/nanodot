@@ -1114,4 +1114,11 @@
     <string name="nm_dot_view_screen">Lihat skrin</string>
     <string name="nm_dot_start_care">Mulakan sokongan</string>
     <string name="nm_dot_action_unavailable">Ciri Dot ini belum tersedia.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Tangkapan skrin untuk Dot</string>
+    <string name="nm_dot_capture_active">Tangkapan skrin tersedia sehingga anda menghentikannya.</string>
+    <string name="nm_dot_capture_stop">Hentikan tangkapan</string>
+    <string name="nm_dot_capture_explain">Pada versi Android ini, Dot boleh membaca teks kebolehcapaian. Benarkan tangkapan skrin secara berasingan untuk turut berkongsi imej. Android akan meminta izin.</string>
+    <string name="nm_dot_capture_allow">Benarkan tangkapan skrin</string>
 </resources>

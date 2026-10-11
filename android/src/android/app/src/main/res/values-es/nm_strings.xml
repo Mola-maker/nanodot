@@ -1118,4 +1118,11 @@
     <string name="nm_dot_view_screen">Ver pantalla</string>
     <string name="nm_dot_start_care">Iniciar acompañamiento</string>
     <string name="nm_dot_action_unavailable">Esta función de Dot aún no está disponible.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Captura de pantalla para Dot</string>
+    <string name="nm_dot_capture_active">La captura está disponible hasta que la detengas.</string>
+    <string name="nm_dot_capture_stop">Detener captura</string>
+    <string name="nm_dot_capture_explain">En esta versión de Android, Dot puede leer texto accesible. Autoriza por separado la captura para compartir también imágenes. Android te pedirá permiso.</string>
+    <string name="nm_dot_capture_allow">Permitir captura de pantalla</string>
 </resources>

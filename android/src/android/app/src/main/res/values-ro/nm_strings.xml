@@ -1122,4 +1122,11 @@
     <string name="nm_dot_view_screen">Vezi ecranul</string>
     <string name="nm_dot_start_care">Începe sprijinul</string>
     <string name="nm_dot_action_unavailable">Această funcție Dot nu este încă disponibilă.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Captură de ecran pentru Dot</string>
+    <string name="nm_dot_capture_active">Captura este disponibilă până o oprești.</string>
+    <string name="nm_dot_capture_stop">Oprește captura</string>
+    <string name="nm_dot_capture_explain">În această versiune Android, Dot poate citi text accesibil. Permite separat captura de ecran pentru a partaja și imagini. Android îți va cere permisiunea.</string>
+    <string name="nm_dot_capture_allow">Permite captura de ecran</string>
 </resources>

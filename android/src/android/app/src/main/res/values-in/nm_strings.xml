@@ -1114,4 +1114,11 @@
     <string name="nm_dot_view_screen">Lihat layar</string>
     <string name="nm_dot_start_care">Mulai pendampingan</string>
     <string name="nm_dot_action_unavailable">Fitur Dot ini belum tersedia.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Tangkapan layar untuk Dot</string>
+    <string name="nm_dot_capture_active">Tangkapan layar tersedia sampai Anda menghentikannya.</string>
+    <string name="nm_dot_capture_stop">Hentikan tangkapan</string>
+    <string name="nm_dot_capture_explain">Pada versi Android ini, Dot dapat membaca teks aksesibilitas. Izinkan tangkapan layar secara terpisah untuk juga berbagi gambar. Android akan meminta izin.</string>
+    <string name="nm_dot_capture_allow">Izinkan tangkapan layar</string>
 </resources>

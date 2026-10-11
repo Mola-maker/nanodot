@@ -1095,4 +1095,11 @@
     <string name="nm_dot_view_screen">View screen</string>
     <string name="nm_dot_start_care">Start care</string>
     <string name="nm_dot_action_unavailable">This Dot action is not available yet.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Screen capture for Dot</string>
+    <string name="nm_dot_capture_active">Screen capture is available until you stop it.</string>
+    <string name="nm_dot_capture_stop">Stop capture</string>
+    <string name="nm_dot_capture_explain">On this Android version, Dot can read accessible text. Allow screen capture separately to also share pixels. Android will ask for permission.</string>
+    <string name="nm_dot_capture_allow">Allow screen capture</string>
 </resources>

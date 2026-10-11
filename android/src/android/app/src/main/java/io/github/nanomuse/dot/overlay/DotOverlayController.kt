@@ -166,6 +166,47 @@ class DotOverlayController(
         }
     }
 
+    /** Identity is limited to windows this owner creates; our main Activity is a valid host. */
+    @Suppress("DEPRECATION")
+    fun ownsWindow(window: android.view.accessibility.AccessibilityWindowInfo): Boolean {
+        if (window.type != android.view.accessibility.AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY) return false
+        val node = orbView?.createAccessibilityNodeInfo() ?: return false
+        return try { node.windowId >= 0 && node.windowId == window.id } finally { node.recycle() }
+    }
+
+    /** Hide alpha without removing/recreating owners or changing the user's preference.
+     * OnDraw plus a following frame ensures traversal submits the hidden window before capture.
+     */
+    suspend fun <T> withHiddenForCapture(block: suspend () -> T): T {
+        checkMainThread()
+        val view = orbView
+        val previousAlpha = view?.alpha
+        try {
+            if (view != null && view.isAttachedToWindow) {
+                view.alpha = 0f
+                kotlinx.coroutines.suspendCancellableCoroutine<Unit> { continuation ->
+                    lateinit var listener: ViewTreeObserver.OnDrawListener
+                    listener = ViewTreeObserver.OnDrawListener {
+                        view.post {
+                            if (view.viewTreeObserver.isAlive) view.viewTreeObserver.removeOnDrawListener(listener)
+                            view.postOnAnimation { if (continuation.isActive) continuation.resumeWith(Result.success(Unit)) }
+                        }
+                    }
+                    view.viewTreeObserver.addOnDrawListener(listener)
+                    continuation.invokeOnCancellation { view.post {
+                        if (view.viewTreeObserver.isAlive) view.viewTreeObserver.removeOnDrawListener(listener)
+                    } }
+                    view.invalidate()
+                }
+            }
+            return block()
+        } finally {
+            if (orbView === view && view?.isAttachedToWindow == true && previousAlpha != null) {
+                view.alpha = previousAlpha; view.invalidate()
+            }
+        }
+    }
+
     private fun sync() {
         registry.sync(OverlayPolicy.windows(isConnected, locked, enabled))
     }

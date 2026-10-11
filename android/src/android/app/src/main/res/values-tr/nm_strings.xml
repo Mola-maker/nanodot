@@ -1118,4 +1118,11 @@
     <string name="nm_dot_view_screen">Ekranı görüntüle</string>
     <string name="nm_dot_start_care">Desteği başlat</string>
     <string name="nm_dot_action_unavailable">Bu Dot özelliği henüz kullanılamıyor.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Dot için ekran yakalama</string>
+    <string name="nm_dot_capture_active">Ekran yakalama siz durdurana kadar kullanılabilir.</string>
+    <string name="nm_dot_capture_stop">Yakalamayı durdur</string>
+    <string name="nm_dot_capture_explain">Bu Android sürümünde Dot erişilebilir metni okuyabilir. Görüntüleri de paylaşmak için ekran yakalamaya ayrıca izin verin. Android izin isteyecek.</string>
+    <string name="nm_dot_capture_allow">Ekran yakalamaya izin ver</string>
 </resources>

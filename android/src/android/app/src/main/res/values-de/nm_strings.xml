@@ -1118,4 +1118,11 @@
     <string name="nm_dot_view_screen">Bildschirm ansehen</string>
     <string name="nm_dot_start_care">Begleitung starten</string>
     <string name="nm_dot_action_unavailable">Diese Dot-Funktion ist noch nicht verfügbar.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Bildschirmaufnahme für Dot</string>
+    <string name="nm_dot_capture_active">Die Bildschirmaufnahme ist verfügbar, bis du sie stoppst.</string>
+    <string name="nm_dot_capture_stop">Aufnahme stoppen</string>
+    <string name="nm_dot_capture_explain">Auf dieser Android-Version kann Dot zugänglichen Text lesen. Erlaube die Bildschirmaufnahme separat, um auch Bildinhalte zu teilen. Android fragt nach deiner Erlaubnis.</string>
+    <string name="nm_dot_capture_allow">Bildschirmaufnahme erlauben</string>
 </resources>

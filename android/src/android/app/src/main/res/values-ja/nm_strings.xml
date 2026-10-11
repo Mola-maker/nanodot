@@ -1114,4 +1114,11 @@
     <string name="nm_dot_view_screen">画面を見る</string>
     <string name="nm_dot_start_care">ケアを開始</string>
     <string name="nm_dot_action_unavailable">この Dot 機能はまだ利用できません。</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Dot の画面取得</string>
+    <string name="nm_dot_capture_active">停止するまで画面を取得できます。</string>
+    <string name="nm_dot_capture_stop">取得を停止</string>
+    <string name="nm_dot_capture_explain">この Android バージョンでは、Dot はアクセシビリティのテキストを読み取れます。画像も共有するには、画面取得を別途許可してください。Android が許可を求めます。</string>
+    <string name="nm_dot_capture_allow">画面取得を許可</string>
 </resources>

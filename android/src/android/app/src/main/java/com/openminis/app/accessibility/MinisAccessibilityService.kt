@@ -53,6 +53,9 @@ class MinisAccessibilityService : AccessibilityService() {
     // nanoMuse: overlay ownership starts only at the real accessibility connection.
     internal val dotOverlay by lazy { io.github.nanomuse.dot.overlay.DotOverlayController(this) }
 
+    // nanoMuse: read-only scene repository shares the service and its owned-window controller.
+    val dotScreen by lazy { io.github.nanomuse.dot.screen.ScreenRepository(this, dotOverlay) }
+
     val nodeRegistry: NodeRegistry = NodeRegistry()
 
     override fun onCreate() {
@@ -66,6 +69,8 @@ class MinisAccessibilityService : AccessibilityService() {
         _instance = this
         // nanoMuse: service connection, not onCreate, grants the overlay window token.
         dotOverlay.connect()
+        // nanoMuse: connected sampling remains idle until an explicit capture request.
+        dotScreen.connect()
         // [T-android-a11y-miui-service-failure] Breadcrumb on (re)bind. On OEM
         // ROMs (MIUI etc.) the system kills + rebinds this service repeatedly,
         // surfacing "此服务出现故障"; a connect log lets us correlate a degraded
@@ -89,6 +94,8 @@ class MinisAccessibilityService : AccessibilityService() {
         // nanoMuse: recheck keyguard on service events as well as screen broadcasts.
         dotOverlay.refreshLockState()
         if (event == null) return
+        // nanoMuse: host geometry/content updates invalidate asynchronous scene results.
+        dotScreen.onAccessibilityEvent(event)
         val rec = RecordedEvent(
             type = AccessibilityEvent.eventTypeToString(event.eventType),
             packageName = event.packageName?.toString(),
@@ -106,12 +113,16 @@ class MinisAccessibilityService : AccessibilityService() {
     override fun onInterrupt() {
         // nanoMuse: interruption clears pending gestures and every Dot window.
         dotOverlay.disconnect()
+        // nanoMuse: disconnect also revokes the legacy projection session.
+        dotScreen.disconnect()
         AppLogger.info(TAG, "service interrupted")
     }
 
     override fun onDestroy() {
         // nanoMuse: dispose window composition and owners before the service goes away.
         dotOverlay.disconnect()
+        // nanoMuse: disconnect also revokes the legacy projection session.
+        dotScreen.disconnect()
         super.onDestroy()
         if (_instance === this) _instance = null
         eventRing.clear()

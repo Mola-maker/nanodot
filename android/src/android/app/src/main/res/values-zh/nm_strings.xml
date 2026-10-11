@@ -1091,4 +1091,11 @@
     <string name="nm_dot_view_screen">查看屏幕</string>
     <string name="nm_dot_start_care">开始关怀</string>
     <string name="nm_dot_action_unavailable">此 Dot 功能暂未开放。</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Dot 屏幕采集</string>
+    <string name="nm_dot_capture_active">停止前，Dot 可以采集屏幕图片。</string>
+    <string name="nm_dot_capture_stop">停止采集</string>
+    <string name="nm_dot_capture_explain">在此 Android 版本上，Dot 可以读取无障碍文字。如需分享屏幕图片，请单独授权屏幕采集。Android 会请求你的许可。</string>
+    <string name="nm_dot_capture_allow">允许屏幕采集</string>
 </resources>
