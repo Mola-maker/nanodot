@@ -34,10 +34,12 @@ and both Custom Domains, after reviewing the exact resource diff. Do not issue a
 broad deployment token to bootstrap. Record actual namespace ID, version ID and domain IDs
 in ignored evidence; do not invent them before creation.
 
-For later CI, create a protected `gateway-production` GitHub environment with required human
-reviewers, prevention of self-review, and deployment branches restricted to `main`, before
-adding any secret. Store only `CLOUDFLARE_API_TOKEN` there and `CLOUDFLARE_ACCOUNT_ID` as an
-environment variable. Use a short-lived account API token with **Editor only for the existing
+For later CI, create and verify a protected `gateway-production` GitHub environment before
+adding any secret. Its required human reviewer is `Mola-maker` (GitHub user ID `229602071`),
+with `prevent_self_review=false` and a custom deployment branch policy allowing only `main`.
+The owner explicitly permits the initiating user to review their own deployment; every deployment
+still requires Mola-maker's actual human approval. An agent must never submit that approval.
+Store only `CLOUDFLARE_API_TOKEN` there and `CLOUDFLARE_ACCOUNT_ID` as an environment variable. Use a short-lived account API token with **Editor only for the existing
 `nanodot-gateway` Worker**. CI uploads/activates versions; it does not create Workers, modify
 routes/domains, migrate storage, set project secrets or deploy the operator.
 
