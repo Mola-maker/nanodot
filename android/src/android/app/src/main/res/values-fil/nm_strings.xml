@@ -1120,4 +1120,6 @@
     <string name="nm_dot_action_unavailable">Hindi pa magagamit ang feature na ito ng Dot.</string>
     <string name="nm_tab_tasks">Mga gawain</string>
     <string name="nm_task_library">Library</string>
+    <string name="nm_gateway_key_required">Kailangan ng key para sa proyektong ito. Mananatili ang mga setting at napiling modelo. Hindi pa nasusuri ang aktuwal na serbisyo.</string>
+    <string name="nm_gateway_connection_failed">Hindi makakonekta. Suriin ang key ng proyekto at network.</string>
 </resources>

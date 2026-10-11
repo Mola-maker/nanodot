@@ -1097,4 +1097,6 @@
     <string name="nm_dot_action_unavailable">This Dot action is not available yet.</string>
     <string name="nm_tab_tasks">Tasks</string>
     <string name="nm_task_library">Library</string>
+    <string name="nm_gateway_key_required">Requires a dedicated project key. Existing settings and selected models are kept. Live service acceptance is pending.</string>
+    <string name="nm_gateway_connection_failed">Could not connect. Check the project key and network.</string>
 </resources>

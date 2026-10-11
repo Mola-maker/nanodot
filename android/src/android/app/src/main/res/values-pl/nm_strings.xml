@@ -1128,4 +1128,6 @@
     <string name="nm_dot_action_unavailable">Ta funkcja Dot nie jest jeszcze dostępna.</string>
     <string name="nm_tab_tasks">Zadania</string>
     <string name="nm_task_library">Biblioteka</string>
+    <string name="nm_gateway_key_required">Wymagany jest osobny klucz projektu. Ustawienia i wybrane modele zostają zachowane. Weryfikacja działającej usługi jest w toku.</string>
+    <string name="nm_gateway_connection_failed">Nie można połączyć. Sprawdź klucz projektu i sieć.</string>
 </resources>

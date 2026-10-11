@@ -421,3 +421,48 @@ test('an endpoint that lists no models: `no_models` with the key not stored, or 
     await out.done()
   }
 })
+
+test('gateway saves an isolated project key, preserves old origins and selected model, and restarts idempotently', async () => {
+  const out = await cloud({ signedIn: true, defaultModel: { provider: PROVIDER_ID, model: 'deepseek-v4.1-flash' } })
+  const oldFetch = globalThis.fetch
+  const key = crypto.randomUUID()
+  const paths = []
+  let refused = false
+  globalThis.fetch = async (url, init) => {
+    paths.push(String(url)); assert.equal(init.headers.authorization, `Bearer ${key}`)
+    return new Response(JSON.stringify(refused ? { error: { message: 'refused' } } : { data: [
+      { id: '@cf/qwen/qwen3-30b-a3b-fp8', architecture: { input_modalities: ['text'], output_modalities: ['text'] } },
+      { id: '@cf/google/gemma-4-26b-a4b-it', architecture: { input_modalities: ['text', 'image'], output_modalities: ['text'] } },
+      { id: '@cf/openai/whisper-large-v3-turbo', architecture: { input_modalities: ['audio'], output_modalities: ['text'] } },
+    ] }), { status: refused ? 401 : 200 })
+  }
+  try {
+    const before = await out.state()
+    const selection = { ...out.selection.current }
+    const first = await out.svc.saveProvider({ id: 'nanodot-workers', apiKey: key })
+    assert.equal(first.baseURL, 'https://molamaker.si/v1')
+    assert.match(first.instanceId, /^[a-f0-9-]{36}$/)
+    assert.notEqual(first.keyRef, TOKEN_REF)
+    assert.equal(out.credentials.get(TOKEN_REF), 'account-key')
+    assert.deepEqual(out.selection.current, selection)
+    assert.deepEqual(first.models.map(m => [m.id, m.vision, m.kind]), [
+      ['@cf/google/gemma-4-26b-a4b-it', true, 'chat'],
+      ['@cf/openai/whisper-large-v3-turbo', false, 'voice'],
+      ['@cf/qwen/qwen3-30b-a3b-fp8', false, 'chat'],
+    ])
+    assert.deepEqual((await out.state()).account, before.account)
+    assert.ok(!(await readFile(out.statePath, 'utf8')).includes(key))
+    refused = true
+    await assert.rejects(out.svc.saveProvider({ id: 'nanodot-workers', apiKey: key }), { code: 'no_models' })
+    assert.deepEqual((await out.state()).providers['nanodot-workers'], first)
+    refused = false
+    const restart = new NanomuseCloud(out.ctx, { baseURL: 'https://relay.invalid', statePath: out.statePath })
+    restart.hub.start = () => undefined; restart.refresh = async () => restart.status()
+    await restart[Service.init]()
+    const again = await restart.saveProvider({ id: 'nanodot-workers', apiKey: key })
+    assert.equal(again.instanceId, first.instanceId); assert.equal(again.keyRef, first.keyRef)
+    assert.deepEqual(paths, Array(paths.length).fill('https://molamaker.si/v1/models'))
+    assert.deepEqual(out.selection.current, selection)
+    await assert.rejects(restart.saveProvider({ id: 'nanodot-workers', baseURL: 'https://relay.invalid/v1', apiKey: key }))
+  } finally { globalThis.fetch = oldFetch; await out.done() }
+})

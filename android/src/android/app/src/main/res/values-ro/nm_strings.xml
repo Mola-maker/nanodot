@@ -1124,4 +1124,6 @@
     <string name="nm_dot_action_unavailable">Această funcție Dot nu este încă disponibilă.</string>
     <string name="nm_tab_tasks">Sarcini</string>
     <string name="nm_task_library">Bibliotecă</string>
+    <string name="nm_gateway_key_required">Este necesară o cheie dedicată proiectului. Setările și modelele selectate sunt păstrate. Validarea serviciului real este în așteptare.</string>
+    <string name="nm_gateway_connection_failed">Conectarea a eșuat. Verifică cheia proiectului și rețeaua.</string>
 </resources>

@@ -1120,4 +1120,6 @@
     <string name="nm_dot_action_unavailable">Esta función de Dot aún no está disponible.</string>
     <string name="nm_tab_tasks">Tareas</string>
     <string name="nm_task_library">Biblioteca</string>
+    <string name="nm_gateway_key_required">Requiere una clave específica del proyecto. Se conservan los ajustes y modelos seleccionados. La validación del servicio real está pendiente.</string>
+    <string name="nm_gateway_connection_failed">No se pudo conectar. Comprueba la clave del proyecto y la red.</string>
 </resources>

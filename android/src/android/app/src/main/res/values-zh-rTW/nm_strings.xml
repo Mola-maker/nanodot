@@ -1086,4 +1086,6 @@
     <string name="nm_dot_action_unavailable">此 Dot 功能尚未開放。</string>
     <string name="nm_tab_tasks">任務</string>
     <string name="nm_task_library">資料</string>
+    <string name="nm_gateway_key_required">需要專用專案 key。保留現有設定和選取的模型。實際服務驗收尚待完成。</string>
+    <string name="nm_gateway_connection_failed">無法連線。請檢查專案 key 和網路。</string>
 </resources>

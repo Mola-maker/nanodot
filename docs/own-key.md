@@ -1,5 +1,6 @@
 # Bring your own key
 
+The optional **Nanodot · Workers AI** row uses a dedicated project key and keeps existing connections and model selections. Its live-service acceptance is pending; see [the gateway connection guide](gateway.md#optional-client-connection).
 
 nanoMuse is free and non-profit. The model behind it costs money, and the
 developer pays for a starting allowance per account (the app shows the relay's

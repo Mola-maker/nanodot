@@ -3,6 +3,7 @@
 export const en = {
   /** Which dictionary this is; the pages that carry two-language text pick by it. */
   langTag: 'en',
+  gatewayProjectKey: 'Requires a dedicated project key. Existing settings and selected models are kept. Live service acceptance is pending.',
   nav: 'nanoMuse Cloud',
   brand: 'Nanodot',
   title: 'nanoMuse Cloud',
@@ -1430,6 +1431,7 @@ export const en = {
 
 export const zh: typeof en = {
   langTag: 'zh',
+  gatewayProjectKey: '需要专用项目 key。保留已有设置和选中的模型。真实服务验收待完成。',
   nav: 'nanoMuse Cloud',
   brand: 'Nanodot',
   title: 'Nanodot 账号',

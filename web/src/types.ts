@@ -944,6 +944,8 @@ export interface SkillsData {
 
 // ----------------------------------------------------------------------------- connections
 export interface ProviderPreset {
+  /** Independent project profile saved; selecting a model is a separate action. */
+  gateway_connected?: boolean;
   label: string;
   /** who is behind it, or what protocol: "Moonshot AI · 月之暗面", "Responses API" */
   subtitle?: string;

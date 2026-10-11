@@ -1120,4 +1120,6 @@
     <string name="nm_dot_action_unavailable">Diese Dot-Funktion ist noch nicht verfügbar.</string>
     <string name="nm_tab_tasks">Aufgaben</string>
     <string name="nm_task_library">Bibliothek</string>
+    <string name="nm_gateway_key_required">Ein eigener Projektschlüssel ist erforderlich. Vorhandene Einstellungen und ausgewählte Modelle bleiben erhalten. Die Prüfung des Live-Dienstes steht aus.</string>
+    <string name="nm_gateway_connection_failed">Verbindung fehlgeschlagen. Projektschlüssel und Netzwerk prüfen.</string>
 </resources>

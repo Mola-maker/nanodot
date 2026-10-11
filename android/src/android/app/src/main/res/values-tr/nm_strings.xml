@@ -1120,4 +1120,6 @@
     <string name="nm_dot_action_unavailable">Bu Dot özelliği henüz kullanılamıyor.</string>
     <string name="nm_tab_tasks">Görevler</string>
     <string name="nm_task_library">Kitaplık</string>
+    <string name="nm_gateway_key_required">Projeye özel bir anahtar gerekir. Ayarlar ve seçili modeller korunur. Gerçek hizmet doğrulaması henüz tamamlanmadı.</string>
+    <string name="nm_gateway_connection_failed">Bağlanılamadı. Proje anahtarını ve ağı kontrol edin.</string>
 </resources>

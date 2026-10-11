@@ -1116,4 +1116,6 @@
     <string name="nm_dot_action_unavailable">この Dot 機能はまだ利用できません。</string>
     <string name="nm_tab_tasks">タスク</string>
     <string name="nm_task_library">ライブラリ</string>
+    <string name="nm_gateway_key_required">専用のプロジェクトキーが必要です。既存の設定と選択したモデルは保持されます。実サービスの検証は未完了です。</string>
+    <string name="nm_gateway_connection_failed">接続できません。プロジェクトキーとネットワークを確認してください。</string>
 </resources>

@@ -41,7 +41,11 @@ struct NanoMuseWaysList: View {
 
     private var chinese: Bool { NanoMuseCatalogue.chinese }
     private var mainland: Bool { NanoMuseRegion.isMainland }
-    private var shown: [NanoMuseVendor] { compact && !more ? Array(ways.vendors.prefix(3)) : ways.vendors }
+    private var vendors: [NanoMuseVendor] {
+        let gateway = NanoMuseCatalogue.bundled.first { $0.id == NanodotGateway.presetID }
+        return ways.vendors + [gateway].compactMap { $0 }.filter { candidate in !ways.vendors.contains { $0.id == candidate.id } }
+    }
+    private var shown: [NanoMuseVendor] { compact && !more ? Array(vendors.prefix(3)) : vendors }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -51,7 +55,7 @@ struct NanoMuseWaysList: View {
                     ? AppLocalized("Alibaba Cloud Bailian first: one key covers chat, the screen, pictures and clips, and it signs up accounts from mainland China. Each provider below says what it covers.")
                     : AppLocalized("OpenRouter or OpenAI first: one key, most models, pay as you go. Each provider below says what it covers."))
             ForEach(shown) { v in vendorRow(v) }
-            if compact, ways.vendors.count > 3 {
+            if compact, vendors.count > 3 {
                 Button(more ? AppLocalized("Fewer providers") : AppLocalized("More providers")) { more.toggle() }
                     .font(.footnote.weight(.medium)).foregroundStyle(NanoMuseTones.action).buttonStyle(.plain)
             }
