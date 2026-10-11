@@ -129,6 +129,9 @@ android {
     // without this it fails with "Cannot find the schema file in the assets
     // folder" no matter that the files exist on disk.
     sourceSets {
+        // nanoMuse: shared proof transport stays in test APK/JVM fixtures only.
+        getByName("test").java.srcDir("src/apiProof/java")
+        getByName("androidTest").java.srcDir("src/apiProof/java")
         getByName("androidTest") {
             assets.srcDirs("$projectDir/schemas")
         }
