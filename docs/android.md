@@ -29,6 +29,17 @@ the installed build next to the newest release (`nanomuse.cn/dl/index.json` firs
 repository's GitHub Releases second: *Latest 0.1.x, you have it* / *0.1.x is out, tap to
 update*) and offers the download.
 
+## Dot orb gesture foundation
+
+The pure `io.github.nanomuse.dot.gesture.DotGestureReducer` prepares gesture arbitration
+for the future accessibility orb. Single and double taps wait for the system's tap
+interval; a qualifying third tap emits only a triple-tap intent. Holding the next tap
+suspends that sequence's deadline. Movement beyond touch slop becomes a drag, which
+remains valid during a long trajectory. A stationary long press suppresses tap actions;
+cancellation, rotation, and additional fingers clear pending gestures. The adapter must
+supply `ViewConfiguration` limits and monotonic times. This foundation does not enable
+the orb or accessibility service.
+
 ## Install
 
 1. Download `nanoMuse-<version>-arm64.apk` from the

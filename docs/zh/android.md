@@ -23,6 +23,14 @@ Play 商店：「设置 → 版本」把已安装的构建和最新版本并排�
 再查这个仓库的 GitHub Releases：「最新 0.1.x，你用的就是它」/「0.1.x 已发布，点此更新」），
 并提供下载。
 
+## Dot 悬浮球手势基础 {#dot-orb-gesture-foundation}
+
+纯逻辑 `io.github.nanomuse.dot.gesture.DotGestureReducer` 为后续无障碍悬浮球提供手势裁决。
+单击和双击等待系统的多击间隔到期；合格的第三击只产生三击意图。下一击按下后，会挂起
+当前连续点击序列的到期时间。移动超过触控阈值后转为拖动，较长的拖动轨迹仍有效。
+静止长按取消点击动作；取消事件、旋转和额外手指会清除待定手势。适配层需注入
+`ViewConfiguration` 阈值和单调时间。这部分基础逻辑尚未启用悬浮球或无障碍服务。
+
 ## 安装 {#install}
 
 1. 从[最新版本](https://github.com/nano-muse/nanoMuse/releases/latest)下载
