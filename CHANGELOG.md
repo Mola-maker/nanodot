@@ -16,6 +16,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ### Cloud
 
+- Added private Worker project-credential authentication and persistent SQLite admission counters (40 attempts per UTC day globally, 12 per client in a rolling minute). Inference remained disabled pending the separately verified model routes.
+
 ### Runtime
 
 - **A second `nanomuse serve` on a busy port says so and stops.** It used to start the whole service on the same data directory, print the ready banner with the link, and only then die on uvicorn's "address already in use". It now checks the port first and names who holds it, another nanoMuse (by its `/api/health`, with the version) or another program, before anything starts; exit code 98.

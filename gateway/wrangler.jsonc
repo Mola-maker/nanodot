@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "nanodot-gateway",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-11",
+  "ai": { "binding": "AI", "remote": true },
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "not_found_handling": "none"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "FREE_GATE", "class_name": "FreeGate" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["FreeGate"] }],
+  "observability": { "enabled": false },
+  "send_metrics": false
+}
