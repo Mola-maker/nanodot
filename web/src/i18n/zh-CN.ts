@@ -205,6 +205,7 @@ const zhCN: Record<string, string> = {
   "Nothing yet. Once {name} works on a goal in the background or needs your approval, it shows up here.":
     "暂时还没有内容。当 {name} 在后台推进目标或需要你批准时，会显示在这里。",
   "Next up": "接下来",
+  "Feed posts": "动态帖子",
   "Background work is off. {name} only acts when you ask.": "后台工作已关闭。{name} 只在你要求时行动。",
   "Turn it on": "开启",
   "No goal has a next step to work on.": "没有目标有可执行的下一步。",

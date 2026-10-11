@@ -206,7 +206,7 @@ export default function App() {
       {firstSteps}
       {state.toast && (
         <div className="pointer-events-none fixed inset-x-0 bottom-24 z-[70] flex justify-center px-4">
-          <div className="rise rounded-2xl bg-fg text-bg px-4 py-2 text-[0.84375rem] shadow-lg max-w-sm text-center">{state.toast}</div>
+          <div role="status" aria-live="polite" aria-atomic="true" className="rise rounded-2xl bg-fg text-bg px-4 py-2 text-[0.84375rem] shadow-lg max-w-sm text-center">{state.toast}</div>
         </div>
       )}
     </div>

@@ -29,6 +29,34 @@ import type { CalendarData, CalendarEvent, FeedItem, FeedPost, FeedPostsData, Up
 import { Toggle } from "../components/Form";
 import { cx, readStorage, relativeTime, timeShort, writeStorage } from "../util";
 
+const readActivity = () => api.feed(80);
+
+/** Each existing Feed REST owner keeps successful data when another request fails. */
+function useFeedRequest<T>(request: () => Promise<T>, version: string) {
+  const [data, setData] = useState<T | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    setError(null);
+    request()
+      .then((result) => { if (alive) setData(result); })
+      .catch((cause: unknown) => { if (alive) setError(cause instanceof Error ? cause.message : String(cause)); })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [request, version, attempt]);
+  return { data, setData, error, loading, retry: () => setAttempt((value) => value + 1) };
+}
+
+function FeedRequestStatus({ label, request, empty }: { label: string; request: { error: string | null; loading: boolean; retry: () => void }; empty: boolean }) {
+  const t = useT();
+  const state = request.loading ? "loading" : request.error ? "error" : empty ? "empty" : "ready";
+  const detail = request.error || (request.loading ? "Loading…" : empty ? "Nothing yet" : "Ready");
+  return <div className={!request.loading && !request.error ? "sr-only" : undefined}><DotStatus state={state} message={`${label}: ${t(detail)}`} onRetry={request.error && !request.loading ? request.retry : undefined} /></div>;
+}
+
 /**
  * The Feed, the way Muse does it: posts written for you from what it knows, steered by
  * your "feed instructions" — and, below them, what happened while you were away: replies
@@ -36,44 +64,18 @@ import { cx, readStorage, relativeTime, timeShort, writeStorage } from "../util"
  */
 export function FeedScreen() {
   const { state, send, openThread, openFile, markFeedSeen, setTab, toast } = useStore();
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [attempt, setAttempt] = useState(0);
-  const [items, setItems] = useState<FeedItem[] | null>(null);
-  const [posts, setPosts] = useState<FeedPostsData | null>(null);
-  const [upcoming, setUpcoming] = useState<UpcomingData | null>(null);
-  const [calendar, setCalendar] = useState<CalendarData | null>(null);
+  const feedVersion = `${state.feedVersion}:${state.remindersVersion}`;
+  const activityRequest = useFeedRequest(readActivity, feedVersion);
+  const postsRequest = useFeedRequest(api.feedPosts, feedVersion);
+  const upcomingRequest = useFeedRequest(api.upcoming, feedVersion);
+  const calendarRequest = useFeedRequest(api.calendar, `${state.calendarVersion}:${state.connectionsVersion}`);
+  const items = activityRequest.data;
+  const { data: posts, setData: setPosts } = postsRequest;
+  const upcoming = upcomingRequest.data;
+  const calendar = calendarRequest.data;
   const name = state.profile?.name ?? "Dot";
   const t = useT();
   const locale = useLocale();
-
-  useEffect(() => {
-    let alive = true;
-    setLoadError(null);
-    api.feed(80)
-      .then((d) => alive && setItems(d))
-      .catch((e: Error) => alive && setLoadError(e.message));
-    api.upcoming()
-      .then((d) => alive && setUpcoming(d))
-      .catch(() => undefined);
-    api.feedPosts()
-      .then((d) => alive && setPosts(d))
-      .catch(() => undefined);
-    return () => {
-      alive = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.feedVersion, state.remindersVersion, attempt]);
-
-  // the day's events, when a calendar is connected (a feed refresh pushes a new version)
-  useEffect(() => {
-    let alive = true;
-    api.calendar()
-      .then((d) => alive && setCalendar(d))
-      .catch(() => undefined);
-    return () => {
-      alive = false;
-    };
-  }, [state.calendarVersion, state.connectionsVersion]);
 
   // Looking at the feed marks it read — the newest item's time is the watermark.
   useEffect(() => {
@@ -123,8 +125,10 @@ export function FeedScreen() {
       />
 
       <div className="flex-1 overflow-y-auto px-3.5 pb-7">
-        {loadError && <DotStatus state="error" message={t(loadError)} onRetry={() => setAttempt(n => n + 1)} />}
-        {!loadError && items === null && <DotStatus state="loading" message={t("Loading…")} />}
+        <FeedRequestStatus label={t("Feed posts")} request={postsRequest} empty={posts?.posts.length === 0} />
+        <FeedRequestStatus label={t("Next up")} request={upcomingRequest} empty={!!upcoming && upcoming.queue.length + upcoming.reminders.length + upcoming.check_ins.length === 0} />
+        <FeedRequestStatus label={t("Calendar")} request={calendarRequest} empty={calendar?.events.length === 0} />
+        <FeedRequestStatus label={t("While you were away")} request={activityRequest} empty={items?.length === 0} />
         {/* Muse's feed: a day heading, white cards; the first card explains what drives it */}
         {postDays.length === 0 && (
           <>
@@ -185,7 +189,7 @@ export function FeedScreen() {
         {upcoming && <NextUp data={upcoming} name={name} onSettings={() => setTab("you")} onGoals={() => setTab("goals")} />}
         {calendar?.configured && <TodayBlock data={calendar} onAsk={() => openThread("main")} />}
 
-        {items && items.length === 0 && (!posts || posts.posts.length === 0) && (
+        {items && items.length === 0 && posts !== null && posts.posts.length === 0 && (
           <div className="py-10 text-center text-muted text-[0.875rem] px-6">
             <Moon size={28} className="mx-auto mb-2 opacity-60" />
             {t("Nothing yet. Once {name} works on a goal in the background or needs your approval, it shows up here.", { name })}

@@ -859,7 +859,7 @@ function Composer({
           ))}
         </div>
       )}
-      <div className="flex items-end gap-2 rounded-[26px] border border-border bg-surface px-1.5 py-1.5 shadow-[0_2px_12px_-6px_rgba(0,0,0,0.12)] focus-within:border-fg/20">
+      <div className="dot-composer-toolbar flex items-end gap-2 rounded-[26px] border border-border bg-surface px-1.5 py-1.5 shadow-[0_2px_12px_-6px_rgba(0,0,0,0.12)] focus-within:border-fg/20">
         <input
           ref={fileRef}
           type="file"
