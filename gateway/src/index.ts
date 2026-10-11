@@ -2,6 +2,7 @@ import { authenticate, readKeyHashes } from './auth';
 import type { GatewayEnv } from './types';
 import { handleChat } from './chat';
 import { listModels } from './models';
+import { handleTranscription, handleSpeech, ttsEnabled } from './audio';
 export { FreeGate } from './quota';
 
 function configured(env: GatewayEnv): boolean {
@@ -34,14 +35,14 @@ export async function handle(request: Request, env: GatewayEnv, _ctx: ExecutionC
     if (!identity) return error(401, 'unauthorized', 'A project credential is required.', { 'WWW-Authenticate': 'Bearer' });
     if (path === '/v1/models') {
       if (request.method !== 'GET') return error(405, 'method_not_allowed', 'Use GET.', { Allow: 'GET' });
-      return listModels(false);
+      return listModels(ttsEnabled(env));
     }
     const pending = new Set(['/v1/chat/completions', '/v1/audio/transcriptions', '/v1/audio/speech']);
     if (!pending.has(path)) return error(404, 'not_found', 'API route not found.');
     if (request.method !== 'POST') return error(405, 'method_not_allowed', 'Use POST.', { Allow: 'POST' });
     if (path === '/v1/chat/completions') return handleChat(request, env, identity.clientId);
-    // Disabled audio routes do not reserve quota or fabricate a reply.
-    return error(503, 'inference_unavailable', 'Inference is not enabled.');
+    if (path === '/v1/audio/transcriptions') return handleTranscription(request, env, identity.clientId);
+    return handleSpeech(request, env, identity.clientId);
   }
   if (request.method !== 'GET' && request.method !== 'HEAD') return error(405, 'method_not_allowed', 'Use GET or HEAD.', { Allow: 'GET, HEAD' });
   if (!env.ASSETS) return error(503, 'assets_unavailable', 'Website assets unavailable.');
