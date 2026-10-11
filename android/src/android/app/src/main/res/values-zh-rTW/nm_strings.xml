@@ -1108,4 +1108,5 @@
     <string name="nm_goal_completion">目標已完成：%1$s</string>
     <string name="nm_feed_like_post">喜歡貼文：%1$s</string>
     <string name="nm_feed_post_info">貼文資訊：%1$s</string>
+    <string name="nm_care_clarify_no_nodes">你在這個頁面上能看到哪個控制項？</string>
 </resources>

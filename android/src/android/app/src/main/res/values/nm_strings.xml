@@ -1119,4 +1119,5 @@
     <string name="nm_goal_completion">Goal completed: %1$s</string>
     <string name="nm_feed_like_post">Like post: %1$s</string>
     <string name="nm_feed_post_info">Post information: %1$s</string>
+    <string name="nm_care_clarify_no_nodes">Which control can you see on this page?</string>
 </resources>

@@ -1138,4 +1138,5 @@
     <string name="nm_goal_completion">완료된 목표: %1$s</string>
     <string name="nm_feed_like_post">게시물 좋아요: %1$s</string>
     <string name="nm_feed_post_info">게시물 정보: %1$s</string>
+    <string name="nm_care_clarify_no_nodes">이 페이지에서 어떤 조작 항목이 보이나요?</string>
 </resources>

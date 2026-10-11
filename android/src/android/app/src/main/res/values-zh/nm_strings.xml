@@ -1115,4 +1115,5 @@
     <string name="nm_goal_completion">目标已完成：%1$s</string>
     <string name="nm_feed_like_post">喜欢帖子：%1$s</string>
     <string name="nm_feed_post_info">帖子信息：%1$s</string>
+    <string name="nm_care_clarify_no_nodes">你在这个页面上能看到哪个控件？</string>
 </resources>

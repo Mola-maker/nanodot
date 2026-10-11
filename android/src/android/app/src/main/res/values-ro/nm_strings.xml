@@ -1146,4 +1146,5 @@
     <string name="nm_goal_completion">Obiectiv finalizat: %1$s</string>
     <string name="nm_feed_like_post">Apreciază postarea: %1$s</string>
     <string name="nm_feed_post_info">Informații despre postare: %1$s</string>
+    <string name="nm_care_clarify_no_nodes">Ce control vezi pe această pagină?</string>
 </resources>

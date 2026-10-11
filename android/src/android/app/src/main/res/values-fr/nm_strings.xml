@@ -1142,4 +1142,5 @@
     <string name="nm_goal_completion">Objectif terminé : %1$s</string>
     <string name="nm_feed_like_post">Aimer la publication : %1$s</string>
     <string name="nm_feed_post_info">Informations sur la publication : %1$s</string>
+    <string name="nm_care_clarify_no_nodes">Quel contrôle vois-tu sur cette page ?</string>
 </resources>

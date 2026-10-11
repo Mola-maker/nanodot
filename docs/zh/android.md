@@ -79,6 +79,45 @@ Android 14 及以上的窗口采集能够报告安全窗口错误。旧版显示
 后续对话与关怀调用方负责选择并标明该降级方式。相关协调器接入前，浮球动作仍提示能力暂不可用；
 仅创建这个 Repository 不会调用模型或上传屏幕。
 
+## 关怀规划基础 {#care-planner-foundation}
+
+源码层的 `io.github.nanomuse.dot.care.CarePlanner` 每次只准备**由你执行的一条说明**。
+输入是目标、调用方持有的当前 `ScreenSnapshot`，以及调用方声明已验证的过去步骤。
+它仅调用一次已选服务商的 `LLMProvider.sendMessage`，tools 与图片为空，temperature 为 0，
+请求 `ThinkingLevel.OFF`；不持有 Hands、手势、输入、剪贴板或智能体循环执行器，也不在
+Planner 内重试或自动切换服务商。服务商内部可能把传输流汇总为回复；OFF 是接口请求，
+不代表已经证明所有远端模型的推理行为。这个基础层尚未接入浮球、关怀界面或验证器。
+
+请求在 user 消息里采用 JSON，system 契约固定：目标、节点文字和过去步骤均为被引用的
+不可信上下文，不能当作系统指令。只发送已启用、非密码、引用唯一，且具有当前快照内有限
+正面积边界的节点。不上传像素。节点为空或不可用时，返回调用方从全部 17 个 locale 的
+`nm_care_clarify_no_nodes` 资源提供的可读问题；后续关怀调用方需要按自己的语言解析资源。
+Planner 不关闭或回收调用方的快照，不能把只有 Canvas 的页面当成可验证节点目标。
+
+输出是单个严格 JSON 对象，值区分大小写。步骤仅含 `type: "Step"`、`snapshotId`、
+`scene`（`packageName`、`windowId`、`displayId`、`version`）、`targetRef`、
+`action`（`Open`、`Focus`、`Copy`、`Paste`、`Search`）、`instruction`、可为 null 的
+`copyText`、`expectation` 和 `confidence`。预期条件为含 `text` 的 `PageContains`、
+含 `ref` 的 `Focused`、含 `ref` 与 `text` 的 `TextEquals`，或含 `query` 的 `ResultsFor`，
+各自也含 `type`。澄清仅含 `type: "Clarify"` 与 `question`。脚本、额外字段、裸坐标、
+重复键、旧场景或节点引用、密码目标、非有限数值和低于 0.7 的置信度都不接受。
+焦点或文字条件的引用必须与当前目标相同。这些只是用户意图和可观察条件，不是操作处理器；
+完成判定属于后续验证器。
+
+每次调用限 30 秒、至多 1,024 个输出 token（服务商上限更小时服从该上限）、
+请求总计 32,768 个字符、回复 8,192 个字符、128 个合格节点、目标 2,048 个字符、
+说明或预期文字 1,024 个字符、复制文字 2,048 个字符。已知模型上下文窗口时，使用请求的
+UTF-8 字节数加输出额度进行保守检查。超限直接拒绝，不截断身份或文字。只发送最近八条
+结构有效、场景版本更早且快照 ID 不同的调用方声明步骤作为过去上下文；这不构成独立的
+完成证据。畸形、不支持、截断、工具或媒体输出返回 `recovering_invalid_proposal`；
+超时、服务商或预算失败返回数据错误码，由后续控制器映射为本地化的 Recovering 状态。
+调用方取消会继续传播。
+
+FakeProvider 单元测试只验证请求隔离与 schema 拒绝。真实模型返回当前 fixture 节点、
+原生关怀交互、TalkBack 和证据推进仍是单独的待验收项；固定假 proposal 不算模型成功。
+默认服务和已有凭据保持原状。
+
+
 ## 安装 {#install}
 
 1. 从[最新版本](https://github.com/nano-muse/nanoMuse/releases/latest)下载

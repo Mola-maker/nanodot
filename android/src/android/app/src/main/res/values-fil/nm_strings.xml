@@ -1142,4 +1142,5 @@
     <string name="nm_goal_completion">Nakumpletong layunin: %1$s</string>
     <string name="nm_feed_like_post">Gustuhin ang post: %1$s</string>
     <string name="nm_feed_post_info">Impormasyon ng post: %1$s</string>
+    <string name="nm_care_clarify_no_nodes">Aling kontrol ang nakikita mo sa pahinang ito?</string>
 </resources>

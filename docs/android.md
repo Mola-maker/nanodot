@@ -101,6 +101,54 @@ fresh text-only fallback after a pixel error. Later conversation/care callers ch
 label that fallback. Orb actions still show the capability-unavailable message until those
 coordinators are wired; this repository alone does not call a model or upload a screen.
 
+## Care planner foundation
+
+The source-only `io.github.nanomuse.dot.care.CarePlanner` prepares **one instruction for
+you to perform**. It accepts a goal, the caller-owned current `ScreenSnapshot`, and
+steps the caller declares previously verified. It calls the selected existing
+`LLMProvider.sendMessage` once with empty tools and images, temperature 0 and
+`ThinkingLevel.OFF`; it has no Hands, gesture, input, clipboard or agent-loop executor,
+and performs no planner retry or provider fallback. A provider may materialize its
+own transport stream; OFF is an interface request, not proof of every remote model's
+reasoning behavior. This foundation is not yet connected to the orb, care UI or verifier.
+
+The request is JSON in a user message, with a fixed system contract: goals, node text
+and past steps are quoted, untrusted context, never system instructions. Only enabled,
+non-password nodes with unique references and finite, positive bounds inside the current
+snapshot are sent. Pixels are not uploaded. Empty or unusable node sets return a readable
+clarification supplied by the caller from `nm_care_clarify_no_nodes` in all 17 locales;
+future care callers must resolve that resource in their own locale. The planner never
+closes or recycles the caller's snapshot. It cannot handle a Canvas-only page as a verified
+node target.
+
+Output is a single strict JSON object, with case-sensitive values. A step has exactly
+`type: "Step"`, `snapshotId`, `scene` (`packageName`, `windowId`, `displayId`, `version`),
+`targetRef`, `action` (`Open`, `Focus`, `Copy`, `Paste`, `Search`), `instruction`, nullable
+`copyText`, `expectation`, and `confidence`. Expectations are `PageContains` with `text`,
+`Focused` with `ref`, `TextEquals` with `ref` and `text`, or `ResultsFor` with `query`;
+each also has its `type`. A clarification has only `type: "Clarify"` and `question`.
+No scripts, extra fields, bare coordinates, duplicate keys, stale scenes/references,
+password targets, nonfinite values or confidence below 0.7 are accepted. Focus/text
+expectation references must equal the current target. These are user intents and
+observable postconditions, not action handlers; the later verifier owns completion.
+
+One call is limited to 30 seconds, at most 1,024 output tokens (or the provider's smaller
+ceiling), 32,768 total request characters, 8,192 response characters, 128 eligible nodes,
+a 2,048-character goal, 1,024-character instruction/expectation text and 2,048-character
+copy text. A known model context window is checked conservatively against request UTF-8
+bytes plus the output allowance. Oversize context is rejected instead of truncating
+identity or text. At most the last eight structurally valid declared steps with an older
+scene version and different snapshot ID are sent as past context; this is not independent
+proof of their completion. Malformed, unsupported, truncated, tool or media output returns
+`recovering_invalid_proposal`; timeout, provider and budget failures have data-only codes
+for the later controller's localized Recovering state. Caller cancellation propagates.
+
+Fake-provider unit results validate request isolation and schema rejection only. A real
+model response targeting a current fixture node, native care interaction, TalkBack and
+evidence-based advancement remain separate pending gates; no fixed fake proposal counts
+as model success. The default service and existing stored credentials are unchanged.
+
+
 ## Install
 
 1. Download `nanoMuse-<version>-arm64.apk` from the
