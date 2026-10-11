@@ -29,29 +29,80 @@ counts are not Neuron estimates. Never upgrade or exhaust inference to demonstra
 
 ## Permission proposal before any new credential
 
-Use the retained authenticated dashboard for one-time creation, SQLite migration, secret entry
-and both Custom Domains, after reviewing the exact resource diff. Do not issue a persistent
-broad deployment token to bootstrap. Record actual namespace ID, version ID and domain IDs
-in ignored evidence; do not invent them before creation.
+Use the retained authenticated Dashboard to create nonsensitive Hello World placeholders,
+then close their public URLs before uploading reviewed code. The inspected creation form has
+Access off, an implicit workers.dev address and no control to disable it before creation.
+Before any create click, refresh the authenticated account, confirm Workers Free and check the
+exact names `nanodot-gateway` and `nanodot-task6-operator`. If either name already exists, stop
+for review; do not overwrite or repurpose it. Obtain **fresh, specific human consent** for these
+two creations and their brief workers.dev/Version URL exposure. Earlier deployment consent
+and an authenticated session do not authorize this exposure; already observed responses or
+logs cannot be erased retroactively.
 
-For later CI, create and verify a protected `gateway-production` GitHub environment before
-adding any secret. Its required human reviewer is `Mola-maker` (GitHub user ID `229602071`),
-with `prevent_self_review=false` and a custom deployment branch policy allowing only `main`.
-The owner explicitly permits the initiating user to review their own deployment; every deployment
-still requires Mola-maker's actual human approval. An agent must never submit that approval.
-Store only `CLOUDFLARE_API_TOKEN` there and `CLOUDFLARE_ACCOUNT_ID` as an environment variable. Use a short-lived account API token with **Editor only for the existing
-`nanodot-gateway` Worker**. CI uploads/activates versions; it does not create Workers, modify
-routes/domains, migrate storage, set project secrets or deploy the operator.
+Create and close **one Worker at a time**: create `nanodot-gateway` with only the inspected
+Hello World template, immediately disable workers.dev and Version URLs in Settings → Domains
+& Routes, and confirm both URLs no longer serve the template and no Custom Domains/routes
+exist. Record the actual resource/version/settings IDs and closure evidence. Then repeat for
+`nanodot-task6-operator`. If either closure cannot be confirmed, stop. Until both are actually
+closed, add no AI/DO bindings, project hashes, private operator code or assets, and make no AI
+request. [Version URLs](https://developers.cloudflare.com/workers/versions-and-deployments/version-urls/)
+are public when enabled, inherit workers.dev state when unset and can be disabled in Dashboard;
+keep `workers_dev:false` and `preview_urls:false` in the reviewed configurations.
 
-The [current Workers authorization specification](https://developers.cloudflare.com/workers/authorization/workers/)
-requires product Admin to create a Worker; Editor can deploy existing Workers. Domain changes
-also require zone Workers Routes Write and currently do not support per-Worker roles. Hence
-domain bootstrap belongs to the already authenticated dashboard; no broad persistent token
-is justified. [Durable Object permissions](https://developers.cloudflare.com/workers/authorization/durable-objects/)
-follow the implementing Worker. Bindings do not require separate direct-resource permissions
-to deploy. No DNS Edit, KV, R2, D1, AI REST inference token, user-details or all-zone scope is
-requested for routine version CI. If actual Wrangler authorization rejects this precise scope,
-stop and report the failed action; request the specific additional permission only after review.
+Only after both Workers exist and are closed may the human grant a **short-lived Individual
+Workers Editor token for exactly those two existing resource IDs**. Review its exact role,
+resource IDs and expiry, and obtain separate action-time authorization for credential creation
+and private hand-off. No Workers-product Admin/Editor, zone/DNS, KV, R2, D1, AI REST inference,
+user-details, all-zone or unrelated-Worker scope is proposed. Never place credentials in
+chat, argv or logs. This bootstrap token is separate from the later gateway-only CI token.
+
+Prepare `gateway/.env.task6-bootstrap.jsonc` beside `gateway/wrangler.jsonc`; the existing
+`.env.*` ignore rule keeps this credential-free JSONC metadata private. Its **only difference
+is `routes:[]`**. For separately authorized bootstrap, run Wrangler from `gateway/` with explicit
+`--config .env.task6-bootstrap.jsonc`; do not load it as dotenv. CI keeps the standard reviewed
+`wrangler.jsonc` version-upload configuration. Retain the reviewed source/bundle and exact 291-asset manifest, AI/ASSETS,
+`FREE_GATE` → `FreeGate`, `v1` / `new_sqlite_classes`, `workers_dev:false`, `preview_urls:false`,
+`INFERENCE_ENABLED=false`, `TTS_ZH_VERIFIED=false` and absent `TTS_ZH_LANG`. Upload/deploy to
+the existing gateway through the approved two-Worker Editor token and apply only that first
+migration. Record the real namespace/version IDs and migration result. The exact pinned
+Wrangler upload/migration authorization has **not been tested**: stop on its precise rejected
+operation and review it before any permission expansion. Preserve the first namespace and
+production counters; do not reset counters, experiment with repeated migrations, convert the
+schema or silently replace the reviewed migration with newer exports syntax.
+
+Only after the gateway namespace exists, deploy the reviewed route-less operator to its closed
+placeholder with external `FREE_GATE`, class `FreeGate`, `script_name=nanodot-gateway` and no
+own migration. Verify actual namespace identity and continued public closure before adding
+its dedicated project hashes. Its AI binding/candidate speech requires that closure; no candidate
+request is authorized by this sequence. Project hashes enter only through separately approved
+private stdin/Dashboard. Add only the apex and www Custom Domains through the retained
+Dashboard after recording DNS/mail/routes IDs and a fresh Free check and public-exposure approval.
+Preserve all mail records and unrelated Workers; domain operations are outside the no-zone token.
+
+For later CI, verify the protected `gateway-production` environment before adding any secret:
+required human reviewer `Mola-maker` (GitHub user ID `229602071`), `prevent_self_review=false`,
+custom deployment branch policy allowing only `main`, and `can_admins_bypass=false`. The owner
+permits initiator review; every deployment still requires Mola-maker's actual human approval,
+which an agent must never submit. Store only `CLOUDFLARE_API_TOKEN` and the environment variable
+`CLOUDFLARE_ACCOUNT_ID`. Use a **separate short-lived Individual Worker Editor token for the
+existing `nanodot-gateway` only**. CI performs version upload/activation; it must not create
+Workers, migrate storage, modify domains/routes, set secrets or deploy the operator.
+
+[Workers authorization](https://developers.cloudflare.com/workers/authorization/workers/)
+requires existing account authority for creation; Editor deploys existing Workers. Custom Domains
+support per-Worker Editor **plus Workers Routes Write on each affected zone**. This proposal
+uses retained Dashboard domain connections to avoid adding zone permission to bootstrap or CI
+tokens. Editor intrinsically permits more than uploads, including Worker settings/secrets and
+Durable Object data access through Data Studio. Upload-only CI is an operational constraint
+backed by human approval, not a narrower intrinsic permission capability.
+[DO permissions](https://developers.cloudflare.com/workers/authorization/durable-objects/)
+follow the implementing Worker; bindings do not require separate direct-resource permissions
+to deploy. A domain/settings/upload failure does not prove an account-wide Admin token is needed;
+record the precise failure and review the specific operation. The previously rejected account-wide
+Admin preparation is not authorized through another API/CLI path. Remote service/edge-preview
+transport permissions remain a separate unresolved gate described below; do not presume the
+two-Worker Editor token covers the nonexistent relay script or account session APIs, start default
+OAuth, or create a new Admin grant.
 
 ## Source checks and bootstrap sequence
 
@@ -82,9 +133,10 @@ Node 22 is required. The gateway test pool sets `remoteBindings:false`; no model
 The old raw-source GitHub Pages publishing path is closed. Default documentation builds
 retain their old base; only the gateway build uses `/docs/`. Generated outputs and evidence
 are ignored. Before Phase B archive commit, artifact hashes, account Free confirmation,
-existing routes/domain IDs and all DNS record types/IDs. Then, under approved dashboard/CLI
-control, deploy the independent Worker with migration and assets and set the hash secret via
-private stdin/dashboard (never argv, chat or logs). Keep inference disabled initially. Confirm
+existing routes/domain IDs and all DNS record types/IDs. Follow the specifically approved
+placeholder creation/closure, existing-Worker Editor upload/migration and Dashboard-domain
+sequence above. Set hash secrets only through approved private stdin/Dashboard, never argv,
+chat or logs. Keep inference disabled initially. Confirm
 health/auth/preflight/404 and valid TLS; then make a separately reviewed configuration change
 to `INFERENCE_ENABLED=true` while still keeping TTS false. CI cannot bootstrap this sequence.
 
