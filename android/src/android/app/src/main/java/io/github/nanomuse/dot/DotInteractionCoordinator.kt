@@ -62,6 +62,7 @@ class DotInteractionCoordinator(private val service: MinisAccessibilityService) 
 
     /** Explicit main-app session entry switches admission; opening our panel alone never does. */
     fun onChatEntered(sessionId: String) {
+        service.dotOverlay.cancelCaptureScan()
         pauseCare(hide=true)
         ++request
         opening?.cancel()
@@ -69,6 +70,7 @@ class DotInteractionCoordinator(private val service: MinisAccessibilityService) 
     }
 
     fun handle(intent: DotIntent) {
+        service.dotOverlay.cancelCaptureScan()
         if (intent == DotIntent.Triple) { openCare(); return }
         if (intent != DotIntent.Single && intent != DotIntent.Double) {
             Toast.makeText(service,R.string.nm_dot_action_unavailable,Toast.LENGTH_SHORT).show()
@@ -84,6 +86,8 @@ class DotInteractionCoordinator(private val service: MinisAccessibilityService) 
             if (ticket != request || !service.dotOverlay.isConnected) return@launch
             val binding = adapter.bind(id)
             if (intent == DotIntent.Double) {
+                service.dotOverlay.beginCaptureScan(ticket)
+                try {
                 when (val result = service.dotScreen.capture(CapturePurpose.Chat,binding.generation)) {
                     is CaptureOutcome.Success -> adapter.attach(binding,result.snapshot)
                     is CaptureOutcome.Unavailable -> {
@@ -94,6 +98,17 @@ class DotInteractionCoordinator(private val service: MinisAccessibilityService) 
                         }
                     }
                 }
+                if(ticket==request && adapter.accepts(binding)) service.dotOverlay.finishCaptureScan(ticket,adapter.preview.value!=null)
+                else service.dotOverlay.cancelCaptureScan(ticket)
+                } catch(cancelled: CancellationException) {
+                    service.dotOverlay.cancelCaptureScan(ticket)
+                    throw cancelled
+                } catch(failure: Exception) {
+                    if(ticket==request && adapter.accepts(binding)) {
+                        adapter.captureError.value=true
+                        service.dotOverlay.finishCaptureScan(ticket,false)
+                    } else service.dotOverlay.cancelCaptureScan(ticket)
+                }
             }
             if (ticket != request || !adapter.accepts(binding)) return@launch
             service.dotOverlay.showPanel(adapter) { close() }
@@ -101,6 +116,7 @@ class DotInteractionCoordinator(private val service: MinisAccessibilityService) 
     }
 
     fun close() {
+        service.dotOverlay.cancelCaptureScan()
         ++request
         opening?.cancel()
         adapter.binding.value?.let(adapter::cancel)

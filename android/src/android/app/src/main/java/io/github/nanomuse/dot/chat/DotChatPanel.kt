@@ -5,6 +5,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -38,18 +41,19 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit) {
     val consumed by session.consumedAttachments.collectAsState()
     val compact by (vm?.showCompactBeforeSendPrompt ?: remember { kotlinx.coroutines.flow.MutableStateFlow(false) }).collectAsState()
     LaunchedEffect(messages, error, streaming, attachments, consumed) { adapter.releaseConsumedFiles() }
-    Surface(Modifier.fillMaxSize(), tonalElevation = 4.dp) {
-        Column(Modifier.fillMaxSize().padding(DotTokens.Space.S16), verticalArrangement = Arrangement.spacedBy(DotTokens.Space.S8)) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Dot", fontSize = DotTokens.Type.Body, modifier = Modifier.padding(top = DotTokens.Space.S12))
-                TextButton(onClick = onCollapse, modifier = Modifier.heightIn(min = DotTokens.TouchTarget)) {
-                    Text(stringResource(R.string.nm_dot_chat_collapse), fontSize = DotTokens.Type.Body)
-                }
-            }
-            LazyColumn(Modifier.weight(1f).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(DotTokens.Space.S12)) {
+    val listState = rememberLazyListState()
+    val motion=io.github.nanomuse.dot.ui.LocalDotMotionEnabled.current
+    LaunchedEffect(messages.size, preview) {
+        if (listState.layoutInfo.totalItemsCount > 0) {
+            if(motion) listState.animateScrollToItem(listState.layoutInfo.totalItemsCount - 1)
+            else listState.scrollToItem(listState.layoutInfo.totalItemsCount - 1)
+        }
+    }
+    DotForegroundChat(status = if (busy) stringResource(R.string.nm_status_replying) else null, onCollapse = onCollapse) {
+            LazyColumn(Modifier.weight(1f).fillMaxWidth(), state = listState, verticalArrangement = Arrangement.spacedBy(DotTokens.Space.S12)) {
                 if (messages.isEmpty()) item { Text(stringResource(R.string.nm_dot_chat_empty), fontSize = DotTokens.Type.Body) }
                 items(messages.filterNot { it.isInternalBridge }, key = { it.id }) { message ->
-                    Column {
+                    DotMessageBubble(message.role == "user") {
                         Text(deltas[message.id]?.content ?: message.content, fontSize = DotTokens.Type.Body)
                         // Persisted images keep their VM-owned media URIs after the preview is dismissed.
                         message.imageUris.forEach { uri ->
@@ -60,8 +64,8 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit) {
                         message.attachmentNames.forEach { Text(it, fontSize = DotTokens.Type.Body) }
                     }
                 }
-                item {
-                    Column(verticalArrangement = Arrangement.spacedBy(DotTokens.Space.S8)) {
+                if (preview != null || captureError || configured.isNullOrBlank() || error != null || compact) item {
+                    DotMessageBubble(false) {
                         preview?.let { local ->
                             val bitmap = remember(local.file) { if (local.textOnly) null else BitmapFactory.decodeFile(local.file.path) }
                             DisposableEffect(bitmap) { onDispose { bitmap?.recycle() } }
@@ -87,6 +91,8 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit) {
                     }
                 }
             }
+            Column(Modifier.weight(.85f, fill = false).fillMaxWidth().verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(DotTokens.Space.S8)) {
             io.github.nanomuse.dot.voice.DotVoiceControls(adapter)
             OutlinedTextField(text, adapter::editInput, Modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget).testTag("dot_composer"),
                 label = { Text(stringResource(R.string.nm_dot_chat_message), fontSize = DotTokens.Type.Body) },

@@ -1,11 +1,24 @@
 package io.github.nanomuse.dot.care
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.graphics.graphicsLayer
+import io.github.nanomuse.dot.ui.LocalDotMotionEnabled
+import io.github.nanomuse.dot.chat.DotForegroundChat
+import io.github.nanomuse.dot.chat.DotMessageBubble
+import io.github.nanomuse.dot.screen.RectPx
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.*
 import com.openminis.app.R
@@ -39,44 +52,74 @@ private fun CareButton(label: Int, action: () -> Unit, enabled: Boolean = true) 
 }
 
 @Composable
-internal fun CarePanel(session: CareSession, onCopy: () -> Unit, onRepeat: (String) -> Unit) {
+internal fun CarePanel(session: CareSession, onCopy: () -> Unit, onRepeat: (String) -> Unit,
+    onInstructionBounds: (String?, RectPx?) -> Unit = { _, _ -> }) {
     val state by session.controller.state.collectAsState()
     val editing by session.editingGoal.collectAsState()
+    val history by session.conversation.state.collectAsState()
     var goal by remember(editing,state.goal,state.question) { mutableStateOf(state.goal) }
     val status = stringResource(careStatusLabel(if (editing) CareState.Idle else state.state))
-    Surface(shape=MaterialTheme.shapes.medium,tonalElevation=DotTokens.Space.S4) {
-        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(DotTokens.Space.S16),
+    val list = rememberLazyListState()
+    val current = if (state.proposal != null) session.instructionKey() else null
+    val motion=LocalDotMotionEnabled.current
+    var cueTarget by remember(current) { mutableFloatStateOf(if(current==null) 1f else 0f) }
+    val cue by animateFloatAsState(cueTarget,tween(if(motion) 980 else 0,easing=LinearEasing),label="careInstructionCue")
+    LaunchedEffect(current,motion) {
+        cueTarget=1f
+    }
+    LaunchedEffect(history.size, current) {
+        if (list.layoutInfo.totalItemsCount > 0) {
+            if(motion) list.animateScrollToItem(list.layoutInfo.totalItemsCount - 1)
+            else list.scrollToItem(list.layoutInfo.totalItemsCount - 1)
+        }
+        if (current == null) onInstructionBounds(null, null)
+    }
+    DisposableEffect(Unit) { onDispose { onInstructionBounds(null, null) } }
+    DotForegroundChat(status, { session.pause(hide = true) }) {
+        LazyColumn(Modifier.weight(1f).fillMaxWidth(), state = list,
+            verticalArrangement = Arrangement.spacedBy(DotTokens.Space.S8)) {
+            if (history.isEmpty()) item { DotMessageBubble(false) {
+                Text(stringResource(R.string.nm_care_intro),fontSize=DotTokens.Type.Care)
+            } }
+            items(history, key = { it.id }) { row ->
+                if(row.id==current) DisposableEffect(row.id) { onDispose { onInstructionBounds(row.id,null) } }
+                val anchor = if (row.id == current) Modifier.graphicsLayer { alpha=careCueProgress((cue*980).toLong(),motion).bubble }.onGloballyPositioned { coordinates ->
+                    val r = coordinates.boundsInWindow()
+                    onInstructionBounds(row.id, RectPx(r.left,r.top,r.right,r.bottom))
+                } else Modifier
+                DotMessageBubble(row.user, anchor) {
+                    if (row.verified) Text(stringResource(R.string.nm_care_step_confirmed),fontSize=DotTokens.Type.Body)
+                    Text(row.text,fontSize=DotTokens.Type.Care)
+                }
+            }
+            if (state.errorCode != null && state.pendingInstruction == null) item { DotMessageBubble(false) {
+                Text(stringResource(if(state.errorCode=="provider_not_configured") R.string.nm_care_provider_missing
+                    else R.string.nm_care_unavailable),fontSize=DotTokens.Type.Care)
+            } }
+            if (state.pendingInstruction != null && state.proposal == null) item { DotMessageBubble(false) {
+                Text(state.pendingInstruction!!,fontSize=DotTokens.Type.Care)
+            } }
+        }
+        Column(Modifier.weight(.85f, fill=false).fillMaxWidth().verticalScroll(rememberScrollState()),
             verticalArrangement=Arrangement.spacedBy(DotTokens.Space.S8)) {
-            Text(status,fontSize=DotTokens.Type.Body,color=MaterialTheme.colorScheme.tertiary,
-                modifier=Modifier.semantics { stateDescription=status; liveRegion=LiveRegionMode.Polite })
             if (editing || state.state==CareState.Clarifying) {
-                state.question?.let { Text(it,fontSize=DotTokens.Type.Care) }
                 OutlinedTextField(value=goal,onValueChange={ if(it.length<=2048) goal=it },
                     label={ Text(stringResource(R.string.nm_care_goal)) },modifier=Modifier.fillMaxWidth(),maxLines=4)
                 CareButton(R.string.nm_care_start,{session.submitGoal(goal)},goal.isNotBlank())
             }
-            state.proposal?.let { proposal ->
-                CareCard(proposal,onCopy,{session.pause()},session::reobserve,session::end,
-                    { onRepeat(proposal.instruction) })
-            }
-            if (state.errorCode != null && state.pendingInstruction == null) {
-                Text(stringResource(if(state.errorCode=="provider_not_configured") R.string.nm_care_provider_missing
-                    else R.string.nm_care_unavailable),fontSize=DotTokens.Type.Care)
-            }
-            state.pendingInstruction?.let { pending ->
-                if (state.proposal==null) Text(pending,fontSize=DotTokens.Type.Care)
-                CareButton(R.string.nm_care_confirm,session.controller::confirmStepCompleted)
-            }
             CareActions {
-                if (state.state==CareState.Paused) CareButton(R.string.nm_care_resume,session::resume)
-                if (state.proposal==null && !editing) {
-                    if(state.state!=CareState.Paused) {
-                        CareButton(R.string.nm_care_reobserve,session::reobserve)
-                        CareButton(R.string.nm_care_pause,{session.pause()})
-                    }
+                state.proposal?.let { proposal ->
+                    if(proposal.copyText != null) CareButton(R.string.nm_care_copy,onCopy)
+                    CareButton(R.string.nm_care_repeat,{ onRepeat(proposal.instruction) })
                 }
-                if (!editing) CareButton(R.string.nm_care_change_goal,session::changeGoal)
-                if (state.proposal==null) CareButton(R.string.nm_care_end,session::end)
+                if(state.pendingInstruction != null) CareButton(R.string.nm_care_confirm,session.controller::confirmStepCompleted)
+                if(state.state==CareState.Paused) CareButton(R.string.nm_care_resume,session::resume)
+                else if(!editing) {
+                    CareButton(R.string.nm_care_pause,{session.pause()})
+                    CareButton(R.string.nm_care_reobserve,session::reobserve)
+                }
+                if(!editing) CareButton(R.string.nm_care_change_goal,session::changeGoal)
+                CareButton(R.string.nm_care_end,session::end)
             }
         }
     }

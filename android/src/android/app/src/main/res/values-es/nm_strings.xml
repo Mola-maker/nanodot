@@ -1197,4 +1197,8 @@
     <string name="nm_dot_voice_read">Leer respuesta</string>
     <string name="nm_dot_voice_speaking">Leyendo respuesta…</string>
     <string name="nm_dot_voice_read_error">No se pudo leer la respuesta en voz alta.</string>
+
+    <string name="nm_dot_bubble_you">Tú</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">Paso confirmado</string>
 </resources>

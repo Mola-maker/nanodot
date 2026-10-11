@@ -1170,4 +1170,8 @@
     <string name="nm_dot_voice_read">朗读回复</string>
     <string name="nm_dot_voice_speaking">正在朗读回复…</string>
     <string name="nm_dot_voice_read_error">无法朗读回复。</string>
+
+    <string name="nm_dot_bubble_you">你</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">这一步已确认</string>
 </resources>

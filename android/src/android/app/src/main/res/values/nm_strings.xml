@@ -1174,4 +1174,8 @@
     <string name="nm_dot_voice_read">Read reply</string>
     <string name="nm_dot_voice_speaking">Reading reply…</string>
     <string name="nm_dot_voice_read_error">Could not read the reply aloud.</string>
+
+    <string name="nm_dot_bubble_you">You</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">Step confirmed</string>
 </resources>

@@ -1193,4 +1193,8 @@
     <string name="nm_dot_voice_read">返信を読み上げる</string>
     <string name="nm_dot_voice_speaking">返信を読み上げ中…</string>
     <string name="nm_dot_voice_read_error">返信を読み上げられませんでした。</string>
+
+    <string name="nm_dot_bubble_you">あなた</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">この手順を確認しました</string>
 </resources>

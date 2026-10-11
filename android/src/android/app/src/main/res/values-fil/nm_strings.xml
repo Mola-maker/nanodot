@@ -1197,4 +1197,8 @@
     <string name="nm_dot_voice_read">Basahin ang tugon</string>
     <string name="nm_dot_voice_speaking">Binabasa ang tugon…</string>
     <string name="nm_dot_voice_read_error">Hindi mabasa nang malakas ang tugon.</string>
+
+    <string name="nm_dot_bubble_you">Ikaw</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">Nakumpirma ang hakbang</string>
 </resources>

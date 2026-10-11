@@ -59,6 +59,7 @@ open class View(val service: AccessibilityService) {
     }
     fun setOnApplyWindowInsetsListener(listener: (View, WindowInsets) -> WindowInsets) { insetsListener = listener }
     fun findOnBackInvokedDispatcher(): OnBackInvokedDispatcher? = null
+    fun getLocationOnScreen(location: IntArray) { location[0] = 0; location[1] = 0 }
     open fun dispatchKeyEventPreIme(event: KeyEvent) = false
     open fun dispatchKeyEvent(event: KeyEvent) = false
     fun measure(width: Int, height: Int) { measures++; onMeasure(width, height) }
@@ -191,6 +192,7 @@ class ReadAloudPlayer(service: AccessibilityService) {
 }
 ''',
     "theme.kt": "package com.openminis.app.ui.theme\nfun MinisTheme(content: () -> Unit) {}\n",
+    "motion.kt": "package io.github.nanomuse.dot.ui\nfun DotMotionHost(content: () -> Unit) {}\n",
     "owner.kt": r'''
 package io.github.nanomuse.dot.overlay
 class DotOverlayOwner {
@@ -220,12 +222,16 @@ class CareSession {
     val editingGoal = MutableStateFlow(false)
     var target: RectPx? = null
     fun focusBounds(scene: SceneKey?) = target
+    fun observeConversation() {}
+    fun instructionKey() = "current"
     fun pause(hide: Boolean) { if (hide) visible.value = false }
 }
 class CareFocusLayer(service: AccessibilityService, owner: (View?) -> Unit) {
-    fun clear() {}; fun show(target: RectPx) {}
+    fun clear() {}; fun show(target: RectPx, key: String = "") {}
+    fun setInstructionBubble(target: RectPx?) {}
 }
-fun CarePanel(session: CareSession, copy: () -> Unit, speak: (String) -> Unit) {}
+fun CarePanel(session: CareSession, copy: () -> Unit, onRepeat: (String) -> Unit,
+    onInstructionBounds: (String?, RectPx?) -> Unit = { _, _ -> }) {}
 ''',
     "harness.kt": r'''
 import android.view.View
@@ -268,7 +274,7 @@ fun main() {
             check(r.manager.updates.isEmpty())
             view.attach(); r.pump(view)
             check(view.measures > 0) { "Card was not sized after attachment" }
-            check(r.manager.updates.last() == listOf(360, 160, 20, 664))
+            check(r.manager.updates.last() == listOf(360, 160, 20, 656))
         } finally { r.close() }
     }
     test("attached refresh uses the current IME viewport and target-free side") {
@@ -277,11 +283,11 @@ fun main() {
             val view = r.open(); view.attach(); r.pump(view)
             r.host = RectPx(100f, 24f, 700f, 224f)
             r.window.refreshGeometry()
-            check(r.manager.updates.last() == listOf(360, 110, 220, 114))
+            check(r.manager.updates.last() == listOf(360, 110, 220, 106))
             r.host = RectPx(0f, 24f, 400f, 824f)
             r.session.target = RectPx(0f, 700f, 400f, 800f)
             r.window.refreshGeometry()
-            check(r.manager.updates.last() == listOf(360, 160, 20, 24))
+            check(r.manager.updates.last() == listOf(360, 160, 20, 532))
         } finally { r.close() }
     }
     test("closing before attach prevents queued layout from reviving the card") {
@@ -333,7 +339,7 @@ fun main() {
             r.window.refreshGeometry(); r.pump(view)
             check(view.measures == count && view.posts.isEmpty())
             view.attach(); r.pump(view)
-            check(r.manager.updates.last() == listOf(360, 110, 220, 114))
+            check(r.manager.updates.last() == listOf(360, 110, 220, 106))
         } finally { r.close() }
     }
     test("layout changes queue rather than recursively remeasure and settle at unchanged bounds") {
@@ -343,7 +349,9 @@ fun main() {
             val view = r.open(); view.attach(); r.pump(view)
             check(view.measures == 1 && r.manager.updates.size == 1)
             r.pump(view)
-            check(view.measures == 2 && view.posts.isEmpty())
+            check(view.measures == 2 && view.posts.isEmpty()) {
+                "Settled card retained callbacks: measures=${view.measures}, posts=${view.posts.size}"
+            }
         } finally { r.close() }
     }
     test("add failure disposes Compose and cancels attachment callbacks before rethrow") {
@@ -388,6 +396,7 @@ def main() -> int:
         sources = sorted(folder.glob("*.kt")) + [
             source_dir / "CareOverlayWindow.kt",
             source_dir / "CareCardGeometry.kt",
+            source_dir.parent / "overlay/DotForegroundGeometry.kt",
         ]
         compile_result = subprocess.run(
             [

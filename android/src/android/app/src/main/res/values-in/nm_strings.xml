@@ -1193,4 +1193,8 @@
     <string name="nm_dot_voice_read">Bacakan balasan</string>
     <string name="nm_dot_voice_speaking">Membacakan balasan…</string>
     <string name="nm_dot_voice_read_error">Tidak dapat membacakan balasan.</string>
+
+    <string name="nm_dot_bubble_you">Anda</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">Langkah dikonfirmasi</string>
 </resources>

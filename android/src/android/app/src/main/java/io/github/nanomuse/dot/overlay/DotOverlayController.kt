@@ -1,6 +1,9 @@
 package io.github.nanomuse.dot.overlay
 
 import android.accessibilityservice.AccessibilityService
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -15,6 +18,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.os.SystemClock
+import android.provider.Settings
 import android.view.KeyEvent
 import android.view.inputmethod.InputMethodManager
 import android.view.Gravity
@@ -52,7 +56,61 @@ class DotOverlayController(
     fun registerCareWindow(view: View) { careWindows.add(view) }
     fun unregisterCareWindow(view: View) { careWindows.remove(view) }
     fun setCareActive(active: Boolean) { careActive.value = active }
-    private fun ownedViews() = listOfNotNull(orbView, panelView, trailView) + careWindows.toList()
+    private fun ownedViews() = listOfNotNull(orbView, panelView, trailView, scannerView) + careWindows.toList()
+    private val scanTicket = CaptureScanTicket()
+    private var scannerView: DotCaptureScanner? = null
+    private var scannerGeneration: Long? = null
+    private var scanAnimation: ValueAnimator? = null
+    private var scanRemoval: Runnable? = null
+    fun beginCaptureScan(generation: Long) {
+        checkMainThread()
+        if(!isConnected || locked || !enabled || scanTicket.begin(generation)==null) return
+        val view=DotCaptureScanner(service)
+        val p=WindowManager.LayoutParams(-1,-1,WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,PixelFormat.TRANSLUCENT).apply {
+            gravity=Gravity.TOP or Gravity.LEFT; title="Nanodot screen scan"
+        }
+        try { windows.addView(view,p); scannerView=view; scannerGeneration=generation }
+        catch(_: RuntimeException) { scanTicket.cancel(); return }
+        animateScan(generation,finish=false)
+    }
+    fun finishCaptureScan(generation: Long, success: Boolean) {
+        checkMainThread()
+        if(!scanTicket.finish(generation,success) || scannerGeneration!=generation) return
+        scannerView?.outcome=success
+        animateScan(generation,finish=true)
+    }
+    private fun animateScan(generation: Long, finish: Boolean) {
+        scanAnimation?.removeAllListeners(); scanAnimation?.cancel(); scanAnimation=null
+        val view=scannerView ?: return
+        val motion=Settings.Global.getFloat(service.contentResolver,Settings.Global.ANIMATOR_DURATION_SCALE,1f)>0f
+        if(!motion || view.outcome==false) {
+            view.progress=1f; view.invalidate()
+            if(finish) scheduleScanRemoval(generation,250)
+            return
+        }
+        scanAnimation=ValueAnimator.ofFloat(0f,1f).apply {
+            duration=720L
+            addUpdateListener { if(scannerGeneration==generation) { view.progress=it.animatedValue as Float; view.invalidate() } }
+            if(finish) addListener(object: AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) { scheduleScanRemoval(generation,100) }
+            })
+            start()
+        }
+    }
+    private fun scheduleScanRemoval(generation: Long, delay: Long) {
+        scanRemoval?.let(handler::removeCallbacks)
+        scanRemoval=Runnable { if(scannerGeneration==generation) cancelCaptureScan() }.also { handler.postDelayed(it,delay) }
+    }
+    fun cancelCaptureScan(generation: Long? = null) {
+        checkMainThread()
+        if(generation!=null && scannerGeneration!=generation) return
+        scannerGeneration=null; scanTicket.cancel()
+        scanRemoval?.let(handler::removeCallbacks); scanRemoval=null
+        scanAnimation?.removeAllListeners(); scanAnimation?.cancel(); scanAnimation=null
+        scannerView?.let { windows.removeViewImmediate(it) }; scannerView=null
+    }
     private fun suspendCare() { (service as? MinisAccessibilityService)?.dotInteraction?.pauseCare(hide=true) }
     private val visualActive = androidx.compose.runtime.mutableStateOf(true)
     private val pressed = androidx.compose.runtime.mutableStateOf(false)
@@ -158,6 +216,7 @@ class DotOverlayController(
 
     fun disconnect() {
         checkMainThread()
+        cancelCaptureScan()
         cancelGesture()
         if (isConnected) {
             isConnected = false
@@ -171,14 +230,14 @@ class DotOverlayController(
     fun setLocked(locked: Boolean) {
         checkMainThread()
         this.locked = locked
-        if (locked) { cancelGesture(); suspendCare() }
+        if (locked) { cancelCaptureScan(); cancelGesture(); suspendCare() }
         sync()
     }
 
     fun setEnabled(enabled: Boolean) {
         checkMainThread()
         this.enabled = enabled
-        if (!enabled) { cancelGesture(); suspendCare() }
+        if (!enabled) { cancelCaptureScan(); cancelGesture(); suspendCare() }
         sync()
     }
 
@@ -189,6 +248,7 @@ class DotOverlayController(
     /** Recreate with new display bounds, clearing all pending touch/tap work. */
     fun onDisplayChanged() {
         checkMainThread()
+        cancelCaptureScan()
         (service as? MinisAccessibilityService)?.dotInteraction?.onHostGeometryChanged()
         cancelGesture()
         registry.sync(emptySet())
@@ -232,12 +292,17 @@ class DotOverlayController(
     suspend fun <T> withHiddenForCapture(block: suspend () -> T): T {
         checkMainThread()
         visualActive.value = false
+        val capturingAnimation=scanAnimation
+        capturingAnimation?.pause()
         clearTrail()
-        val owned = ownedViews().filter { it.isAttachedToWindow }
+        // A newly added window may attach during capture; hide its alpha before
+        // that first traversal too, and only await drawing for attached windows.
+        val owned = ownedViews()
         val alphas = owned.map { it.alpha }
         try {
             for (view in owned) {
                 view.alpha = 0f
+                if(!view.isAttachedToWindow) continue
                 kotlinx.coroutines.suspendCancellableCoroutine<Unit> { continuation ->
                     lateinit var listener: ViewTreeObserver.OnDrawListener
                     listener = ViewTreeObserver.OnDrawListener {
@@ -255,9 +320,10 @@ class DotOverlayController(
             }
             return block()
         } finally {
+            if(scanAnimation===capturingAnimation) capturingAnimation?.resume()
             visualActive.value = true
             owned.forEachIndexed { index, view ->
-                if ((view in ownedViews()) && view.isAttachedToWindow) {
+                if (view in ownedViews()) {
                     view.alpha = alphas[index]; view.invalidate()
                 }
             }
@@ -300,8 +366,9 @@ class DotOverlayController(
                 if (voicePermissionWindow) return@postOnAnimation
                 if (panelView === view && first != null && first == hostViewport()) {
                     panelParams?.let { p ->
-                        p.x = first.left.roundToInt(); p.y = first.top.roundToInt()
-                        p.width = first.width.roundToInt(); p.height = first.height.roundToInt()
+                        val frame=foregroundFrame(first,first.height*.55f,service.resources.displayMetrics.density).bounds
+                        p.x = frame.left.roundToInt(); p.y = frame.top.roundToInt()
+                        p.width = frame.width.roundToInt(); p.height = frame.height.roundToInt()
                         if (p.width > 0 && p.height > 0) windows.updateViewLayout(view,p)
                     }
                 } else if (panelView === view) {
@@ -344,16 +411,17 @@ class DotOverlayController(
         view.setViewTreeSavedStateRegistryOwner(owner)
         val composition = ComposeView(service).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent { MinisTheme { DotChatPanel(adapter, ::collapsePanel) } }
+            setContent { MinisTheme { io.github.nanomuse.dot.ui.DotMotionHost { DotChatPanel(adapter, ::collapsePanel) } } }
         }
         view.addView(composition, FrameLayout.LayoutParams(-1,-1))
         val host = hostViewport()
-        val p = WindowManager.LayoutParams(host?.width?.roundToInt() ?: -1, host?.height?.roundToInt() ?: -1,
+        val frame=host?.let { foregroundFrame(it,it.height*.55f,service.resources.displayMetrics.density).bounds }
+        val p = WindowManager.LayoutParams(frame?.width?.roundToInt() ?: 1, frame?.height?.roundToInt() ?: 1,
             WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
             WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT).apply {
             gravity = Gravity.TOP or Gravity.LEFT; title = "Nanodot Dot conversation"
-            x = host?.left?.roundToInt() ?: 0; y = host?.top?.roundToInt() ?: 0
+            x = frame?.left?.roundToInt() ?: 0; y = frame?.top?.roundToInt() ?: 0
             softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
         }
         try { windows.addView(view,p); owner.start() }

@@ -4,6 +4,8 @@ import android.accessibilityservice.AccessibilityService
 import android.animation.ValueAnimator
 import android.content.res.Configuration
 import android.graphics.Canvas
+import android.graphics.Path
+import android.graphics.PathMeasure
 import androidx.compose.ui.graphics.toArgb
 import io.github.nanomuse.dot.DotColors
 import android.graphics.Paint
@@ -12,6 +14,7 @@ import android.provider.Settings
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
+import android.view.animation.LinearInterpolator
 import io.github.nanomuse.dot.screen.RectPx
 import io.github.nanomuse.dot.ui.DotTokens
 
@@ -23,13 +26,22 @@ class CareFocusLayer(private val service: AccessibilityService, private val chan
     var view: View?=null
         private set
     private var animation: ValueAnimator?=null
-    fun show(bounds: RectPx) {
+    private var instruction: RectPx?=null
+    private var identity: String?=null
+    private var progress=1f
+    fun setInstructionBubble(bounds: RectPx?) {
+        instruction=bounds?.takeIf { it.width>0 && it.height>0 &&
+            listOf(it.left,it.top,it.right,it.bottom).all(Float::isFinite) }
+        view?.invalidate()
+    }
+    fun show(bounds: RectPx, key: String = "") {
         if(bounds.width<=0 || bounds.height<=0 || !listOf(bounds.left,bounds.top,bounds.right,bounds.bottom).all(Float::isFinite)) {
             clear(); return
         }
-        if(this.bounds==bounds && view!=null) return
+        if(this.bounds==bounds && identity==key && view!=null) return
+        val bubble=instruction
         clear() // A new position never interpolates through unrelated controls.
-        this.bounds=bounds
+        this.bounds=bounds; identity=key; instruction=bubble
         val paint=Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style=Paint.Style.STROKE; strokeWidth=3*service.resources.displayMetrics.density
             color=if(service.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK==Configuration.UI_MODE_NIGHT_YES)
@@ -39,8 +51,28 @@ class CareFocusLayer(private val service: AccessibilityService, private val chan
             override fun onDraw(canvas: Canvas) {
                 val location=IntArray(2); getLocationOnScreen(location)
                 val inset=paint.strokeWidth/2
-                canvas.drawRoundRect(bounds.left-location[0]+inset,bounds.top-location[1]+inset,
-                    bounds.right-location[0]-inset,bounds.bottom-location[1]-inset,8f,8f,paint)
+                val left=bounds.left-location[0]+inset; val top=bounds.top-location[1]+inset
+                val right=bounds.right-location[0]-inset; val bottom=bounds.bottom-location[1]-inset
+                val outline=Path().apply { addRoundRect(left,top,right,bottom,8f,8f,Path.Direction.CW) }
+                val cue=careCueProgress((progress*980).toLong(),
+                    Settings.Global.getFloat(service.contentResolver,Settings.Global.ANIMATOR_DURATION_SCALE,1f)>0f)
+                val measure=PathMeasure(outline,false)
+                val traced=Path()
+                measure.getSegment(0f,measure.length*cue.outline,traced,true)
+                canvas.drawPath(traced,paint)
+                instruction?.let { bubble ->
+                    val endX=((bubble.left+bubble.right)/2)-location[0]
+                    val above=bubble.bottom<=bounds.top
+                    val startX=((bounds.left+bounds.right)/2)-location[0]
+                    val startY=(if(above) bounds.top else bounds.bottom)-location[1]
+                    val endY=(if(above) bubble.bottom else bubble.top)-location[1]
+                    val bend=(startY+endY)/2
+                    val line=Path().apply { moveTo(startX,startY); lineTo(startX,bend); lineTo(endX,bend); lineTo(endX,endY) }
+                    val leader=PathMeasure(line,false); val segment=Path()
+                    leader.getSegment(0f,leader.length*cue.leader,segment,true)
+                    canvas.drawPath(segment,paint)
+                    if(cue.leader>=1f) canvas.drawCircle(endX,endY,paint.strokeWidth,paint)
+                }
             }
         }.apply { importantForAccessibility=View.IMPORTANT_FOR_ACCESSIBILITY_NO; isFocusable=false }
         val p=WindowManager.LayoutParams(-1,-1,WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
@@ -52,13 +84,15 @@ class CareFocusLayer(private val service: AccessibilityService, private val chan
         // ValueAnimator uses the platform duration scale. At zero there is no animator at all.
         if(Settings.Global.getFloat(service.contentResolver,Settings.Global.ANIMATOR_DURATION_SCALE,1f)>0f) {
             animation=ValueAnimator.ofFloat(0f,1f).apply {
-                duration=DotTokens.Motion.Focus.toLong()
-                addUpdateListener { paint.alpha=((it.animatedValue as Float)*255).toInt(); target.invalidate() }; start()
+                duration=980L
+                interpolator=LinearInterpolator()
+                progress=0f
+                addUpdateListener { progress=it.animatedValue as Float; target.invalidate() }; start()
             }
         }
     }
     fun clear() {
         animation?.cancel(); animation=null
-        view?.let { windows.removeViewImmediate(it) }; view=null; bounds=null; changed(null)
+        view?.let { windows.removeViewImmediate(it) }; view=null; bounds=null; identity=null; instruction=null; progress=1f; changed(null)
     }
 }

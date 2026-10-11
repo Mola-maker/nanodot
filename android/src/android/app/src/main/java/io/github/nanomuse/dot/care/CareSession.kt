@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.first
 
 /** Serial service owner; the controller owns evidence, this owner owns UI admission. */
 class CareSession(val controller: CareController, private val clearFocus: () -> Unit, private val stopSpeech: () -> Unit) {
+    val conversation = CareConversation()
     val visible = MutableStateFlow(false)
     val editingGoal = MutableStateFlow(false)
     fun enter() {
@@ -16,6 +17,7 @@ class CareSession(val controller: CareController, private val clearFocus: () -> 
     }
     fun submitGoal(goal: String) {
         clearFocus(); stopSpeech()
+        conversation.userGoal(goal.trim())
         visible.value = true; editingGoal.value = false
         controller.start(goal.trim())
     }
@@ -53,6 +55,20 @@ class CareSession(val controller: CareController, private val clearFocus: () -> 
         if (current == null || proposal.scene != current || target.ref != proposal.targetRef) return null
         return target.bounds.takeIf { it.width > 0 && it.height > 0 &&
             listOf(it.left,it.top,it.right,it.bottom).all(Float::isFinite) }
+    }
+
+    /** Reflect actual controller output; presentation has no permission to credit a step. */
+    fun observeConversation() {
+        val state = controller.state.value
+        controller.verifiedSteps.value.forEach { step ->
+            conversation.assistant("verified:${step.afterSnapshotId}", step.proposal.instruction, verified = true)
+        }
+        state.question?.let { conversation.assistant("question:${controller.generation}:$it", it) }
+        state.proposal?.let { conversation.assistant(instructionKey(), it.instruction) }
+    }
+    fun instructionKey(): String {
+        val state = controller.state.value
+        return "instruction:${controller.generation}:${controller.verifiedSteps.value.size}:${state.proposal?.instruction}"
     }
 }
 

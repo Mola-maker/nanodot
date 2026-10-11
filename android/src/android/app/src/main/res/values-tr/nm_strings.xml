@@ -1197,4 +1197,8 @@
     <string name="nm_dot_voice_read">Yanıtı oku</string>
     <string name="nm_dot_voice_speaking">Yanıt okunuyor…</string>
     <string name="nm_dot_voice_read_error">Yanıt sesli okunamadı.</string>
+
+    <string name="nm_dot_bubble_you">Siz</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">Adım doğrulandı</string>
 </resources>

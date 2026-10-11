@@ -19,6 +19,7 @@ import com.openminis.app.accessibility.MinisAccessibilityService
 import com.openminis.app.speech.ReadAloudPlayer
 import com.openminis.app.ui.theme.MinisTheme
 import io.github.nanomuse.dot.overlay.DotOverlayOwner
+import io.github.nanomuse.dot.overlay.foregroundFrame
 import io.github.nanomuse.dot.screen.RectPx
 import io.github.nanomuse.dot.screen.SceneKey
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +45,15 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
     private var removeGeometry: (() -> Unit)?=null
     private var player: ReadAloudPlayer?=null
     private var maxHeight=0
+    private var instructionBounds: RectPx?=null
+    private var instructionId: String?=null
+    private fun updateLeader() {
+        val view=card ?: return
+        val r=instructionBounds ?: return
+        if(!view.isAttachedToWindow || session.focusBounds(scene())==null) return
+        val location=IntArray(2); view.getLocationOnScreen(location)
+        focus.setInstructionBubble(RectPx(r.left+location[0],r.top+location[1],r.right+location[0],r.bottom+location[1]))
+    }
     private val job=scope.launch {
         combine(session.controller.state,session.visible,session.editingGoal) { _,_,_ -> Unit }.collect { render() }
     }
@@ -52,20 +62,20 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
     fun stopSpeech() { player?.stop() }
     fun refreshGeometry() { if(session.visible.value) render() }
     private fun render() {
+        session.observeConversation()
         val host=viewport()
         if(!session.visible.value || host==null || host.width<=0 || host.height<=0) {
             focus.clear(); removeCard(); registry?.setCareActive(false); return
         }
         registry?.setCareActive(true)
         val target=session.focusBounds(scene())
-        if(target==null) focus.clear() else focus.show(target)
+        val nextId=if(target==null) null else session.instructionKey()
+        if(nextId!=instructionId) { instructionId=nextId; instructionBounds=null; focus.setInstructionBubble(null) }
+        if(target==null) focus.clear() else focus.show(target, nextId.orEmpty())
         val density=service.resources.displayMetrics.density
-        val width=minOf(host.width.roundToInt(),(360*density).roundToInt())
-        // Prefer the side of the target with more room so its actual touch region stays exposed.
-        val above=target?.let { (it.top-host.top).coerceAtLeast(0f) } ?: 0f
-        val below=target?.let { (host.bottom-it.bottom).coerceAtLeast(0f) } ?: host.height
-        val atBottom=below>=above
-        maxHeight=careCardMaxHeight(host,target,density)
+        val room=foregroundFrame(host,host.height*.55f,density,target).bounds
+        val width=room.width.roundToInt()
+        maxHeight=room.height.roundToInt()
         if(card==null) addCard()
         val view=card ?: return
         // addView returns before ViewRoot attaches its ComposeView. Measuring here
@@ -75,9 +85,10 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
             View.MeasureSpec.makeMeasureSpec(maxHeight,View.MeasureSpec.AT_MOST))
         params?.let { p ->
             p.width=width; p.height=minOf(view.measuredHeight,maxHeight).coerceAtLeast(1)
-            p.x=(host.left+(host.width-width)/2).roundToInt()
-            p.y=if(atBottom) host.bottom.roundToInt()-p.height else host.top.roundToInt()
+            val frame=foregroundFrame(host,p.height.toFloat(),density,target).bounds
+            p.x=frame.left.roundToInt(); p.y=frame.top.roundToInt()
             windows.updateViewLayout(view,p)
+            updateLeader()
         }
     }
     @Suppress("DEPRECATION")
@@ -98,10 +109,15 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
         view.setViewTreeLifecycleOwner(lifecycle); view.setViewTreeSavedStateRegistryOwner(lifecycle)
         val content=ComposeView(service).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent { MinisTheme { CarePanel(session,::copy) { instruction ->
+            setContent { MinisTheme { io.github.nanomuse.dot.ui.DotMotionHost { CarePanel(session,::copy,onRepeat={ instruction ->
                 val speaker=player ?: ReadAloudPlayer(service).also { player=it }
                 speaker.speak(instruction)
-            } } }
+            },onInstructionBounds={ id,bounds ->
+                if(card===view && id==instructionId) {
+                    instructionBounds=bounds
+                    if(bounds==null) focus.setInstructionBubble(null) else updateLeader()
+                }
+            }) } } }
         }
         view.addView(content,FrameLayout.LayoutParams(-1,-2))
         val p=WindowManager.LayoutParams(1,1,WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
@@ -152,6 +168,7 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
         card?.let { registry?.unregisterCareWindow(it); windows.removeViewImmediate(it) }
         composition?.disposeComposition(); owner?.destroy()
         card=null; composition=null; owner=null; params=null
+        instructionBounds=null; instructionId=null
         stopSpeech()
     }
     fun close() {

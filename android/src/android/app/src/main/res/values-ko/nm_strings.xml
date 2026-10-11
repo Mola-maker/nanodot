@@ -1193,4 +1193,8 @@
     <string name="nm_dot_voice_read">답변 읽기</string>
     <string name="nm_dot_voice_speaking">답변 읽는 중…</string>
     <string name="nm_dot_voice_read_error">답변을 읽을 수 없습니다.</string>
+
+    <string name="nm_dot_bubble_you">나</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">단계 확인됨</string>
 </resources>

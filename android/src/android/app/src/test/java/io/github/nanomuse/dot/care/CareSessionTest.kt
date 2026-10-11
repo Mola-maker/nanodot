@@ -8,6 +8,29 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CareSessionTest {
+    @Test fun observedStepOutcomePrecedesNextInstructionSoCurrentTargetStaysAtHistoryEnd() = runTest {
+        var scene = SceneKey("fixture.app",7,0,3)
+        var sample = 0
+        val controller = CareController(backgroundScope, { generation ->
+            sample++
+            CaptureOutcome.Success(careScreen(id="sample:$sample",scene=scene,generation=generation,
+                nodes=listOf(careNode(ref="field:$sample",focused=sample>1))))
+        }, { scene }, { _, snapshot, verified ->
+            CarePlanResult.Step(careProposal().copy(snapshotId=snapshot.id,scene=scene,
+                targetRef=snapshot.nodes.single().ref,expectation=CareExpectation.Focused(snapshot.nodes.single().ref),
+                instruction=if(verified.isEmpty()) "Touch Search" else "Enter tea"))
+        }, 100)
+        val session=CareSession(controller, {}, {})
+        session.submitGoal("Find tea"); runCurrent(); session.observeConversation()
+        assertFalse(session.conversation.rows.any { it.verified })
+        scene=scene.copy(version=4); controller.onSceneChanged(); advanceTimeBy(100); runCurrent()
+        session.observeConversation()
+        assertEquals(1,controller.verifiedSteps.value.size)
+        assertEquals(listOf("Find tea","Touch Search","Touch Search","Enter tea"),session.conversation.rows.map { it.text })
+        assertTrue(session.conversation.rows[2].verified)
+        assertEquals(session.instructionKey(),session.conversation.rows.last().id)
+        session.observeConversation(); assertEquals(4,session.conversation.rows.size)
+    }
     private class Rig(scope: CoroutineScope) {
         var scene: SceneKey? = SceneKey("fixture.app",7,0,3)
         var captures = 0

@@ -9,7 +9,7 @@ class DotChatPanelSourceTest {
     @Test fun nativeControllerOwnsFocusablePanelAndBothOwnedWindows() {
         val source = File("src/main/java/io/github/nanomuse/dot/overlay/DotOverlayController.kt").readText()
         assertTrue("controller must provide an actual panel window",source.contains("fun showPanel("))
-        assertTrue("panel identity must be excluded along with orb",source.contains("listOfNotNull(orbView, panelView)"))
+        assertTrue("panel and decorative window identities must be excluded along with orb",source.contains("listOfNotNull(orbView, panelView, trailView, scannerView)"))
         assertTrue("native Back must distinguish keyboard from panel",source.contains("dispatchKeyEventPreIme"))
     }
     @Test fun coordinatorCapturesBeforeOpeningAndKeepsPendingCapabilitiesHonest() {

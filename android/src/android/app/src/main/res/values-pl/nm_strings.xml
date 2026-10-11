@@ -1205,4 +1205,8 @@
     <string name="nm_dot_voice_read">Czytaj odpowiedź</string>
     <string name="nm_dot_voice_speaking">Czytanie odpowiedzi…</string>
     <string name="nm_dot_voice_read_error">Nie udało się odczytać odpowiedzi.</string>
+
+    <string name="nm_dot_bubble_you">Ty</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">Krok potwierdzony</string>
 </resources>

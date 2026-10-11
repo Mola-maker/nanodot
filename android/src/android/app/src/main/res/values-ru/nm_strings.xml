@@ -1205,4 +1205,8 @@
     <string name="nm_dot_voice_read">Прочитать ответ</string>
     <string name="nm_dot_voice_speaking">Чтение ответа…</string>
     <string name="nm_dot_voice_read_error">Не удалось прочитать ответ вслух.</string>
+
+    <string name="nm_dot_bubble_you">Вы</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">Шаг подтверждён</string>
 </resources>

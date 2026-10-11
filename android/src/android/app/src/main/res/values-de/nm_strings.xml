@@ -1197,4 +1197,8 @@
     <string name="nm_dot_voice_read">Antwort vorlesen</string>
     <string name="nm_dot_voice_speaking">Antwort wird vorgelesen…</string>
     <string name="nm_dot_voice_read_error">Antwort konnte nicht vorgelesen werden.</string>
+
+    <string name="nm_dot_bubble_you">Du</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">Schritt bestätigt</string>
 </resources>

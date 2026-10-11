@@ -1201,4 +1201,8 @@
     <string name="nm_dot_voice_read">Citește răspunsul</string>
     <string name="nm_dot_voice_speaking">Se citește răspunsul…</string>
     <string name="nm_dot_voice_read_error">Răspunsul nu a putut fi citit cu voce tare.</string>
+
+    <string name="nm_dot_bubble_you">Tu</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">Pas confirmat</string>
 </resources>

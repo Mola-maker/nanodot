@@ -252,14 +252,29 @@ acceptance gates; unit tests do not establish those results.
 
 ## Care guidance overlay {#care-guidance-overlay}
 
-Triple-tap the same Dot, or choose its accessible **Start care** action, to open the purple
+Single, double and triple tap stay in a foreground sidebar over the current app. Conversation
+and Care use the same bottom bubble presentation: your messages and goals on the right,
+actual replies, questions, instructions and confirmed steps on the left. The native window
+is bounded to the host and keyboard area; touches outside its rectangle reach the host.
+History and controls scroll within it, including with enlarged text. Double tap keeps the
+existing capture-before-panel order and adds a blue display-perimeter scan owned by that
+capture request. Scanner, Dot and panel windows are hidden before pixels are captured,
+including windows still awaiting attachment. Cancellation, mode changes, lock, disable and
+disconnect clear scanning; stale outcomes cannot update a newer scan. A removable timestamped
+preview, text-only fallback or actual capture error describes the result; animation never
+claims a model has understood the screen.
+
+Triple-tap the same Dot, or choose its accessible **Start care** action, to open the blue
 care entry and enter a goal. Opening it does not contact a model or capture the screen.
 Starting a goal reads the current host and requests one instruction using your selected
 visible text model, or your configured default model group. Missing configuration appears
 as a recovery message with a Settings → Models instruction. Care uses a separate tools-empty
 planner; it never enters the chat agent loop or retries with a different provider.
 
-The short instruction card scrolls within the available host/keyboard area. Its buttons
+The Care transcript retains submitted goals and actual controller output. Only the verifier's
+recorded steps receive a confirmed-step label. The panel normally sits at the bottom; when
+it overlaps the valid target, it temporarily moves upward while keeping the transcript
+visible, and returns to the bottom after the step loses its active target. Its buttons
 copy the proposed text to the clipboard, repeat the instruction using the existing reader,
 pause, look again, change the goal, or end guidance. Copying only happens when you press
 **Copy text**; Care never types or pastes into the host. Uncertain steps show the pending
@@ -270,11 +285,14 @@ The card waits for its native window to attach before measuring Compose content.
 or detaching the card cancels pending geometry callbacks; a reopened card uses its current
 host and keyboard bounds.
 
-A single purple outline marks the validated current target without taking touches or
+A single blue path traces the validated current target's accessible rounded bounds, then
+draws a leader to its measured instruction bubble before revealing that bubble. It does
+not infer an irregular button contour or perform the requested touch. The drawing takes no touches or
 accessibility focus. Host content, keyboard or display changes clear it before fresh
 observation. Dot and Care windows are excluded from host events and hidden during capture.
 The short focus transition follows Android's animator duration setting; scale zero uses
-a static outline with no animation loop. Back pauses and closes the card; reopening offers
+a static outline, leader and immediately visible bubble with no animation loop. Animation
+cannot confirm a step. Back hides a shown keyboard before pausing and closing the panel; reopening offers
 explicit resume with fresh observation. Single/double tap or entering the main chat pauses
 competing Care. Locking, hiding Dot or losing the service clears its windows and speech.
 
