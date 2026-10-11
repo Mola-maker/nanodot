@@ -25,6 +25,11 @@ enum NanodotGateway {
         }
     }
 
+    static func mayUseCredential(for instance: ProviderInstance) -> Bool {
+        guard UserDefaults.standard.string(forKey: ownershipKey) == instance.id else { return true }
+        return ownedInstance(id: instance.id, instances: [instance]) != nil
+    }
+
     @MainActor
     @discardableResult
     static func connect(credential: String) async throws -> ProviderInstance {

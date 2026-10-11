@@ -89,7 +89,7 @@ npm --prefix gateway run dry-run
 
 自带 key 列表新增 **Nanodot · Workers AI**（`nanodot-workers`）。`verified` 月份只表示源码与协议检查，不表示真实服务已验收。Android、iOS 和桌面的账号／自带 key 页面提供项目 key 入口，Web 控制台在「连接」页面提供入口。需要操作者发放的专用项目 key。添加连接时，原有 Cloud 登录、token、origin、头像、模型组和选中的模型均保持原状。真实验收之前，新安装默认值也保持原状。
 
-手机等待服务商配置加载后，以独立 UUID 创建规范 origin 的 OpenAI Chat Completions 连接。重复接入沿用 UUID，不重复创建服务商。Android 使用原有加密服务商仓库，iOS 使用原有按实例隔离的 Keychain helper，桌面使用 UUID 专属引用写入 harness 凭据存储。Python 将元数据保存为 `gateway-profile.json`，项目 key 通过 UUID 专属引用保存到原有加密保险库。客户端资源和 profile 元数据不保存明文 key。模型刷新失败保留已有模型条目。iOS、桌面和 Python 验证模型列表成功后才替换保存的 key；Android 沿用仓库原有刷新行为。
+手机等待服务商配置加载后，以独立 UUID 创建规范 origin 的 OpenAI Chat Completions 连接。重复接入沿用 UUID，不重复创建服务商。已绑定的服务商保持固定项目地址：原生服务商编辑器不能把该 UUID 的凭据移动到其他 origin。Web 切换 preset 或地址时会清除尚未保存的 key。Android 使用原有加密服务商仓库，iOS 使用原有按实例隔离的 Keychain helper，桌面使用 UUID 专属引用写入 harness 凭据存储。Python 将元数据保存为 `gateway-profile.json`，项目 key 通过 UUID 专属引用保存到原有加密保险库。客户端资源和 profile 元数据不保存明文 key。模型刷新失败保留已有模型条目。iOS、桌面和 Python 验证模型列表成功后才替换保存的 key；Android 沿用仓库原有刷新行为。
 
 模型列表的 `architecture.input_modalities` 与 `output_modalities` 决定模型能否接收图像或音频。不能因为 Qwen 的名称就将其视为视觉模型；只有列表声明图像输入时，才将 Gemma 提供给图像功能。Whisper 属于语音模型，不进入桌面／Web 的对话模型选择器。生产门禁为 false 时，不提供中文 TTS。桌面与 Python 当前记录音频模型元数据；本次变更未新增桌面／Web 的麦克风或音频播放实现。
 

@@ -40,6 +40,7 @@ class GatewayConnection(
                 customBaseURL = ORIGIN, appendV1Suffix = true,
                 useResponsesAPI = false, azureMode = false,
             ).also { repository.addInstance(it) }
+            repository.bindNanodotGatewayCredential(instance.id)
             repository.saveApiKey(instance.id, key)
             check(preferences.edit().putString(INSTANCE_ID, instance.id).commit())
             // Repository retains existing valid entries if the API rejects this refresh.

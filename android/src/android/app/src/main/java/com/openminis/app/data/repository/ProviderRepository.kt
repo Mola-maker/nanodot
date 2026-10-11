@@ -773,6 +773,8 @@ class ProviderRepository(private val context: Context) {
 
     fun updateInstance(instance: ProviderInstance): Unit = synchronized(configLock) {
         ensureConfigLoaded()
+        // nanoMuse: owned gateway credentials cannot move through the generic provider editor.
+        if (!nanodotCredentialOriginAllowed(instance)) return@synchronized
         val config = workingCopy()
         val idx = config.instances.indexOfFirst { it.id == instance.id }
         if (idx >= 0) {
@@ -2413,7 +2415,20 @@ class ProviderRepository(private val context: Context) {
         encryptedPrefs.edit().putString("apikey_$instanceId", key).apply()
     }
 
+    // nanoMuse: connection records non-secret UUID ownership beside the existing encrypted key.
+    fun bindNanodotGatewayCredential(instanceId: String) {
+        encryptedPrefs.edit().putString("nanodot_gateway_origin_$instanceId", io.github.nanomuse.dot.gateway.GatewayConnection.ORIGIN).apply()
+    }
+
+    // nanoMuse: guard both authoritative stored instances and stale editor objects at routing.
+    private fun nanodotCredentialOriginAllowed(instance: ProviderInstance): Boolean =
+        encryptedPrefs.getString("nanodot_gateway_origin_${instance.id}", null) == null ||
+            io.github.nanomuse.dot.gateway.isCanonicalGateway(instance)
+
     fun loadApiKey(instanceId: String): String? {
+        // nanoMuse: direct key consumers must obey the same UUID-origin binding as refresh.
+        if (encryptedPrefs.getString("nanodot_gateway_origin_$instanceId", null) != null &&
+            instance(instanceId)?.let { nanodotCredentialOriginAllowed(it) } != true) return null
         return encryptedPrefs.getString("apikey_$instanceId", null)
     }
 
@@ -2427,7 +2442,9 @@ class ProviderRepository(private val context: Context) {
      * instances without a token, which must stay unauthenticated).
      */
     fun usableApiKey(instance: ProviderInstance): String? =
-        loadApiKey(instance.id) ?: if (instance.allowsEmptyAPIKey) "" else null
+        // nanoMuse: keyless compatibility fallback must not bypass a bound project origin.
+        if (!nanodotCredentialOriginAllowed(instance)) null
+        else loadApiKey(instance.id) ?: if (instance.allowsEmptyAPIKey) "" else null
 
     fun deleteApiKey(instanceId: String) {
         encryptedPrefs.edit().remove("apikey_$instanceId").apply()

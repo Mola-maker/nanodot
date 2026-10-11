@@ -99,6 +99,20 @@ final class NanodotGatewayTests: XCTestCase {
         XCTAssertEqual(store.config.modelEntries.filter { $0.providerInstanceId == first.id }, entries)
         XCTAssertEqual(ProviderKeychainHelper.loadAPIKey(instanceId: first.id), key)
         XCTAssertEqual(NanodotGateway.ownedInstance(id: defaults.string(forKey: "nanodot.gateway.instanceID"), instances: store.instances)?.id, first.id)
+        NanodotGatewayFixtureProtocol.reset()
+        var edited = first
+        edited.customBaseURL = "https://foreign.invalid"
+        store.updateInstance(edited)
+        _ = try await ProviderConfigStore.fetchModelsForInstance(store.instances.first { $0.id == first.id }!, forceRefresh: true)
+        do { _ = try await ProviderConfigStore.fetchModelsForInstance(edited, forceRefresh: true); XCTFail("Stale off-origin editor instance must be refused") }
+        catch { }
+        XCTAssertEqual(store.instances.first { $0.id == first.id }?.customBaseURL, NanodotGateway.origin)
+        XCTAssertFalse(NanodotGatewayFixtureProtocol.authorizations(host: "foreign.invalid").contains("Bearer " + key))
+        var generic = old
+        generic.customBaseURL = "https://generic.invalid"
+        store.updateInstance(generic)
+        _ = try await ProviderConfigStore.fetchModelsForInstance(generic, forceRefresh: true)
+        XCTAssertTrue(NanodotGatewayFixtureProtocol.authorizations(host: "generic.invalid").contains("Bearer " + oldKey))
     }
 
 }
@@ -109,7 +123,9 @@ private final class NanodotGatewayFixtureProtocol: URLProtocol, @unchecked Senda
     private static let lock = NSLock()
     private nonisolated(unsafe) static var captured: [String] = []
     private nonisolated(unsafe) static var denied = false
-    static func reset() { lock.lock(); defer { lock.unlock() }; captured = []; denied = false }
+    private nonisolated(unsafe) static var authorization: [(String, String)] = []
+    static func authorizations(host: String) -> [String] { lock.lock(); defer { lock.unlock() }; return authorization.filter { $0.0 == host }.map { $0.1 } }
+    static func reset() { lock.lock(); defer { lock.unlock() }; captured = []; denied = false; authorization = [] }
     static func paths() -> [String] { lock.lock(); defer { lock.unlock() }; return captured }
     static func refuse() { lock.lock(); defer { lock.unlock() }; denied = true }
     override class func canInit(with request: URLRequest) -> Bool { true }
@@ -118,6 +134,7 @@ private final class NanodotGatewayFixtureProtocol: URLProtocol, @unchecked Senda
         guard let url = request.url else { return }
         Self.lock.lock()
         if url.host == "molamaker.si" { Self.captured.append(url.path) }
+        Self.authorization.append((url.host ?? "", request.value(forHTTPHeaderField: "Authorization") ?? ""))
         let denied = Self.denied
         Self.lock.unlock()
         let status = denied ? 401 : 200

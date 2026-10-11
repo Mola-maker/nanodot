@@ -89,8 +89,10 @@ class GatewayConnectionTest {
         val timestamp=ModelsDevApi::class.java.getDeclaredField("cacheTimestamp").apply {isAccessible=true}
         val oldCache=cache.get(ModelsDevApi);val oldTime=timestamp.getLong(ModelsDevApi)
         cache.set(ModelsDevApi,emptyMap<String,Any>());timestamp.setLong(ModelsDevApi,System.currentTimeMillis())
+        val requests = mutableListOf<Pair<String, String?>>()
         staticClient(clientField,original.newBuilder().addInterceptor {chain ->
-            val request=chain.request();assertEquals("https://molamaker.si/v1/models",request.url.toString())
+            val request=chain.request();assertEquals("/v1/models",request.url.encodedPath)
+            requests += request.url.host to request.header("Authorization")
             chain.proceed(request.newBuilder().url(server.url(request.url.encodedPath)).build()).newBuilder().request(request).build()
         }.build())
         try {
@@ -127,6 +129,21 @@ class GatewayConnectionTest {
             server.enqueue(MockResponse().setResponseCode(401))
             connect(restarted,key)
             assertEquals(2,restarted.instances.size);assertEquals(gateway.id,restarted.instances.single {it.id!=old.id}.id)
+            // Actual editor boundary + actual model refresh: an owned key must stay at its origin.
+            val edited = gateway.copy(customBaseURL = "https://foreign.invalid")
+            restarted.updateInstance(edited)
+            server.enqueue(MockResponse().setBody("{\"data\":[{\"id\":\"text\"}]}"))
+            restarted.refreshModels(restarted.instance(gateway.id)!!)
+            server.enqueue(MockResponse().setBody("{\"data\":[{\"id\":\"text\"}]}"))
+            restarted.refreshModels(edited) // stale editor object must not bypass the routing guard
+            assertTrue("Owned project authorization must never leave its origin", requests.none { it.first == "foreign.invalid" && it.second == "Bearer $key" })
+            assertEquals("https://molamaker.si", restarted.instance(gateway.id)?.customBaseURL)
+            // A generic UUID keeps its prior editable-origin/key behavior.
+            val generic = old.copy(customBaseURL = "https://generic.invalid")
+            restarted.updateInstance(generic)
+            server.enqueue(MockResponse().setBody("{\"data\":[{\"id\":\"text\"}]}"))
+            restarted.refreshModels(restarted.instance(old.id)!!)
+            assertTrue(requests.any { it.first == "generic.invalid" && it.second == "Bearer $oldKey" })
         } finally {staticClient(clientField,original);cache.set(ModelsDevApi,oldCache);timestamp.setLong(ModelsDevApi,oldTime);server.shutdown()}
     }
     @Test fun actualChatModelsAsrAndTtsComposersUseOneVersionForAllBaseForms()=runBlocking {

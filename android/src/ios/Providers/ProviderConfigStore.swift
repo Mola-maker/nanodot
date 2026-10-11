@@ -927,6 +927,8 @@ final class ProviderConfigStore: ObservableObject {
     }
 
     func updateInstance(_ instance: ProviderInstance) {
+        // nanoMuse: the generic editor cannot move an owned project key to another origin.
+        guard NanodotGateway.mayUseCredential(for: instance) else { return }
         guard let idx = config.instances.firstIndex(where: { $0.id == instance.id }) else { return }
         // If the user changed the base URL or v1 suffix, the previously probed image
         // endpoint may no longer be valid (different upstream). Drop the cached
@@ -2626,6 +2628,8 @@ final class ProviderConfigStore: ObservableObject {
 
     /// Fetch the model list from a provider's API for the given instance.
     static func fetchModelsForInstance(_ instance: ProviderInstance, forceRefresh: Bool = false) async throws -> [LLMModel] {
+        // nanoMuse: reject a stale edited instance before resolving its UUID's Keychain key.
+        guard NanodotGateway.mayUseCredential(for: instance) else { throw ModelRefreshError.noCredential }
         let customBase = instance.effectiveCustomBaseURL
         let appendV1 = instance.appendV1Suffix
         // Custom UA only for custom-base OpenAI/Anthropic-compat instances (proxy/relay);

@@ -200,6 +200,8 @@ export function ModelCard({
   const [typingModel, setTypingModel] = useState(false);
 
   useEffect(() => {
+    // Unsaved credentials belong to this form's current provider/origin only.
+    setKey("");
     setModel(data.llm.model);
     setBaseUrl(data.llm.base_url);
     setToolMode(data.llm.tool_mode || "auto");
@@ -272,6 +274,8 @@ export function ModelCard({
   }, [open, preset, effectiveUrl, key]);
 
   const pick = (id: string) => {
+    // Clear in the same event batch, before the new endpoint's preview effect runs.
+    if (id !== preset) setKey("");
     setPreset(id);
     const next = presets[id];
     if (!next) return;
@@ -377,7 +381,13 @@ export function ModelCard({
   const selectGatewayModel = async () => {
     setSaving(true);
     try {
-      await api.setLLM({ provider: "nanodot-workers", model: model.trim(), base_url: "https://molamaker.si/v1" });
+      await api.setLLM({
+        provider: "nanodot-workers",
+        model: model.trim(),
+        base_url: "https://molamaker.si/v1",
+        tool_mode: toolMode,
+        proxy: proxyTouched && data.llm.proxy !== undefined ? proxy.trim() : null,
+      });
       invalidateProviders();
       onChange();
       toast(t("Model saved"));
@@ -538,7 +548,10 @@ export function ModelCard({
         >
           <input
             value={baseUrl}
-            onChange={(e) => setBaseUrl(e.target.value)}
+            onChange={(e) => {
+              setKey("");
+              setBaseUrl(e.target.value);
+            }}
             className={inputCls}
             placeholder="https://host/v1"
             inputMode="url"
