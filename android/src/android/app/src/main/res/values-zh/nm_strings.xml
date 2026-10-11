@@ -1129,4 +1129,5 @@
     <string name="nm_dot_chat_voice_pending">语音功能尚未开放。</string>
     <string name="nm_dot_chat_compact">压缩并发送</string>
     <string name="nm_dot_chat_cancel">取消</string>
+    <string name="nm_care_clarify_no_nodes">你在这个页面上能看到哪个控件？</string>
 </resources>

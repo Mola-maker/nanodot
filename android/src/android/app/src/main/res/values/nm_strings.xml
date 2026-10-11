@@ -1133,4 +1133,5 @@
     <string name="nm_dot_chat_voice_pending">Voice is not available yet.</string>
     <string name="nm_dot_chat_compact">Compact and send</string>
     <string name="nm_dot_chat_cancel">Cancel</string>
+    <string name="nm_care_clarify_no_nodes">Which control can you see on this page?</string>
 </resources>

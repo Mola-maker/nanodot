@@ -1152,4 +1152,5 @@
     <string name="nm_dot_chat_voice_pending">음성은 아직 사용할 수 없습니다.</string>
     <string name="nm_dot_chat_compact">압축 후 보내기</string>
     <string name="nm_dot_chat_cancel">취소</string>
+    <string name="nm_care_clarify_no_nodes">이 페이지에서 어떤 조작 항목이 보이나요?</string>
 </resources>

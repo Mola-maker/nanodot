@@ -1164,4 +1164,5 @@
     <string name="nm_dot_chat_voice_pending">Głos nie jest jeszcze dostępny.</string>
     <string name="nm_dot_chat_compact">Skompaktuj i wyślij</string>
     <string name="nm_dot_chat_cancel">Anuluj</string>
+    <string name="nm_care_clarify_no_nodes">Jaki element sterujący widzisz na tej stronie?</string>
 </resources>

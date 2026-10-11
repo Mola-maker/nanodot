@@ -4,6 +4,12 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Rejected whitespace-separated numeric calls in Android care instructions, copy text and expectations while retaining ordinary text guidance.
+
+- Rejected plainly executable unfenced code in Android care proposals while preserving ordinary text and URL guidance; documented the conservative recognition boundary.
+
+- Added a node-grounded Android care planner foundation that prepared one user instruction through a bounded read-only model request and rejected stale or unsupported proposals; real-model, care UI and evidence-advancement acceptance remained pending.
+
 - Masked sensitive Android LLM request headers before retaining debug logs and exporting request or agent traces; later caller mutations no longer changed logged headers.
 
 - Corrected gateway bootstrap instructions to require specific consent for temporary Hello World public URLs, confirmed closure before existing-Worker uploads and SQLite migration, and individual Worker Editor scopes with Dashboard domain connections.

@@ -1152,4 +1152,5 @@
     <string name="nm_dot_chat_voice_pending">ยังไม่เปิดใช้เสียง</string>
     <string name="nm_dot_chat_compact">ย่อและส่ง</string>
     <string name="nm_dot_chat_cancel">ยกเลิก</string>
+    <string name="nm_care_clarify_no_nodes">คุณเห็นส่วนควบคุมใดบนหน้านี้?</string>
 </resources>

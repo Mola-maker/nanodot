@@ -1160,4 +1160,5 @@
     <string name="nm_dot_chat_voice_pending">Vocea nu este încă disponibilă.</string>
     <string name="nm_dot_chat_compact">Comprimă și trimite</string>
     <string name="nm_dot_chat_cancel">Anulează</string>
+    <string name="nm_care_clarify_no_nodes">Ce control vezi pe această pagină?</string>
 </resources>

@@ -1152,4 +1152,5 @@
     <string name="nm_dot_chat_voice_pending">Suara belum tersedia.</string>
     <string name="nm_dot_chat_compact">Ringkaskan dan hantar</string>
     <string name="nm_dot_chat_cancel">Batal</string>
+    <string name="nm_care_clarify_no_nodes">Kawalan manakah yang kamu lihat pada halaman ini?</string>
 </resources>

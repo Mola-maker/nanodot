@@ -1156,4 +1156,5 @@
     <string name="nm_dot_chat_voice_pending">Ses henüz kullanılamıyor.</string>
     <string name="nm_dot_chat_compact">Sıkıştır ve gönder</string>
     <string name="nm_dot_chat_cancel">İptal</string>
+    <string name="nm_care_clarify_no_nodes">Bu sayfada hangi kontrolü görebiliyorsun?</string>
 </resources>

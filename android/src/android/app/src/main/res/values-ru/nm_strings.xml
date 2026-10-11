@@ -1164,4 +1164,5 @@
     <string name="nm_dot_chat_voice_pending">Голос пока недоступен.</string>
     <string name="nm_dot_chat_compact">Сжать и отправить</string>
     <string name="nm_dot_chat_cancel">Отмена</string>
+    <string name="nm_care_clarify_no_nodes">Какой элемент управления ты видишь на этой странице?</string>
 </resources>

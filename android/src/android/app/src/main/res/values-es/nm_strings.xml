@@ -1156,4 +1156,5 @@
     <string name="nm_dot_chat_voice_pending">La voz aún no está disponible.</string>
     <string name="nm_dot_chat_compact">Comprimir y enviar</string>
     <string name="nm_dot_chat_cancel">Cancelar</string>
+    <string name="nm_care_clarify_no_nodes">¿Qué control puedes ver en esta página?</string>
 </resources>
