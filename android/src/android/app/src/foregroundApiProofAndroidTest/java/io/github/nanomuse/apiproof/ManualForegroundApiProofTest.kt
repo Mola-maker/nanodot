@@ -326,6 +326,133 @@ class ManualForegroundApiProofTest {
         check(app.chatRepository.getSession(id)==null)
         writePublic(File(ownerDirectory,"foreground-journal.json"),journal(id,title,recorded,true))
     }
+    /** Keyless characterization only; the existing foreground preflight receipt stays unchanged. */
+    private fun keylessCareAdmissionDiagnostic(actual: MinisAccessibilityService) {
+        val session=actual.dotInteraction.careSession; val controller=session.controller
+        val originalActive=ChatViewModelStore.activeSessionId
+        val originalSample=field(controller,"sample"); val originalPlan=field(controller,"plan")
+        val conversation=session.conversation
+        @Suppress("UNCHECKED_CAST") val bubbles=field(conversation,"mutable") as MutableStateFlow<List<CareBubble>>
+        val originalSequence=field(conversation,"userSequence") as Long
+        val owners=field(CareOperationGate,"owners")!!
+        var samples=0; var plans=0; var ownedWindow:CareOverlayWindow?=null; var installed=false; var publicHost:Int?=null
+        val jobs=mutableListOf<Job>()
+        var originalOwners=0; var originalAutomatic=false
+        val observed=JSONObject().put("sampleOutcome","NotSampled").put("sampleCode","none")
+            .put("snapshotMatchesCurrent",false).put("publicCheckPassed",false)
+        val codes=setOf("host_unavailable","nodes_unavailable","scene_changed","locked","accessibility_unavailable",
+            "timeout","locked_or_disconnected","permission_denied","care_timeout","care_unavailable",
+            "keyless_public_host_changed","keyless_public_check_failed","keyless_plan_reached")
+        fun emit(phase:String) {
+            val state=controller.state.value; val windows=actual.windows
+            val card=(field(actual.dotInteraction,"careWindow") as? CareOverlayWindow)?.let { field(it,"card") as? View }
+            val careId=card?.takeIf { it.isAttachedToWindow }?.createAccessibilityNodeInfo()?.let { node ->
+                try { node.windowId } finally { node.recycle() }
+            }
+            val hostId=actual.dotScreen.hostWindowId()
+            try {
+                val hostWindow=windows.firstOrNull { it.id==hostId }
+                val careWindow=windows.firstOrNull { it.id==careId }
+                val code=state.errorCode?.let { if(it in codes) it else "other" } ?: "none"
+                val entry=JSONObject(observed.toString()).put("phase",phase).put("state",state.state.name).put("code",code)
+                    .put("samples",samples).put("plans",plans).put("planReached",plans>0)
+                    .put("operationOwners",field(owners,"count") as Int).put("automatic",field(controller,"automatic") as Boolean)
+                    .put("hostActive",hostWindow?.isActive==true).put("hostFocused",hostWindow?.isFocused==true)
+                    .put("careAttached",card?.isAttachedToWindow==true).put("careActive",careWindow?.isActive==true)
+                    .put("careFocused",careWindow?.isFocused==true).put("careOwned",careWindow?.let(actual.dotOverlay::ownsWindow)==true)
+                    .put("strictHost",host(actual)).put("hostWithOwnCareFocus",careId?.let { host(actual,it) }==true)
+                android.util.Log.i("ForegroundCareKeyless",entry.toString()) // Fixed whitelist only; no node text/exception/payload.
+            } finally { windows.forEach { it.recycle() } }
+        }
+        inst.runOnMainSync {
+            check(controller.state.value==CareUiState() && !session.visible.value && !session.editingGoal.value)
+            check(field(actual.dotInteraction,"careWindow")==null && field(controller,"work")==null && bubbles.value.isEmpty())
+            val adapter=actual.dotInteraction.javaClass.getDeclaredMethod("getAdapter").apply { isAccessible=true }.invoke(actual.dotInteraction) as DotChatAdapter
+            check(adapter.binding.value==null && adapter.session==null)
+            originalOwners=field(owners,"count") as Int; originalAutomatic=field(controller,"automatic") as Boolean
+            publicHost=actual.dotScreen.hostWindowId(); emit("before")
+        }
+        try {
+            val sample:suspend(Long)->CaptureOutcome = { generation ->
+                samples++
+                val current=actual.dotScreen.currentSceneKey()
+                val result=if(current==null || current.packageName!=inst.context.packageName || current.windowId!=publicHost)
+                    CaptureOutcome.Unavailable("keyless_public_host_changed") else actual.dotScreen.captureNodes(generation)
+                when(result) {
+                    is CaptureOutcome.Success -> {
+                        observed.put("sampleOutcome","Success").put("sampleCode","none")
+                            .put("snapshotMatchesCurrent",result.snapshot.scene==actual.dotScreen.currentSceneKey())
+                            .put("nodeCount",result.snapshot.nodes.size).put("imageAbsent",result.snapshot.image==null)
+                    }
+                    is CaptureOutcome.Unavailable -> observed.put("sampleOutcome","Unavailable")
+                        .put("sampleCode",if(result.code in codes) result.code else "other")
+                }
+                emit("sample_return")
+                result // Ownership goes to the unchanged actual controller, which closes it.
+            }
+            val plan:suspend(String,ScreenSnapshot,List<CareProposal>)->CarePlanResult = { goal,snapshot,history ->
+                plans++
+                check(goal==GOAL && history.isEmpty())
+                emit("plan_enter")
+                val accepted=runCatching { publicSnapshot(actual,snapshot) }.isSuccess
+                observed.put("publicCheckPassed",accepted)
+                emit("strict_public_check")
+                CarePlanResult.Unavailable(if(accepted) "keyless_plan_reached" else "keyless_public_check_failed")
+            }
+            inst.runOnMainSync {
+                installed=true; set(controller,"sample",sample); set(controller,"plan",plan)
+                actual.dotInteraction.handle(DotIntent.Triple)
+                ownedWindow=field(actual.dotInteraction,"careWindow") as? CareOverlayWindow
+                session.submitGoal(GOAL)
+            }
+            await("Keyless Care diagnostic did not settle",10000) {
+                controller.state.value.state in setOf(CareState.Recovering,CareState.Paused)
+            }
+            await("Actual Care card window was not observable",10000) {
+                val card=ownedWindow?.let { field(it,"card") as? View }
+                if(card?.isAttachedToWindow!=true) false else {
+                    val node=card.createAccessibilityNodeInfo(); val id=try { node.windowId } finally { node.recycle() }
+                    val windows=actual.windows
+                    try { windows.any { it.id==id && actual.dotOverlay.ownsWindow(it) } }
+                    finally { windows.forEach { it.recycle() } }
+                }
+            }
+            inst.runOnMainSync { emit("settled_attached") }
+        } finally {
+            if(installed) {
+                var failures=0
+                fun restore(action:()->Unit) { try { action() } catch(_:Throwable) { failures++ } }
+                restore { inst.runOnMainSync {
+                    emit("before_cleanup")
+                    (field(controller,"work") as? Job)?.let(jobs::add)
+                    session.disconnect()
+                } }
+                restore { inst.runOnMainSync {
+                    check(field(actual.dotInteraction,"careWindow")===ownedWindow) // Never close another owner's window.
+                    ownedWindow?.let { window ->
+                        (field(window,"job") as? Job)?.let(jobs::add); window.close()
+                        set(actual.dotInteraction,"careWindow",null)
+                    }
+                } }
+                restore { runBlocking { withTimeout(5000) { jobs.distinct().forEach { it.join() } } } }
+                restore { inst.runOnMainSync { set(controller,"sample",originalSample) } }
+                restore { inst.runOnMainSync { set(controller,"plan",originalPlan) } }
+                restore { inst.runOnMainSync {
+                    bubbles.value=emptyList()
+                    conversation.javaClass.getDeclaredField("userSequence").apply { isAccessible=true }.setLong(conversation,originalSequence)
+                    check(controller.state.value==CareUiState() && !session.visible.value && !session.editingGoal.value && controller.verifiedSteps.value.isEmpty())
+                    check(ChatViewModelStore.activeSessionId==originalActive)
+                    check(field(owners,"count")==originalOwners && field(controller,"automatic")==originalAutomatic)
+                    emit("restored")
+                } }
+                restore { await("Public host focus did not return after diagnostic") { host(actual) } }
+                restore { inspectBothPublicFields(actual) } // Same strict public whitelist; both fields remain unfocused.
+                android.util.Log.i("ForegroundCareKeyless",JSONObject().put("phase","cleanup_finished").put("cleanupFailures",failures).toString())
+                check(failures==0) { "Keyless Care cleanup incomplete" }
+            }
+        }
+    }
+
     @Test fun canonicalChatThenObservableCareNext() {
         val args=InstrumentationRegistry.getArguments()
         val suppliedOwner=args.getString("foregroundOwner")
@@ -343,6 +470,7 @@ class ManualForegroundApiProofTest {
                 await("Loaded empty configuration required") { app.providerRepository.configLoaded.value }
                 inst.runOnMainSync { idle(actual) }
                 startHost(actual); val fields=inspectBothPublicFields(actual)
+                keylessCareAdmissionDiagnostic(actual)
                 stage("host_preflight_passed",Bundle().apply {
                     putBoolean("actualHostActiveFocused",true); putBoolean("bothPublicFieldsEditable",true); putBoolean("keyboardHidden",true)
                     putFloat("oneLeft",fields.first.bounds.left); putFloat("oneTop",fields.first.bounds.top); putFloat("oneRight",fields.first.bounds.right); putFloat("oneBottom",fields.first.bounds.bottom)
