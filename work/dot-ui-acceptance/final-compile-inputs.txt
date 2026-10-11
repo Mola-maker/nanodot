@@ -1,0 +1,2 @@
+2d0c732a1efacd7947d87fae7323596d12b679a5dd1a4437ccb3283348d99d58  android/src/android/app/src/androidTest/java/io/github/nanomuse/dot/chat/DotForegroundAcceptanceTest.kt
+6c4c2c1855dbba5ffddbf6e4a9b6016cf024d3b9f19bd65136e5d05c70cd47a7  work/dot-ui-acceptance/fixture-only.init.gradle

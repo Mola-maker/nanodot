@@ -1,0 +1,13 @@
+// OWN acceptance fixture + owned public external host only. No main/unit filtering.
+// Modeled on android-api-proof/work/api-proof/fix-round-1/fixture-only.init.gradle.
+gradle.projectsEvaluated {
+    def app = rootProject.project(':app')
+    def chat = new File(app.projectDir, 'src/androidTest/java/io/github/nanomuse/dot/chat')
+    app.android.sourceSets.androidTest.manifest.srcFile(new File(app.projectDir, 'src/dotUiAcceptance/AndroidManifest.xml'))
+    app.android.sourceSets.androidTest.java.setSrcDirs([chat])
+    app.kotlin.sourceSets.getByName('androidTest').kotlin.setSrcDirs([chat])
+    app.tasks.named('compileDebugAndroidTestKotlin').configure {
+        setIncludes(['**/DotForegroundAcceptanceTest.kt', '**/DotForegroundHost.kt'])
+        doFirst { println('T4_UI_OWN_FIXTURE_SOURCES=' + sources.files.collect { it.path }.sort().join(',')) }
+    }
+}

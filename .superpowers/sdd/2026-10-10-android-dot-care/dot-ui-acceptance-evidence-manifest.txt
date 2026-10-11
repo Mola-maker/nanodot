@@ -1,0 +1,13 @@
+19721c39168ee69d62401109f93f6350773a144e0d174d7c21ac7ed59221ff34 4336 .superpowers/sdd/2026-10-10-android-dot-care/work/dot-ui-acceptance/compile-initial.log
+0006be881f3195860e987530645951c278cf28abe0d109cdccb71be87ec6c95c 25844 .superpowers/sdd/2026-10-10-android-dot-care/work/dot-ui-acceptance/compile-owned.log
+19167fcacd302f69045b9ac94f2d3bdffcee998af381ebdbb69d34c130c388d9 4900 .superpowers/sdd/2026-10-10-android-dot-care/work/dot-ui-acceptance/compile-final.log
+288e46dd4ced968421caeb60d6d5381ca1f49765c2631f659a1bbecace588950 4800 .superpowers/sdd/2026-10-10-android-dot-care/work/dot-ui-acceptance/compile-cold-final.log
+f3a5795c6671007df22e6c337d80e441d7e345cd2621b219a94bf7f2f26be755 4854 .superpowers/sdd/2026-10-10-android-dot-care/work/dot-ui-acceptance/compile-cold-cleanup-final.log
+a085d11e91049f5a034efce77209237374a876f089f3a034be1f77c3d8c4c71e 576 work/dot-ui-acceptance/native-inputs-manifest.txt
+b53cec2b029a4f656b598b7c6aa96171f5f3a1f94d365e6098dca9fd5b7083e7 284 work/dot-ui-acceptance/final-compile-inputs.txt
+3ecce79d478d4d2e5f2ca0c17730631626ae3d8c96e0bbb2c0e8b2f57286b71e 574 work/dot-ui-acceptance/cold-final-compile-inputs.txt
+9fba72ef73cebbc819847b55ff077b047beb5b5f8bc5813d824d58ef5ccc81cf 574 work/dot-ui-acceptance/cold-cleanup-final-inputs.txt
+d9b7803b60b6358ff76af977a287135f482d9e15f943560f2b2f14417348531e 532050 android/src/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+b29acc93017e26d48731889237feeeae862f1cbd11e0ddd6f1943851f44fab29 428 android/src/android/app/build/outputs/apk/androidTest/debug/output-metadata.json
+df901e5f8913cbfc125bf64e5b31d7e8a4a0e3e71e075203c4104b4026bdfca0 11066 .superpowers/sdd/2026-10-10-android-dot-care/dot-ui-acceptance-report.md
+4b3e2a6afd7b9ae28e926280d22c7766bc77b4dfd110da5c39116232ca12c4b4 167339 .superpowers/sdd/2026-10-10-android-dot-care/dot-ui-acceptance-source-manifest.txt

@@ -1,0 +1,55 @@
+# Android Task4 foreground overlay / same-session acceptance preparation
+
+Source base: `1eabed18`, isolated worktree `android-dot-ui-acceptance`. This is test-only preparation; **no device run, no UI acceptance PASS, no real-provider/API proof in this task**. Root owns emulator5580, network/model/key/budget and independent runtime audit. No production, dependency, locale, version or branding changes.
+
+## What the fixture measures
+
+`DotForegroundAcceptanceTest#coordinatorOverlayStreamsAndMainShowsSameCanonicalHistory` inserts one fresh UUID-owned, null-binding, memory-disabled session and public history row. Actual product `minis://session/<id>` navigation mounts real main ChatScreen and its existing canonical factory/store. It then foregrounds owned public external test-APK `DotForegroundHost`, calls the actual accessibility service's `DotInteractionCoordinator.handle(Single)`, and checks the attached focusable `TYPE_ACCESSIBILITY_OVERLAY` window. No `setActiveSession` shortcut and no manual `showPanel` substitute are used.
+
+The test installs a public, bounded in-memory `LLMProvider` only in that owned canonical VM via the same private field seam as existing `DotChatPanelTest`. Composer text is set programmatically; an actual native accessibility-text located touchscreen tap presses overlay Send. The ordinary canonical send path persists the user row and runs the ordinary stream consumer. A held public prefix must appear both in canonical `streamingById` and the actual overlay's native text nodes, with Stop visible. Releasing the provider completes the normal assistant turn and Room persistence. A native Collapse tap closes the actual overlay. Real product navigation reopens the same canonical ID in the actual main application, where the completed public reply must be visible and canonical VM identity/history remain shared. Exact expected Room history is user/history, user/prompt, assistant/completed reply, with one provider stream call.
+
+It saves two cropped public text pixel artifacts and synthetic result/cleanup JSON in `cache/t4-ui-<owned UUID>/`; no whole native tree, ordinary titles, model credentials or private request data are saved. Root may capture private full-screen evidence independently. Provider flow has no URL, transport, key, socket or tool call; it has a30-second held-boundary timeout and emits `Started`, one prefix text chunk, one suffix chunk and `Finished(stop)`. Nonstream calls fail. This proves actual UI plumbing against the public in-memory provider only. It does not prove real API stream in the panel, vision, IME, cancellation, screenshot attachment, retry/rerun or broad instrumentation acceptance.
+
+## Why a standalone fixture
+
+Existing `DotChatPanelTest` is final, useful methods are private, and its cleanup guard only admits owned **user** rows. A subclass cannot reuse its lifecycle safely for a completed assistant stream. Copying its display/secure-settings/IME/capture suite would expand unrelated work. This focused test uses the existing actual coordinator, adapter, canonical factory/store, ChatScreen, Room and a tiny owned public external host instead; only native text traversal/tap and bounded wait helpers are local. Existing old cancellation and screenshot methods were neither changed nor rerun.
+
+## Ownership and failure cleanup
+
+Before any route change: capture original active session, including null/cold process state, original values of `main_chat.session`, `first_conversation.session`, `first_conversation.phase`, all ordinary Room session/message rows, and verify absence of owned UUID session row, message ID, session filesystem subtree, date-scoped media subtree and badge entry. Require a preconnected unlocked visible Dot orb and no existing panel. Test code changes no system accessibility/display setting or model/provider repository/configuration.
+
+Cleanup independently attempts every stage and rethrows first failure with suppressed remaining errors: cancel/join only the owned VM's setup/stream jobs, close only the test-opened coordinator admission, restore original actual main session route when nonnull; for root's normal cold/null state finish only new MainActivity references absent from the pre-navigation lifecycle snapshot and require its active chat hook unmounted; close the external host only through its exact UUID finish command; release only UUID-owned VM, verify exact session title/model/null binding/memory and at most3 exact public text rows before transactional deletion, remove only UUID-specific sync rows and owned session directory, prove no fixture media exists, prove ordinary Room rows identical, remove only owned PAUSED badge, restore only owned-changed preference keys and UiAutomation observation flags. Unexpected row/media/preference mutations are preserved for controller inspection and fail cleanup; no broad purge/delete-all is present. Owned evidence cache intentionally remains for root collection and exact cleanup. Root's outer system/prefs/database/file audit is still required; initialization diagnostics/runtime files and platform process/boot changes are outside this fixture's preservation claim.
+
+## Offline compilation
+
+Pinned source env: `/home/jlu/桌面/nanodot/work/android-dot-toolchain/env.sh`. Cache and Android-user directory were ordinary independent copies of the API proof worker's existing offline inputs, initially under this worktree's `work/dot-ui-acceptance/`; after compilation root requested moving cache/Android-user/raw logs under ignored `.superpowers/sdd/2026-10-10-android-dot-care/work/dot-ui-acceptance/`. Only the compile launcher's private cache paths were adapted (bash syntax verified); no fixture/main source or APK changed and no redundant compile was rerun; no shared mutable build outputs/cache were reused. All3 native input files were independently SHA256/length checked against actual root `/home/jlu/桌面/nanodot/nanodot` and API WT copies before copying and against destination afterwards. See native-inputs manifest.
+
+The owned filter is derived from `android-api-proof/work/api-proof/fix-round-1/fixture-only.init.gradle`: only androidTest Java/Kotlin roots and compile task includes are narrowed, to the new owned test plus owned `DotForegroundHost`, with a dedicated test-only manifest. The original `ScreenHostFixture` and original test manifest remain unchanged. Main and all unit sources are untouched/unfiltered. The eight existing whole-instrumentation `mountedSessionId` errors remain binding baseline; this is **not whole instrumentation compile success**.
+
+Commands use `--offline --no-daemon --max-workers=2`,2G Gradle heap and in-process Kotlin compiler. First sandboxed attempt stopped at Gradle's local daemon socket denial; the authorized offline/local-socket escalation succeeded. Initial owned APK build PASS1m29s54tasks. Initial source-fingerprinted confirmation PASS11s54tasks4executed50up-to-date. Root requested cold/null-route support, which necessarily changed the owned fixture/host/manifest; that cold-path compile PASS12s54tasks12executed42up-to-date. A final narrow failure-cleanup correction ensures even entry failures finish newly created MainActivity instances; its final source-fingerprinted APK compile PASS14s54tasks7executed47up-to-date (`compile-cold-cleanup-final.log`). No subsequent source changes. Existing main compile SDK/AGP/deprecation/native duplicate libc++ warnings were retained; no owned fixture warning. Source edits ended before final fingerprinted compile. No source-filtering of main/units, no unchanged whole suite repetition, no runtime/browser/GH/network/key action.
+
+## Root invocation and audit prerequisites
+
+Fresh independent source review before native execution. Root must verify installed main APK has the expected reviewed coordinator/adapter/panel/store/ChatScreen behavior and matching testAPK target/signature. Do not install this worktree's older main APK over the newer Care integration: only this test APK is for execution. Root saves original accessibility service strings/display/prefs/DB/files/UI session before reconnect/route changes, then temporarily reconnects the existing service, unlocks the device and enables visible Dot orb. Normal restarting instrumentation and a cold/null prior route are supported; no ordinary session argv and no no-restart flag are required. The fixture waits up to10seconds for the pre-enabled service to reconnect after the normal process restart. A nonnull original chat route is restored without releasing its VM. A warm existing MainActivity with null chat route is rejected before DB/navigation mutation because its unknown screen cannot be restored safely from a session ID. No existing panel/stream should be disrupted. Root isolates any background account sync/network according to its existing audit procedure; the fixture public provider itself makes no network request.
+
+Fixture build command (compile only):
+
+```sh
+work/dot-ui-acceptance/compile-owned-fixture.sh
+```
+
+Root alone may execute after review (not run by worker):
+
+```sh
+adb -s "$ROOT_SERIAL" shell am instrument -w -r \
+  -e class 'io.github.nanomuse.dot.chat.DotForegroundAcceptanceTest#coordinatorOverlayStreamsAndMainShowsSameCanonicalHistory' \
+  io.github.nanodot.app.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+Target runtime outputs: one test PASS and both `T4_UI_ACCEPTANCE ...` and `T4_UI_CLEANUP ...` lines, plus owned result/crops/cleanup JSON. Root must collect only that emitted UUID evidence directory and then delete only it. A missing cleanup line, unexpected row guard, missing service/original-session precondition, crash, timeout or no native text is a failure/remaining gap, never UI success. Root force-stops target/test packages after collection to return the normal cold baseline, clears only the emitted UUID cache evidence directory, and restores exact original system strings and all outer audit state even after fixture failure. No fixture operation force-stops an app. Full-screen actual Dot/main screenshots and root's state preservation report complement the native assertions.
+
+## Self-review
+
+Reviewed source/fixture filter boundary, real coordinator and real main navigation path, native window type/focusability and package/type selection, touchscreen event source, public midstream delta vs persisted completed row distinction, canonical VM identity, one request bound, UUID ownership/guards, exact-only deletes and failure propagation. No production defect newly reproduced offline. Runtime timing/actual native entry behavior remains unverified; root execution is required. Verification evidence/source manifests identify exact inputs and APK.
+
+Raw Gradle logs are retained byte-for-byte as local ignored evidence, referenced by SHA256 in the evidence manifest, rather than committed; their original Gradle trailing whitespace is preserved. The final source/manifest/launcher diff passes `git diff --check`. No cache, native input, build output, debug signing material or generated APK is staged. The test APK remains a local root-run artifact.
