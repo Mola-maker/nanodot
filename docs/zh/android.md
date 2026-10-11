@@ -254,6 +254,12 @@ base URL（从不包括中继的，从不包括局域网地址）它回答代理
 hub 只走 TLS。App 内的
 web view 不对其他 App 导出。
 
+Debug 构建在内存中保留有限条 LLM 请求日志。请求入库前，日志会把 Authorization、
+Proxy-Authorization、常见 API key 请求头（`X-API-Key`、`Api-Key`、`ApiKey`、
+`X-Goog-Api-Key`）、Cookie 和 Set-Cookie 的值替换为 `[REDACTED]`，不区分请求头名称的
+大小写。原始请求和智能体轨迹导出使用同一份脱敏快照；其他请求头的名称和值继续用于
+诊断。请求体、响应内容和 URL 仍可能含有敏感数据，分享调试导出前请检查这些内容。
+
 ## 自己构建 {#building-it-yourself}
 
 JDK 17 或 21（CI 用 21）和 Android SDK（Android Studio 会把两个都装上）；`scripts/android/env.sh` 在一台空机器上

@@ -319,6 +319,14 @@ not taken for a private address. The same rule decides whether a relay of your o
 `http://`; nanoMuse Cloud and the hub to it are TLS only. The in-app web view is not exported
 to other apps.
 
+Debug builds keep a bounded in-memory LLM request log. Before retaining a request,
+the log replaces Authorization, Proxy-Authorization, common API-key headers
+(`X-API-Key`, `Api-Key`, `ApiKey`, `X-Goog-Api-Key`), Cookie and Set-Cookie values
+with `[REDACTED]`, regardless of header-name case. Raw request and agent-trace
+exports use the same masked snapshot; other header names and values remain useful
+for diagnostics. Request bodies, response content and URLs can still contain
+sensitive data, so inspect these before sharing a debug export.
+
 ## Building it yourself
 
 JDK 17 or 21 (CI uses 21) and the Android SDK (Android Studio installs both); `scripts/android/env.sh` sets
