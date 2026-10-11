@@ -1,5 +1,7 @@
 import { authenticate, readKeyHashes } from './auth';
 import type { GatewayEnv } from './types';
+import { handleChat } from './chat';
+import { listModels } from './models';
 export { FreeGate } from './quota';
 
 function configured(env: GatewayEnv): boolean {
@@ -23,16 +25,22 @@ export async function handle(request: Request, env: GatewayEnv, _ctx: ExecutionC
   if (path === '/healthz') {
     if (request.method !== 'GET' && request.method !== 'HEAD') return error(405, 'method_not_allowed', 'Use GET or HEAD.', { Allow: 'GET, HEAD' });
     const ready = configured(env);
-    return json({ deployed: true, configured: ready, inferenceEnabled: false }, ready ? 200 : 503);
+    return json({ deployed: true, configured: ready, inferenceEnabled: ready }, ready ? 200 : 503);
   }
   if (path === '/v1' || path.startsWith('/v1/')) {
     // Configuration failures take precedence; never substitute an anonymous path.
     if (!configured(env)) return error(503, 'gateway_unconfigured', 'Gateway configuration unavailable.');
-    if (!await authenticate(request, env)) return error(401, 'unauthorized', 'A project credential is required.', { 'WWW-Authenticate': 'Bearer' });
+    const identity = await authenticate(request, env);
+    if (!identity) return error(401, 'unauthorized', 'A project credential is required.', { 'WWW-Authenticate': 'Bearer' });
+    if (path === '/v1/models') {
+      if (request.method !== 'GET') return error(405, 'method_not_allowed', 'Use GET.', { Allow: 'GET' });
+      return listModels(false);
+    }
     const pending = new Set(['/v1/chat/completions', '/v1/audio/transcriptions', '/v1/audio/speech']);
     if (!pending.has(path)) return error(404, 'not_found', 'API route not found.');
     if (request.method !== 'POST') return error(405, 'method_not_allowed', 'Use POST.', { Allow: 'POST' });
-    // No inference implementation yet: do not reserve quota or fabricate a reply.
+    if (path === '/v1/chat/completions') return handleChat(request, env, identity.clientId);
+    // Disabled audio routes do not reserve quota or fabricate a reply.
     return error(503, 'inference_unavailable', 'Inference is not enabled.');
   }
   if (request.method !== 'GET' && request.method !== 'HEAD') return error(405, 'method_not_allowed', 'Use GET or HEAD.', { Allow: 'GET, HEAD' });
