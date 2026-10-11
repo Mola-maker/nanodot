@@ -73,11 +73,17 @@ class GatewayVoiceTest {
     }
     // Test-only framework allocation avoids Android init. Production provider,
     // repository credential read, stop/pause and playback dispatch remain real.
-    private fun player():Pair<ReadAloudPlayer,ModelEntry> {
+    private fun player(originMarker:String?=null):Pair<ReadAloudPlayer,ModelEntry> {
         val app=allocate(MinisApp::class.java) as MinisApp
         val repo=allocate(ProviderRepository::class.java) as ProviderRepository
         val entry=ModelEntry(providerInstanceId=instance().id,baseModel=LLMModel(melo,"Melo","Custom",outputModalities=listOf("audio")))
-        val prefs=Proxy.newProxyInstance(javaClass.classLoader,arrayOf(SharedPreferences::class.java)) {_,method,_ -> if(method.name=="getString") "local-protocol-fixture" else null} as SharedPreferences
+        val prefs=Proxy.newProxyInstance(javaClass.classLoader,arrayOf(SharedPreferences::class.java)) {_,method,args ->
+            if(method.name=="getString") when(args!![0]) {
+                "apikey_voice-local" -> "local-protocol-fixture"
+                "nanodot_gateway_origin_voice-local" -> originMarker
+                else -> null
+            } else null
+        } as SharedPreferences
         set(repo,"encryptedPrefs\$delegate",lazyOf(prefs))
         val routingPrefs=Proxy.newProxyInstance(javaClass.classLoader,arrayOf(SharedPreferences::class.java)) {_,method,_ -> if(method.name=="getString") entry.id else null} as SharedPreferences
         set(repo,"prefs",routingPrefs);set(repo,"_configLoaded",MutableStateFlow(true))
@@ -103,6 +109,14 @@ class GatewayVoiceTest {
             try {val result=method.invoke(p,*args.toTypedArray());if(result!==kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED) cont.resume(Unit) { _,_,_ -> }}
             catch(e:java.lang.reflect.InvocationTargetException) {cont.resumeWith(Result.failure(e.cause!!))}
         }
+    }
+    @Test(timeout=5000) fun boundProjectCredentialCannotReachLoopbackReadAloudProvider()=runBlocking {
+        val (p,entry)=player("https://molamaker.si")
+        server.enqueue(MockResponse().setResponseCode(503).setBody("{\"error\":{\"message\":\"unverified\"}}"))
+        try {
+            synthesizeInPlayer(p,entry)
+            assertNull("Origin-bound project credential must not dispatch loopback speech",server.takeRequest(200,TimeUnit.MILLISECONDS))
+        } finally {p.shutdown()}
     }
     @Test(timeout=15000) fun realReadAloudStopAndPauseCancelInFlightSynthesis()=runBlocking {
         for(pause in listOf(false,true)) {
