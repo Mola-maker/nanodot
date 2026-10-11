@@ -1125,4 +1125,17 @@
     <string name="nm_dot_capture_stop">หยุดการจับภาพ</string>
     <string name="nm_dot_capture_explain">บน Android รุ่นนี้ Dot อ่านข้อความการช่วยเหลือพิเศษได้ อนุญาตการจับภาพหน้าจอแยกต่างหากเพื่อแชร์รูปภาพด้วย Android จะขอสิทธิ์จากคุณ</string>
     <string name="nm_dot_capture_allow">อนุญาตการจับภาพหน้าจอ</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">กำลังโหลด…</string>
+    <string name="nm_dot_load_failed">ไม่สามารถโหลดหน้านี้ได้</string>
+    <string name="nm_dot_components">ส่วนประกอบ</string>
+    <string name="nm_dot_empty">ยังไม่มีเนื้อหาที่นี่</string>
+    <string name="nm_dot_attach">แนบไฟล์</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">เพิ่มไปยัง %1$s</string>
+    <string name="nm_goal_completion">เป้าหมายที่เสร็จแล้ว: %1$s</string>
+    <string name="nm_feed_like_post">ถูกใจโพสต์: %1$s</string>
+    <string name="nm_feed_post_info">ข้อมูลโพสต์: %1$s</string>
 </resources>

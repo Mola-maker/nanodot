@@ -48,7 +48,10 @@ fun MinisTheme(
         shapes = MinisShapes,
         typography = typography,
     ) {
-        CompositionLocalProvider(LocalChatPalette provides chatPalette, content = content)
+        // nanoMuse: every custom transition follows the actual native reduced-motion setting.
+        io.github.nanomuse.dot.ui.DotMotionHost {
+            CompositionLocalProvider(LocalChatPalette provides chatPalette, content = content)
+        }
     }
 }
 

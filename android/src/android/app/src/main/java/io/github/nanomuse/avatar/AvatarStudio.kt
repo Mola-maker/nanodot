@@ -6,6 +6,10 @@ import androidx.annotation.StringRes
 import com.openminis.app.R
 import com.openminis.app.logging.AppLogger
 import io.github.nanomuse.ui.avatar.AgentMood
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -58,6 +62,34 @@ object AvatarStudio {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var candidateJob: Job? = null
     private var moodJob: Job? = null
+    // Cancellation and result publication share ownership; a late blocking image response
+    // must never replace a retained tile or saved mood after Cancel.
+    private val ownership = Any()
+    private var candidateGeneration = 0L
+    private var moodGeneration = 0L
+    private val retryJobs = mutableMapOf<Int, Job>()
+
+    fun cancelCandidates() = synchronized(ownership) {
+        candidateGeneration++
+        candidateJob?.cancel()
+        retryJobs.values.forEach { it.cancel() }
+        retryJobs.clear()
+        _slots.update { list -> list.map { if (it is Slot.Loading) Slot.Empty else it } }
+    }
+
+    fun cancelMoods() = synchronized(ownership) {
+        moodGeneration++
+        moodJob?.cancel()
+        _moodProgress.update { it?.copy(running = false) }
+    }
+
+    val canRetryCandidates: Boolean get() = synchronized(ownership) {
+        lastRequest != null && !generating && _slots.value.any { it is Slot.Empty || it is Slot.Failed }
+    }
+
+    fun retryUnfinished(context: Context) {
+        (0 until CANDIDATES).forEach { retrySlot(context, it) }
+    }
     /** Image endpoints throttle hard; two in flight is what most of them tolerate. */
     private val lane = Semaphore(2)
     private var lastRequest: Triple<String, Style, ImageGen.Endpoint>? = null
@@ -75,6 +107,8 @@ object AvatarStudio {
         while (true) {
             try {
                 return lane.withPermit { block() }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 if (attempt >= 2 || !looksRateLimited(e)) throw e
                 attempt += 1
@@ -132,17 +166,24 @@ object AvatarStudio {
         style.value = chosen
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
             .putString("avatar.description", text).putString("avatar.style", chosen.id).apply()
-        candidateJob?.cancel()
-        _selected.value = null
-        _error.value = null
-        _slots.value = List(CANDIDATES) { Slot.Loading }
-        lastRequest = Triple(text, chosen, ep)
-        reference = referenceImage
-        candidateJob = scope.launch {
-            (0 until CANDIDATES).map { i -> async { drawCandidate(context, ep, text, chosen, i) } }.awaitAll()
-            if (_slots.value.all { it is Slot.Failed }) {
-                _error.value = (_slots.value.first() as Slot.Failed).message
-            }
+        synchronized(ownership) {
+            cancelCandidates()
+            val generation = candidateGeneration
+            _selected.value = null
+            _error.value = null
+            _slots.value = List(CANDIDATES) { Slot.Loading }
+            lastRequest = Triple(text, chosen, ep)
+            reference = referenceImage
+            candidateJob = scope.launch(start = CoroutineStart.LAZY) {
+                (0 until CANDIDATES).map { i ->
+                    async { drawCandidate(context, ep, text, chosen, i, generation, referenceImage) }
+                }.awaitAll()
+                synchronized(ownership) {
+                    if (generation == candidateGeneration && _slots.value.all { it is Slot.Failed }) {
+                        _error.value = (_slots.value.first() as Slot.Failed).message
+                    }
+                }
+            }.also { it.start() }
         }
         return true
     }
@@ -153,39 +194,45 @@ object AvatarStudio {
         return generateCandidates(context, text, chosen, reference)
     }
 
-    /** One tile again, after a failure. */
-    fun retrySlot(context: Context, index: Int) {
-        val (text, chosen, ep) = lastRequest ?: return
-        if (_slots.value.getOrNull(index) !is Slot.Failed) return
+    /** Retry only unfinished tiles; completed candidates and the original request stay intact. */
+    fun retrySlot(context: Context, index: Int) = synchronized(ownership) {
+        val (text, chosen, ep) = lastRequest ?: return@synchronized
+        val slot = _slots.value.getOrNull(index)
+        if (slot !is Slot.Failed && slot !is Slot.Empty) return@synchronized
+        val generation = candidateGeneration
+        val ref = reference
         _slots.update { list -> list.toMutableList().also { it[index] = Slot.Loading } }
-        scope.launch { drawCandidate(context, ep, text, chosen, index) }
+        retryJobs[index] = scope.launch(start = CoroutineStart.LAZY) {
+            drawCandidate(context, ep, text, chosen, index, generation, ref)
+        }.also { it.start() }
     }
 
-    private suspend fun drawCandidate(context: Context, ep: ImageGen.Endpoint, text: String, chosen: Style, i: Int) {
-        val dir = AvatarStore.candidatesDir()
-        val prompt = buildPrompt(text, chosen, i)
-        val ref = reference
-        val result = runCatching {
-            throttled {
+    private suspend fun drawCandidate(context: Context, ep: ImageGen.Endpoint, text: String,
+        chosen: Style, i: Int, generation: Long, ref: Bitmap?) {
+        val result = try {
+            Result.success(throttled {
+                val prompt = buildPrompt(text, chosen, i)
                 if (ref != null) ImageGen.edit(context, ep, ref, REFERENCE_PREFIX + prompt)
                 else ImageGen.generate(context, ep, prompt)
-            }
+            })
+        } catch (e: CancellationException) { throw e }
+        catch (e: Exception) { Result.failure(e) }
+        currentCoroutineContext().ensureActive()
+        synchronized(ownership) {
+            if (generation != candidateGeneration) return
+            val slot = result.fold(
+                onSuccess = { bmp ->
+                    val f = File(AvatarStore.candidatesDir(), "$i.png")
+                    AvatarStore.write(f, bmp)
+                    Slot.Ready(AvatarStore.decodeBitmap(f) ?: bmp, f)
+                },
+                onFailure = { e ->
+                    AppLogger.warning(TAG, "candidate $i failed: ${e.message}")
+                    Slot.Failed(if (looksRateLimited(e)) context.getString(R.string.nm_avatar_provider_busy) else e.message ?: "failed")
+                },
+            )
+            _slots.update { list -> list.toMutableList().also { it[i] = slot } }
         }
-        val slot = result.fold(
-            onSuccess = { bmp ->
-                val f = File(dir, "$i.png")
-                AvatarStore.write(f, bmp)
-                Slot.Ready(AvatarStore.decodeBitmap(f) ?: bmp, f)
-            },
-            onFailure = { e ->
-                AppLogger.warning(TAG, "candidate $i failed: ${e.message}")
-                // a provider still busy after the retries: a sentence, not its status line
-                Slot.Failed(if (looksRateLimited(e)) context.getString(R.string.nm_avatar_provider_busy) else e.message ?: "failed")
-            },
-        )
-        // Atomic: the four candidates finish on different threads, and a plain
-        // read-modify-write here would let one tile's result overwrite another's.
-        _slots.update { list -> list.toMutableList().also { it[i] = slot } }
     }
 
     /** The picked candidate becomes the face; the moods follow in the background. */
@@ -203,25 +250,35 @@ object AvatarStudio {
         val base = AvatarStore.decodeBitmap(AvatarStore.baseFile()) ?: return
         val todo = AgentMood.entries.filter { it != AgentMood.IDLE && (force || !AvatarStore.moodFile(it).exists()) }
         if (todo.isEmpty()) return
-        moodJob?.cancel()
-        _moodProgress.value = MoodProgress(0, todo.size, emptyList(), running = true)
-        moodJob = scope.launch {
-            val failed = java.util.Collections.synchronizedList(mutableListOf<AgentMood>())
-            val done = java.util.concurrent.atomic.AtomicInteger(0)
-            todo.map { mood ->
-                async {
-                    val result = runCatching { throttled { ImageGen.edit(context, ep, base, moodInstruction(mood)) } }
-                    result.onSuccess { AvatarStore.putMood(mood, it) }
-                        .onFailure { AppLogger.warning(TAG, "mood $mood failed: ${it.message}"); failed += mood }
-                    _moodProgress.value = MoodProgress(done.incrementAndGet(), todo.size, failed.toList(), running = true)
+        synchronized(ownership) {
+            cancelMoods()
+            val generation = moodGeneration
+            _moodProgress.value = MoodProgress(0, todo.size, emptyList(), running = true)
+            moodJob = scope.launch(start = CoroutineStart.LAZY) {
+                todo.map { mood -> async {
+                    val result = try {
+                        Result.success(throttled { ImageGen.edit(context, ep, base, moodInstruction(mood)) })
+                    } catch (e: CancellationException) { throw e }
+                    catch (e: Exception) { Result.failure(e) }
+                    currentCoroutineContext().ensureActive()
+                    synchronized(ownership) {
+                        if (generation == moodGeneration) {
+                            result.onSuccess { AvatarStore.putMood(mood, it) }
+                                .onFailure { AppLogger.warning(TAG, "mood $mood failed: ${it.message}") }
+                            _moodProgress.update { p -> p?.copy(done = p.done + 1,
+                                failed = if (result.isFailure) p.failed + mood else p.failed) }
+                        }
+                    }
+                } }.awaitAll()
+                synchronized(ownership) {
+                    if (generation == moodGeneration) _moodProgress.update { it?.copy(running = false) }
                 }
-            }.awaitAll()
-            _moodProgress.value = MoodProgress(done.get(), todo.size, failed.toList(), running = false)
+            }.also { it.start() }
         }
     }
 
     fun reset(context: Context) {
-        moodJob?.cancel()
+        cancelMoods()
         _moodProgress.value = null
         AvatarStore.reset()
     }

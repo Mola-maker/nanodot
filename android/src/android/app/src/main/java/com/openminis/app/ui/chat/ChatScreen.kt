@@ -225,6 +225,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding // nanoMuse: short IME safe edge
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
@@ -2600,11 +2601,16 @@ fun ChatScreen(
         // map (which is last-writer-wins across sessions).
         LocalMarkdownSessionId provides sessionId,
     ) {
+    // nanoMuse: on a short IME window reserve the composer first; returning the keyboard
+    // restores the same mounted header and canonical session, without reducing text scale.
+    val nmTightIme = nmHome != null && imeBottomPx > 0 &&
+        configuration.screenHeightDp - imeBottomPx / LocalDensity.current.density <
+        96 * LocalDensity.current.fontScale + 64
     Scaffold(
         containerColor = ChatColors.background,
         contentWindowInsets = WindowInsets(0),
         topBar = {
-            TopAppBar(
+            if (!nmTightIme) TopAppBar(
                 title = {
                     // nanoMuse: host title override keeps the canonical chat menu/model logic intact.
                     val homeTitle = nmHome?.title
@@ -3379,6 +3385,8 @@ fun ChatScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                // nanoMuse: top bar yields only in short IME space, retaining the system safe edge.
+                .then(if (nmTightIme) Modifier.windowInsetsPadding(WindowInsets.statusBars) else Modifier)
                 .imePadding()
                 .onGloballyPositioned { chatPaneWidthPx = it.size.width },
         ) {
@@ -6144,7 +6152,7 @@ fun ChatScreen(
                                 )
                             },
                             modifier = nmFieldModifier // nanoMuse: fillMaxWidth on its own row, weight(1f) in the pill
-                                .heightIn(min = 25.dp)
+                                .heightIn(min = io.github.nanomuse.dot.ui.DotTokens.TouchTarget)
                                 .focusRequester(inputFocusRequester)
                                 .onFocusChanged {
                                     // [T-android-composer-placeholder-rotation]
@@ -6278,7 +6286,8 @@ fun ChatScreen(
                                 },
                             textStyle = mergedTextStyle,
                             cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary),
-                            maxLines = 6,
+                            // nanoMuse: scroll the original draft within one line while IME space is tight.
+                            maxLines = if (nmTightIme) 1 else 6,
                             // [T-android-enter-to-send-broken] When the
                             // user has Return-Key=Send turned on, ask the
                             // IME for the Send action so it (a) shows the
@@ -6446,7 +6455,7 @@ fun ChatScreen(
                             ) {
                                 Icon(
                                     Icons.Default.Add,
-                                    contentDescription = "Attach",
+                                    contentDescription = stringResource(R.string.nm_dot_attach),
                                     tint = if (nmPill) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(if (nmPill) 24.dp else 20.dp),
                                 )
@@ -6993,62 +7002,13 @@ fun ChatScreen(
                         // valid message — mirrors iOS where !attachments.isEmpty
                         // satisfies the composer's send guard. Without this an
                         // image-only "look at this" send is impossible.
-                        val hasText = inputText.isNotBlank()
-                        val hasContent = hasText || attachments.isNotEmpty()
-                        val showStop = isStreaming && !hasContent
-                        if (showStop) {
-                            Box(
-                                modifier = Modifier
-                                    .size(38.dp)
-                                    .background(Color(0xFFFF3B30), CircleShape)
-                                    .clip(CircleShape)
-                                    .clickable { viewModel.cancelStream() },
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Icon(
-                                    Icons.Default.Stop,
-                                    contentDescription = "Stop",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(20.dp),
-                                )
-                            }
-                        } else {
-                            // Streaming with content → Send-into-queue; Idle with content → Send.
-                            // Idle without text or attachments → disabled.
-                            val canActivate = hasContent
-                            Box(
-                                modifier = Modifier
-                                    .size(38.dp)
-                                    .background(
-                                        if (canActivate) ChatColors.sendButton
-                                        else ChatColors.sendButtonDisabled,
-                                        CircleShape,
-                                    )
-                                    .clip(CircleShape)
-                                    .clickable(enabled = canActivate) {
-                                        // T-drag-send-queue: route through the
-                                        // shared send-or-enqueue handler. Same
-                                        // semantics as before: slash short-
-                                        // circuit, snapshot text, clear input
-                                        // + focus, then sendMessage (which
-                                        // routes to enqueuePrompt when
-                                        // _isStreaming is true), then re-pin
-                                        // the list to index 0 with a 100ms
-                                        // re-pin to catch the late-mounting
-                                        // "thinking" indicator.
-                                        performSendOrEnqueue(inputText)
-                                    },
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Icon(
-                                    Icons.Default.ArrowUpward,
-                                    contentDescription = "Send",
-                                    tint = if (canActivate) ChatColors.background
-                                    else ChatColors.primaryText.copy(alpha = 0.5f),
-                                    modifier = Modifier.size(20.dp),
-                                )
-                            }
-                        }
+                        // nanoMuse: native 48dp action consumes actual VM state and the existing handlers.
+                        io.github.nanomuse.dot.ui.DotChatChrome(
+                            isStreaming = isStreaming,
+                            hasContent = inputText.isNotBlank() || attachments.isNotEmpty(),
+                            onSend = { performSendOrEnqueue(inputText) },
+                            onStop = { viewModel.cancelStream() },
+                        )
                         } // nanoMuse: send/stop
                     }
                 }

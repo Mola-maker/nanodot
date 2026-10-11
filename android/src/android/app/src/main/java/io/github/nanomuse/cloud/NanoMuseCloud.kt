@@ -13,6 +13,7 @@ import com.openminis.app.data.model.ProviderInstance
 import com.openminis.app.data.model.ProviderType
 import com.openminis.app.data.repository.ProviderRepository
 import io.github.nanomuse.avatar.ImageGen
+import io.github.nanomuse.net.awaitParsed
 import java.io.IOException
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -413,7 +414,7 @@ object NanoMuseCloud {
      */
     suspend fun setContribute(context: Context, on: Boolean): Account = withContext(Dispatchers.IO) {
         val key = apiKey(context) ?: throw CloudException("bad_key", "Not signed in")
-        val r = call(context, "POST", "/v1/me/contribute", JSONObject().put("on", on), token = key)
+        val r = cancellableCall(context, "POST", "/v1/me/contribute", JSONObject().put("on", on), token = key)
         val e = prefs(context).edit()
             .putBoolean(KEY_CONTRIBUTE, r.optBoolean("on", on))
             .putInt(KEY_SAMPLES, r.optInt("samples", 0))
@@ -442,7 +443,7 @@ object NanoMuseCloud {
     /** Delete every turn the relay kept from this account; returns how many went. */
     suspend fun deleteSamples(context: Context): Int = withContext(Dispatchers.IO) {
         val key = apiKey(context) ?: throw CloudException("bad_key", "Not signed in")
-        val n = call(context, "DELETE", "/v1/me/samples", null, token = key).optInt("deleted", 0)
+        val n = cancellableCall(context, "DELETE", "/v1/me/samples", null, token = key).optInt("deleted", 0)
         prefs(context).edit().putInt(KEY_SAMPLES, 0).apply()
         n
     }
@@ -462,7 +463,7 @@ object NanoMuseCloud {
 
     suspend fun estimate(context: Context, images: Int, clips: Int): Estimate = withContext(Dispatchers.IO) {
         val key = apiKey(context) ?: throw CloudException("bad_key", "Not signed in")
-        val r = call(context, "GET", "/v1/estimate?images=$images&clips=$clips", null, token = key)
+        val r = cancellableCall(context, "GET", "/v1/estimate?images=$images&clips=$clips", null, token = key)
         // 0.5 says `left_cny`; a 0.4 relay said `left_today_cny`
         val leftKey = if (r.has("left_cny")) "left_cny" else "left_today_cny"
         Estimate(
@@ -476,7 +477,7 @@ object NanoMuseCloud {
 
     /** Ask the relay to send a code. Throws [CloudException] with the relay's `code`. */
     suspend fun requestCode(context: Context, identifier: String) = withContext(Dispatchers.IO) {
-        call(context, "POST", "/v1/auth/code", JSONObject().put("identifier", identifier.trim()), token = null)
+        cancellableCall(context, "POST", "/v1/auth/code", JSONObject().put("identifier", identifier.trim()), token = null)
         Unit
     }
 
@@ -492,7 +493,7 @@ object NanoMuseCloud {
             .put("device", deviceName())
         // a friend's code counts for a new account only; the relay ignores it otherwise
         if (invite.isNotBlank()) body.put("invite", invite.trim())
-        adopt(context, call(context, "POST", "/v1/auth/verify", body, token = null))
+        adopt(context, cancellableCall(context, "POST", "/v1/auth/verify", body, token = null))
     }
 
     /** The password way in — for people who set one under Account; no code to wait for. */
@@ -501,7 +502,7 @@ object NanoMuseCloud {
             .put("identifier", identifier.trim())
             .put("password", password)
             .put("device", deviceName())
-        adopt(context, call(context, "POST", "/v1/auth/login", body, token = null))
+        adopt(context, cancellableCall(context, "POST", "/v1/auth/login", body, token = null))
     }
 
     /**
@@ -513,7 +514,7 @@ object NanoMuseCloud {
         val key = apiKey(context) ?: throw CloudException("bad_key", "Not signed in")
         val body = JSONObject().put("password", password)
         if (current != null) body.put("current", current) else body.put("current", JSONObject.NULL)
-        call(context, "POST", "/v1/auth/password", body, token = key)
+        cancellableCall(context, "POST", "/v1/auth/password", body, token = key)
         prefs(context).edit().putBoolean(KEY_HAS_PASSWORD, password.isNotEmpty()).apply()
         Unit
     }
@@ -521,7 +522,7 @@ object NanoMuseCloud {
     /** The devices signed in to this account, the current one first. */
     suspend fun sessions(context: Context): List<Session> = withContext(Dispatchers.IO) {
         val key = apiKey(context) ?: return@withContext emptyList()
-        val arr = call(context, "GET", "/v1/me/sessions", null, token = key).optJSONArray("sessions") ?: JSONArray()
+        val arr = cancellableCall(context, "GET", "/v1/me/sessions", null, token = key).optJSONArray("sessions") ?: JSONArray()
         (0 until arr.length()).mapNotNull { arr.optJSONObject(it) }.map {
             Session(
                 prefix = it.optString("prefix"),
@@ -537,14 +538,14 @@ object NanoMuseCloud {
     /** Sign one other device out. */
     suspend fun revokeSession(context: Context, prefix: String) = withContext(Dispatchers.IO) {
         val key = apiKey(context) ?: throw CloudException("bad_key", "Not signed in")
-        call(context, "DELETE", "/v1/me/sessions/$prefix", null, token = key)
+        cancellableCall(context, "DELETE", "/v1/me/sessions/$prefix", null, token = key)
         Unit
     }
 
     /** The account's own history, newest first. */
     suspend fun events(context: Context, limit: Int = 40): List<Event> = withContext(Dispatchers.IO) {
         val key = apiKey(context) ?: return@withContext emptyList()
-        val arr = call(context, "GET", "/v1/me/events?limit=$limit", null, token = key).optJSONArray("events") ?: JSONArray()
+        val arr = cancellableCall(context, "GET", "/v1/me/events?limit=$limit", null, token = key).optJSONArray("events") ?: JSONArray()
         (0 until arr.length()).mapNotNull { arr.optJSONObject(it) }.map {
             Event(ts = it.optLong("ts"), kind = it.optString("kind"), detail = it.optString("detail"))
         }
@@ -556,7 +557,7 @@ object NanoMuseCloud {
      */
     suspend fun signOutEverywhere(context: Context, includingThis: Boolean, keep: Boolean = false) = withContext(Dispatchers.IO) {
         val key = apiKey(context) ?: throw CloudException("bad_key", "Not signed in")
-        call(context, "POST", "/v1/auth/sign-out-all", JSONObject().put("all", includingThis), token = key)
+        cancellableCall(context, "POST", "/v1/auth/sign-out-all", JSONObject().put("all", includingThis), token = key)
         if (includingThis) forgetLocally(context, keep)
         Unit
     }
@@ -568,7 +569,7 @@ object NanoMuseCloud {
      */
     suspend fun deleteAccount(context: Context) = withContext(Dispatchers.IO) {
         val key = apiKey(context) ?: throw CloudException("bad_key", "Not signed in")
-        call(context, "POST", "/v1/auth/delete", null, token = key)
+        cancellableCall(context, "POST", "/v1/auth/delete", null, token = key)
         forgetLocally(context, keep = false)
     }
 
@@ -656,7 +657,7 @@ object NanoMuseCloud {
         val inst = instance(context) ?: return@withContext null
         val key = repo(context)?.loadApiKey(inst.id) ?: return@withContext null
         try {
-            val me = call(context, "GET", "/v1/me", null, token = key)
+            val me = cancellableCall(context, "GET", "/v1/me", null, token = key)
             saveAccount(context, me)
             // the menu and the catalog move slowly: once an hour is plenty
             if (System.currentTimeMillis() - prefs(context).getLong(KEY_MODELS_AT, 0) > MODELS_FRESH_MS) {
@@ -690,7 +691,9 @@ object NanoMuseCloud {
         val inst = instance(context)
         val key = inst?.let { repo?.loadApiKey(it.id) }
         if (inst != null && key != null) {
-            runCatching { call(context, "POST", "/v1/auth/sign-out", null, token = key) }
+            try { cancellableCall(context, "POST", "/v1/auth/sign-out", null, token = key) }
+            catch (e: kotlinx.coroutines.CancellationException) { throw e }
+            catch (_: Exception) { /* Existing best-effort sign-out preserves offline behavior. */ }
         }
         forgetLocally(context, keep)
     }
@@ -858,7 +861,7 @@ object NanoMuseCloud {
      * carry none of this: OpenMinis reads `/v1/models` as any provider's list.
      */
     private suspend fun syncModels(context: Context, apiKey: String) {
-        val reply = call(context, "GET", "/v1/models", null, token = apiKey)
+        val reply = cancellableCall(context, "GET", "/v1/models", null, token = apiKey)
         rememberModels(context, reply.optJSONArray("data"), stamp = true)
     }
 
@@ -1084,7 +1087,7 @@ object NanoMuseCloud {
         io.github.nanomuse.sync.ConversationSync.forget(context) // the next account starts with its own ids and cursor
     }
 
-    private fun call(context: Context, method: String, path: String, body: JSONObject?, token: String?): JSONObject {
+    private fun request(context: Context, method: String, path: String, body: JSONObject?, token: String?): Request {
         val builder = Request.Builder().url(baseUrl(context) + path)
         if (token != null) builder.header("Authorization", "Bearer $token")
         builder.header("User-Agent", "Nanodot-Android/${BuildConfig.VERSION_NAME}")
@@ -1092,25 +1095,34 @@ object NanoMuseCloud {
             "GET" -> builder.get()
             else -> builder.method(method, (body?.toString() ?: "{}").toRequestBody(json))
         }
-        val response = try {
-            http.newCall(builder.build()).execute()
-        } catch (e: IOException) {
-            throw CloudException("unreachable", e.message ?: "unreachable")
+        return builder.build()
+    }
+
+    // ProfileSync's blocking profile APIs keep their existing signatures and execution boundary.
+    private fun call(context: Context, method: String, path: String, body: JSONObject?, token: String?): JSONObject {
+        val response = try { http.newCall(request(context, method, path, body, token)).execute() }
+        catch (e: IOException) { throw CloudException("unreachable", e.message ?: "unreachable") }
+        return response.use(::parseResponse)
+    }
+
+    private suspend fun cancellableCall(context: Context, method: String, path: String, body: JSONObject?, token: String?): JSONObject =
+        try { http.newCall(request(context, method, path, body, token)).awaitParsed(::parseResponse) }
+        catch (e: CloudException) { throw e }
+        catch (e: IOException) { throw CloudException("unreachable", e.message ?: "unreachable") }
+
+    private fun parseResponse(r: okhttp3.Response): JSONObject {
+        val text = r.body?.string().orEmpty()
+        if (r.isSuccessful) {
+            return if (text.isBlank()) JSONObject() else runCatching { JSONObject(text) }.getOrElse { JSONObject() }
         }
-        response.use { r ->
-            val text = r.body?.string().orEmpty()
-            if (r.isSuccessful) {
-                return if (text.isBlank()) JSONObject() else runCatching { JSONObject(text) }.getOrElse { JSONObject() }
-            }
-            val err = runCatching { JSONObject(text).optJSONObject("error") }.getOrNull()
-            throw CloudException(
-                code = err?.optString("code")?.takeIf { it.isNotBlank() } ?: "http_${r.code}",
-                message = err?.optString("message")?.takeIf { it.isNotBlank() } ?: "HTTP ${r.code}",
-                status = r.code,
-                // relay 0.22: when to come back, and whether an operator's switch is the reason
-                retryAfterS = err?.optDouble("retry_after", 0.0)?.takeIf { it > 0 }?.let { kotlin.math.ceil(it).toInt() },
-                paused = err?.optBoolean("paused", false) == true,
-            )
-        }
+        val err = runCatching { JSONObject(text).optJSONObject("error") }.getOrNull()
+        throw CloudException(
+            code = err?.optString("code")?.takeIf { it.isNotBlank() } ?: "http_${r.code}",
+            message = err?.optString("message")?.takeIf { it.isNotBlank() } ?: "HTTP ${r.code}",
+            status = r.code,
+            // relay 0.22: when to come back, and whether an operator's switch is the reason
+            retryAfterS = err?.optDouble("retry_after", 0.0)?.takeIf { it > 0 }?.let { kotlin.math.ceil(it).toInt() },
+            paused = err?.optBoolean("paused", false) == true,
+        )
     }
 }

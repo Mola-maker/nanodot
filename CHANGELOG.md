@@ -55,6 +55,10 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ### Android
 
+- Preserved Send/Stop glyph contrast during keyboard focus and held presses, named Goals/Feed actions with their actual checked state, and exposed Cloud mode/usage tab selection to native accessibility.
+
+- Kept the Android composer and Send/Stop reachable with large text and a shown landscape keyboard, added shared accessible page states and native selected controls, and bound Cloud/Network cancellation to actual requests while preserving input and error details.
+
 - Unified Android home navigation into labeled Chat, Tasks, Devices and Settings destinations, retained Feed/Ideas/Goals/Library inside Tasks, and adapted the same session host to bottom navigation, rail and conversation-list panes.
 
 - Added fresh, read-only Dot host snapshots with password redaction, serialized capture ownership and an explicit foreground screen-recording grant for Android 8–10; pixel errors kept distinct codes and a fresh text fallback.

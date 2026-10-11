@@ -1125,4 +1125,17 @@
     <string name="nm_dot_capture_stop">取得を停止</string>
     <string name="nm_dot_capture_explain">この Android バージョンでは、Dot はアクセシビリティのテキストを読み取れます。画像も共有するには、画面取得を別途許可してください。Android が許可を求めます。</string>
     <string name="nm_dot_capture_allow">画面取得を許可</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">読み込み中…</string>
+    <string name="nm_dot_load_failed">このページを読み込めませんでした。</string>
+    <string name="nm_dot_components">コンポーネント</string>
+    <string name="nm_dot_empty">まだ何もありません。</string>
+    <string name="nm_dot_attach">ファイルを添付</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">%1$sに追加</string>
+    <string name="nm_goal_completion">完了した目標：%1$s</string>
+    <string name="nm_feed_like_post">投稿にいいね：%1$s</string>
+    <string name="nm_feed_post_info">投稿の情報：%1$s</string>
 </resources>

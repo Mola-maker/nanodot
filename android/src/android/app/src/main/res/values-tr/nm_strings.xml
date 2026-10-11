@@ -1129,4 +1129,17 @@
     <string name="nm_dot_capture_stop">Yakalamayı durdur</string>
     <string name="nm_dot_capture_explain">Bu Android sürümünde Dot erişilebilir metni okuyabilir. Görüntüleri de paylaşmak için ekran yakalamaya ayrıca izin verin. Android izin isteyecek.</string>
     <string name="nm_dot_capture_allow">Ekran yakalamaya izin ver</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Yükleniyor…</string>
+    <string name="nm_dot_load_failed">Bu sayfa yüklenemedi.</string>
+    <string name="nm_dot_components">Bileşenler</string>
+    <string name="nm_dot_empty">Henüz burada içerik yok.</string>
+    <string name="nm_dot_attach">Dosya ekle</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">%1$s bölümüne ekle</string>
+    <string name="nm_goal_completion">Tamamlanan hedef: %1$s</string>
+    <string name="nm_feed_like_post">Gönderiyi beğen: %1$s</string>
+    <string name="nm_feed_post_info">Gönderi bilgileri: %1$s</string>
 </resources>

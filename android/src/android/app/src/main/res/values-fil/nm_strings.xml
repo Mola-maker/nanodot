@@ -1129,4 +1129,17 @@
     <string name="nm_dot_capture_stop">Ihinto ang pagkuha</string>
     <string name="nm_dot_capture_explain">Sa bersyong ito ng Android, mababasa ng Dot ang accessible na teksto. Hiwalay na payagan ang pagkuha ng screen upang magbahagi rin ng larawan. Hihingi ng pahintulot ang Android.</string>
     <string name="nm_dot_capture_allow">Payagan ang pagkuha ng screen</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Naglo-load…</string>
+    <string name="nm_dot_load_failed">Hindi ma-load ang pahinang ito.</string>
+    <string name="nm_dot_components">Mga bahagi</string>
+    <string name="nm_dot_empty">Wala pang laman dito.</string>
+    <string name="nm_dot_attach">Maglakip ng file</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">Idagdag sa %1$s</string>
+    <string name="nm_goal_completion">Nakumpletong layunin: %1$s</string>
+    <string name="nm_feed_like_post">Gustuhin ang post: %1$s</string>
+    <string name="nm_feed_post_info">Impormasyon ng post: %1$s</string>
 </resources>

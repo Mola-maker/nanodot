@@ -1125,4 +1125,17 @@
     <string name="nm_dot_capture_stop">Hentikan tangkapan</string>
     <string name="nm_dot_capture_explain">Pada versi Android ini, Dot boleh membaca teks kebolehcapaian. Benarkan tangkapan skrin secara berasingan untuk turut berkongsi imej. Android akan meminta izin.</string>
     <string name="nm_dot_capture_allow">Benarkan tangkapan skrin</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Memuatkan…</string>
+    <string name="nm_dot_load_failed">Halaman ini tidak dapat dimuatkan.</string>
+    <string name="nm_dot_components">Komponen</string>
+    <string name="nm_dot_empty">Belum ada kandungan di sini.</string>
+    <string name="nm_dot_attach">Lampirkan fail</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">Tambah ke %1$s</string>
+    <string name="nm_goal_completion">Matlamat selesai: %1$s</string>
+    <string name="nm_feed_like_post">Sukai siaran: %1$s</string>
+    <string name="nm_feed_post_info">Maklumat siaran: %1$s</string>
 </resources>

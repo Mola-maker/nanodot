@@ -1,5 +1,7 @@
 package io.github.nanomuse.ui.avatar
 
+import io.github.nanomuse.dot.ui.LocalDotMotionEnabled
+import io.github.nanomuse.dot.ui.DotTokens
 import androidx.annotation.DrawableRes
 import androidx.annotation.RawRes
 import androidx.compose.animation.Crossfade
@@ -129,10 +131,12 @@ fun AgentAvatar(
     val custom by AvatarStore.current.collectAsState()
     val clips by io.github.nanomuse.avatar.AvatarMotion.clips.collectAsState()
     val density = LocalDensity.current
+    val motionEnabled = LocalDotMotionEnabled.current
+    val breath = if (motionEnabled) {
     val motion = rememberInfiniteTransition(label = "avatarMotion")
 
     // Rest: a slow, barely visible breath. Working: a quicker one, plus a bob.
-    val breath by motion.animateFloat(
+    val animated by motion.animateFloat(
         initialValue = 0f, targetValue = 1f,
         animationSpec = infiniteRepeatable(
             tween(durationMillis = if (mood == AgentMood.WORKING) 700 else 2600, easing = FastOutSlowInEasing),
@@ -140,33 +144,41 @@ fun AgentAvatar(
         ),
         label = "breath",
     )
+    animated
+    } else 0f
     // Waiting: a gentle side-to-side tilt, as if listening.
-    val tilt by motion.animateFloat(
+    val tilt = if (motionEnabled) {
+    val motion = rememberInfiniteTransition(label = "avatarTilt")
+    val animated by motion.animateFloat(
         initialValue = -1f, targetValue = 1f,
         animationSpec = infiniteRepeatable(tween(durationMillis = 1100, easing = FastOutSlowInEasing), RepeatMode.Reverse),
         label = "tilt",
     )
+    animated
+    } else 0f
     // Happy: one springy pop on arrival. Error: one short shake.
     val pop = remember { Animatable(1f) }
     val shake = remember { Animatable(0f) }
-    LaunchedEffect(mood) {
+    LaunchedEffect(mood, motionEnabled) {
+        pop.snapTo(1f); shake.snapTo(0f)
+        if (!motionEnabled) return@LaunchedEffect
         when (mood) {
             AgentMood.HAPPY -> {
                 pop.snapTo(1f)
-                pop.animateTo(1.14f, spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium))
-                pop.animateTo(1f, spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow))
+                pop.animateTo(1.14f, tween(DotTokens.Motion.Press))
+                pop.animateTo(1f, tween(DotTokens.Motion.Press))
             }
             AgentMood.ERROR -> {
                 shake.snapTo(0f)
                 shake.animateTo(
                     0f,
                     keyframes {
-                        durationMillis = 420
-                        -1f at 60 using LinearEasing
-                        1f at 140 using LinearEasing
-                        -0.6f at 220 using LinearEasing
-                        0.6f at 300 using LinearEasing
-                        0f at 420
+                        durationMillis = DotTokens.Motion.Focus
+                        -1f at 30 using LinearEasing
+                        1f at 70 using LinearEasing
+                        -0.6f at 110 using LinearEasing
+                        0.6f at 150 using LinearEasing
+                        0f at DotTokens.Motion.Focus
                     },
                 )
             }
@@ -195,7 +207,7 @@ fun AgentAvatar(
         .clip(CircleShape)
     Crossfade(
         targetState = mood,
-        animationSpec = tween(durationMillis = 260),
+        animationSpec = tween(durationMillis = if (motionEnabled) DotTokens.Motion.Page else 0),
         label = "avatarMood",
         modifier = if (onClick != null) base.clickable(onClick = onClick) else base,
     ) { current ->
@@ -210,7 +222,7 @@ fun AgentAvatar(
             // The clip for this mood, when the video model has made one: it plays over the
             // still and shows only once its first frame is on screen, so nothing flickers.
             val clip = clips[current]
-            if (clip != null) {
+            if (clip != null && motionEnabled) {
                 androidx.compose.runtime.key(clip.path) {
                     LoopingClip(key = clip.path, modifier = Modifier.size(size)) { it.setDataSource(clip.path) }
                 }
@@ -224,7 +236,7 @@ fun AgentAvatar(
             )
             // The built-in character ships with its clips, so it moves without a video model.
             val res = current.motion
-            if (res != null) {
+            if (res != null && motionEnabled) {
                 val context = androidx.compose.ui.platform.LocalContext.current
                 androidx.compose.runtime.key(res) {
                     LoopingClip(key = "raw:$res", modifier = Modifier.size(size)) { player ->

@@ -1129,4 +1129,17 @@
     <string name="nm_dot_capture_stop">Parar captura</string>
     <string name="nm_dot_capture_explain">Nesta versão do Android, Dot pode ler texto acessível. Permita a captura de tela separadamente para compartilhar imagens também. O Android pedirá sua permissão.</string>
     <string name="nm_dot_capture_allow">Permitir captura de tela</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Carregando…</string>
+    <string name="nm_dot_load_failed">Não foi possível carregar esta página.</string>
+    <string name="nm_dot_components">Componentes</string>
+    <string name="nm_dot_empty">Ainda não há nada aqui.</string>
+    <string name="nm_dot_attach">Anexar um arquivo</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">Adicionar a %1$s</string>
+    <string name="nm_goal_completion">Meta concluída: %1$s</string>
+    <string name="nm_feed_like_post">Curtir publicação: %1$s</string>
+    <string name="nm_feed_post_info">Informações da publicação: %1$s</string>
 </resources>

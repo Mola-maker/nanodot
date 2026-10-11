@@ -71,3 +71,19 @@ Android 在小于 600 dp 时采用 compact，600–839 dp 为 medium，至少 84
 运行 `python -m pytest tests/test_ui_tokens.py -q` 和 `python scripts/gen-ui-tokens.py --check`。仅在 debug 构建中的 `DotTokenGalleryFixtureActivity` 及设备测试 `DotTokenGalleryRenderTest` 使用真实主题渲染 M3 控件、禁用控件、错误和说明文字、空状态和重试、dialog、sheet、navigation，并覆盖两个色板以及 100%、150%、200% 字体。必须捕获并人工检查实际设备截图；截图测试通过证明渲染，不证明屏幕阅读器行为或原生 sandbox 操作成功。测试页面没有生产入口，release 构建中不存在；可复用的生产组件展示页属于后续组件任务。
 
 平台验收矩阵还检查横屏、分屏、手机、平板、键盘和 IME、屏幕阅读器、保存的主题选择、减少动态效果，以及可达的发送、停止和返回。Android 优先实现；iOS 原生验证需要对应模拟器和设备工具链。[构建说明](build.md)介绍各平台独立检查。
+
+## Android 页面组件 {#android-page-components}
+
+`DotPageState` 描述真实的 `Loading`、`Ready`、`Empty(message)` 和 `Error(message, retryable)`。`DotStatusSurface` 提供文字、图形、礼貌播报和调用现有处理器的“重试”。`DotOperationStatus` 只给拥有取消句柄的操作显示“取消”。`DotComponentGallery` 是可复用的原生组件示例，覆盖启用、禁用、焦点/按下、加载、就绪、空、错误、重试、对话框和底部面板；示例选择不会调用提供商。
+
+聊天输入区消费当前会话已有的 VM 和发送/停止回调。大字与较矮的键盘窗口同时出现时，收起顶部装饰，保留同一草稿，并让单行输入区内部滚动。真实键盘仍显示时的输入区边界与触摸“停止”，和收起键盘后的导航分别验证。
+
+Cloud 表单、账户刷新和 Network 测试取消真实的 OkHttp 请求；保留输入，不制造取消错误。Cloud 共用请求构造和响应解析，保留原地址、认证及 HTTP 错误信息。ProfileSync 使用的阻塞 `profile`/`putProfile` 接口仍为同步边界；Cloud 离线刷新仍可能按原逻辑保留缓存账户。
+
+页面状态来自其实际所有者。Library 和个人页活动加载真实本地数据。Goals、Ideas、Models、Hands、Computers 常直接展示已有同步存储、准备情况或配置，不伪造加载和失败。Feed 展示真实生成标记并保留专用会话入口；手动运行与定时任务共用会话队列，因此页面不提供会误停定时任务的单次取消。头像取消保留已完成候选、已保存外观和重试上下文，丢弃取消作业的迟到回调。
+
+共用控件保留至少 48dp 的原生触摸边界及选中语义。正文使用生成的 tokens，大字让控件增高并滚动。Android 动画时长倍率为零时，加载和头像保持静态，自定义页面、按下和焦点动画关闭。新增 Nanodot 文案覆盖现有 17 个 Android 资源语言。原生 Activity instrumentation 验证真实生产页面和资源，不把现有无关编译阻塞的完整 instrumentation 套件描述为通过。真实 TalkBack 下一项手势产生的焦点事件是独立验收项。
+
+共享状态文字使用当前色板的 onSurface 前景色，图标使用对应状态色，即使页面没有外层 Material Surface 也保持可读。组件画廊提供 Material Surface；原生像素对比度检查独立于语义标签是否存在。
+
+发送/停止在聚焦和按住时保持 primary/onPrimary 配对，使用原生波纹及100/200毫秒聚焦/按压提示（减少动态效果时静态呈现）。目标完成和动态喜欢使用原生可勾选控件，状态来自现有存储；添加及帖子信息操作具有本地化名称。云端模式/用量标签通过原生标签角色及48dp触控区域呈现实际选中状态。

@@ -1,13 +1,20 @@
 package io.github.nanomuse.ui.cloud
 
+import io.github.nanomuse.dot.ui.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -63,6 +70,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -117,6 +125,7 @@ fun CloudAccountScreen(
     var signedIn by remember { mutableStateOf(NanoMuseCloud.isSignedIn(context)) }
     var sessions by remember { mutableStateOf<List<NanoMuseCloud.Session>>(emptyList()) }
     var events by remember { mutableStateOf<List<NanoMuseCloud.Event>>(emptyList()) }
+    var refreshJob by remember { mutableStateOf<Job?>(null) }
     var refreshing by remember { mutableStateOf(false) }
     var showToday by remember { mutableStateOf(true) }
     var passwordDialog by remember { mutableStateOf(false) }
@@ -133,18 +142,18 @@ fun CloudAccountScreen(
         if (refreshing) return
         refreshing = true
         error = null
-        scope.launch {
+        refreshJob = scope.launch {
             try {
                 account = NanoMuseCloud.refresh(context)
                 signedIn = NanoMuseCloud.isSignedIn(context)
                 if (signedIn) {
-                    sessions = runCatching { NanoMuseCloud.sessions(context) }.getOrDefault(sessions)
-                    events = runCatching { NanoMuseCloud.events(context) }.getOrDefault(events)
+                    sessions = try { NanoMuseCloud.sessions(context) } catch (e: CancellationException) { throw e } catch (_: Exception) { sessions }
+                    events = try { NanoMuseCloud.events(context) } catch (e: CancellationException) { throw e } catch (_: Exception) { events }
                 }
+            } catch (e: CancellationException) { throw e
             } catch (e: Exception) {
                 error = NanoMuseCloud.describe(context, e)
-            }
-            refreshing = false
+            } finally { refreshing = false }
         }
     }
     LaunchedEffect(Unit) { if (signedIn) refresh() }
@@ -178,13 +187,13 @@ fun CloudAccountScreen(
             Spacer(Modifier.height(8.dp))
             if (!signedIn) {
                 MuseCard {
-                    Column(Modifier.padding(16.dp)) {
+                    Column(Modifier.padding(DotTokens.Space.S16)) {
                         Text(stringResource(R.string.nm_cloud_not_signed_in), style = MaterialTheme.typography.titleMedium)
                         Text(
                             stringResource(R.string.nm_cloud_not_signed_in_sub),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 4.dp),
+                            modifier = Modifier.padding(top = DotTokens.Space.S4),
                         )
                         if (NanoMuseCloud.signInEnded(context)) {
                             // the relay refused the key; the account's data waits for its return (contract C12)
@@ -192,7 +201,7 @@ fun CloudAccountScreen(
                                 stringResource(R.string.nm_cloud_sign_in_ended),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(top = 8.dp),
+                                modifier = Modifier.padding(top = DotTokens.Space.S8),
                             )
                         }
                     }
@@ -208,9 +217,14 @@ fun CloudAccountScreen(
             } else {
                 val a = account
 
+                when {
+                    refreshing -> DotOperationStatus(DotPageState.Loading, ::refresh, onCancel = { refreshJob?.cancel() })
+                    error != null -> DotStatusSurface(DotPageState.Error(error!!, retryable = true), ::refresh) {}
+                }
+
                 // -- who ---------------------------------------------------------------------
                 MuseCard {
-                    Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.padding(DotTokens.Space.S16), verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier.size(44.dp).clip(CircleShape).background(MuseTones.fill),
                             contentAlignment = Alignment.Center,
@@ -274,7 +288,7 @@ fun CloudAccountScreen(
                             text = stringResource(R.string.nm_cloud_account_id, a.accountId.take(8)),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(start = 52.dp, end = 16.dp, bottom = 10.dp),
+                            modifier = Modifier.padding(start = 52.dp, end = DotTokens.Space.S16, bottom = DotTokens.Space.S12),
                         )
                     }
                 }
@@ -283,7 +297,7 @@ fun CloudAccountScreen(
                         text = it,
                         style = MaterialTheme.typography.bodySmall,
                         color = MuseTones.action,
-                        modifier = Modifier.padding(horizontal = 32.dp, vertical = 8.dp),
+                        modifier = Modifier.padding(horizontal = DotTokens.Space.S32, vertical = DotTokens.Space.S8),
                     )
                 }
 
@@ -295,7 +309,7 @@ fun CloudAccountScreen(
                     MuseGap()
                     io.github.nanomuse.community.StarNudgeCard(
                         text = remember { io.github.nanomuse.community.StarPrompt.text(context, io.github.nanomuse.community.StarPrompt.Ask(io.github.nanomuse.community.StarPrompt.Moment.SIGNED_IN)) },
-                        modifier = Modifier.padding(horizontal = 16.dp),
+                        modifier = Modifier.padding(horizontal = DotTokens.Space.S16),
                         onDone = { starAsk = false },
                     )
                 }
@@ -303,7 +317,7 @@ fun CloudAccountScreen(
                 // -- allowance ---------------------------------------------------------------
                 MuseGap()
                 MuseCard {
-                    Column(Modifier.padding(16.dp)) {
+                    Column(Modifier.padding(DotTokens.Space.S16)) {
                         if (a != null && a.pricesInMoney) {
                             // The relay prices requests in money (0.5: one pool for the account's
                             // lifetime): used of the pool in both currencies, what is left, the
@@ -441,10 +455,10 @@ fun CloudAccountScreen(
                     MuseCard {
                         Row(
                             modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                                .padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S12)
                                 .fillMaxWidth()
                                 .background(MuseTones.fill, RoundedCornerShape(10.dp))
-                                .padding(3.dp),
+                                .padding(3.dp).selectableGroup(),
                         ) {
                             SegmentTab(stringResource(R.string.nm_cloud_usage_today), showToday, Modifier.weight(1f)) { showToday = true }
                             SegmentTab(stringResource(R.string.nm_cloud_usage_total), !showToday, Modifier.weight(1f)) { showToday = false }
@@ -455,7 +469,7 @@ fun CloudAccountScreen(
                                 text = stringResource(R.string.nm_cloud_usage_empty),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                                modifier = Modifier.padding(start = DotTokens.Space.S16, end = DotTokens.Space.S16, bottom = DotTokens.Space.S16),
                             )
                         } else {
                             rows.forEachIndexed { i, r ->
@@ -479,7 +493,7 @@ fun CloudAccountScreen(
                                 text = stringResource(R.string.nm_cloud_usage_by_model),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 4.dp),
+                                modifier = Modifier.padding(start = DotTokens.Space.S16, top = DotTokens.Space.S12, bottom = DotTokens.Space.S4),
                             )
                             models.forEach { r ->
                                 UsageLine(
@@ -513,7 +527,7 @@ fun CloudAccountScreen(
                             guidance = NanoMuseCloud.guidance(context), // the relay's list for the region first (contract C11)
                         ),
                         exhausted = a.exhausted,
-                        modifier = Modifier.padding(horizontal = 16.dp),
+                        modifier = Modifier.padding(horizontal = DotTokens.Space.S16),
                     )
                 }
 
@@ -538,7 +552,7 @@ fun CloudAccountScreen(
                         sessions.forEachIndexed { i, s ->
                             if (i > 0) MuseRowDivider()
                             Row(
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S12),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Icon(
@@ -599,7 +613,7 @@ fun CloudAccountScreen(
                         events.take(12).forEachIndexed { i, e ->
                             if (i > 0) MuseRowDivider(inset = 16.dp)
                             Row(
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S12),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Column(Modifier.weight(1f)) {
@@ -638,7 +652,7 @@ fun CloudAccountScreen(
                         text = stringResource(R.string.nm_cloud_how_it_works),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(DotTokens.Space.S16),
                     )
                     MuseRowDivider(inset = 16.dp)
                     MuseRow(
@@ -681,7 +695,7 @@ fun CloudAccountScreen(
                     text = stringResource(R.string.nm_cloud_sign_out_sub),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 32.dp, vertical = 8.dp),
+                    modifier = Modifier.padding(horizontal = DotTokens.Space.S32, vertical = DotTokens.Space.S8),
                 )
             }
             Spacer(Modifier.height(24.dp))
@@ -976,8 +990,9 @@ private fun SegmentTab(label: String, selected: Boolean, modifier: Modifier = Mo
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .background(if (selected) MuseTones.surface else Color.Transparent)
-            .clickable(onClick = onClick)
-            .padding(vertical = 6.dp),
+            .heightIn(min = DotTokens.TouchTarget)
+            .selectable(selected = selected, role = Role.Tab, onClick = onClick)
+            .padding(vertical = DotTokens.Space.S8),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -1052,7 +1067,7 @@ private fun InviteCard(a: NanoMuseCloud.Account) {
     LaunchedEffect(copied) { if (copied) { kotlinx.coroutines.delay(1500); copied = false } }
     val link = a.inviteUrl.ifBlank { "https://nanomuse.cn/web/?invite=" + a.inviteCode }
     MuseCard {
-        Column(Modifier.padding(16.dp)) {
+        Column(Modifier.padding(DotTokens.Space.S16)) {
             Text(
                 text = stringResource(R.string.nm_cloud_invite_why, money(a.inviteBonusCny)),
                 style = MaterialTheme.typography.bodySmall,
@@ -1117,7 +1132,7 @@ const val NOTICE_URL = "https://nanomuse.cn/#open-source"
 fun CommunityNoticeCard(inset: Dp = 16.dp) {
     val context = LocalContext.current
     MuseCard(inset = inset) {
-        Column(Modifier.padding(16.dp)) {
+        Column(Modifier.padding(DotTokens.Space.S16)) {
             Row(
                 verticalAlignment = Alignment.Top,
                 modifier = Modifier.fillMaxWidth().clickable { openExternalUrl(context, NOTICE_URL) },
@@ -1132,22 +1147,22 @@ fun CommunityNoticeCard(inset: Dp = 16.dp) {
                 stringResource(R.string.nm_cloud_notice),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier.padding(top = DotTokens.Space.S8),
             )
             Text(
                 stringResource(R.string.nm_cloud_notice_closing),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 6.dp),
+                modifier = Modifier.padding(top = DotTokens.Space.S8),
             )
             Spacer(Modifier.height(6.dp))
             Row {
-                TextButton(onClick = { openExternalUrl(context, "https://github.com/nano-muse/nanoMuse") }, contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp)) {
+                TextButton(onClick = { openExternalUrl(context, "https://github.com/nano-muse/nanoMuse") }, contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = DotTokens.Space.S8)) {
                     Icon(Icons.Outlined.Code, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(6.dp))
                     Text(stringResource(R.string.nm_notice_github))
                 }
-                TextButton(onClick = { openExternalUrl(context, "https://github.com/nano-muse/nanoMuse/issues/new/choose") }, contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp)) {
+                TextButton(onClick = { openExternalUrl(context, "https://github.com/nano-muse/nanoMuse/issues/new/choose") }, contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = DotTokens.Space.S8)) {
                     Icon(Icons.Outlined.BugReport, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(6.dp))
                     Text(stringResource(R.string.nm_notice_issue))

@@ -1137,4 +1137,17 @@
     <string name="nm_dot_capture_stop">Остановить захват</string>
     <string name="nm_dot_capture_explain">В этой версии Android Dot может читать доступный текст. Отдельно разрешите захват экрана, чтобы также передавать изображения. Android запросит разрешение.</string>
     <string name="nm_dot_capture_allow">Разрешить захват экрана</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Загрузка…</string>
+    <string name="nm_dot_load_failed">Не удалось загрузить эту страницу.</string>
+    <string name="nm_dot_components">Компоненты</string>
+    <string name="nm_dot_empty">Здесь пока ничего нет.</string>
+    <string name="nm_dot_attach">Прикрепить файл</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">Добавить в %1$s</string>
+    <string name="nm_goal_completion">Цель выполнена: %1$s</string>
+    <string name="nm_feed_like_post">Нравится публикация: %1$s</string>
+    <string name="nm_feed_post_info">Сведения о публикации: %1$s</string>
 </resources>

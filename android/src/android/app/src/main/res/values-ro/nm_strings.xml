@@ -1133,4 +1133,17 @@
     <string name="nm_dot_capture_stop">Oprește captura</string>
     <string name="nm_dot_capture_explain">În această versiune Android, Dot poate citi text accesibil. Permite separat captura de ecran pentru a partaja și imagini. Android îți va cere permisiunea.</string>
     <string name="nm_dot_capture_allow">Permite captura de ecran</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Se încarcă…</string>
+    <string name="nm_dot_load_failed">Această pagină nu a putut fi încărcată.</string>
+    <string name="nm_dot_components">Componente</string>
+    <string name="nm_dot_empty">Nu există încă nimic aici.</string>
+    <string name="nm_dot_attach">Atașează un fișier</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">Adaugă la %1$s</string>
+    <string name="nm_goal_completion">Obiectiv finalizat: %1$s</string>
+    <string name="nm_feed_like_post">Apreciază postarea: %1$s</string>
+    <string name="nm_feed_post_info">Informații despre postare: %1$s</string>
 </resources>
