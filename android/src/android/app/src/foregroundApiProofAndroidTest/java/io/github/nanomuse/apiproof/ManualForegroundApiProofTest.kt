@@ -212,7 +212,26 @@ class ManualForegroundApiProofTest {
         return RectPx(at[0].toFloat(),at[1].toFloat(),(at[0]+view.width).toFloat(),(at[1]+view.height).toFloat())
     }
     private fun publicSnapshot(service: MinisAccessibilityService,snapshot: ScreenSnapshot): Pair<NodeDto,NodeDto> {
-        check(host(service) && snapshot.image==null && snapshot.scene==service.dotScreen.currentSceneKey() && snapshot.imeBounds==null)
+        var admittedHost=host(service)
+        if(!admittedHost) {
+            val care=field(service.dotInteraction,"careWindow") as? CareOverlayWindow
+            val card=care?.let { field(it,"card") as? View }?.takeIf { it.isAttachedToWindow }
+            val ownedId=card?.createAccessibilityNodeInfo()?.let { node -> try { node.windowId } finally { node.recycle() } }
+            if(ownedId!=null && ownedId>=0 && care!=null && card!=null) {
+                val windows=service.windows
+                val owned=try { windows.any { window ->
+                    if(window.id!=ownedId) false else {
+                        val root=window.root
+                        try { window.type==AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY &&
+                            root?.packageName?.toString()==app.packageName && service.dotOverlay.ownsWindow(window) }
+                        finally { root?.recycle() }
+                    }
+                } } finally { windows.forEach { it.recycle() } }
+                if(owned && card.isAttachedToWindow && field(care,"card")===card && field(service.dotInteraction,"careWindow")===care)
+                    admittedHost=host(service,ownedId)
+            }
+        }
+        check(admittedHost && snapshot.image==null && snapshot.scene==service.dotScreen.currentSceneKey() && snapshot.imeBounds==null)
         check(snapshot.scene.packageName==inst.context.packageName && snapshot.nodes.size in 3..16)
         val allowed=setOf(ForegroundApiHostFixture.ONE,ForegroundApiHostFixture.TWO,ForegroundApiHostFixture.MARKER)
         snapshot.nodes.forEach { node ->
