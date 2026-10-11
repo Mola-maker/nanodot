@@ -14,7 +14,7 @@ export async function credentials(clientIds = ['client-a']) {
 }
 
 export function gatewayEnv(secret: string): GatewayEnv {
-  return { ...env, GATEWAY_KEY_HASHES: secret } as unknown as GatewayEnv;
+  return { ...env, INFERENCE_ENABLED: 'true', GATEWAY_KEY_HASHES: secret } as unknown as GatewayEnv;
 }
 
 export function request(key?: string, url = 'https://example.com/v1/chat/completions', body?: string) {

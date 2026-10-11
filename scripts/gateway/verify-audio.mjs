@@ -52,10 +52,10 @@ function decoded(path) {
 const usage=`No live calls are made by default. Live ASR, decoded Chinese audio and manual listening remain unrun.\n
 Task6 only (same total<=15 ledger used by all live checks):
   --live --free-plan-confirmed --stage asr --wav PATH --provenance PATH --nonprivate-confirmed --ledger PATH --out DIR
-  --live --free-plan-confirmed --stage candidate --candidate-lang VALUE --probe-base HTTPS_URL --probe-private-confirmed --probe-shared-gate-confirmed --ledger PATH --out DIR
+  --live --free-plan-confirmed --stage candidate --candidate-lang VALUE --probe-base HTTPS_URL --probe-private-confirmed --probe-shared-gate-confirmed [--probe-local-relay-confirmed] --ledger PATH --out DIR
   --stage listen --out DIR --listened-chinese-and-mixed
   --live --free-plan-confirmed --stage production --ledger PATH --out DIR
-Project credential comes from GATEWAY_PROJECT_CREDENTIAL; candidate probe uses AUDIO_PROBE_CREDENTIAL.
+Project credential comes from NANODOT_TEST_GATEWAY_KEY (legacy GATEWAY_PROJECT_CREDENTIAL accepted); candidate probe uses AUDIO_PROBE_CREDENTIAL.
 The temporary private operator probe must share production FreeGate namespace/script_name/global-free-tier-v1. Production remains TTS_ZH_VERIFIED=false while probing.
 Candidate success requires MP3 decode/duration AND manual listening; this script never enables production TTS or deploys a probe. No credentials are logged.\n`;
 export async function main(argv=process.argv.slice(2)) {
@@ -76,11 +76,12 @@ export async function main(argv=process.argv.slice(2)) {
   if(!['asr','candidate','production'].includes(stage) || !out || !args.get('ledger')) throw Error('Supply stage, shared ledger and output directory.');
   // Verify required decoder availability before any billable candidate/production call.
   if(stage!=='asr') {tool('ffprobe',['-version']);tool('ffmpeg',['-version'])}
-  let base=PRODUCTION, credential=process.env.GATEWAY_PROJECT_CREDENTIAL;
+  let base=PRODUCTION, credential=process.env.NANODOT_TEST_GATEWAY_KEY || process.env.GATEWAY_PROJECT_CREDENTIAL;
   if(stage==='candidate') {
     if(!args.has('probe-private-confirmed') || !args.has('probe-shared-gate-confirmed') || typeof args.get('candidate-lang')!=='string') throw Error('Candidate probe needs private operator credential, exact candidate lang and shared admission confirmation.');
     const url=new URL(args.get('probe-base'));
-    if(url.protocol!=='https:' || url.username || url.password || url.search || url.hash || url.origin===new URL(PRODUCTION).origin) throw Error('Use a distinct private HTTPS operator probe.');
+    const localRelay=args.has('probe-local-relay-confirmed') && url.protocol==='http:' && ['127.0.0.1','localhost','[::1]'].includes(url.hostname);
+    if((url.protocol!=='https:' && !localRelay) || url.username || url.password || url.search || url.hash || url.origin===new URL(PRODUCTION).origin) throw Error('Use a distinct private HTTPS operator probe.');
     base=url.href.replace(/\/$/,'');credential=process.env.AUDIO_PROBE_CREDENTIAL;
   }
   if(!credential) throw Error('Required project/probe credential is missing.');

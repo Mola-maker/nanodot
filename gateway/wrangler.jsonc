@@ -3,18 +3,50 @@
   "name": "nanodot-gateway",
   "main": "src/index.ts",
   "compatibility_date": "2026-10-11",
-  "ai": { "binding": "AI", "remote": true },
+  "ai": {
+    "binding": "AI",
+    "remote": true
+  },
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "run_worker_first": ["/v1", "/v1/*", "/healthz"],
+    "run_worker_first": true,
     "not_found_handling": "404-page"
   },
   "durable_objects": {
-    "bindings": [{ "name": "FREE_GATE", "class_name": "FreeGate" }]
+    "bindings": [
+      {
+        "name": "FREE_GATE",
+        "class_name": "FreeGate"
+      }
+    ]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["FreeGate"] }],
-  "vars": { "TTS_ZH_VERIFIED": "false" },
-  "observability": { "enabled": false },
-  "send_metrics": false
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "FreeGate"
+      ]
+    }
+  ],
+  "vars": {
+    "TTS_ZH_VERIFIED": "false",
+    "INFERENCE_ENABLED": "false"
+  },
+  "observability": {
+    "enabled": false
+  },
+  "send_metrics": false,
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "molamaker.si",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.molamaker.si",
+      "custom_domain": true
+    }
+  ]
 }

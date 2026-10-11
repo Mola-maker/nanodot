@@ -81,6 +81,7 @@ const getStarted: DefaultTheme.SidebarItem[] = [
   { text: 'The web console', link: '/web' },
   { text: 'One account, all your devices', link: '/trial' },
   { text: 'Your own model key', link: '/own-key' },
+  { text: 'Gateway operations', link: '/gateway-operations' },
   { text: 'Troubleshooting', link: '/troubleshooting' },
 ]
 
@@ -141,6 +142,7 @@ const zhGetStarted: DefaultTheme.SidebarItem[] = [
   { text: '网页控制台', link: '/zh/web' },
   { text: '一个账号，所有设备', link: '/zh/trial' },
   { text: '自己的模型 key', link: '/zh/own-key' },
+  { text: '网关运维', link: '/zh/gateway-operations' },
   { text: '故障排查', link: '/zh/troubleshooting' },
 ]
 
