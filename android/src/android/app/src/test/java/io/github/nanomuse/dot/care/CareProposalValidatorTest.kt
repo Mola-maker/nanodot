@@ -58,8 +58,17 @@ class CareProposalValidatorTest {
         listOf("alert('hi')", "console.log('hello');", "document.querySelector('#field').focus()",
             "notify () ;", "const answer = 42;").forEach(::assertScriptRejected)
     }
+    @Test fun refusesSpaceSeparatedNumericCallsWithoutTerminator() {
+        listOf("alert (1)", "show (.25)", "notify (-2)", "notify (- \t2)", "emit (+3)", "emit (+ \n3)", "compute (1e2, 4)").forEach(::assertScriptRejected)
+    }
+    @Test fun refusesTabSeparatedNumericCallsWithoutTerminator() {
+        listOf("notify\t(2)", "notify \t (\t.25)", "notify\t\t(-4)").forEach(::assertScriptRejected)
+    }
+    @Test fun refusesNewlineSeparatedNumericCallsWithoutTerminator() {
+        listOf("report\n(3)", "report\r\n(\n-4.5e+2)", "report \t\n ( \r\n +5 )").forEach(::assertScriptRejected)
+    }
     @Test fun ordinaryQueriesUrlsNumbersAndProseRemainValidCurrentProposals() {
-        listOf("啤酒", "搜索无酒精啤酒 330ml", "123.45", "1 + 1 = 2", "Tea (hot)",
+        listOf("啤酒", "搜索无酒精啤酒 330ml", "123.45", " 123.45 ", "1 + 1 = 2", "Tea (hot)", "Tea\t(hot)", "Tea\n(hot)",
             "Copy the label, then open Search.", "https://example.org/search?q=tea&page=2",
             "https://example.org/search?view.name=tea(2)&page=1").forEach { text ->
             assertTrue("Ordinary instruction rejected: $text",validator.validate(proposal().copy(instruction=text),snapshot()))

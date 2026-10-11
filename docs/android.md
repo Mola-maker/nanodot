@@ -132,7 +132,8 @@ password targets, nonfinite values or confidence below 0.7 are rejected. Focus/t
 expectation references must equal the current target. These are user intents and
 observable postconditions, not action handlers; the later verifier owns completion.
 
-Script refusal also recognizes unfenced calls, member/index assignments, function bodies,
+Script refusal also recognizes unfenced calls (including whitespace-separated numeric
+arguments), member/index assignments, function bodies,
 arrow functions and variable declarations, independent of specific function names. Ordinary
 Chinese queries, numbers, prose and HTTP(S) URLs remain data. This conservative check may
 refuse an ordinary label that resembles code; rephrase it. Finite static recognition does

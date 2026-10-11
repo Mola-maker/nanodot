@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Rejected whitespace-separated numeric calls in Android care instructions, copy text and expectations while retaining ordinary text guidance.
+
 - Rejected plainly executable unfenced code in Android care proposals while preserving ordinary text and URL guidance; documented the conservative recognition boundary.
 
 - Added a node-grounded Android care planner foundation that prepared one user instruction through a bounded read-only model request and rejected stale or unsupported proposals; real-model, care UI and evidence-advancement acceptance remained pending.

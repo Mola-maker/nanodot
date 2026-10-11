@@ -95,8 +95,17 @@ class CarePlannerTest {
         listOf("alert('hi')", "console.log('hello');", "document.querySelector('#field').focus()",
             "notify () ;", "const answer = 42;").forEach { assertCodeJsonRecovers(it) }
     }
+    @Test fun spaceSeparatedNumericCallJsonRecoversWithoutRetry()=runTest {
+        listOf("alert (1)", "show (.25)", "notify (-2)", "notify (- \t2)", "emit (+3)", "emit (+ \n3)", "compute (1e2, 4)").forEach { assertCodeJsonRecovers(it) }
+    }
+    @Test fun tabSeparatedNumericCallJsonRecoversWithoutRetry()=runTest {
+        listOf("notify\t(2)", "notify \t (\t.25)", "notify\t\t(-4)").forEach { assertCodeJsonRecovers(it) }
+    }
+    @Test fun newlineSeparatedNumericCallJsonRecoversWithoutRetry()=runTest {
+        listOf("report\n(3)", "report\r\n(\n-4.5e+2)", "report \t\n ( \r\n +5 )").forEach { assertCodeJsonRecovers(it) }
+    }
     @Test fun ordinaryModelTextRemainsAValidatedCurrentStep()=runTest {
-        listOf("啤酒", "搜索无酒精啤酒 330ml", "123.45", "1 + 1 = 2", "Tea (hot)",
+        listOf("啤酒", "搜索无酒精啤酒 330ml", "123.45", " 123.45 ", "1 + 1 = 2", "Tea (hot)", "Tea\t(hot)", "Tea\n(hot)",
             "Copy the label, then open Search.", "https://example.org/search?q=tea&page=2",
             "https://example.org/search?view.name=tea(2)&page=1").forEach { text ->
             val provider=FakeProvider(textProposalJson(text))

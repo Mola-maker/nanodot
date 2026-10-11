@@ -65,7 +65,7 @@ class CareProposalValidator {
                 "\\b$identifier(?:\\s*\\.\\s*$identifier)*\\(|" +
                 "\\b$identifier(?:\\s*\\.\\s*$identifier)+\\s*\\(|" +
                 "\\b$identifier\\s+\\([^\\r\\n)]*\\)\\s*[;{]|" +
-                "\\b$identifier\\s+\\(\\s*(?:['\"]|\\))|" +
+                "\\b$identifier\\s+\\(\\s*(?:['\"]|\\)|(?:[+-]\\s*)?(?:\\d|\\.\\d))|" +
                 "(?:\\([^\\r\\n)]*\\)|\\b$identifier)\\s*=>",
         )
         val executable = Regex(
