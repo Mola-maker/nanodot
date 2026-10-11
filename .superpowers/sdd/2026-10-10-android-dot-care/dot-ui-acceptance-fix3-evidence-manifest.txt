@@ -1,0 +1,9 @@
+acb33d200432f4d81df2fb465d5ff12484f899be5a8e78d13b710e66b924b46a 4854 .superpowers/sdd/2026-10-10-android-dot-care/work/dot-ui-acceptance/fix-round-3/compile-owned.log
+6582d3e067889c54bd309dda72ea7640cb46642d8404495af5ccc4280fc3732e 706 .superpowers/sdd/2026-10-10-android-dot-care/work/dot-ui-acceptance/fix-round-3/compile-inputs.txt
+3837976c555013426bbf55a87563d2eafca446749b8e7a9bb335695745b94acb 358 .superpowers/sdd/2026-10-10-android-dot-care/work/dot-ui-acceptance/fix-round-3/preserved-fix2-artifacts-manifest.txt
+d4b11423dd8da50a7e011c6117993a31f798ee64326272d8e496c9f590908f06 232 .superpowers/sdd/2026-10-10-android-dot-care/work/dot-ui-acceptance/fix-round-3/preserved-native-failure-manifest.txt
+8f9c949eccf324ecf8c756fd0613e76ba672d616d1df7363ca6dc8d218617a0e 5531 .superpowers/sdd/2026-10-10-android-dot-care/dot-ui-acceptance-fix2-review.md
+7cbcee9af60ce7e45b33e08f7acc13637614c07ca583ff98561d848f71339085 6612 .superpowers/sdd/2026-10-10-android-dot-care/dot-ui-acceptance-fix3-report.md
+6582d3e067889c54bd309dda72ea7640cb46642d8404495af5ccc4280fc3732e 706 .superpowers/sdd/2026-10-10-android-dot-care/dot-ui-acceptance-fix3-source-manifest.txt
+445df4cfa42064a54f5cc80fee7a26da687d1d9e9a013f980ab1cb86a2240e0f 536135 android/src/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+b29acc93017e26d48731889237feeeae862f1cbd11e0ddd6f1943851f44fab29 428 android/src/android/app/build/outputs/apk/androidTest/debug/output-metadata.json

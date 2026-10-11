@@ -1,0 +1,5 @@
+3ce80cda4d91e88e303a74010bd35c28c3a167fcbfe6e7696938ce121c6c3445 29178 android/src/android/app/src/androidTest/java/io/github/nanomuse/dot/chat/DotForegroundAcceptanceTest.kt
+31abf4e5d77268040ce57f7030447882b7d3491172a154207fb3ed5a4a41cf66 1129 android/src/android/app/src/androidTest/java/io/github/nanomuse/dot/chat/DotForegroundHost.kt
+e8926bb57e1f9ef2ebecb39466c8060f672a47b47956d44ca2f2886fa2451ca6 320 android/src/android/app/src/dotUiAcceptance/AndroidManifest.xml
+0b81f57c7081f554af8d8c58d6fdd07a6eae9a8a11c80f2a9dc9160f9bfe2a75 866 work/dot-ui-acceptance/fixture-only.init.gradle
+be3484df724abe1db945ed64dce5851dcf809a1f881875b5b4c9abae28cd1965 687 work/dot-ui-acceptance/compile-owned-fixture.sh

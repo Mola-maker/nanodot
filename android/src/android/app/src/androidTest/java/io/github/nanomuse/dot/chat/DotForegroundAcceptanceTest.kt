@@ -2,10 +2,12 @@ package io.github.nanomuse.dot.chat
 
 import android.app.Activity
 import android.app.UiAutomation
+import android.content.ComponentName
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Rect
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import android.os.SystemClock
 import android.view.MotionEvent
 import android.view.WindowManager
@@ -67,9 +69,16 @@ class DotForegroundAcceptanceTest {
     private var originalActivities: Set<Activity> = emptySet()
 
     @Before fun prepareOwnedSession() {
-        // Controller reconnects the service, unlocks the host and saves/restores system settings.
+        // Controller grants/unlocks and owns exact system-settings restoration, including failures.
+        // am instrument starts a fresh target process: observe without suppressing real services.
+        automation = instrumentation.getUiAutomation(UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES)
+        val observation = automation.serviceInfo
+        previousObservationFlags = observation.flags
+        observation.flags = observation.flags or android.accessibilityservice.AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
+        automation.serviceInfo = observation
+        reconnectGrantedService()
         // Fail before UI/DB mutation if there is existing panel work we do not own.
-        waitFor("controller-preconnected accessibility service") {
+        waitFor("real framework-connected accessibility service") {
             MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true
         }
         assertNull("Existing panel belongs to the user", service.dotOverlay.panelView)
@@ -90,11 +99,6 @@ class DotForegroundAcceptanceTest {
         assertFalse(sessionDirectory.exists())
         assertTrue(ownedMediaDirectories().isEmpty())
         assertFalse(com.openminis.app.service.SessionBadgeStore.byId.value.containsKey(id))
-        automation = instrumentation.getUiAutomation(UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES)
-        val observation = automation.serviceInfo
-        previousObservationFlags = observation.flags
-        observation.flags = observation.flags or android.accessibilityservice.AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
-        automation.serviceInfo = observation
         // Mark ownership immediately after the unique session insert, before any later step can fail.
         ownedEvidence = File(app.cacheDir, "t4-ui-$id").apply { check(mkdir()) }
         runBlocking {
@@ -267,6 +271,38 @@ class DotForegroundAcceptanceTest {
 
     private fun activities() = Stage.entries.filter { it != Stage.DESTROYED }
         .flatMap { ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(it) }.toSet()
+    private fun shell(command: String): String =
+        ParcelFileDescriptor.AutoCloseInputStream(automation.executeShellCommand(command)).use { String(it.readBytes()) }
+    private fun enabledServices(): String? = shell("settings get secure enabled_accessibility_services").trim().takeUnless { it == "null" }
+    private fun reconnectGrantedService() {
+        if (MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true) return
+        val original = requireNotNull(enabledServices()) { "Controller must grant the real service before instrumentation" }
+        val components = original.split(':')
+        check(components.all { it.matches(Regex("[A-Za-z0-9_.$]+/[A-Za-z0-9_.$]+")) }) {
+            "Unsupported current service list; preserve for controller"
+        }
+        val own = ComponentName(app, MinisAccessibilityService::class.java)
+        check(components.any { ComponentName.unflattenFromString(it) == own }) { "Own service is not already granted" }
+        check(shell("settings get secure accessibility_enabled").trim() == "1") { "Controller must enable accessibility" }
+        val others = components.filter { ComponentName.unflattenFromString(it) != own }
+        val removed = others.takeIf { it.isNotEmpty() }?.joinToString(":")
+        check(enabledServices() == original) { "Service list changed; preserve for controller" }
+        if (MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true) return
+        // Remove only our dead binding, retaining every unrelated component verbatim and in order.
+        if (removed == null) shell("settings delete secure enabled_accessibility_services")
+        else shell("settings put secure enabled_accessibility_services '$removed'")
+        waitFor("own service binding removed") {
+            shell("dumpsys accessibility").lineSequence().filter {
+                it.contains("Bound services:") || it.contains("Binding services:")
+            }.none { it.contains(MinisAccessibilityService::class.java.simpleName) }
+        }
+        check(enabledServices() == removed) { "Service list changed during rebind; preserve for controller" }
+        shell("settings put secure enabled_accessibility_services '$original'")
+        shell("settings put secure accessibility_enabled 1")
+        check(enabledServices() == original)
+        check(shell("settings get secure accessibility_enabled").trim() == "1")
+        println("T4_UI_BOOTSTRAP ownGrantedServiceRebound=true unrelatedServiceEntriesPreserved=true")
+    }
     private val preferenceKeys = listOf("main_chat.session", "first_conversation.session", "first_conversation.phase")
     private val prefs get() = app.getSharedPreferences("nanomuse", android.content.Context.MODE_PRIVATE)
     private val sessionDirectory get() = File(app.filesDir, "minis-sessions/$id")
