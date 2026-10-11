@@ -23,22 +23,22 @@ enum NanodotTokens {
     static let touchTarget: CGFloat = 48
     enum Colors {
         enum Light {
-            static let background = Color(rgb: 0xF4F7F8)
+            static let background = Color(rgb: 0xF4F8FF)
             static let surface = Color(rgb: 0xFFFFFF)
-            static let text = Color(rgb: 0x16252C)
-            static let primary = Color(rgb: 0x136F63)
+            static let text = Color(rgb: 0x1C3552)
+            static let primary = Color(rgb: 0x2D6396)
             static let onPrimary = Color(rgb: 0xFFFFFF)
-            static let care = Color(rgb: 0x7057A3)
-            static let outline = Color(rgb: 0x687980)
+            static let care = Color(rgb: 0x3F66A0)
+            static let outline = Color(rgb: 0x61758F)
         }
         enum Dark {
-            static let background = Color(rgb: 0x10191D)
-            static let surface = Color(rgb: 0x182329)
-            static let text = Color(rgb: 0xE5EDF0)
-            static let primary = Color(rgb: 0x7DD6C5)
-            static let onPrimary = Color(rgb: 0x10191D)
-            static let care = Color(rgb: 0xC7B4F7)
-            static let outline = Color(rgb: 0x8EABB5)
+            static let background = Color(rgb: 0x101D30)
+            static let surface = Color(rgb: 0x172B43)
+            static let text = Color(rgb: 0xE8F0FD)
+            static let primary = Color(rgb: 0xA9D2F5)
+            static let onPrimary = Color(rgb: 0x101D30)
+            static let care = Color(rgb: 0xC0D9FA)
+            static let outline = Color(rgb: 0x9DB5D2)
         }
     }
 }

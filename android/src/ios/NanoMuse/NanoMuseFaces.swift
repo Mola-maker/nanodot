@@ -458,16 +458,16 @@ enum NanoMuseTones {
             return UIColor(red: CGFloat((hex >> 16) & 255) / 255, green: CGFloat((hex >> 8) & 255) / 255, blue: CGFloat(hex & 255) / 255, alpha: 1)
         })
     }
-    static let surface = tone(0xFFFFFF, 0x182329)
+    static let surface = tone(0xFFFFFF, 0x172B43)
     static let fill = tone(0xE9EFF1, 0x233239)
     static let bubble = tone(0xE9EFF1, 0x233239)
-    static let disc = tone(0xF4F7F8, 0x182329)
-    static let hairline = tone(0x687980, 0x8EABB5)
-    static let canvas = tone(0xF4F7F8, 0x10191D)
-    static let action = tone(0x136F63, 0x7DD6C5)
+    static let disc = tone(0xF4F8FF, 0x172B43)
+    static let hairline = tone(0x61758F, 0x9DB5D2)
+    static let canvas = tone(0xF4F8FF, 0x101D30)
+    static let action = tone(0x2D6396, 0xA9D2F5)
     /// The profile's onPrimary color for labels and icons on an action fill.
-    static let onAction = tone(0xFFFFFF, 0x10191D)
-    static let care = tone(0x7057A3, 0xC7B4F7)
+    static let onAction = tone(0xFFFFFF, 0x101D30)
+    static let care = tone(0x3F66A0, 0xC0D9FA)
 }
 
 /// Whether the UI runs in Chinese right now (the in-app override wins).

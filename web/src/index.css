@@ -55,32 +55,32 @@
 /* The palette is Muse's: near-white and near-black surfaces, one blue, grey for the agent's
    bubbles and light blue for yours. */
 :root {
-  --om-bg: #F4F7F8;
+  --om-bg: #F4F8FF;
   --om-surface: #FFFFFF;
   --om-surface-2: #f2f2f4;
   --om-border: #e7e7ea;
-  --om-fg: #16252C;
-  --om-muted: #687980;
-  --om-accent: #136F63;
+  --om-fg: #1C3552;
+  --om-muted: #1C3552;
+  --om-accent: #2D6396;
   --om-accent-fg: #FFFFFF;
-  --om-care: #7057A3;
-  --om-bubble-user: #DCEFEA;
-  --om-bubble-user-fg: #16252C;
+  --om-care: #3F66A0;
+  --om-bubble-user: #2D6396;
+  --om-bubble-user-fg: #FFFFFF;
   color-scheme: light;
 }
 
 html[data-theme="dark"] {
-  --om-bg: #10191D;
-  --om-surface: #182329;
+  --om-bg: #101D30;
+  --om-surface: #172B43;
   --om-surface-2: #2a2a2d;
   --om-border: #333337;
-  --om-fg: #E5EDF0;
-  --om-muted: #8EABB5;
-  --om-accent: #7DD6C5;
-  --om-accent-fg: #10191D;
-  --om-care: #C7B4F7;
-  --om-bubble-user: #21433D;
-  --om-bubble-user-fg: #ffffff;
+  --om-fg: #E8F0FD;
+  --om-muted: #E8F0FD;
+  --om-accent: #A9D2F5;
+  --om-accent-fg: #101D30;
+  --om-care: #C0D9FA;
+  --om-bubble-user: #A9D2F5;
+  --om-bubble-user-fg: #101D30;
   color-scheme: dark;
 }
 

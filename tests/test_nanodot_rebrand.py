@@ -123,7 +123,8 @@ class NanodotRebrandTest(unittest.TestCase):
                     ),
                 )
                 self.assertIn(
-                    "0xFF136F63", (root / JAVA / "ui/theme/Theme.kt").read_text(encoding="utf-8")
+                    f"0xFF{brand.themeColors['light']['primary'][1:]}",
+                    (root / JAVA / "ui/theme/Theme.kt").read_text(encoding="utf-8"),
                 )
 
     def test_every_existing_android_locale_gets_a_manual_update_explanation(self):
@@ -159,10 +160,12 @@ class NanodotRebrandTest(unittest.TestCase):
                 (root / path).write_text(value, encoding="utf-8")
             rebrand.apply_brand(root, load_brand(ROOT / "config/brand.nanodot.json"))
             chat = (root / JAVA / "ui/theme/ChatColors.kt").read_text(encoding="utf-8")
-            self.assertIn("background = Color(0xFFF4F7F8)", chat)
-            self.assertIn("background = Color(0xFF10191D)", chat)
-            self.assertIn("primaryText = Color(0xFF16252C)", chat)
-            self.assertIn("primaryText = Color(0xFFE5EDF0)", chat)
+            brand = load_brand(ROOT / "config/brand.nanodot.json")
+            for mode in ("light", "dark"):
+                for field, token in (("background", "background"), ("primaryText", "text")):
+                    self.assertIn(
+                        f"{field} = Color(0xFF{brand.themeColors[mode][token][1:]})", chat
+                    )
             self.assertIn(
                 "DotColors.DarkPrimary",
                 (root / MAIN / "java/io/github/nanomuse/ui/home/MuseTones.kt").read_text(

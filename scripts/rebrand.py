@@ -444,8 +444,9 @@ def _android_colors(java, res, brand, edit, write) -> None:
             "inputBg": "surface",
             "inputIconBg": "surface",
             "primaryText": "text",
-            "secondaryText": "outline",
-            "tertiaryText": "outline",
+            # Outline is a non-text role; use text on both surface and background.
+            "secondaryText": "text",
+            "tertiaryText": "text",
             "disabledText": "outline",
             "userBubble": "surface",
             "toolBg": "surface",
@@ -469,6 +470,13 @@ def _android_colors(java, res, brand, edit, write) -> None:
                 body = re.sub(
                     rf"({field} = )Color(?:\(0x[0-9A-Fa-f]+\)|\.White|\.Black)",
                     rf"\g<1>Color(0xFF{palette[token][1:]})",
+                    body,
+                )
+            # Preserve decorative opacity while updating its semantic accent on every run.
+            for field in ("blockquoteBar", "toastBg"):
+                body = re.sub(
+                    rf"({field} = Color\(0x)([0-9A-Fa-f]{{2}})[0-9A-Fa-f]{{6}}",
+                    rf"\g<1>\g<2>{palette['primary'][1:]}",
                     body,
                 )
             return body
@@ -506,6 +514,11 @@ def _android_colors(java, res, brand, edit, write) -> None:
         ("015CFB", light["primary"]),
         ("0A84FF", dark["primary"]),
         ("58A6FF", dark["primary"]),
+        # Earlier Nanodot builds already migrated upstream accents to these values.
+        ("136F63", light["primary"]),
+        ("7DD6C5", dark["primary"]),
+        ("2D6396", light["primary"]),
+        ("A9D2F5", dark["primary"]),
     ]
     color_rules = []
     for old, new in accents:
@@ -515,7 +528,7 @@ def _android_colors(java, res, brand, edit, write) -> None:
         if path.name == "DotBrand.kt":
             continue
         edit(path, color_rules)
-        # Dark primary is mint: action buttons must use the corresponding dark
+        # Dark primary is pale: action buttons must use the corresponding dark
         # foreground, while white labels on unrelated brand/media surfaces stay.
         if path.suffix == ".kt":
             edit(
@@ -652,7 +665,9 @@ def _ios_brand(ios, brand, edit, write) -> None:
         data["strings"] = converted
         new = json.dumps(data, ensure_ascii=False, indent=2, separators=(",", " : "))
         new = re.sub(r"^([ ]*)(.*)\{\}", lambda m: f"{m[1]}{m[2]}{{\n\n{m[1]}}}", new, flags=re.M)
-        write(xc, new + ("\n" if raw.endswith("\n") else ""))
+        # Keep formatting untouched when this profile changes no translated text.
+        if data != json.loads(raw):
+            write(xc, new + ("\n" if raw.endswith("\n") else ""))
 
 
 def _cross_platform_brand(root, brand, edit, write) -> None:
@@ -741,22 +756,50 @@ def _cross_platform_brand(root, brand, edit, write) -> None:
             def block(match, palette=palette, tokens=tokens):
                 body = match[2]
                 for prop, token in tokens.items():
-                    body = re.sub(
+                    body, count = re.subn(
                         rf"(^\s*{re.escape(prop)}:\s*)[^;]+;",
                         lambda m, value=palette[token]: m[1] + value + ";",
                         body,
                         flags=re.M,
                     )
+                    if not count:
+                        body += f"  {prop}: {palette[token]};\n"
                 return match[1] + body + match[3]
 
             text = re.sub(rf"(^\s*{re.escape(selector)} \{{)([^}}]+)(\}})", block, text, flags=re.M)
         write(path, text)
 
+    # Update only built-in fallback colors; saved profile colors still win.
+    for relative, variable in (
+        ("web/src/components/Avatar.tsx", "--om-accent"),
+        ("harness/dsh-nanomuse/src/client/Avatar.tsx", "--nm-accent"),
+        ("harness/dsh-nanomuse/src/client/BrandMark.tsx", "--nm-accent"),
+    ):
+        edit(root / relative, [(r"#136F63", f"var({variable})")])
+    edit(
+        root / "harness/dsh-nanomuse/src/client/BrandMark.tsx",
+        [
+            (r"#F4FFFC", "var(--nm-on-primary)"),
+        ],
+    )
+    edit(
+        root / "harness/dsh-nanomuse/src/client/styles.ts",
+        [
+            (
+                r"(color-mix\(in srgb, var\(--nm-accent\) 42%, )#[0-9A-Fa-f]{6}",
+                r"\g<1>var(--nm-base)",
+            ),
+            (r"var\(--nm-accent, #[0-9A-Fa-f]{6}\)", "var(--nm-accent)"),
+        ],
+    )
+
     web_tokens = {
         "--om-bg": "background",
         "--om-surface": "surface",
         "--om-fg": "text",
-        "--om-muted": "outline",
+        "--om-muted": "text",
+        "--om-bubble-user": "primary",
+        "--om-bubble-user-fg": "onPrimary",
         "--om-accent": "primary",
         "--om-accent-fg": "onPrimary",
         "--om-care": "care",
@@ -768,6 +811,7 @@ def _cross_platform_brand(root, brand, edit, write) -> None:
     accents = {
         "--nm-accent": "primary",
         "--nm-blue": "primary",
+        "--nm-blue-hover": "primary",
         "--nm-care": "care",
         "--nm-on-primary": "onPrimary",
     }
@@ -775,6 +819,15 @@ def _cross_platform_brand(root, brand, edit, write) -> None:
         "--nm-base": "background",
         "--nm-field": "surface",
         "--nm-card": "surface",
+        "--nm-field-border": "outline",
+        "--nm-send": "primary",
+        "--dsw-alias-brand-primary": "primary",
+        "--dsw-alias-label-primary": "text",
+        "--dsw-alias-label-secondary": "text",
+        "--dsw-alias-label-tertiary": "text",
+        "--dsw-alias-bg-layer-1": "surface",
+        "--dsw-alias-bg-layer-2": "background",
+        "--dsw-alias-bg-layer-3": "surface",
         "--dsw-alias-bg-base": "background",
         "--dsw-specific-sidebar-fill": "background",
         "--dsw-specific-input-major": "surface",

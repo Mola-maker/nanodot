@@ -158,7 +158,7 @@ fun BackgroundSettingsScreen(onBack: () -> Unit) {
             BgSectionTitle(stringResource(R.string.settings_section_notifications))
             BgToggleRow(
                 icon = Icons.Outlined.NotificationsActive,
-                iconColor = Color(0xFF136F63),
+                iconColor = Color(0xFF2D6396),
                 title = stringResource(R.string.settings_task_notifications),
                 checked = taskNotificationsEnabled,
                 onCheckedChange = { backgroundRepo.setTaskNotificationsEnabled(it) },

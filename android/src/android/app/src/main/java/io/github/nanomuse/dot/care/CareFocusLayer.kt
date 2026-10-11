@@ -4,6 +4,8 @@ import android.accessibilityservice.AccessibilityService
 import android.animation.ValueAnimator
 import android.content.res.Configuration
 import android.graphics.Canvas
+import androidx.compose.ui.graphics.toArgb
+import io.github.nanomuse.dot.DotColors
 import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.provider.Settings
@@ -31,7 +33,7 @@ class CareFocusLayer(private val service: AccessibilityService, private val chan
         val paint=Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style=Paint.Style.STROKE; strokeWidth=3*service.resources.displayMetrics.density
             color=if(service.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK==Configuration.UI_MODE_NIGHT_YES)
-                0xFFC7B4F7.toInt() else 0xFF7057A3.toInt()
+                DotColors.DarkCare.toArgb() else DotColors.LightCare.toArgb()
         }
         val target=object: View(service) {
             override fun onDraw(canvas: Canvas) {

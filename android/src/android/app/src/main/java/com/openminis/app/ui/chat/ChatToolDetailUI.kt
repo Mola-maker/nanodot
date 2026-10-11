@@ -912,7 +912,7 @@ internal fun ToolDetailSheet(
                                             fontWeight = FontWeight.SemiBold,
                                             color = Color.White,
                                             modifier = Modifier
-                                                .background(Color(0xFF136F63), CircleShape)
+                                                .background(Color(0xFF2D6396), CircleShape)
                                                 .padding(horizontal = 10.dp, vertical = 2.dp),
                                         )
                                     }

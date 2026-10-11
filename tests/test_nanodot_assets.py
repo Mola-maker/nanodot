@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import io
+import json
 from pathlib import Path
 
 from PIL import Image
@@ -53,9 +54,10 @@ def test_brand_config_palette_is_shared():
     primary = dot.profile(
         argparse.Namespace(brand_config=ROOT / "config/brand.nanodot.json", primary=dot.PRIMARY)
     )
-    assert primary == "#136F63"
-    assert dot.DARK_PRIMARY == "#7DD6C5"
-    assert dot.CARE == "#7057A3"
+    colors = json.loads((ROOT / "config/brand.nanodot.json").read_text())["themeColors"]
+    assert primary == colors["light"]["primary"]
+    assert dot.DARK_PRIMARY == colors["dark"]["primary"]
+    assert dot.CARE == colors["light"]["care"]
 
 
 def test_android_monochrome_vectors_cut_out_eyes():

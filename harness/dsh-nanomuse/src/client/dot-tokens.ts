@@ -2,22 +2,22 @@
 export const dotTokens = {
   "colors": {
     "light": {
-      "background": "#F4F7F8",
+      "background": "#F4F8FF",
       "surface": "#FFFFFF",
-      "text": "#16252C",
-      "primary": "#136F63",
+      "text": "#1C3552",
+      "primary": "#2D6396",
       "onPrimary": "#FFFFFF",
-      "care": "#7057A3",
-      "outline": "#687980"
+      "care": "#3F66A0",
+      "outline": "#61758F"
     },
     "dark": {
-      "background": "#10191D",
-      "surface": "#182329",
-      "text": "#E5EDF0",
-      "primary": "#7DD6C5",
-      "onPrimary": "#10191D",
-      "care": "#C7B4F7",
-      "outline": "#8EABB5"
+      "background": "#101D30",
+      "surface": "#172B43",
+      "text": "#E8F0FD",
+      "primary": "#A9D2F5",
+      "onPrimary": "#101D30",
+      "care": "#C0D9FA",
+      "outline": "#9DB5D2"
     }
   },
   "space": [

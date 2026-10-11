@@ -119,11 +119,15 @@ def test_disabling_and_restoring_the_profile_updates_existing_generated_values(t
     apply_brand(root, original)
     assert "nanodot-releases" not in (root / DESK).read_text(encoding="utf-8")
     assert "nanodot-releases" not in (root / IOS_UPDATE).read_text(encoding="utf-8")
-    assert "static let action = tone(0x136F63, 0x7DD6C5)" in (root / IOS_TONES).read_text(
+    light = original.themeColors["light"]
+    dark = original.themeColors["dark"]
+    assert f"static let action = tone(0x{light['primary'][1:]}, 0x{dark['primary'][1:]})" in (
+        root / IOS_TONES
+    ).read_text(encoding="utf-8")
+    assert f"--om-accent: {light['primary']};" in (root / "web/src/index.css").read_text(
         encoding="utf-8"
     )
-    assert "--om-accent: #136F63;" in (root / "web/src/index.css").read_text(encoding="utf-8")
-    assert "--nm-accent: #7DD6C5;" in (root / DESKTOP_STYLE).read_text(encoding="utf-8")
+    assert f"--nm-accent: {dark['primary']};" in (root / DESKTOP_STYLE).read_text(encoding="utf-8")
     assert apply_brand(root, original) == []
 
 
@@ -144,7 +148,7 @@ def test_alternate_palettes_reach_semantic_tokens_and_preserve_unrelated_colors(
             "bg": "background",
             "surface": "surface",
             "fg": "text",
-            "muted": "outline",
+            "muted": "text",
             "accent": "primary",
             "accent-fg": "onPrimary",
             "care": "care",
