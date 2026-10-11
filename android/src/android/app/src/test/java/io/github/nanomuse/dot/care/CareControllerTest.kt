@@ -190,8 +190,26 @@ class CareControllerTest {
         r.next=CaptureOutcome.Success(careScreen(id="same-scene",generation=r.controller.generation))
         r.controller.confirmStepCompleted(); runCurrent()
         assertEquals(VerificationOrigin.UserConfirmed,r.controller.verifiedSteps.value.single().origin)
+        assertEquals("same-scene",r.controller.verifiedSteps.value.single().afterSnapshotId)
         assertEquals(3L,r.controller.verifiedSteps.value.single().afterScene.version)
         assertEquals(1,r.past.size)
+    }
+    @Test fun copyConfirmationRejectsOriginalSnapshotIdentityWithoutRecordingOrReplanning()=runTest {
+        val r=Rig(backgroundScope)
+        r.planner={_,s,_-> r.plans++
+            CarePlanResult.Step(careProposal(CareAction.Copy,CareExpectation.TextEquals("old:field","tea"),"tea")
+                .copy(snapshotId=s.id,scene=s.scene)) }
+        r.controller.start("Find tea"); runCurrent()
+        assertEquals("needs_user_confirmation",r.controller.state.value.errorCode)
+        val reused=careScreen(id="before",generation=r.controller.generation)
+        r.next=CaptureOutcome.Success(reused)
+        r.controller.confirmStepCompleted(); runCurrent()
+        assertTrue("Original snapshot identity cannot be credited as fresh user admission",
+            r.controller.verifiedSteps.value.isEmpty())
+        assertEquals("Rejected confirmation cannot request another plan",1,r.plans)
+        assertEquals(CareState.Recovering,r.controller.state.value.state)
+        assertNull(r.controller.state.value.proposal); assertNull(r.controller.state.value.target)
+        assertTrue("Rejected capture still closes its owned snapshot",isClosed(reused))
     }
     @Test fun confirmationWithoutPendingQuestionCannotAdvance()=runTest {
         val r=Rig(backgroundScope); r.controller.start("Find tea"); runCurrent()

@@ -145,6 +145,9 @@ class CareController(
                     }
                     val result = step.verifier.evaluate(step.proposal, snapshot)
                     if (userConfirmed) {
+                        if (snapshot.id == step.proposal.snapshotId) {
+                            confirmation = false; recover("condition_not_observed"); return@launch
+                        }
                         // Copy has no host event: same-version fresh sampling is honest, but its
                         // current target must still be unique and eligible before accepting admission.
                         if (step.proposal.action == CareAction.Copy && step.verifier.target(step.proposal, snapshot) == null) {
