@@ -84,7 +84,7 @@ class CareNativeHarness : TestRule {
                     putBoolean("backupRequested", backupRequested)
                     putBoolean("backupReady", backupReady)
                     putBoolean("clipboardPayloadRestored", clipboardRestored)
-                    putBoolean("restorationSucceeded", errors.isEmpty())
+                    putBoolean("harnessRestorationSucceeded", errors.isEmpty())
                     putInt("restorationFailures", errors.size)
                     putBoolean("casePassed", failure == null && errors.isEmpty() && performed)
                     putBoolean("productionTripleHubProviderOperationCovered", false)

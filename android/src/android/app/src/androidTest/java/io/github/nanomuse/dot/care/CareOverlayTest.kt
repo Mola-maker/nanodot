@@ -108,6 +108,9 @@ class CareOverlayTest {
             oneTouchThroughTargetUserCopyBackPauseAndAccessibleControls()
         } finally {
             shell(if(previous==null) "settings delete system font_scale" else "settings put system font_scale $previous")
+            val restored=android.provider.Settings.System.getString(service.contentResolver,"font_scale")==previous
+            native.stage("font_scale_restore",restored)
+            check(restored) { "Original font_scale was not restored" }
         }
     }
     @Test fun animatorScaleZeroKeepsOneStaticNonfocusedOutline() {
@@ -160,6 +163,9 @@ class CareOverlayTest {
             } finally {
                 try {
                     shell(if(previous==null) "settings delete global animator_duration_scale" else "settings put global animator_duration_scale $previous")
+                    val restored=android.provider.Settings.Global.getString(service.contentResolver,"animator_duration_scale")==previous
+                    native.stage("animator_duration_scale_restore",restored)
+                    check(restored) { "Original animator_duration_scale was not restored" }
                 } finally {
                     automation.serviceInfo=automation.serviceInfo.apply { flags=originalFlags }
                 }
