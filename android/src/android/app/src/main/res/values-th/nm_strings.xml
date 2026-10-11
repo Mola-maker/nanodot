@@ -1118,4 +1118,11 @@
     <string name="nm_task_library">คลัง</string>
     <string name="nm_gateway_key_required">ต้องใช้คีย์เฉพาะโครงการ การตั้งค่าและโมเดลที่เลือกไว้จะคงอยู่ การตรวจสอบบริการจริงยังไม่เสร็จสิ้น</string>
     <string name="nm_gateway_connection_failed">เชื่อมต่อไม่ได้ โปรดตรวจสอบคีย์โครงการและเครือข่าย</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">การจับภาพหน้าจอสำหรับ Dot</string>
+    <string name="nm_dot_capture_active">ใช้การจับภาพหน้าจอได้จนกว่าคุณจะหยุด</string>
+    <string name="nm_dot_capture_stop">หยุดการจับภาพ</string>
+    <string name="nm_dot_capture_explain">บน Android รุ่นนี้ Dot อ่านข้อความการช่วยเหลือพิเศษได้ อนุญาตการจับภาพหน้าจอแยกต่างหากเพื่อแชร์รูปภาพด้วย Android จะขอสิทธิ์จากคุณ</string>
+    <string name="nm_dot_capture_allow">อนุญาตการจับภาพหน้าจอ</string>
 </resources>

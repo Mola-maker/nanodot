@@ -70,6 +70,37 @@ TalkBack exposes Open conversation, View screen, and Start care actions. These a
 currently explain that the capability is unavailable while the coordinator is being
 implemented. Showing the orb never takes a screenshot, records audio, or calls a model.
 
+## Dot scene sampling
+
+Dot’s read-only screen repository copies accessible host nodes and redacts password text
+and descriptions. Each requested snapshot carries its host window/display, scene version,
+rotation, insets, keyboard bounds, capture time and pixel transform. The `insets: RectPx`
+field stores left/top/right/bottom host edge margins from the display, including keyboard
+and multiwindow space; it is not a rectangle or universal system `WindowInsets`, and its
+width/height must not be used. Only Dot’s owned orb
+windows are excluded; Nanodot’s normal Activity can be the host. Captures run one at a time,
+temporarily hide the orb through a completed draw, and release cancelled or late buffers.
+Locked devices, changed scenes, permission loss, rate limits and timeouts return an
+unavailable code; an earlier image is never substituted. Callers close accepted snapshots.
+
+Android 8–10 returns fresh accessible text by default. Settings → Appearance → Allow
+screen capture opens a separate explanation and Android’s screen-recording consent dialog.
+Permission enables pixels while a visible foreground notification offers Stop capture;
+stopping, locking the device or disconnecting accessibility ends that grant’s session.
+Android 11–13 uses display screenshots. Android 14+ uses the host window for care and the
+display for chat or selection. Secure-window errors are available on Android 14+ window
+capture. Older display/projection APIs can produce a black host instead: this is reported
+as `blank_host_unavailable` when the publicly accessible `android:id/content` viewport,
+intersected with the host window, is entirely black. This can also mean a truly black page,
+rather than proof of secure content. Without a public viewport node, the check uses the
+host window; visible system bars can prevent detection. Older APIs cannot universally
+identify protected pages, although Android still masks their pixels.
+
+The additive `captureNodes(generation)` entry explicitly re-reads the current scene for a
+fresh text-only fallback after a pixel error. Later conversation/care callers choose and
+label that fallback. Orb actions still show the capability-unavailable message until those
+coordinators are wired; this repository alone does not call a model or upload a screen.
+
 ## Install
 
 1. Download `nanoMuse-<version>-arm64.apk` from the

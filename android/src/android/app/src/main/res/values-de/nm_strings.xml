@@ -1122,4 +1122,11 @@
     <string name="nm_task_library">Bibliothek</string>
     <string name="nm_gateway_key_required">Ein eigener Projektschlüssel ist erforderlich. Vorhandene Einstellungen und ausgewählte Modelle bleiben erhalten. Die Prüfung des Live-Dienstes steht aus.</string>
     <string name="nm_gateway_connection_failed">Verbindung fehlgeschlagen. Projektschlüssel und Netzwerk prüfen.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Bildschirmaufnahme für Dot</string>
+    <string name="nm_dot_capture_active">Die Bildschirmaufnahme ist verfügbar, bis du sie stoppst.</string>
+    <string name="nm_dot_capture_stop">Aufnahme stoppen</string>
+    <string name="nm_dot_capture_explain">Auf dieser Android-Version kann Dot zugänglichen Text lesen. Erlaube die Bildschirmaufnahme separat, um auch Bildinhalte zu teilen. Android fragt nach deiner Erlaubnis.</string>
+    <string name="nm_dot_capture_allow">Bildschirmaufnahme erlauben</string>
 </resources>

@@ -1130,4 +1130,11 @@
     <string name="nm_task_library">Biblioteka</string>
     <string name="nm_gateway_key_required">Wymagany jest osobny klucz projektu. Ustawienia i wybrane modele zostają zachowane. Weryfikacja działającej usługi jest w toku.</string>
     <string name="nm_gateway_connection_failed">Nie można połączyć. Sprawdź klucz projektu i sieć.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Przechwytywanie ekranu dla Dot</string>
+    <string name="nm_dot_capture_active">Przechwytywanie jest dostępne do momentu zatrzymania.</string>
+    <string name="nm_dot_capture_stop">Zatrzymaj przechwytywanie</string>
+    <string name="nm_dot_capture_explain">W tej wersji Androida Dot może czytać dostępny tekst. Osobno zezwól na przechwytywanie ekranu, aby udostępniać też obrazy. Android poprosi o zgodę.</string>
+    <string name="nm_dot_capture_allow">Zezwól na przechwytywanie ekranu</string>
 </resources>

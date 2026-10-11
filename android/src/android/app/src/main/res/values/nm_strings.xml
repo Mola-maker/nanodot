@@ -1099,4 +1099,11 @@
     <string name="nm_task_library">Library</string>
     <string name="nm_gateway_key_required">Requires a dedicated project key. Existing settings and selected models are kept. Live service acceptance is pending.</string>
     <string name="nm_gateway_connection_failed">Could not connect. Check the project key and network.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Screen capture for Dot</string>
+    <string name="nm_dot_capture_active">Screen capture is available until you stop it.</string>
+    <string name="nm_dot_capture_stop">Stop capture</string>
+    <string name="nm_dot_capture_explain">On this Android version, Dot can read accessible text. Allow screen capture separately to also share pixels. Android will ask for permission.</string>
+    <string name="nm_dot_capture_allow">Allow screen capture</string>
 </resources>

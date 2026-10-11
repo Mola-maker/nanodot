@@ -1122,4 +1122,11 @@
     <string name="nm_task_library">Kitaplık</string>
     <string name="nm_gateway_key_required">Projeye özel bir anahtar gerekir. Ayarlar ve seçili modeller korunur. Gerçek hizmet doğrulaması henüz tamamlanmadı.</string>
     <string name="nm_gateway_connection_failed">Bağlanılamadı. Proje anahtarını ve ağı kontrol edin.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Dot için ekran yakalama</string>
+    <string name="nm_dot_capture_active">Ekran yakalama siz durdurana kadar kullanılabilir.</string>
+    <string name="nm_dot_capture_stop">Yakalamayı durdur</string>
+    <string name="nm_dot_capture_explain">Bu Android sürümünde Dot erişilebilir metni okuyabilir. Görüntüleri de paylaşmak için ekran yakalamaya ayrıca izin verin. Android izin isteyecek.</string>
+    <string name="nm_dot_capture_allow">Ekran yakalamaya izin ver</string>
 </resources>

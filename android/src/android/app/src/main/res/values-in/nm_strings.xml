@@ -1118,4 +1118,11 @@
     <string name="nm_task_library">Pustaka</string>
     <string name="nm_gateway_key_required">Memerlukan key khusus proyek. Pengaturan dan model yang dipilih tetap disimpan. Validasi layanan nyata masih tertunda.</string>
     <string name="nm_gateway_connection_failed">Tidak dapat terhubung. Periksa key proyek dan jaringan.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Tangkapan layar untuk Dot</string>
+    <string name="nm_dot_capture_active">Tangkapan layar tersedia sampai Anda menghentikannya.</string>
+    <string name="nm_dot_capture_stop">Hentikan tangkapan</string>
+    <string name="nm_dot_capture_explain">Pada versi Android ini, Dot dapat membaca teks aksesibilitas. Izinkan tangkapan layar secara terpisah untuk juga berbagi gambar. Android akan meminta izin.</string>
+    <string name="nm_dot_capture_allow">Izinkan tangkapan layar</string>
 </resources>

@@ -1122,4 +1122,11 @@
     <string name="nm_task_library">Biblioteca</string>
     <string name="nm_gateway_key_required">Requiere una clave específica del proyecto. Se conservan los ajustes y modelos seleccionados. La validación del servicio real está pendiente.</string>
     <string name="nm_gateway_connection_failed">No se pudo conectar. Comprueba la clave del proyecto y la red.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Captura de pantalla para Dot</string>
+    <string name="nm_dot_capture_active">La captura está disponible hasta que la detengas.</string>
+    <string name="nm_dot_capture_stop">Detener captura</string>
+    <string name="nm_dot_capture_explain">En esta versión de Android, Dot puede leer texto accesible. Autoriza por separado la captura para compartir también imágenes. Android te pedirá permiso.</string>
+    <string name="nm_dot_capture_allow">Permitir captura de pantalla</string>
 </resources>

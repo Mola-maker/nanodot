@@ -1118,4 +1118,11 @@
     <string name="nm_task_library">Pustaka</string>
     <string name="nm_gateway_key_required">Memerlukan key khusus projek. Tetapan dan model pilihan dikekalkan. Pengesahan perkhidmatan sebenar masih belum selesai.</string>
     <string name="nm_gateway_connection_failed">Tidak dapat menyambung. Semak key projek dan rangkaian.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Tangkapan skrin untuk Dot</string>
+    <string name="nm_dot_capture_active">Tangkapan skrin tersedia sehingga anda menghentikannya.</string>
+    <string name="nm_dot_capture_stop">Hentikan tangkapan</string>
+    <string name="nm_dot_capture_explain">Pada versi Android ini, Dot boleh membaca teks kebolehcapaian. Benarkan tangkapan skrin secara berasingan untuk turut berkongsi imej. Android akan meminta izin.</string>
+    <string name="nm_dot_capture_allow">Benarkan tangkapan skrin</string>
 </resources>

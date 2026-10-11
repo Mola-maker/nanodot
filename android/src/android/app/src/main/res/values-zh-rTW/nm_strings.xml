@@ -1088,4 +1088,11 @@
     <string name="nm_task_library">資料</string>
     <string name="nm_gateway_key_required">需要專用專案 key。保留現有設定和選取的模型。實際服務驗收尚待完成。</string>
     <string name="nm_gateway_connection_failed">無法連線。請檢查專案 key 和網路。</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Dot 螢幕擷取</string>
+    <string name="nm_dot_capture_active">停止前，Dot 可以擷取螢幕圖片。</string>
+    <string name="nm_dot_capture_stop">停止擷取</string>
+    <string name="nm_dot_capture_explain">在此 Android 版本上，Dot 可以讀取無障礙文字。如需分享螢幕圖片，請單獨授權螢幕擷取。Android 會請求你的許可。</string>
+    <string name="nm_dot_capture_allow">允許螢幕擷取</string>
 </resources>

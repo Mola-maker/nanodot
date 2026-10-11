@@ -1130,4 +1130,11 @@
     <string name="nm_task_library">Библиотека</string>
     <string name="nm_gateway_key_required">Нужен отдельный ключ проекта. Настройки и выбранные модели сохраняются. Проверка реального сервиса ещё не завершена.</string>
     <string name="nm_gateway_connection_failed">Не удалось подключиться. Проверьте ключ проекта и сеть.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Захват экрана для Dot</string>
+    <string name="nm_dot_capture_active">Захват доступен, пока вы его не остановите.</string>
+    <string name="nm_dot_capture_stop">Остановить захват</string>
+    <string name="nm_dot_capture_explain">В этой версии Android Dot может читать доступный текст. Отдельно разрешите захват экрана, чтобы также передавать изображения. Android запросит разрешение.</string>
+    <string name="nm_dot_capture_allow">Разрешить захват экрана</string>
 </resources>

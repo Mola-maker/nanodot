@@ -1118,4 +1118,11 @@
     <string name="nm_task_library">ライブラリ</string>
     <string name="nm_gateway_key_required">専用のプロジェクトキーが必要です。既存の設定と選択したモデルは保持されます。実サービスの検証は未完了です。</string>
     <string name="nm_gateway_connection_failed">接続できません。プロジェクトキーとネットワークを確認してください。</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Dot の画面取得</string>
+    <string name="nm_dot_capture_active">停止するまで画面を取得できます。</string>
+    <string name="nm_dot_capture_stop">取得を停止</string>
+    <string name="nm_dot_capture_explain">この Android バージョンでは、Dot はアクセシビリティのテキストを読み取れます。画像も共有するには、画面取得を別途許可してください。Android が許可を求めます。</string>
+    <string name="nm_dot_capture_allow">画面取得を許可</string>
 </resources>
