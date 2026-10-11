@@ -1,0 +1,16 @@
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "你好"
+    },
+    {
+      "role": "assistant",
+      "content": "你好，世界"
+    },
+    {
+      "role": "user",
+      "content": "继续"
+    }
+  ]
+}

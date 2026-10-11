@@ -16,6 +16,7 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ### Cloud
 
+- Added allowlisted Workers AI model discovery, validated chat/vision adapters and OpenAI SSE streaming, with shared fixtures tested through the real Android provider. Qwen tool history remained gated pending verification; deployment and live acceptance remained separate.
 - Added private Worker project-credential authentication and persistent SQLite admission counters (40 attempts per UTC day globally, 12 per client in a rolling minute). Inference remained disabled pending the separately verified model routes.
 
 ### Runtime
@@ -35,6 +36,7 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ### Android
 
+- Fixed stopping an Android OpenAI stream leaving its HTTP reader active until EOF. Kept reasoning output while omitting unsupported reasoning history only for the exact Nanodot HTTPS gateway origin.
 - **The app starts beside OpenMinis.** Both apps bound the same Linux abstract socket, `native-offload`, for the sandbox's calls back into the app, and abstract sockets are one namespace for every app on the device, so whichever app started second failed to bind and died before its first screen. nanoMuse's socket is now `io.github.nanomuse.app.native-offload`; when even that is still held by a previous process of ours, the app binds a per-process name and tells proot that one instead of crashing (#271).
 - **When even the per-process socket cannot be bound, the crash names that socket.** The message used to blame the app's own socket name whatever had failed, and carried a dash; it now names the per-process socket that failed last and says that another process may hold the namespace (#288).
 

@@ -62,7 +62,7 @@ describe('private authentication', () => {
     const bindings = gatewayEnv(secret);
     const idFromName = vi.fn(() => { throw new Error('Unavailable routes cannot spend quota'); });
     bindings.FREE_GATE = { idFromName, get: idFromName } as unknown as GatewayEnv['FREE_GATE'];
-    const response = await dispatch(request(keys[0]), bindings);
+    const response = await dispatch(request(keys[0], 'https://example.com/v1/audio/speech'), bindings);
     expect(response.status).toBe(503);
     expect(await response.json()).toMatchObject({ error: { code: 'inference_unavailable' } });
     expect(idFromName).not.toHaveBeenCalled();
@@ -79,9 +79,12 @@ describe('private authentication', () => {
     const { secret } = await credentials();
     const bindings = gatewayEnv(secret);
     bindings.AI = { run() { throw new Error('health cannot call AI'); } } as unknown as Ai;
+    const admission = vi.fn(() => { throw new Error('Health cannot admit'); });
+    bindings.FREE_GATE = { idFromName: admission, get: admission } as unknown as GatewayEnv['FREE_GATE'];
     const response = await dispatch(new Request('https://example.com/healthz'), bindings);
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ deployed: true, configured: true, inferenceEnabled: false });
+    expect(await response.json()).toEqual({ deployed: true, configured: true, inferenceEnabled: true });
+    expect(admission).not.toHaveBeenCalled();
     const unavailable = await dispatch(new Request('https://example.com/healthz'), gatewayEnv(''));
     expect(unavailable.status).toBe(503);
     expect(await unavailable.json()).toEqual({ deployed: true, configured: false, inferenceEnabled: false });

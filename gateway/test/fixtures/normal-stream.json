@@ -1,0 +1,32 @@
+{
+  "events": [
+    {
+      "choices": [
+        {
+          "index": 0,
+          "delta": {
+            "content": "你好，世界",
+            "reasoning_content": "思考"
+          }
+        }
+      ]
+    },
+    {
+      "choices": [
+        {
+          "index": 0,
+          "delta": {},
+          "finish_reason": "stop"
+        }
+      ]
+    },
+    {
+      "choices": [],
+      "usage": {
+        "prompt_tokens": 2,
+        "completion_tokens": 3,
+        "total_tokens": 5
+      }
+    }
+  ]
+}

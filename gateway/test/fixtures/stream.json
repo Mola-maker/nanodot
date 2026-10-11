@@ -1,0 +1,43 @@
+{
+  "events": [
+    {
+      "choices": [
+        {
+          "index": 0,
+          "delta": {
+            "content": "你好，世界",
+            "reasoning_content": "思考",
+            "tool_calls": [
+              {
+                "index": 0,
+                "id": "call_1",
+                "type": "function",
+                "function": {
+                  "name": "lookup",
+                  "arguments": "{\"value\":\"中文\"}"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "choices": [
+        {
+          "index": 0,
+          "delta": {},
+          "finish_reason": "tool_calls"
+        }
+      ]
+    },
+    {
+      "choices": [],
+      "usage": {
+        "prompt_tokens": 2,
+        "completion_tokens": 3,
+        "total_tokens": 5
+      }
+    }
+  ]
+}
