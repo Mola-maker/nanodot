@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { androidApp, keepRunningStatus, type KeepRunningStatus } from "../android";
+import { DotStatus } from "../DotStatus";
 import { api, setToken } from "../api";
 import { DRAGON } from "../avatars";
 import { desktopBridge, isDesktopApp } from "../desktop";
@@ -171,7 +172,8 @@ export function SettingsScreen() {
   const current = sections.find((x) => x.id === page);
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col" aria-busy={saving}>
+      {saving && <DotStatus state="loading" message={t("Saving…")} />}
       {wide ? (
         <PageBar title={t("Settings")} description={t("Its name and look, how careful it is, how often it speaks up.")} />
       ) : (
@@ -187,7 +189,7 @@ export function SettingsScreen() {
                 key={sec.id}
                 type="button"
                 onClick={() => document.getElementById(sec.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                className="truncate rounded-xl px-3 py-1.5 text-left text-[13px] font-medium text-fg/75 hover:bg-surface-2 hover:text-fg"
+                className="truncate rounded-xl px-3 py-1.5 text-left text-[0.8125rem] font-medium text-fg/75 hover:bg-surface-2 hover:text-fg"
               >
                 {sec.title}
               </button>
@@ -219,7 +221,7 @@ export function SettingsScreen() {
         {/* Sentinel */}
         {show("sentinel") && (
         <Section title={t("Safety · Sentinel")} id="sentinel" plain={!wide}>
-          <p className="text-[13px] text-muted -mt-1">
+          <p className="text-[0.8125rem] text-muted -mt-1">
             {t("A separate gatekeeper reviews every action. Pick how often it should check in with you.")}
           </p>
           <div className="space-y-2">
@@ -236,21 +238,21 @@ export function SettingsScreen() {
               >
                 <div className={cx("mt-0.5", m.id === "auto" ? "text-rose-500" : "text-accent")}>{m.icon}</div>
                 <div className="flex-1">
-                  <div className="font-medium text-[14.5px]">{t(m.title)}</div>
-                  <div className="text-[12.5px] text-muted leading-snug mt-0.5">{t(m.text)}</div>
+                  <div className="font-medium text-[0.90625rem]">{t(m.title)}</div>
+                  <div className="text-[0.78125rem] text-muted leading-snug mt-0.5">{t(m.text)}</div>
                 </div>
                 {s?.sentinel.mode === m.id && <Check size={18} className="text-accent mt-0.5" />}
               </button>
             ))}
           </div>
           {s && (
-            <div className="text-[12.5px] text-muted leading-relaxed">
+            <div className="text-[0.78125rem] text-muted leading-relaxed">
               {t("Always asks before: {tools}.", { tools: s.sentinel.always_ask_tools.map((tool) => t(tool)).join(", ") || "—" })}{" "}
               {s.sentinel.taint_tracking && t("After reading private data, new network destinations need approval.")}
             </div>
           )}
           {s?.sandbox && (
-            <div className="flex items-start gap-2.5 rounded-2xl bg-surface-2/60 px-3.5 py-2.5 text-[12.5px] leading-snug">
+            <div className="flex items-start gap-2.5 rounded-2xl bg-surface-2/60 px-3.5 py-2.5 text-[0.78125rem] leading-snug">
               <Box size={15} className={cx("shrink-0 mt-[2px]", s.sandbox.active ? "text-emerald-500" : "text-muted")} />
               <div>
                 <div className="font-medium text-fg">
@@ -275,10 +277,10 @@ export function SettingsScreen() {
         <Section title={t("Proactivity")} id="proactivity" plain={!wide}>
           <ProactivityDial value={state.profile?.proactivity ?? "default"} onChange={(v) => void update({ profile: { proactivity: v } })} />
           <div className="flex items-center gap-3">
-            <label className="text-[13.5px] flex-1">
+            <label className="text-[0.84375rem] flex-1">
               {t("Check-in interval")}
               {state.profile && state.profile.proactivity !== "default" && state.profile.proactivity !== "off" && (
-                <span className="block text-[12px] text-muted">
+                <span className="block text-[0.75rem] text-muted">
                   {state.profile.proactivity === "low" ? t("Doubled at this level") : t("Halved at this level")}
                 </span>
               )}
@@ -286,7 +288,7 @@ export function SettingsScreen() {
             <select
               value={state.profile?.goal_interval_minutes ?? 60}
               onChange={(e) => void update({ profile: { goal_interval_minutes: Number(e.target.value) } })}
-              className="rounded-2xl bg-surface-2 px-3 py-2 text-[13.5px] outline-none"
+              className="rounded-2xl bg-surface-2 px-3 py-2 text-[0.84375rem] outline-none"
             >
               {[...new Set([15, 30, 60, 120, 240, 480, 1440, state.profile?.goal_interval_minutes ?? 60])]
                 .sort((a, b) => a - b)
@@ -319,24 +321,24 @@ export function SettingsScreen() {
         {show("model") && (
         <Section title={t("Model")} id="model" plain={!wide}>
           {s && (
-            <button type="button" onClick={() => setTab("connections")} className="w-full text-[13.5px] flex items-center justify-between">
+            <button type="button" onClick={() => setTab("connections")} className="w-full text-[0.84375rem] flex items-center justify-between">
               <span className="text-muted">{t("Provider / model")}</span>
-              <span className="font-mono text-[12.5px] flex items-center gap-1">
+              <span className="font-mono text-[0.78125rem] flex items-center gap-1">
                 {s.llm.model} <ChevronRight size={14} className="text-muted" />
               </span>
             </button>
           )}
           {s?.llm.cloud && (
-            <button type="button" onClick={() => openOwnKeySetup(setTab, ownKeyWay(state.hub?.account).preset)} className="w-full text-[13.5px] flex items-center justify-between">
+            <button type="button" onClick={() => openOwnKeySetup(setTab, ownKeyWay(state.hub?.account).preset)} className="w-full text-[0.84375rem] flex items-center justify-between">
               <span className="text-muted">{t("Use my own API key or a plan I pay for")}</span>
-              <span className="text-[12.5px] text-muted flex items-center gap-1">
+              <span className="text-[0.78125rem] text-muted flex items-center gap-1">
                 {t("{first} first, then {others}", { first: ownKeyWay(state.hub?.account).label, others: isMainland(state.hub?.account) ? t("DeepSeek, Kimi, OpenAI, ChatGPT…") : t("OpenAI, ChatGPT, Gemini, DeepSeek…") })} <ChevronRight size={14} />
               </span>
             </button>
           )}
-          <button type="button" onClick={() => setTab("connections")} className="w-full text-[13.5px] flex items-center justify-between">
+          <button type="button" onClick={() => setTab("connections")} className="w-full text-[0.84375rem] flex items-center justify-between">
             <span className="text-muted">{t("Connections")}</span>
-            <span className="text-[12.5px] text-muted flex items-center gap-1">
+            <span className="text-[0.78125rem] text-muted flex items-center gap-1">
               {t("E-mail, calendar, browser, MCP servers")} <ChevronRight size={14} />
             </span>
           </button>
@@ -359,14 +361,14 @@ export function SettingsScreen() {
             onChange={(v) => void update({ show_thinking: v })}
           />
           <div className="flex items-center gap-3">
-            <label className="text-[13.5px] flex-1">
+            <label className="text-[0.84375rem] flex-1">
               {t("Appearance")}
-              <span className="block text-[12px] text-muted">{t("This device only")}</span>
+              <span className="block text-[0.75rem] text-muted">{t("This device only")}</span>
             </label>
             <select
               value={themeSetting}
               onChange={(e) => setThemeSetting(e.target.value as typeof themeSetting)}
-              className="rounded-2xl bg-surface-2 px-3 py-2 text-[13.5px] outline-none"
+              className="rounded-2xl bg-surface-2 px-3 py-2 text-[0.84375rem] outline-none"
             >
               <option value="light">{t("Light")}</option>
               <option value="dark">{t("Dark")}</option>
@@ -374,14 +376,14 @@ export function SettingsScreen() {
             </select>
           </div>
           <div className="flex items-center gap-3">
-            <label className="text-[13.5px] flex-1">
+            <label className="text-[0.84375rem] flex-1">
               {t("App language")}
-              <span className="block text-[12px] text-muted">{t("This device only")}</span>
+              <span className="block text-[0.75rem] text-muted">{t("This device only")}</span>
             </label>
             <select
               value={localeSetting}
               onChange={(e) => setLocaleSetting(e.target.value as typeof localeSetting)}
-              className="rounded-2xl bg-surface-2 px-3 py-2 text-[13.5px] outline-none"
+              className="rounded-2xl bg-surface-2 px-3 py-2 text-[0.84375rem] outline-none"
             >
               {LOCALES.map((l) => (
                 <option key={l.value} value={l.value}>
@@ -391,14 +393,14 @@ export function SettingsScreen() {
             </select>
           </div>
           <div className="flex items-center gap-3">
-            <label className="text-[13.5px] flex-1">
+            <label className="text-[0.84375rem] flex-1">
               {t("Reply language")}
-              <span className="block text-[12px] text-muted">{t("What {name} writes in", { name: state.profile?.name ?? "Dot" })}</span>
+              <span className="block text-[0.75rem] text-muted">{t("What {name} writes in", { name: state.profile?.name ?? "Dot" })}</span>
             </label>
             <select
               value={s?.agent.language ?? "auto"}
               onChange={(e) => void update({ language: e.target.value })}
-              className="rounded-2xl bg-surface-2 px-3 py-2 text-[13.5px] outline-none"
+              className="rounded-2xl bg-surface-2 px-3 py-2 text-[0.84375rem] outline-none"
             >
               <option value="auto">{t("Match mine")}</option>
               <option value="English">English</option>
@@ -436,7 +438,7 @@ export function SettingsScreen() {
             onChange={setDeveloperTools}
           />
           {developer && (
-            <div className="text-[13px] text-muted space-y-1">
+            <div className="text-[0.8125rem] text-muted space-y-1">
               <div className="break-all">
                 {t("Runtime:")} {window.location.origin} · <span className="text-fg/70">{t("the token is in the server_token file in the data folder")}</span>
               </div>
@@ -459,7 +461,7 @@ export function SettingsScreen() {
         <Section title={t("About")} id="about" plain={!wide}>
           <CommunityNotice />
           <VersionRows installed={state.version} release={release} checking={checking} onCheck={() => void checkRelease(true)} />
-          <div className="text-[13px] text-muted space-y-1">
+          <div className="text-[0.8125rem] text-muted space-y-1">
             {s && <div className="break-all">{t("Data:")} {s.data_dir}</div>}
             {s && <div className="break-all">{t("Workspace:")} {s.agent.workspace}</div>}
             <div>{state.connected ? t("Connected") : t("Reconnecting…")}</div>
@@ -475,7 +477,7 @@ export function SettingsScreen() {
               setToken("");
               window.location.reload();
             }}
-            className="w-full rounded-2xl border border-border py-2.5 text-[14px] font-medium flex items-center justify-center gap-2 text-muted"
+            className="w-full rounded-2xl border border-border py-2.5 text-[0.875rem] font-medium flex items-center justify-center gap-2 text-muted"
           >
             <LogOut size={16} /> {androidApp() ? t("Disconnect from this server") : t("Forget this device's access token")}
           </button>
@@ -521,11 +523,11 @@ function VersionRows({ installed, release, checking, onCheck }: { installed: str
   else if (release?.latest) latest = <>{t("Latest {version}; you have it", { version: release.latest })} · {checkNow}</>;
   else latest = <>{t("Could not check")} · {checkNow}</>;
   return (
-    <div className="rounded-2xl bg-surface-2/60 px-3.5 py-2.5 text-[13px]">
+    <div className="rounded-2xl bg-surface-2/60 px-3.5 py-2.5 text-[0.8125rem]">
       <div className="font-medium">{t("Nanodot {version}", { version: installed })}</div>
       <div className="mt-0.5 text-muted">{latest}</div>
-      {!phone && release?.latest && release.newer && <div className="mt-1 text-[12px] text-muted">{t("To update: pip install -U nanomuse, pull the new image, or use the desktop app's Update.")}</div>}
-      {!phone && release?.checked_at && <div className="mt-1 text-[12px] text-muted">{t("Checked {when}", { when: relativeTime(release.checked_at) })}</div>}
+      {!phone && release?.latest && release.newer && <div className="mt-1 text-[0.75rem] text-muted">{t("To update: pip install -U nanomuse, pull the new image, or use the desktop app's Update.")}</div>}
+      {!phone && release?.checked_at && <div className="mt-1 text-[0.75rem] text-muted">{t("Checked {when}", { when: relativeTime(release.checked_at) })}</div>}
     </div>
   );
 }
@@ -561,12 +563,12 @@ function SettingsHome({ release, onOpen }: { release: UpdateView | null; onOpen:
         <MuseCard className="mb-3">
           <button type="button" onClick={() => setTab("connections")} className="flex w-full items-center gap-3 px-4 py-3.5 text-left hover:bg-surface-2/60">
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-[16px] font-medium leading-[21px]">{s?.llm.model || t("No model yet")}</span>
-              <span className="mt-0.5 block truncate text-[12.5px] leading-4 text-muted">
+              <span className="block truncate text-[1rem] font-medium leading-[1.3125rem]">{s?.llm.model || t("No model yet")}</span>
+              <span className="mt-0.5 block truncate text-[0.78125rem] leading-4 text-muted">
                 {s ? (s.llm.cloud ? "nanoMuse Cloud" : s.llm.provider) : t("Add a provider and pick its models")}
               </span>
             </span>
-            <span className="text-[14px] font-medium text-accent">{t("Change")}</span>
+            <span className="text-[0.875rem] font-medium text-accent">{t("Change")}</span>
           </button>
           <MuseDivider />
           <MuseRow icon={<Cloud size={22} />} label="nanoMuse Cloud" value={hub?.account.signed_in ? hub.account.hint : t("Sign in")} onClick={() => setTab("account")} />
@@ -671,7 +673,7 @@ function PhoneAppSettings({ name }: { name: string }) {
           setOn(v);
         }}
       />
-      <div className="text-[12.5px] text-muted">{t("Nanodot for Android {version}", { version: phone.version() })}</div>
+      <div className="text-[0.78125rem] text-muted">{t("Nanodot for Android {version}", { version: phone.version() })}</div>
     </>
   );
 }
@@ -708,7 +710,7 @@ function KeepRunningSettings({ name }: { name: string }) {
   const tip = vendorTips[st.vendor];
   return (
     <>
-      <p className="text-[12.5px] text-muted leading-snug">
+      <p className="text-[0.78125rem] text-muted leading-snug">
         {t("Android stops apps that seem idle. {name} runs as a foreground service and holds the phone awake only while a task runs; these switches let it keep that promise on this phone.", { name })}
       </p>
       <Row
@@ -744,19 +746,19 @@ function KeepRunningSettings({ name }: { name: string }) {
         }}
       />
       {tip && (
-        <div className="rounded-2xl bg-surface-2 px-3 py-2.5 text-[12.5px] leading-snug space-y-2">
+        <div className="rounded-2xl bg-surface-2 px-3 py-2.5 text-[0.78125rem] leading-snug space-y-2">
           <div className="font-medium">{t("On this phone's Android")}</div>
           <div className="text-muted">{tip}</div>
           {st.autostart_settings && (
-            <button type="button" onClick={() => open("autostart")} className="rounded-full border border-border px-3 py-1.5 text-[12.5px]">
+            <button type="button" onClick={() => open("autostart")} className="rounded-full border border-border px-3 py-1.5 text-[0.78125rem]">
               {t("Open the auto-start settings")}
             </button>
           )}
         </div>
       )}
       <div className="flex items-center justify-between gap-3 pt-1">
-        <div className="text-[12.5px] text-muted leading-snug">{t("Crashes are written to a file on this phone and nowhere else. Export bundles them with the runtime's log for someone you choose.")}</div>
-        <button type="button" onClick={() => app.exportLogs?.()} className="shrink-0 rounded-full border border-border px-3 py-1.5 text-[12.5px]">
+        <div className="text-[0.78125rem] text-muted leading-snug">{t("Crashes are written to a file on this phone and nowhere else. Export bundles them with the runtime's log for someone you choose.")}</div>
+        <button type="button" onClick={() => app.exportLogs?.()} className="shrink-0 rounded-full border border-border px-3 py-1.5 text-[0.78125rem]">
           {t("Export logs")}
         </button>
       </div>
@@ -780,14 +782,14 @@ function Row({
   return (
     <div className="flex items-start gap-3">
       <div className="flex-1">
-        <div className="flex items-center gap-2 text-[14px]">
+        <div className="flex items-center gap-2 text-[0.875rem]">
           <span>{label}</span>
-          <span className={cx("rounded-full px-2 py-0.5 text-[11px] font-medium", ok ? "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300" : "bg-amber-500/15 text-amber-700 dark:text-amber-300")}>{value}</span>
+          <span className={cx("rounded-full px-2 py-0.5 text-[0.6875rem] font-medium", ok ? "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300" : "bg-amber-500/15 text-amber-700 dark:text-amber-300")}>{value}</span>
         </div>
-        {hint && <div className="text-[12.5px] text-muted leading-snug">{hint}</div>}
+        {hint && <div className="text-[0.78125rem] text-muted leading-snug">{hint}</div>}
       </div>
       {action && (
-        <button type="button" onClick={action.onClick} className="shrink-0 rounded-full bg-accent px-3 py-1.5 text-[12.5px] font-medium text-white">
+        <button type="button" onClick={action.onClick} className="shrink-0 rounded-full bg-accent px-3 py-1.5 text-[0.78125rem] font-medium text-white">
           {action.label}
         </button>
       )}
@@ -865,9 +867,9 @@ function PushSettings({ name }: { name: string }) {
         onChange={() => void toggle()}
         disabled={busy || !!blocked}
       />
-      {blocked && <div className="text-[12.5px] text-muted">{blocked}</div>}
+      {blocked && <div className="text-[0.78125rem] text-muted">{blocked}</div>}
       {info && info.subscriptions > 0 && (
-        <div className="flex items-center justify-between text-[12.5px] text-muted">
+        <div className="flex items-center justify-between text-[0.78125rem] text-muted">
           <span>
             {info.subscriptions === 1 ? t("1 device subscribed") : t("{n} devices subscribed", { n: info.subscriptions })}
           </span>
@@ -877,7 +879,7 @@ function PushSettings({ name }: { name: string }) {
         </div>
       )}
       {!isDesktopApp() && (
-        <div className="text-[12.5px] text-muted">{t("On a phone, add the app to the home screen first; the icon then shows a badge and notifications open the right chat.")}</div>
+        <div className="text-[0.78125rem] text-muted">{t("On a phone, add the app to the home screen first; the icon then shows a badge and notifications open the right chat.")}</div>
       )}
     </>
   );
@@ -896,7 +898,7 @@ export function ProactivityDial({ value, onChange }: { value: Proactivity; onCha
   return (
     <div>
       <div className="flex items-center gap-3">
-        <div className="flex-1 text-[13px] text-muted leading-snug">{t(current.text)}</div>
+        <div className="flex-1 text-[0.8125rem] text-muted leading-snug">{t(current.text)}</div>
       </div>
       <div className="mt-2 grid grid-cols-4 gap-1 rounded-2xl bg-surface-2 p-1">
         {LEVELS.map((l) => (
@@ -906,7 +908,7 @@ export function ProactivityDial({ value, onChange }: { value: Proactivity; onCha
             onClick={() => onChange(l.id)}
             aria-pressed={value === l.id}
             className={cx(
-              "rounded-xl py-1.5 text-[13px] font-medium transition",
+              "rounded-xl py-1.5 text-[0.8125rem] font-medium transition",
               value === l.id ? "bg-surface shadow-sm text-accent" : "text-muted",
             )}
           >
@@ -927,10 +929,10 @@ export function QuietHours({ value, onChange }: { value: string; onChange: (v: s
     <div>
       <label className="flex items-start gap-3 cursor-pointer">
         <div className="flex-1">
-          <div className="text-[14px] flex items-center gap-1.5">
+          <div className="text-[0.875rem] flex items-center gap-1.5">
             <Moon size={15} className="text-muted" /> {t("Quiet hours")}
           </div>
-          <div className="text-[12.5px] text-muted leading-snug">{t("No background work in this window; anything due waits until it ends.")}</div>
+          <div className="text-[0.78125rem] text-muted leading-snug">{t("No background work in this window; anything due waits until it ends.")}</div>
         </div>
         <button
           type="button"
@@ -943,7 +945,7 @@ export function QuietHours({ value, onChange }: { value: string; onChange: (v: s
         </button>
       </label>
       {on && (
-        <div className="mt-2 flex items-center gap-2 text-[13.5px]">
+        <div className="mt-2 flex items-center gap-2 text-[0.84375rem]">
           <span className="text-muted">{t("From")}</span>
           <input type="time" value={start} onChange={(e) => set(e.target.value, end)} className="rounded-xl bg-surface-2 px-2.5 py-1.5 outline-none" />
           <span className="text-muted">{t("to")}</span>
@@ -987,16 +989,16 @@ function DesktopAppSettings() {
           }}
         />
       )}
-      <div className="text-[13.5px]">
+      <div className="text-[0.84375rem]">
         {t("In the tray")}
-        <span className="block text-[12px] text-muted">{t("The icon by the clock shows what the hands are doing and has Stop; closing the window keeps the agent running.")}</span>
+        <span className="block text-[0.75rem] text-muted">{t("The icon by the clock shows what the hands are doing and has Stop; closing the window keeps the agent running.")}</span>
       </div>
       <div className="space-y-1">
-        <div className="text-[13.5px]">{t("Shortcuts")}</div>
+        <div className="text-[0.84375rem]">{t("Shortcuts")}</div>
         {shortcuts.map(([label, keys]) => (
-          <div key={label} className="flex items-center justify-between text-[13px]">
+          <div key={label} className="flex items-center justify-between text-[0.8125rem]">
             <span className="text-muted">{label}</span>
-            <kbd className="rounded-md border border-border bg-surface-2 px-1.5 py-0.5 font-sans text-[12px] text-fg/80">{keys}</kbd>
+            <kbd className="rounded-md border border-border bg-surface-2 px-1.5 py-0.5 font-sans text-[0.75rem] text-fg/80">{keys}</kbd>
           </div>
         ))}
       </div>
@@ -1008,7 +1010,7 @@ function DesktopAppSettings() {
 function Section({ title, children, id, plain = false }: { title: string; children: ReactNode; id?: string; plain?: boolean }) {
   return (
     <section id={id} className={cx("space-y-3 scroll-mt-4", plain ? "pt-1" : "rounded-3xl bg-surface border border-border/70 shadow-sm p-4")}>
-      {!plain && <h2 className="text-[12px] font-semibold uppercase tracking-wide text-muted">{title}</h2>}
+      {!plain && <h2 className="text-[0.75rem] font-semibold uppercase tracking-wide text-muted">{title}</h2>}
       {children}
     </section>
   );

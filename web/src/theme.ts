@@ -54,6 +54,7 @@ export function applyTheme(): void {
   if (typeof document === "undefined") return;
   const theme = getTheme();
   document.documentElement.dataset.theme = theme;
+  document.documentElement.dataset.dotTheme = theme;
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute("content", COLORS[theme]);
 }

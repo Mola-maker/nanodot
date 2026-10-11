@@ -515,3 +515,9 @@ helper, on the pre-0.1.38 path.
   clipboard content is put back afterwards.
 - The log is `~/.nanomuse/desktop/desktop.log` (each operator action is a line, `operator:
   click at 1249,1096`); the launcher's side is in `journalctl --user -n 200`.
+
+## Dot navigation {#dot-navigation}
+
+The rail has Chat, Tasks, Devices and Settings. Tasks opens Feed, Ideas, Goals and Library without changing their saved content. Search, new chat, recent documents and the harness panels remain available through their existing controls and the More menu. Settings keeps the installed plugins' sections. Ctrl+K on Windows/Linux and Cmd+K on macOS open chat search. Native window controls and file dropping keep their existing behavior.
+
+Controls show keyboard focus, disabled actions and state text. Loading and connection errors are announced; device refresh and failed room operations provide their existing recovery actions. System fonts follow browser text scaling, and reduced motion disables repeating indicators and transitions.

@@ -1,5 +1,6 @@
 import { Clock, Flag, Loader2, MessageCircle, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
+import { DotStatus } from "../DotStatus";
 import { api } from "../api";
 import { Sheet } from "../components/Sheet";
 import { TabHeader } from "../components/TabHeader";
@@ -32,6 +33,7 @@ const AREAS: Array<{ id: string; label: string; emoji: string }> = [
 export function IdeasScreen() {
   const { state, send, openThread, toast } = useStore();
   const [data, setData] = useState<IdeasData | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const name = state.profile?.name ?? "Dot";
   const t = useT();
@@ -39,12 +41,13 @@ export function IdeasScreen() {
 
   const load = async (refresh = false) => {
     setLoading(true);
+    setLoadError(null);
     try {
       const d = await api.ideas(refresh);
       setData(d);
       if (d.error) toast(t("Could not refresh ideas: {error}", { error: d.error }));
     } catch (e) {
-      toast((e as Error).message);
+      setLoadError((e as Error).message);
     } finally {
       setLoading(false);
     }
@@ -106,17 +109,19 @@ export function IdeasScreen() {
         </button>
       </TabHeader>
       <div className="flex-1 overflow-y-auto pb-6">
+        {loading && <DotStatus state="loading" message={t("Loading…")} />}
+        {loadError && <DotStatus state="error" message={t(loadError)} onRetry={() => void load()} />}
         {groups.map(({ id, title, ideas }, index) => (
           <section key={id}>
-            {(index > 0 || !fromModel) && <h2 className="px-5 pt-[22px] pb-1 text-[20px] font-bold">{fromModel ? t(title) : title}</h2>}
+            {(index > 0 || !fromModel) && <h2 className="px-5 pt-[22px] pb-1 text-[1.25rem] font-bold">{fromModel ? t(title) : title}</h2>}
             <ul>
               {ideas.map((idea) => (
                 <li key={idea.title}>
                   <button type="button" onClick={() => setSelected({ idea, emoji: idea.emoji })} className="flex w-full items-start gap-4 px-5 py-3.5 text-left active:bg-surface-2/70">
-                    <span className="flex w-10 shrink-0 justify-center text-[28px] leading-[34px]">{idea.emoji}</span>
+                    <span className="flex w-10 shrink-0 justify-center text-[1.75rem] leading-[2.125rem]">{idea.emoji}</span>
                     <span className="min-w-0 flex-1 space-y-1">
-                      <span className="block text-[16px] font-semibold leading-[22px]">{idea.title}</span>
-                      {idea.detail && <span className="line-clamp-4 block text-[13.5px] leading-[19px] text-muted">{idea.detail}</span>}
+                      <span className="block text-[1rem] font-semibold leading-[1.375rem]">{idea.title}</span>
+                      {idea.detail && <span className="line-clamp-4 block text-[0.84375rem] leading-[1.1875rem] text-muted">{idea.detail}</span>}
                     </span>
                   </button>
                   <div className="ml-[76px] mr-5 border-b border-border/70" />
@@ -126,7 +131,7 @@ export function IdeasScreen() {
           </section>
         ))}
         {data && (
-          <div className="px-5 pt-4 text-[12.5px] text-muted">
+          <div className="px-5 pt-4 text-[0.78125rem] text-muted">
             {data.source === "model" ? t("Generated {when}", { when: relativeTime(data.generated_at) }) : t("Starter ideas. Refresh once {name} knows you better.", { name })}
           </div>
         )}
@@ -136,11 +141,11 @@ export function IdeasScreen() {
         {selected && (
           <div className="px-1 pb-2">
             <div className="flex items-center gap-3">
-              <span className="text-[30px] leading-none">{selected.emoji}</span>
-              <h3 className="flex-1 text-[18px] font-bold leading-6">{selected.idea.title}</h3>
+              <span className="text-[1.875rem] leading-none">{selected.emoji}</span>
+              <h3 className="flex-1 text-[1.125rem] font-bold leading-6">{selected.idea.title}</h3>
             </div>
-            {selected.idea.detail && <p className="mt-3 text-[15px] leading-[22px]">{selected.idea.detail}</p>}
-            <div className="mt-3.5 flex items-center gap-1.5 text-[13px] text-muted">
+            {selected.idea.detail && <p className="mt-3 text-[0.9375rem] leading-[1.375rem]">{selected.idea.detail}</p>}
+            <div className="mt-3.5 flex items-center gap-1.5 text-[0.8125rem] text-muted">
               {kindOf(selected.idea) === "routine" && (
                 <>
                   <Clock size={16} /> {t("Creates a routine")}
@@ -159,17 +164,17 @@ export function IdeasScreen() {
               )}
             </div>
             {kindOf(selected.idea) === "routine" && (
-              <button type="button" onClick={() => void createRoutine(selected.idea)} className="mt-[22px] flex h-[50px] w-full items-center justify-center gap-2 rounded-full bg-accent text-[16px] font-semibold text-accent-fg">
+              <button type="button" onClick={() => void createRoutine(selected.idea)} className="mt-[22px] flex h-[50px] w-full items-center justify-center gap-2 rounded-full bg-accent text-[1rem] font-semibold text-accent-fg">
                 <Clock size={18} /> {t("Create routine")}
               </button>
             )}
             {kindOf(selected.idea) === "goal" && (
-              <button type="button" onClick={() => startGoal(selected.idea)} className="mt-[22px] flex h-[50px] w-full items-center justify-center gap-2 rounded-full bg-accent text-[16px] font-semibold text-accent-fg">
+              <button type="button" onClick={() => startGoal(selected.idea)} className="mt-[22px] flex h-[50px] w-full items-center justify-center gap-2 rounded-full bg-accent text-[1rem] font-semibold text-accent-fg">
                 <Flag size={18} /> {t("Start goal")}
               </button>
             )}
             {kindOf(selected.idea) === "chat" && (
-              <button type="button" onClick={() => sendIdea(selected.idea)} className="mt-[22px] flex h-[50px] w-full items-center justify-center gap-2 rounded-full bg-accent text-[16px] font-semibold text-accent-fg">
+              <button type="button" onClick={() => sendIdea(selected.idea)} className="mt-[22px] flex h-[50px] w-full items-center justify-center gap-2 rounded-full bg-accent text-[1rem] font-semibold text-accent-fg">
                 <MessageCircle size={18} /> {t("Send to chat")}
               </button>
             )}

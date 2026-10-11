@@ -161,3 +161,6 @@ export function intlLocale(): string {
 export function dictionaryKeys(locale: Locale): string[] {
   return Object.keys(DICTS[locale]);
 }
+
+/** The same localized primary destination names on the compact bar and wide rail. */
+export const PRIMARY_NAVIGATION = ["Chat", "Tasks", "Devices", "Settings"] as const;

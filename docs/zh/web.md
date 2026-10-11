@@ -74,3 +74,13 @@ cd web && npm run lint && LANG=en_US.UTF-8 npx vitest run && npm run build
 ```
 
 构建会写出 `nanomuse/server/static/`，它随改动一起提交；`web/tsconfig.tsbuildinfo` 是副产物，不提交。
+
+## Dot 导航 {#dot-navigation}
+
+窄窗口使用底部的聊天、任务、设备和设置；宽窗口使用侧栏。任务包含动态、点子、目标和资源库，`#goals` 等已有直接链接继续可用。设置和已有聊天上下文入口保留模型、连接器、技能、记忆及编程控制台。网页版继续使用本地运行时的相对 `/api` 和 `/api/cloud` 接口。
+
+切换页面时，聊天输入框和已上传的附件条目保持挂载，草稿不会丢失。Ctrl+K 或 Cmd+K 打开聊天搜索；Escape 关闭窄窗口的聊天抽屉。加载、空结果和错误提供状态文字播报；请求本身支持重试时显示重试入口。401 响应打开访问令牌页面，运行时的 429 响应保留服务端说明。离线提示提供重新加载入口。系统字体、可见焦点和至少 44 像素高的控件支持键盘及文字缩放。减少动态效果会停用循环指示器和过渡。
+
+受控浏览器检查位于 `scripts/ui/verify-web.mjs` 和 `scripts/ui/verify-desktop.mjs`，可设置 `PLAYWRIGHT_MODULE`、`CHROMIUM_PATH`，网页版还可设置 `UI_BASE_URL`。夹具模拟运行时协议，不调用模型。`scripts/ui/verify-electron.mjs` 使用本地打包的桌面壳和任务专属配置；Windows/macOS 构建与原生冒烟检查需要各自平台的运行器。
+
+动态活动、帖子、待办和日历分别加载。请求失败时会播报原因，可单独重试该请求，成功加载的内容仍会保留。发送失败的提示会播报，恢复的草稿可再次发送。字体放大后，技能和设备建议仍保留全宽按钮。

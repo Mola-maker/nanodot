@@ -1,5 +1,6 @@
 import { ArrowRight, Check, ChevronRight, Cloud, Loader2, Lock } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
+import { DotStatus } from "../DotStatus";
 import { api } from "../api";
 import { DRAGON } from "../avatars";
 import { Avatar } from "../components/Avatar";
@@ -109,7 +110,7 @@ export function Onboarding() {
             <span key={s} className={cx("h-1.5 rounded-full transition-all", i <= idx ? "w-5 bg-accent" : "w-1.5 bg-border")} />
           ))}
         </div>
-        <button type="button" onClick={() => void finish()} className="text-[13px] text-muted">
+        <button type="button" onClick={() => void finish()} className="text-[0.8125rem] text-muted">
           {t("Skip setup")}
         </button>
       </header>
@@ -118,16 +119,16 @@ export function Onboarding() {
         {step === "welcome" && (
           <div className="flex h-full flex-col items-center justify-center text-center">
             <Avatar profile={preview} size={96} />
-            <h1 className="mt-6 text-[28px] font-bold tracking-tight">{t("Meet your Nanodot")}</h1>
-            <p className="mt-2 text-[15px] text-muted">{t("A personal agent of your own. Three things to know:")}</p>
+            <h1 className="mt-6 text-[1.75rem] font-bold tracking-tight">{t("Meet your Nanodot")}</h1>
+            <p className="mt-2 text-[0.9375rem] text-muted">{t("A personal agent of your own. Three things to know:")}</p>
             <ul className="mt-6 w-full max-w-sm space-y-2.5 text-left">
               <Point n={1} title={t("It does things for you.")} body={t("Searches, browses, writes, books, reads mail, and hands you the result, not a list of links.")} />
               <Point n={2} title={t("It keeps working when you close the app.")} body={t("Goals move forward between your visits; it reports in the Feed and notifies you when something is worth it.")} />
               <Point n={3} title={t("It asks you first where it matters.")} body={t("A separate Sentinel reviews every action. Sending, paying, deleting: it stops and asks; your keys stay in a vault the model cannot read.")} />
             </ul>
-            <p className="mt-5 max-w-sm text-[13px] text-muted">{t("There is no form to fill in: once it has a model, it introduces itself in the chat and asks what to call you.")}</p>
+            <p className="mt-5 max-w-sm text-[0.8125rem] text-muted">{t("There is no form to fill in: once it has a model, it introduces itself in the chat and asks what to call you.")}</p>
             {/* the community line the sign-in gate says, for a runtime that does not ask for an account */}
-            <p className="mt-2 max-w-sm text-[13px] text-muted">
+            <p className="mt-2 max-w-sm text-[0.8125rem] text-muted">
               <a href={NOTICE_URL} target="_blank" rel="noreferrer" className="underline decoration-dotted underline-offset-2 hover:text-accent">
                 {t("Nanodot is an open-source personal agent based on nanoMuse.")}
               </a>
@@ -140,8 +141,8 @@ export function Onboarding() {
             <div className="flex items-center gap-3">
               <Avatar profile={preview} size={56} />
               <div className="min-w-0">
-                <h1 className="text-[24px] font-bold tracking-tight truncate">{t("Set it up")}</h1>
-                <p className="text-[13.5px] text-muted truncate">{t("A model, then the chat. A minute.")}</p>
+                <h1 className="text-[1.5rem] font-bold tracking-tight truncate">{t("Set it up")}</h1>
+                <p className="text-[0.84375rem] text-muted truncate">{t("A model, then the chat. A minute.")}</p>
               </div>
             </div>
             <ol className="mt-6 space-y-2">
@@ -168,8 +169,8 @@ export function Onboarding() {
         {step === "model" && (
           <div className="pt-6 space-y-4">
             <div>
-              <h1 className="text-[26px] font-bold tracking-tight">{t("The model behind it")}</h1>
-              <p className="mt-1 text-[14px] text-muted">
+              <h1 className="text-[1.625rem] font-bold tracking-tight">{t("The model behind it")}</h1>
+              <p className="mt-1 text-[0.875rem] text-muted">
                 {modelReady
                   ? conn?.llm.cloud
                     ? t("Your account's model, with its free allowance. Keep it, or switch to a key of your own here.")
@@ -190,8 +191,8 @@ export function Onboarding() {
                       {cloudBusy ? <Loader2 size={18} className="animate-spin" /> : <Cloud size={18} />}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[15px] font-medium">{t("Use the nanoMuse Cloud model")}</span>
-                      <span className="block text-[12.5px] text-muted">{t("Signed in as {hint}. A free allowance, nothing to paste. Recommended to start.", { hint: state.hub.account.hint })}</span>
+                      <span className="block text-[0.9375rem] font-medium">{t("Use the nanoMuse Cloud model")}</span>
+                      <span className="block text-[0.78125rem] text-muted">{t("Signed in as {hint}. A free allowance, nothing to paste. Recommended to start.", { hint: state.hub.account.hint })}</span>
                     </span>
                     <ChevronRight size={16} className="shrink-0 text-muted" />
                   </button>
@@ -202,7 +203,7 @@ export function Onboarding() {
                   </div>
                 )}
                 {!modelReady && (
-                  <p className="px-1 text-[12.5px] text-muted">
+                  <p className="px-1 text-[0.78125rem] text-muted">
                     <span className="font-medium">{t("Or bring your own key")}</span> · {ownKeyLine(t, state.hub?.account)}
                   </p>
                 )}
@@ -210,15 +211,13 @@ export function Onboarding() {
               </>
             ) : connError ? (
               <div className="rounded-3xl border border-border/70 bg-surface p-4 text-center">
-                <p className="text-[13.5px] text-muted">{connError}</p>
-                <button type="button" onClick={() => void loadConn()} className="mt-3 rounded-full bg-surface-2 px-4 py-1.5 text-[13px] font-medium">
+                <p className="text-[0.84375rem] text-muted">{connError}</p>
+                <button type="button" onClick={() => void loadConn()} className="mt-3 rounded-full bg-surface-2 px-4 py-1.5 text-[0.8125rem] font-medium">
                   {t("Retry")}
                 </button>
               </div>
             ) : (
-              <div className="flex justify-center py-8 text-muted">
-                <Loader2 className="animate-spin" size={20} />
-              </div>
+              <DotStatus state="loading" message={t("Loading…")} />
             )}
           </div>
         )}
@@ -226,8 +225,8 @@ export function Onboarding() {
         {step === "connect" && (
           <div className="pt-6 space-y-4">
             <div>
-              <h1 className="text-[26px] font-bold tracking-tight">{t("Connect your mail, calendar and contacts")}</h1>
-              <p className="mt-1 text-[14px] text-muted">
+              <h1 className="text-[1.625rem] font-bold tracking-tight">{t("Connect your mail, calendar and contacts")}</h1>
+              <p className="mt-1 text-[0.875rem] text-muted">
                 {t("Optional. With a mailbox connected it can read what came in and draft replies; it will always ask before sending. With a calendar it knows your day and finds free time. With your contacts it knows who is who. The browser and MCP servers are under Connections later.")}
               </p>
             </div>
@@ -239,15 +238,13 @@ export function Onboarding() {
               </>
             ) : connError ? (
               <div className="rounded-3xl border border-border/70 bg-surface p-4 text-center">
-                <p className="text-[13.5px] text-muted">{connError}</p>
-                <button type="button" onClick={() => void loadConn()} className="mt-3 rounded-full bg-surface-2 px-4 py-1.5 text-[13px] font-medium">
+                <p className="text-[0.84375rem] text-muted">{connError}</p>
+                <button type="button" onClick={() => void loadConn()} className="mt-3 rounded-full bg-surface-2 px-4 py-1.5 text-[0.8125rem] font-medium">
                   {t("Retry")}
                 </button>
               </div>
             ) : (
-              <div className="flex justify-center py-8 text-muted">
-                <Loader2 className="animate-spin" size={20} />
-              </div>
+              <DotStatus state="loading" message={t("Loading…")} />
             )}
           </div>
         )}
@@ -288,8 +285,8 @@ export function Onboarding() {
 function Point({ n, title, body }: { n: number; title: string; body: string }) {
   return (
     <li className="flex gap-3 rounded-3xl bg-surface border border-border/70 p-4">
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/12 text-[13px] font-semibold text-accent">{n}</span>
-      <div className="text-[13.5px] leading-relaxed">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/12 text-[0.8125rem] font-semibold text-accent">{n}</span>
+      <div className="text-[0.84375rem] leading-relaxed">
         <div className="font-medium text-fg">{title}</div>
         <div className="text-muted">{body}</div>
       </div>
@@ -313,11 +310,11 @@ function Item({ done, locked, optional, title, body, onClick }: { done: boolean;
           {done ? <Check size={15} strokeWidth={3} /> : locked ? <Lock size={13} /> : null}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="flex items-center gap-2 text-[15px] font-medium">
+          <span className="flex items-center gap-2 text-[0.9375rem] font-medium">
             <span className="truncate">{title}</span>
-            {optional && <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[10.5px] font-medium text-muted">{t("optional")}</span>}
+            {optional && <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[0.65625rem] font-medium text-muted">{t("optional")}</span>}
           </span>
-          <span className="block truncate text-[12.5px] text-muted">{body}</span>
+          <span className="block truncate text-[0.78125rem] text-muted">{body}</span>
         </span>
         {!locked && <ChevronRight size={16} className="shrink-0 text-muted" />}
       </button>

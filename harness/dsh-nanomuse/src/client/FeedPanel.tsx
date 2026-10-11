@@ -5,6 +5,7 @@
  * about it. The sliders at the top right hold the feed's instructions (what
  * the person wants to read here) and a "write a batch now".
  */
+import { DotStatus } from './DotStatus.tsx'
 import { failureText } from './api.ts'
 import { createElement as h, useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import type { Translate } from './api.ts'
@@ -37,6 +38,7 @@ export function makeFeedPanel(t: Translate) {
 
     return h('div', { className: 'nm-room' },
       h('div', { className: 'nm-room-top', 'data-window-drag': true }),
+      !rooms.streaming ? h(DotStatus, { state: 'loading', message: t('dotOffline') }) : null,
       h('div', { className: 'nm-room-head' },
         h(RoomToggle, { t, panel: FEED_PANEL }),
         h('h1', { className: 'nm-room-title' }, t('railFeed')),
@@ -45,7 +47,7 @@ export function makeFeedPanel(t: Translate) {
           h('button', { type: 'button', className: 'nm-round-btn', title: t('feedSettings'), 'aria-label': t('feedSettings'), onClick: () => setSettings(true) }, h(IconSliders, { size: 18 })))),
       h('div', { className: 'nm-room-body' },
         h('div', { className: 'nm-room-inner nm-feed' },
-          error ? h('div', { className: 'nm-room-error' }, error) : null,
+          error ? h(DotStatus, { state: 'error', message: error }) : null,
           // the phone's intro card, until "Got it"
           !prefs.feedIntroSeen
             ? h('div', { className: 'nm-feed-intro', role: 'note' },
@@ -128,5 +130,5 @@ function FeedSettings({ t, instructions, routine, busy, ready, onClose, onRefres
         h('span', { className: 'nm-feed-routine-time' },
           h('input', { type: 'time', className: 'nm-field nm-field-time', value: time, disabled: !on, 'aria-label': t('feedRoutineTime', { time }), onChange: (e: FormEvent<HTMLInputElement>) => { if (/^\d{2}:\d{2}$/.test(e.currentTarget.value)) setTime(e.currentTarget.value) } }))),
       !ready ? h('p', { className: 'nm-sheet-fine' }, t('feedRoutineNeedsModel')) : null,
-      error ? h('div', { className: 'nm-room-error' }, error) : null))
+      error ? h(DotStatus, { state: 'error', message: error }) : null))
 }

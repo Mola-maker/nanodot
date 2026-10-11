@@ -22,6 +22,9 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 - Added a node-grounded Android care planner foundation that prepared one user instruction through a bounded read-only model request and rejected stale or unsupported proposals; real-model, care UI and evidence-advancement acceptance remained pending.
 
 - Masked sensitive Android LLM request headers before retaining debug logs and exporting request or agent traces; later caller mutations no longer changed logged headers.
+- Kept composer suggestions full width, announced send errors and added separate Feed request recovery.
+
+- Unified desktop and Web navigation under Chat, Tasks, Devices and Settings, retained the existing rooms and chat drafts, and added accessible state text, retry controls, system fonts and reduced-motion behavior.
 
 - Corrected gateway bootstrap instructions to require specific consent for temporary Hello World public URLs, confirmed closure before existing-Worker uploads and SQLite migration, and individual Worker Editor scopes with Dashboard domain connections.
 
