@@ -43,4 +43,12 @@ class DotOverlayPolicyTest {
         assertFalse(OverlayKind.Trail.touchable)
         assertFalse(OverlayKind.Focus.touchable)
     }
+
+    @Test fun legacyAdapterUsesAttachedFrameInsteadOfDisplayMetrics() {
+        // Source adapter contract; runtime legacy acceptance is recorded separately.
+        val controller = File("src/main/java/io/github/nanomuse/dot/overlay/DotOverlayController.kt").readText()
+        assertFalse("getRectSize loses the native usable frame origin", controller.contains("getRectSize"))
+        assertTrue("use the attached native display frame", controller.contains("getWindowVisibleDisplayFrame"))
+    }
+
 }

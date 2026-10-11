@@ -18,6 +18,7 @@ import android.os.SystemClock
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import android.view.ViewConfiguration
 import android.view.WindowInsets
@@ -66,6 +67,8 @@ class DotOverlayController(
     private var dragStarted = false
     private var downAtMs = 0L
     private var params: WindowManager.LayoutParams? = null
+    private var legacyGeometry: DotWindowGeometry? = null
+    private var firstLayout: ViewTreeObserver.OnPreDrawListener? = null
     private var downPoint: PointPx? = null
     private var downPosition: Pair<Int, Int>? = null
     private var blockedTouch = false
@@ -149,15 +152,13 @@ class DotOverlayController(
             // Unclassified movement fallback. Task6 replaces this with full selection geometry;
             // downPosition remains available throughout this synchronous disposition.
             val point = intent.points.lastOrNull() ?: return
-            val bounds = availableBounds()
+            val bounds = availableBounds() ?: return
             val p = params ?: return
-            p.x = if (point.x < bounds.exactCenterX()) bounds.left else bounds.right - size
-            p.y = p.y.coerceIn(bounds.top, (bounds.bottom - size).coerceAtLeast(bounds.top))
+            p.x = bounds.edgeX(size, point.x)
+            p.y = bounds.clamp(size, p.x, p.y).second
             orbView?.let { windows.updateViewLayout(it, p) }
-            preferences.saveOrbPosition(
-                fraction(p.x - bounds.left, bounds.width() - size),
-                fraction(p.y - bounds.top, bounds.height() - size),
-            )
+            val position = bounds.fractions(size, p.x, p.y)
+            preferences.saveOrbPosition(position.first, position.second)
         } else {
             // Later coordinator tasks provide these capabilities. Never pretend an action ran.
             if (delegate != null) delegate.invoke(intent)
@@ -186,14 +187,21 @@ class DotOverlayController(
         }
         view.addView(composition, FrameLayout.LayoutParams(size, size))
         val flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+            // Legacy native policy supplies the content/cutout-safe parent; x/y are parent offsets.
+            (if (Build.VERSION.SDK_INT >= 30) WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN else 0) or
             if (kind.touchable) 0 else WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
         val p = WindowManager.LayoutParams(size, size, WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-            flags, PixelFormat.TRANSLUCENT).apply { gravity = Gravity.TOP or Gravity.LEFT; title = "Nanodot Dot orb" }
+            flags, PixelFormat.TRANSLUCENT).apply {
+            gravity = Gravity.TOP or Gravity.LEFT; title = "Nanodot Dot orb"
+            if (Build.VERSION.SDK_INT < 30) softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING
+            if (Build.VERSION.SDK_INT in 28..29) {
+                layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
+            }
+        }
         val bounds = availableBounds()
-        val position = preferences.orbPosition()
-        p.x = bounds.left + ((bounds.width() - size).coerceAtLeast(0) * position.first).roundToInt()
-        p.y = bounds.top + ((bounds.height() - size).coerceAtLeast(0) * position.second).roundToInt()
+        if (bounds != null) restorePosition(p, bounds)
+        else view.alpha = 0f // Never show at a guessed origin before the native parent is known.
         try {
             windows.addView(view, p)
             owner.start()
@@ -203,17 +211,54 @@ class DotOverlayController(
             throw failure
         }
         orbView = view; orbOwner = owner; orbComposition = composition; params = p
+        if (Build.VERSION.SDK_INT < 30) waitForLegacyLayout(view, p)
+    }
+
+    private fun restorePosition(p: WindowManager.LayoutParams, bounds: DotWindowGeometry) {
+        val saved = preferences.orbPosition()
+        val position = bounds.position(size, saved.first, saved.second)
+        p.x = position.first; p.y = position.second
+    }
+
+    private fun waitForLegacyLayout(view: View, p: WindowManager.LayoutParams) {
+        val listener = object : ViewTreeObserver.OnPreDrawListener {
+            override fun onPreDraw(): Boolean {
+                if (orbView !== view || !view.isAttachedToWindow) return true
+                val geometry = legacyBounds(view) ?: return false
+                if (geometry != legacyGeometry) {
+                    legacyGeometry = geometry
+                    restorePosition(p, geometry)
+                    windows.updateViewLayout(view, p)
+                    return false
+                }
+                val actual = IntArray(2)
+                view.getLocationOnScreen(actual)
+                val expected = geometry.screenPosition(p.x, p.y)
+                if (actual[0] != expected.first || actual[1] != expected.second) return false
+                view.viewTreeObserver.removeOnPreDrawListener(this)
+                firstLayout = null
+                view.alpha = 1f
+                return true
+            }
+        }
+        firstLayout = listener
+        view.viewTreeObserver.addOnPreDrawListener(listener)
     }
 
     private fun removeWindow(kind: OverlayKind) {
         cancelGesture()
-        orbView?.let { windows.removeViewImmediate(it) }
+        orbView?.let { view ->
+            firstLayout?.let { view.viewTreeObserver.removeOnPreDrawListener(it) }
+            windows.removeViewImmediate(view)
+        }
+        firstLayout = null; legacyGeometry = null
         orbComposition?.disposeComposition()
         orbOwner?.destroy()
         orbView = null; orbOwner = null; orbComposition = null; params = null
     }
 
     private fun handleMotion(event: MotionEvent) {
+        if (Build.VERSION.SDK_INT < 30 && (legacyGeometry == null || orbView?.alpha == 0f)) return
         val point = PointPx(event.rawX, event.rawY)
         val id = event.getPointerId(event.actionIndex)
         when (event.actionMasked) {
@@ -236,10 +281,11 @@ class DotOverlayController(
                         dragStarted = true
                     }
                     if (dragStarted && start != null && position != null) {
-                        val bounds = availableBounds()
+                        val bounds = availableBounds() ?: return
                         params?.let { p ->
-                            p.x = (position.first + point.x - start.x).roundToInt().coerceIn(bounds.left, (bounds.right - size).coerceAtLeast(bounds.left))
-                            p.y = (position.second + point.y - start.y).roundToInt().coerceIn(bounds.top, (bounds.bottom - size).coerceAtLeast(bounds.top))
+                            val target = bounds.clamp(size, (position.first + point.x - start.x).roundToInt(),
+                                (position.second + point.y - start.y).roundToInt())
+                            p.x = target.first; p.y = target.second
                             orbView?.let { windows.updateViewLayout(it, p) }
                         }
                     }
@@ -273,16 +319,26 @@ class DotOverlayController(
         } }
     }
 
-    @Suppress("DEPRECATION")
-    private fun availableBounds(): Rect {
+    private fun availableBounds(): DotWindowGeometry? {
         if (Build.VERSION.SDK_INT >= 30) {
             val metrics = windows.currentWindowMetrics
             val insets = metrics.windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
-            return Rect(metrics.bounds).apply { left += insets.left; top += insets.top; right -= insets.right; bottom -= insets.bottom }
+            val frame = metrics.bounds
+            return DotWindowGeometry(frame.left + insets.left, frame.top + insets.top,
+                frame.right - insets.right, frame.bottom - insets.bottom, false)
         }
-        return Rect().also { windows.defaultDisplay.getRectSize(it) }
+        // Re-read after initial placement: native decor can change without a display rotation.
+        return if (legacyGeometry == null) null else orbView?.let(::legacyBounds)
     }
 
-    private fun fraction(value: Int, range: Int) = if (range > 0) (value.toFloat() / range).coerceIn(0f, 1f) else 0f
+    private fun legacyBounds(view: View): DotWindowGeometry? {
+        if (!view.isAttachedToWindow) return null
+        val frame = Rect()
+        // Attached display frame is the full native parent, not the clipped 48dp visible frame.
+        view.getWindowVisibleDisplayFrame(frame)
+        if (frame.isEmpty) return null
+        return DotWindowGeometry(frame.left, frame.top, frame.right, frame.bottom, true)
+    }
+
     private fun checkMainThread() { check(Looper.myLooper() == Looper.getMainLooper()) }
 }

@@ -44,8 +44,9 @@ Settings → Appearance → Show Dot orb hides it immediately and preserves that
 across service reconnects. Locking the phone, disabling accessibility, or rotating the
 display clears pending gestures and removes the old window; unlock and rotation restore
 it only if the switch is on. Drag the orb to move it to an edge; its position is saved
-relative to the usable display area. Screen-region selection is not available yet;
-drags currently move the orb. Other apps receive touches outside the orb.
+relative to the usable display area, excluding system bars and display cutouts. On Android
+8–10, Dot waits for its native content frame before restoring its position. Screen-region
+selection is not available yet; drags currently move the orb. Other apps receive touches outside the orb.
 
 TalkBack exposes Open conversation, View screen, and Start care actions. These actions
 currently explain that the capability is unavailable while the coordinator is being
