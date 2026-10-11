@@ -315,3 +315,37 @@ keytool -genkeypair -keystore ~/.nanomuse-release/nanomuse.jks -alias nanomuse \
 | `connectors/`、`ui/connectors/` | 连接器目录（`ConnectorsCatalogue` 读取资源文件）、MCP 授权发现与注册（`McpAuthDiscovery`）、连接和令牌刷新（`Connectors`）、这台手机连接了什么并发布到 profile、其他设备连接了什么（`SharedConnectors`）、「设置 → 连接器」页面 |
 | `ui/cloud/` | 登录、账号屏、设备部分 |
 | `res/values*/nm_strings.xml` | nanoMuse 的全部字符串，App 支持的十七种语言各一份（英语、简体中文、繁體中文、德语、西班牙语、菲律宾语、法语、印尼语、日语、韩语、马来语、波兰语、巴西葡萄牙语、罗马尼亚语、俄语、泰语、土耳其语）；每个文件的键相同，缺的回落到英语 |
+
+## 手动验证服务商 {#manual-provider-verification}
+
+`io.github.nanomuse.apiproof.ManualDeepSeekApiProofTest#directProviderSingleReservedAttempt`
+是需要手动选择的设备测试。目标应用私有缓存中没有固定文件
+`nanodot-api-proof.input` 时，普通测试会在构造服务商前跳过。输入必须是普通文件、
+非符号链接、只有一个硬链接、归目标 UID 所有且权限严格为 `0600`。测试只读取一次，
+在创建 HTTP 资源前删除文件。不接受测试参数、偏好设置或 APK 资源中的 key 或端点。
+只有负责共享调用预算的操作者，才能在源码审查和设备使用权核对后交接凭据并运行。
+HTTP 失败、取消或超时都会结束该次调用；没有重试、回退、标题或摘要请求。
+
+测试调用实际 Kotlin `OpenAIProvider.streamMessage`，只收集一次：
+`https://api.deepseek.com`、`deepseek-flash`、公开提示“Reply with the word READY.”、
+`max_tokens=64`、现有伴随字段 `max_completion_tokens=64`，以及明确的
+`thinking.type=disabled`。不发送工具或图片。`app/src/apiProof/java` 下的共享辅助代码
+只进入测试源码集。它通过明确披露的反射，在首次使用前替换私有、提前构造的客户端，
+检查替换后的对象身份，并单独持有调度器和连接池。重试、重定向与认证跟进均关闭。
+网络拦截器只允许一次交换，在发送 HTTP 头或正文前拒绝后续交换。
+不会关闭或清空原客户端的共享资源。
+
+该测试有意改变响应诊断边界：移除响应头，非成功正文替换为固定错误，
+含凭据的受限长度 SSE 行在进入服务商日志前被拒绝。成功 SSE 仍由实际解析器处理，
+包括最后一个 choice 中的 usage 和 `[DONE]`。固定缓存结果文件
+`nanodot-api-proof.result.json` 以 `0600` 权限原子写入，只包含固定端点、模型、配置，
+脱敏状态，交换、增量、结束与用量观察，以及允许记录的公开单词 `READY`
+（其他文本写为 `[omitted]`）。操作者必须在预留调用前删除旧结果。
+凭据只在此次运行的进程内存中保留；不可变 JVM 字符串无法主动擦除，因此操作者
+应在运行结束后退出测试进程。
+
+本地 `ApiProofTransportTest` 只使用回环 MockWebServer 和合成凭据，验证请求序列化、
+当前 SSE 解析、交换拦截、响应脱敏和自有资源释放。它不证明 Android 反射、文件权限
+或实际服务商兼容性。通过已披露的源码过滤器只编译这些自有设备夹具，不代表全量
+设备测试编译通过：既有八处 `mountedSessionId` 错误仍是有效基线。
+直接服务商验证也不证明标准 Dot 界面、会话持久化或网关行为。

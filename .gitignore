@@ -79,3 +79,6 @@ evidence/task-6/
 gateway/dist-operator/
 gateway/dist-relay/
 gateway/static-scan.json
+
+# Owned Android provider proof caches, evidence and inert host template
+/work/api-proof/

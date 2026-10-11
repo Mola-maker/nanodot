@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Added a manually guarded Android provider verification fixture with private one-use credential handoff, a single-exchange test transport, sanitized results and offline protocol controls; real API and native execution remained pending.
+
 - Masked sensitive Android LLM request headers before retaining debug logs and exporting request or agent traces; later caller mutations no longer changed logged headers.
 
 - Corrected gateway bootstrap instructions to require specific consent for temporary Hello World public URLs, confirmed closure before existing-Worker uploads and SQLite migration, and individual Worker Editor scopes with Dashboard domain connections.

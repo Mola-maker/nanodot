@@ -387,3 +387,47 @@ like the Python package's version does.
 | `connectors/`, `ui/connectors/` | The connectors catalogue (`ConnectorsCatalogue` reads the asset), MCP authorization discovery + registration (`McpAuthDiscovery`), connecting and token refresh (`Connectors`), what this phone connected as published to the profile and what the other devices did (`SharedConnectors`), the Settings → Connectors page |
 | `ui/cloud/` | Sign-in, the Account screen, the Devices section |
 | `res/values*/nm_strings.xml` | Every nanoMuse string in the seventeen languages the app has (English, 简体中文, 繁體中文, German, Spanish, Filipino, French, Indonesian, Japanese, Korean, Malay, Polish, Brazilian Portuguese, Romanian, Russian, Thai, Turkish); every file carries the same keys, and a missing one falls back to English |
+
+## Manual provider verification
+
+`io.github.nanomuse.apiproof.ManualDeepSeekApiProofTest#directProviderSingleReservedAttempt`
+is a manually selected instrumentation case. Ordinary runs without the fixed
+`nanodot-api-proof.input` file in the target application's private cache skip before
+constructing a provider. The input must be a regular, non-symlink, single-link file,
+owned by the target UID with exactly mode `0600`; the test reads it once and removes
+it before constructing HTTP resources. It accepts no key or endpoint through test
+arguments, preferences or APK assets. Only the operator responsible for the shared
+attempt budget may hand off a credential and run this case after source review and
+device ownership checks. A failed HTTP status, cancellation or timeout ends that
+attempt; there is no retry, fallback, title or summary request.
+
+The case calls the actual Kotlin `OpenAIProvider.streamMessage` and collects once:
+`https://api.deepseek.com`, `deepseek-flash`, the public prompt “Reply with the word
+READY.”, `max_tokens=64`, the existing companion `max_completion_tokens=64`, and
+explicit `thinking.type=disabled`. No tools or images are sent. The shared helper
+under `app/src/apiProof/java` is compiled into test source sets only. It uses
+explicitly disclosed reflection to replace the private eager client before use,
+checks replacement identity, and owns its own dispatcher and connection pool.
+Retries, redirects and authenticators are disabled; a network interceptor admits
+one exchange and rejects subsequent exchanges before HTTP headers/body are sent.
+The original client's shared resources are never closed or evicted.
+
+Response diagnostics are intentionally changed in this test: headers are stripped,
+non-success bodies become a fixed error, and bounded SSE lines containing the
+credential are rejected before reaching provider logs. Successful SSE still passes
+through the actual parser, including final-choice usage and `[DONE]`. The fixed
+`nanodot-api-proof.result.json` cache artifact is written atomically with mode
+`0600`; it contains only fixed endpoint/model/configuration, sanitized status,
+exchange/delta/finish/usage observations and the allowlisted public word `READY`
+(or `[omitted]`). The operator must remove a stale result before a reserved run.
+Credentials remain in process memory only for that run; immutable JVM strings
+cannot be explicitly erased, so the operator must finish the test process afterward.
+
+The local `ApiProofTransportTest` uses only loopback MockWebServer and synthetic
+credentials. Its checks establish request serialization, current SSE parsing,
+exchange prevention, response sanitation and owned cleanup. They do not establish
+Android reflection/file-permission behavior or actual vendor compatibility.
+Compiling only these owned instrumentation fixtures through a documented source
+filter is not a full instrumentation compile: the existing eight legacy
+`mountedSessionId` errors remain a binding baseline. Direct provider proof also
+does not establish canonical Dot UI, session persistence or gateway behavior.

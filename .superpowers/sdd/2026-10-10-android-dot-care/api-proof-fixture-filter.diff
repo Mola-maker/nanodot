@@ -1,0 +1,22 @@
+--- authorized/task4-only.init.gradle
++++ owned/fixture-only.init.gradle
+@@ -1,11 +1,13 @@
+-// Task4 instrumentation fixtures only; main and ALL unit sources remain unfiltered.
++// Derived from root-authorized Task4 template; only NEW OWN proof fixture compilation.
++// Main and ALL unit sources remain unfiltered. This is not full instrumentation compilation.
+ gradle.projectsEvaluated {
+     def app = rootProject.project(':app')
+-    def focused = new File(app.projectDir, 'src/androidTest/java/io/github/nanomuse/dot')
+-    app.android.sourceSets.androidTest.java.setSrcDirs([focused])
+-    app.kotlin.sourceSets.getByName('androidTest').kotlin.setSrcDirs([focused])
++    def nativeProof = new File(app.projectDir, 'src/androidTest/java/io/github/nanomuse/apiproof')
++    def sharedProof = new File(app.projectDir, 'src/apiProof/java/io/github/nanomuse/apiproof')
++    app.android.sourceSets.androidTest.java.setSrcDirs([nativeProof, sharedProof])
++    app.kotlin.sourceSets.getByName('androidTest').kotlin.setSrcDirs([nativeProof, sharedProof])
+     app.tasks.named('compileDebugAndroidTestKotlin').configure {
+-        setIncludes(['**/chat/DotChatPanelTest.kt', '**/screen/ScreenHostFixture.kt'])
+-        doFirst { println('TASK4_INSTRUMENTATION_SOURCES=' + sources.files.collect { it.path }.sort().join(',')) }
++        setIncludes(['**/ManualDeepSeekApiProofTest.kt', '**/PrivateProofInput.kt', '**/ApiProofTransport.kt'])
++        doFirst { println('API_PROOF_OWN_FIXTURE_SOURCES=' + sources.files.collect { it.path }.sort().join(',')) }
+     }
+ }
