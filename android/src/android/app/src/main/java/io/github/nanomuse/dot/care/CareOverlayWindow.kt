@@ -41,6 +41,7 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
     private var owner: DotOverlayOwner?=null
     private var params: WindowManager.LayoutParams?=null
     private var removeBack: (() -> Unit)?=null
+    private var removeGeometry: (() -> Unit)?=null
     private var player: ReadAloudPlayer?=null
     private var maxHeight=0
     private val job=scope.launch {
@@ -58,7 +59,6 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
         registry?.setCareActive(true)
         val target=session.focusBounds(scene())
         if(target==null) focus.clear() else focus.show(target)
-        if(card==null) addCard()
         val density=service.resources.displayMetrics.density
         val width=minOf(host.width.roundToInt(),(360*density).roundToInt())
         // Prefer the side of the target with more room so its actual touch region stays exposed.
@@ -66,7 +66,11 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
         val below=target?.let { (host.bottom-it.bottom).coerceAtLeast(0f) } ?: host.height
         val atBottom=below>=above
         maxHeight=careCardMaxHeight(host,target,density)
+        if(card==null) addCard()
         val view=card ?: return
+        // addView returns before ViewRoot attaches its ComposeView. Measuring here
+        // would resolve a window recomposer before that window exists.
+        if(!view.isAttachedToWindow) return
         view.measure(View.MeasureSpec.makeMeasureSpec(width,View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec(maxHeight,View.MeasureSpec.AT_MOST))
         params?.let { p ->
@@ -107,18 +111,26 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
             softInputMode=WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
         }
         card=view; composition=content; owner=lifecycle; params=p
+        val refresh=Runnable { if(card===view && view.isAttachedToWindow) refreshGeometry() }
+        val attach=object: View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(v: View) { view.post(refresh) }
+            override fun onViewDetachedFromWindow(v: View) { view.removeCallbacks(refresh) }
+        }
+        view.addOnAttachStateChangeListener(attach)
+        removeGeometry={ view.removeCallbacks(refresh); view.removeOnAttachStateChangeListener(attach) }
         try { windows.addView(view,p); registry?.registerCareWindow(view); lifecycle.start() }
         catch(failure: RuntimeException) {
+            removeGeometry?.invoke(); removeGeometry=null
             card=null; composition=null; owner=null; params=null
             content.disposeComposition(); lifecycle.destroy(); throw failure
         }
-        view.setOnApplyWindowInsetsListener { _,insets -> view.post { refreshGeometry() }; insets }
+        view.setOnApplyWindowInsetsListener { _,insets -> view.post(refresh); insets }
         view.addOnLayoutChangeListener { _,_,_,_,_,_,_,_,_ ->
             // Compose content/font changes can change wrap height without a host event.
-            view.post { if(card===view) refreshGeometry() }
+            view.post(refresh)
         }
         if(Build.VERSION.SDK_INT>=33) view.post {
-            if(card===view) {
+            if(card===view && view.isAttachedToWindow) {
                 val dispatcher=view.findOnBackInvokedDispatcher()
                 val callback=android.window.OnBackInvokedCallback { session.pause(hide=true) }
                 dispatcher?.registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,callback)
@@ -136,6 +148,7 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
     }
     private fun removeCard() {
         removeBack?.invoke(); removeBack=null
+        removeGeometry?.invoke(); removeGeometry=null
         card?.let { registry?.unregisterCareWindow(it); windows.removeViewImmediate(it) }
         composition?.disposeComposition(); owner?.destroy()
         card=null; composition=null; owner=null; params=null
