@@ -15,7 +15,7 @@ node --test site/tests/*.test.mjs
 npm --prefix gateway test
 ```
 
-`buildSite({outDir, docsDir})` copies the compiled docs into `/docs/`, product pages and local Dot assets into the dedicated output (default `gateway/public/`). It replaces only that output, refuses source/docs overlap and does not deploy. Use a `/docs/` documentation build for this root deployment; the default `/nanodot/docs/` remains for the existing destination.
+`buildSite({outDir, docsDir})` copies the compiled docs into `/docs/`, product pages and local Dot assets into the dedicated output (default `gateway/public/`). It checks actual filesystem ancestry before deletion: within the repository only `gateway/public` is permitted, while separate external temporary outputs remain supported. Source trees and compiled-docs inputs cannot overlap the output. It does not deploy. Use a `/docs/` documentation build for this root deployment; the default `/nanodot/docs/` remains for the existing destination.
 
 Wrangler serves a real custom 404. `/v1`, `/v1/*` and `/healthz` always run the Worker first, retaining no-store JSON API errors even for browser navigation. The Node route test uses actual local Wrangler ASSETS with AI omitted; it cannot perform inference. Gateway tests cover configured project authorization with remote bindings disabled. An authorized local socket is required for these checks. The configured local route test uses the production handler with a throw-on-call AI shape for discovery/auth only.
 
@@ -27,4 +27,4 @@ Pending CI integration: `.github/workflows/pages.yml` still uploads raw `site/` 
 
 下载清单的链接和 SHA-256 都对应 GitHub 外层产物 ZIP，不是内部安装包。页面说明登录要求、UTC 到期、debug/ad-hoc/未签名状态与 P0 能力边界，刷新时必须以真实构建证据为准。iOS 未签名 app/archive 不能直接安装。
 
-以上命令构建文档与产品站，并在真实本地 Wrangler ASSETS 上检查 404 与 API JSON 路由。`NANODOT_DOCS_BASE=/docs/` 是新根部署的可选覆盖，已有 `DOCS_BASE` 及默认 `/nanodot/docs/` 保留。构建仅替换专用输出目录，不部署、不收集 key、不调用真实模型。
+以上命令构建文档与产品站，并在真实本地 Wrangler ASSETS 上检查 404 与 API JSON 路由。`NANODOT_DOCS_BASE=/docs/` 是新根部署的可选覆盖，已有 `DOCS_BASE` 及默认 `/nanodot/docs/` 保留。删除前先核对真实文件系统路径：仓库内只允许输出到 `gateway/public`，仓库外独立临时输出仍可用；输出不得与源码树或已编译文档输入重叠。不部署、不收集 key、不调用真实模型。

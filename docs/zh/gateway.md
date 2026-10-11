@@ -81,6 +81,6 @@ npm --prefix gateway run dry-run
 
 `site/` 中的双语静态产品页将当前 P0 下载与预览中的网关、浮球、关怀源码分开说明。六个下载均为临时 GitHub Actions 产物 ZIP，需要登录 GitHub，页面标示 UTC 到期时间与 ZIP 范围的 SHA-256。未签名 iOS device app/archive 不能直接安装，不是 IPA 或 TestFlight 发布。P0 构建不包含新的网关、浮球、关怀集成。
 
-使用 Node 22：`NANODOT_DOCS_BASE=/docs/ npm --prefix website run docs:build`，然后 `node scripts/site/build.mjs`。可选的 `NANODOT_DOCS_BASE` 覆盖新根部署的文档 base，保留已有 `DOCS_BASE` 行为及默认 `/nanodot/docs/`。导出的 `buildSite({outDir, docsDir})` 将已编译文档复制到 `/docs/`，将原创离线 Dot 图形复制到专用输出，默认 `gateway/public/`，不执行部署。运行 `node --test site/tests/*.test.mjs` 和网关测试；本地路由检查需要本地监听端口，省略 AI binding，不调用真实模型。
+使用 Node 22：`NANODOT_DOCS_BASE=/docs/ npm --prefix website run docs:build`，然后 `node scripts/site/build.mjs`。可选的 `NANODOT_DOCS_BASE` 覆盖新根部署的文档 base，保留已有 `DOCS_BASE` 行为及默认 `/nanodot/docs/`。导出的 `buildSite({outDir, docsDir})` 将已编译文档复制到 `/docs/`，将原创离线 Dot 图形复制到专用输出，默认 `gateway/public/`。删除前核对真实文件系统路径，仓库内仅允许输出到 `gateway/public`，仓库外独立临时输出仍可用；源码树与已编译文档输入不得与输出重叠。不执行部署。运行 `node --test site/tests/*.test.mjs` 和网关测试；本地路由检查需要本地监听端口，省略 AI binding，不调用真实模型。
 
 接入指南不接收凭据输入。隐私页说明用户主动触发的图片/音频发送到 Cloudflare、项目不持久存储 payload 与供应商自己的数据政策。已有 Cloud/服务商数据流保持独立。

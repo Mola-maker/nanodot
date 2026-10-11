@@ -1,17 +1,37 @@
-import { cp, mkdir, readFile, rm, writeFile, access } from 'node:fs/promises';
-import { resolve, relative, join } from 'node:path';
+import { cp, mkdir, readFile, rm, writeFile, access, realpath } from 'node:fs/promises';
+import { resolve, relative, join, dirname, basename, isAbsolute, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const site = join(root, 'site');
 const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const inside = (parent, child) => { const path = relative(parent, child); return path === '' || (!path.startsWith('..') && !path.startsWith('/')); };
+const inside = (parent, child) => {
+  const path = relative(parent, child);
+  return path === '' || (path !== '..' && !path.startsWith(`..${sep}`) && !isAbsolute(path));
+};
+
+async function canonicalPath(path) {
+  try { return await realpath(path); }
+  catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    return join(await canonicalPath(dirname(path)), basename(path));
+  }
+}
 
 export async function buildSite({ outDir, docsDir }) {
   const out = resolve(outDir);
   const docs = resolve(docsDir);
-  // Only the dedicated output tree can be replaced; preserve source and docs inputs.
-  if (inside(out, root) || inside(out, docs) || inside(docs, out) || inside(site, out)) throw new Error('Output must be separate from source and docs inputs.');
+  // Check actual filesystem ancestry, including existing parent aliases, before deletion.
+  const [repository, output, documentation, ...sources] = await Promise.all(
+    [root, out, docs, site, join(root, 'assets/brand'), join(root, 'scripts/site')].map(canonicalPath),
+  );
+  const managedOutput = join(repository, 'gateway/public');
+  if (inside(output, repository)
+      || (inside(repository, output) && output !== managedOutput)
+      || inside(output, documentation) || inside(documentation, output)
+      || sources.some(source => inside(output, source) || inside(source, output))) {
+    throw new Error('Output must be separate from source and docs inputs; repository output is restricted to gateway/public.');
+  }
   await access(join(docs, 'index.html'));
   const rows = JSON.parse(await readFile(join(site, 'downloads.json'), 'utf8'));
   for (const row of rows) {
