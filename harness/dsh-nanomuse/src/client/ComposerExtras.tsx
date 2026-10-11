@@ -69,6 +69,7 @@ export function makeMicButton(t: Translate, openDictation: () => void) {
     }
     return h('button', {
       type: 'button',
+      'aria-live': 'polite',
       className: `nm-mic${listening ? ' nm-live' : ''}`,
       'aria-label': listening ? t('micStop') : t('micStart'),
       title: listening ? t('micStop') : t('micStart'),

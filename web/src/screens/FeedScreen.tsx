@@ -17,6 +17,7 @@ import {
   Webhook,
 } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { DotStatus } from "../DotStatus";
 import { api } from "../api";
 import { Markdown } from "../components/Markdown";
 import { MuseRoundButton } from "../components/MuseHeader";
@@ -35,6 +36,8 @@ import { cx, readStorage, relativeTime, timeShort, writeStorage } from "../util"
  */
 export function FeedScreen() {
   const { state, send, openThread, openFile, markFeedSeen, setTab, toast } = useStore();
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const [items, setItems] = useState<FeedItem[] | null>(null);
   const [posts, setPosts] = useState<FeedPostsData | null>(null);
   const [upcoming, setUpcoming] = useState<UpcomingData | null>(null);
@@ -45,9 +48,10 @@ export function FeedScreen() {
 
   useEffect(() => {
     let alive = true;
+    setLoadError(null);
     api.feed(80)
       .then((d) => alive && setItems(d))
-      .catch((e: Error) => toast(e.message));
+      .catch((e: Error) => alive && setLoadError(e.message));
     api.upcoming()
       .then((d) => alive && setUpcoming(d))
       .catch(() => undefined);
@@ -58,7 +62,7 @@ export function FeedScreen() {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.feedVersion, state.remindersVersion]);
+  }, [state.feedVersion, state.remindersVersion, attempt]);
 
   // the day's events, when a calendar is connected (a feed refresh pushes a new version)
   useEffect(() => {
@@ -119,6 +123,8 @@ export function FeedScreen() {
       />
 
       <div className="flex-1 overflow-y-auto px-3.5 pb-7">
+        {loadError && <DotStatus state="error" message={t(loadError)} onRetry={() => setAttempt(n => n + 1)} />}
+        {!loadError && items === null && <DotStatus state="loading" message={t("Loading…")} />}
         {/* Muse's feed: a day heading, white cards; the first card explains what drives it */}
         {postDays.length === 0 && (
           <>
@@ -136,7 +142,7 @@ export function FeedScreen() {
                 <StaticCard emoji="📝" title={t("Steer it with one sentence")} body={t("Tap the sliders at the top right to tell me what you want more of, switch the daily routine off, or have me write the first day now.")} />
                 {state.settings && !state.settings.llm_ready && (
                   <FeedCard>
-                    <button type="button" onClick={() => setTab("you")} className="flex w-full items-center gap-2 p-4 text-left text-[14px] text-muted">
+                    <button type="button" onClick={() => setTab("you")} className="flex w-full items-center gap-2 p-4 text-left text-[0.875rem] text-muted">
                       <Info size={16} className="shrink-0 text-accent" /> {t("Add a model first; the feed is written by your agent.")}
                     </button>
                   </FeedCard>
@@ -144,11 +150,11 @@ export function FeedScreen() {
                 <FeedCard>
                   <div className="p-4">
                     {writing ? (
-                      <div className="flex items-center justify-center gap-2.5 text-[15px]">
+                      <div className="flex items-center justify-center gap-2.5 text-[0.9375rem]">
                         <Loader2 size={18} className="animate-spin text-accent" /> {t("Writing…")}
                       </div>
                     ) : (
-                      <button type="button" onClick={() => void writeNow()} className="h-[46px] w-full rounded-full bg-accent text-[15px] font-semibold text-accent-fg">
+                      <button type="button" onClick={() => void writeNow()} className="h-[46px] w-full rounded-full bg-accent text-[0.9375rem] font-semibold text-accent-fg">
                         {t("Write it now")}
                       </button>
                     )}
@@ -164,7 +170,7 @@ export function FeedScreen() {
             {i === 0 && !introAck && <IntroCard instructions={posts?.instructions ?? ""} onEdit={() => setSettingsOpen(true)} onAck={ackIntro} />}
             {i === 0 && writing && (
               <FeedCard>
-                <div className="flex items-center gap-2.5 p-4 text-[15px]">
+                <div className="flex items-center gap-2.5 p-4 text-[0.9375rem]">
                   <Loader2 size={18} className="animate-spin text-accent" /> {t("Writing…")}
                 </div>
               </FeedCard>
@@ -180,18 +186,18 @@ export function FeedScreen() {
         {calendar?.configured && <TodayBlock data={calendar} onAsk={() => openThread("main")} />}
 
         {items && items.length === 0 && (!posts || posts.posts.length === 0) && (
-          <div className="py-10 text-center text-muted text-[14px] px-6">
+          <div className="py-10 text-center text-muted text-[0.875rem] px-6">
             <Moon size={28} className="mx-auto mb-2 opacity-60" />
             {t("Nothing yet. Once {name} works on a goal in the background or needs your approval, it shows up here.", { name })}
           </div>
         )}
 
         {items && items.length > 0 && (
-          <div className="px-1 pt-1 text-[12px] font-semibold uppercase tracking-wide text-muted">{t("While you were away")}</div>
+          <div className="px-1 pt-1 text-[0.75rem] font-semibold uppercase tracking-wide text-muted">{t("While you were away")}</div>
         )}
         {groups.map(([day, list]) => (
           <section key={day}>
-            <div className="px-1 mb-1.5 text-[12px] uppercase tracking-wide text-muted font-semibold">{day}</div>
+            <div className="px-1 mb-1.5 text-[0.75rem] uppercase tracking-wide text-muted font-semibold">{day}</div>
             <ul className="space-y-2">
               {list.map((it) => (
                 <li key={it.id}>
@@ -236,7 +242,7 @@ export function FeedScreen() {
                   toast((e as Error).message);
                 }
               }}
-              className="w-full rounded-full bg-surface-2 py-2.5 text-[15px] font-medium text-rose-500"
+              className="w-full rounded-full bg-surface-2 py-2.5 text-[0.9375rem] font-medium text-rose-500"
             >
               {t("Delete this post")}
             </button>
@@ -284,7 +290,7 @@ function dayLabel(day: string, at: Date): string {
 }
 
 function DayTitle({ text }: { text: string }) {
-  return <h2 className="px-1.5 pt-3.5 pb-2 text-[22px] font-bold leading-7">{text}</h2>;
+  return <h2 className="px-1.5 pt-3.5 pb-2 text-[1.375rem] font-bold leading-7">{text}</h2>;
 }
 
 /** White card frame shared by every card on the page. */
@@ -339,16 +345,16 @@ function PostCard({ post, onDiscuss, onInfo }: { post: FeedPost; onDiscuss: () =
     <FeedCard>
       <article className="pl-3.5 pr-2.5 pt-3.5 pb-1.5">
         <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-[22px] leading-none">{AREA_EMOJI[post.area] ?? "📝"}</div>
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-[1.375rem] leading-none">{AREA_EMOJI[post.area] ?? "📝"}</div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-[16px] font-semibold leading-[22px]">{post.title}</h3>
-            <div className="md mt-1 text-[15px] leading-[22px] text-fg/85">
+            <h3 className="text-[1rem] font-semibold leading-[1.375rem]">{post.title}</h3>
+            <div className="md mt-1 text-[0.9375rem] leading-[1.375rem] text-fg/85">
               <Markdown text={post.body} />
             </div>
           </div>
         </div>
         <div className="mt-1.5 flex items-center">
-          <button type="button" onClick={onDiscuss} className="flex items-center gap-1.5 rounded-full px-2 py-2 text-[14px] hover:bg-surface-2">
+          <button type="button" onClick={onDiscuss} className="flex items-center gap-1.5 rounded-full px-2 py-2 text-[0.875rem] hover:bg-surface-2">
             <MessageCircle size={22} strokeWidth={1.8} /> {t("Discuss")}
           </button>
           <button type="button" onClick={onInfo} aria-label={t("About this post")} className="ml-auto rounded-full p-2 hover:bg-surface-2">
@@ -366,16 +372,16 @@ function IntroCard({ instructions, onEdit, onAck }: { instructions: string; onEd
   return (
     <FeedCard>
       <div className="px-4 py-3.5">
-        <div className="text-[17px] font-semibold">{t("About the feed")}</div>
-        <p className="mt-1 text-[13px] leading-[18px] text-muted">{t("Short posts your agent writes for you from what it remembers: your memory files, the last week of diary, your goals. The sentence below steers every post from now on; edit it any time.")}</p>
+        <div className="text-[1.0625rem] font-semibold">{t("About the feed")}</div>
+        <p className="mt-1 text-[0.8125rem] leading-[1.125rem] text-muted">{t("Short posts your agent writes for you from what it remembers: your memory files, the last week of diary, your goals. The sentence below steers every post from now on; edit it any time.")}</p>
       </div>
       <div className="border-t border-border/70 px-4 py-3.5">
-        <p className="text-[15px] leading-[22px]">{instructions || t("Build me a feed about what I care about. Keep it short and direct, easy to skim, no clickbait.")}</p>
+        <p className="text-[0.9375rem] leading-[1.375rem]">{instructions || t("Build me a feed about what I care about. Keep it short and direct, easy to skim, no clickbait.")}</p>
         <div className="mt-3.5 flex justify-end gap-2.5">
-          <button type="button" onClick={onEdit} className="rounded-full bg-surface-2 px-6 py-2.5 text-[15px] font-medium">
+          <button type="button" onClick={onEdit} className="rounded-full bg-surface-2 px-6 py-2.5 text-[0.9375rem] font-medium">
             {t("Edit")}
           </button>
-          <button type="button" onClick={onAck} className="rounded-full bg-accent px-6 py-2.5 text-[15px] font-semibold text-accent-fg">
+          <button type="button" onClick={onAck} className="rounded-full bg-accent px-6 py-2.5 text-[0.9375rem] font-semibold text-accent-fg">
             {t("Got it")}
           </button>
         </div>
@@ -388,10 +394,10 @@ function StaticCard({ emoji, title, body }: { emoji: string; title: string; body
   return (
     <FeedCard>
       <div className="flex items-start gap-3 p-3.5">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-[22px] leading-none">{emoji}</div>
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-[1.375rem] leading-none">{emoji}</div>
         <div className="min-w-0 flex-1">
-          <div className="text-[16px] font-semibold leading-[22px]">{title}</div>
-          <p className="mt-1 text-[15px] leading-[22px] text-fg/85">{body}</p>
+          <div className="text-[1rem] font-semibold leading-[1.375rem]">{title}</div>
+          <p className="mt-1 text-[0.9375rem] leading-[1.375rem] text-fg/85">{body}</p>
         </div>
       </div>
     </FeedCard>
@@ -400,7 +406,7 @@ function StaticCard({ emoji, title, body }: { emoji: string; title: string; body
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-start gap-3 text-[14.5px]">
+    <div className="flex items-start gap-3 text-[0.90625rem]">
       <span className="w-14 shrink-0 text-muted">{label}</span>
       <span className="min-w-0 flex-1 break-words">{value}</span>
     </div>
@@ -453,14 +459,14 @@ function FeedSettingsSheet({
   return (
     <Sheet open={open} onClose={onClose} title={t("Feed")}>
       <div className="space-y-3 px-1 pb-2">
-        <p className="text-[13px] leading-[18px] text-muted">{t("Your feed is driven by the instruction below. Any edit you make here applies to every post from now on.")}</p>
+        <p className="text-[0.8125rem] leading-[1.125rem] text-muted">{t("Your feed is driven by the instruction below. Any edit you make here applies to every post from now on.")}</p>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={4}
           maxLength={2000}
           placeholder={t("Build me a feed about what I care about. Keep it short and direct, easy to skim, no clickbait.")}
-          className="w-full resize-none rounded-2xl bg-surface-2 px-3.5 py-2.5 text-[15px] leading-snug outline-none focus:ring-2 focus:ring-accent/40"
+          className="w-full resize-none rounded-2xl bg-surface-2 px-3.5 py-2.5 text-[0.9375rem] leading-snug outline-none focus:ring-2 focus:ring-accent/40"
         />
         <div className="space-y-2 rounded-2xl bg-surface-2 px-3.5 py-2.5">
           <Toggle
@@ -471,28 +477,28 @@ function FeedSettingsSheet({
             disabled={!data}
           />
           {data?.daily !== false && (
-            <label className="flex items-center justify-between gap-3 text-[13px] text-muted">
+            <label className="flex items-center justify-between gap-3 text-[0.8125rem] text-muted">
               <span>{t("Time of day")}</span>
               <input
                 type="time"
                 value={data?.time ?? "08:00"}
                 onChange={(e) => e.target.value && void routine({ time: e.target.value })}
-                className="rounded-lg bg-surface px-2 py-1 text-[13px] text-fg outline-none focus:ring-2 focus:ring-accent/40"
+                className="rounded-lg bg-surface px-2 py-1 text-[0.8125rem] text-fg outline-none focus:ring-2 focus:ring-accent/40"
               />
             </label>
           )}
-          {!llmReady && <div className="text-[12.5px] text-muted">{t("Add a model first; the feed is written by your agent.")}</div>}
+          {!llmReady && <div className="text-[0.78125rem] text-muted">{t("Add a model first; the feed is written by your agent.")}</div>}
         </div>
         <button
           type="button"
           onClick={onWriteNow}
           disabled={writing || !data || !llmReady}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-surface-2 py-2.5 text-[15px] font-medium disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-surface-2 py-2.5 text-[0.9375rem] font-medium disabled:opacity-60"
         >
           {writing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} className="text-accent" />}
           {writing ? t("Writing…") : t("Write it now")}
         </button>
-        <button type="button" onClick={() => void save()} disabled={saving} className="h-[46px] w-full rounded-full bg-accent text-[15px] font-semibold text-accent-fg disabled:opacity-60">
+        <button type="button" onClick={() => void save()} disabled={saving} className="h-[46px] w-full rounded-full bg-accent text-[0.9375rem] font-semibold text-accent-fg disabled:opacity-60">
           {t("Save")}
         </button>
       </div>
@@ -518,25 +524,25 @@ function NextUp({
   const activeReminders = active.length;
   return (
     <div className="rounded-3xl border border-border/70 bg-surface shadow-sm px-4 py-3.5">
-      <div className="flex items-center gap-2 text-[12px] uppercase tracking-wide text-muted font-semibold">
+      <div className="flex items-center gap-2 text-[0.75rem] uppercase tracking-wide text-muted font-semibold">
         <Bell size={13} /> {t("Next up")}
       </div>
       {!data.proactive ? (
-        <div className="mt-1.5 text-[14px] leading-snug">
+        <div className="mt-1.5 text-[0.875rem] leading-snug">
           {t("Background work is off. {name} only acts when you ask.", { name })}{" "}
           <button type="button" onClick={onSettings} className="text-accent font-medium">
             {t("Turn it on")}
           </button>
         </div>
       ) : !next ? (
-        <div className="mt-1.5 text-[14px] leading-snug">
+        <div className="mt-1.5 text-[0.875rem] leading-snug">
           {t("No goal has a next step to work on.")}{" "}
           <button type="button" onClick={onGoals} className="text-accent font-medium">
             {t("Add one")}
           </button>
         </div>
       ) : (
-        <div className="mt-1.5 text-[14px] leading-snug">
+        <div className="mt-1.5 text-[0.875rem] leading-snug">
           {data.busy
             ? t("Working now")
             : data.quiet_until
@@ -551,13 +557,13 @@ function NextUp({
         </div>
       )}
       {data.check_ins[0] && (
-        <div className="mt-1.5 text-[12.5px] text-muted">
+        <div className="mt-1.5 text-[0.78125rem] text-muted">
           {t("Check-in on")} <span className="font-medium text-fg">{data.check_ins[0].title}</span> {relativeTime(data.check_ins[0].at)}
           {data.check_ins.length > 1 && ` · ${t("{n} more", { n: data.check_ins.length - 1 })}`}
         </div>
       )}
       {nextReminder && (
-        <div className="mt-1.5 text-[12.5px] text-muted">
+        <div className="mt-1.5 text-[0.78125rem] text-muted">
           {nextReminder.kind === "task" ? t("Routine") : t("Reminder")} <span className="font-medium text-fg">{nextReminder.text}</span>{" "}
           {relativeTime(nextReminder.next_at)}
           {activeReminders > 1 && ` · ${t("{n} more", { n: activeReminders - 1 })}`}
@@ -581,23 +587,23 @@ function TodayBlock({ data, onAsk }: { data: CalendarData; onAsk: () => void }) 
   const list = showTomorrow ? later : todays;
   return (
     <div className="rounded-3xl border border-border/70 bg-surface shadow-sm px-4 py-3.5">
-      <div className="flex items-center gap-2 text-[12px] uppercase tracking-wide text-muted font-semibold">
+      <div className="flex items-center gap-2 text-[0.75rem] uppercase tracking-wide text-muted font-semibold">
         <CalendarDays size={13} /> {showTomorrow ? t("Tomorrow") : t("Today")}
         {list.length > 0 && <span className="ml-auto normal-case tracking-normal font-normal">{t("{n} scheduled", { n: list.length })}</span>}
       </div>
       {list.length === 0 ? (
-        <div className="mt-1.5 text-[14px] leading-snug text-muted">{t("Nothing on the calendar today.")}</div>
+        <div className="mt-1.5 text-[0.875rem] leading-snug text-muted">{t("Nothing on the calendar today.")}</div>
       ) : (
         <ul className="mt-1.5 space-y-1">
           {list.map((e) => (
-            <li key={`${e.uid}-${e.start}`} className={cx("flex items-baseline gap-2.5 text-[14px] leading-snug", !showTomorrow && over(e) && "opacity-50")}>
-              <span className="w-[86px] shrink-0 tabular-nums text-[12.5px] text-muted">
+            <li key={`${e.uid}-${e.start}`} className={cx("flex items-baseline gap-2.5 text-[0.875rem] leading-snug", !showTomorrow && over(e) && "opacity-50")}>
+              <span className="w-[86px] shrink-0 tabular-nums text-[0.78125rem] text-muted">
                 {e.all_day ? t("all day") : `${e.start.slice(11, 16)}–${e.end.slice(11, 16)}`}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="font-medium">{e.summary}</span>
                 {e.location && (
-                  <span className="text-muted text-[12.5px]">
+                  <span className="text-muted text-[0.78125rem]">
                     {" "}
                     <MapPin size={11} className="inline -mt-0.5" /> {e.location}
                   </span>
@@ -607,8 +613,8 @@ function TodayBlock({ data, onAsk }: { data: CalendarData; onAsk: () => void }) 
           ))}
         </ul>
       )}
-      {broken.length > 0 && <div className="mt-1.5 text-[12px] text-rose-500">{t("{name} could not be read", { name: broken.map((f) => f.name).join(", ") })}</div>}
-      <button type="button" onClick={onAsk} className="mt-2 text-[12.5px] text-accent font-medium">
+      {broken.length > 0 && <div className="mt-1.5 text-[0.75rem] text-rose-500">{t("{name} could not be read", { name: broken.map((f) => f.name).join(", ") })}</div>}
+      <button type="button" onClick={onAsk} className="mt-2 text-[0.78125rem] text-accent font-medium">
         {t("Ask about your week")}
       </button>
     </div>
@@ -655,7 +661,7 @@ function FeedRow({ item, unseen, onOpen }: { item: FeedItem; unseen: boolean; on
   if (item.quiet) {
     // a pass that found nothing worth interrupting you for: one line, no card
     return (
-      <button type="button" onClick={onOpen} className="w-full text-left px-2 py-1.5 flex items-center gap-2 text-[12.5px] text-muted">
+      <button type="button" onClick={onOpen} className="w-full text-left px-2 py-1.5 flex items-center gap-2 text-[0.78125rem] text-muted">
         <Moon size={13} className="shrink-0" />
         <span className="truncate">
           {t("{label}: nothing new", { label: localLabel(item.title.replace(/^Working on your goal: /, "")) })}{item.text ? `: ${item.text}` : ""}
@@ -677,11 +683,11 @@ function FeedRow({ item, unseen, onOpen }: { item: FeedItem; unseen: boolean; on
         <div className={cx("rounded-2xl p-2 mt-0.5", tone)}>{icon}</div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <div className="font-semibold text-[14.5px] leading-snug truncate">{localLabel(item.title)}</div>
+            <div className="font-semibold text-[0.90625rem] leading-snug truncate">{localLabel(item.title)}</div>
             {unseen && <span className="h-2 w-2 rounded-full bg-accent shrink-0" />}
           </div>
-          {item.text && <div className="mt-0.5 text-[13.5px] text-muted leading-snug line-clamp-3 whitespace-pre-wrap">{plain(item.text)}</div>}
-          <div className="mt-1.5 flex items-center gap-2 text-[12px] text-muted">
+          {item.text && <div className="mt-0.5 text-[0.84375rem] text-muted leading-snug line-clamp-3 whitespace-pre-wrap">{plain(item.text)}</div>}
+          <div className="mt-1.5 flex items-center gap-2 text-[0.75rem] text-muted">
             <span>{relativeTime(item.ts)}</span>
             <span>·</span>
             <span className="truncate">{item.thread === "main" ? t(item.thread_title) : item.thread_title}</span>

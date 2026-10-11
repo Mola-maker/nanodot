@@ -4,6 +4,10 @@
  * Run `npm test` — the i18n test lists the strings that still lack a translation.
  */
 const zhCN: Record<string, string> = {
+  "Dot is offline.": "Dot 已离线。",
+  "Loading…": "正在加载…",
+  "Main navigation": "主导航",
+  "401: Access token required.": "401：请提供访问令牌。",
   // ── Shell, tabs, connection ───────────────────────────────────────────────────────
   Chat: "聊天",
   Feed: "动态",

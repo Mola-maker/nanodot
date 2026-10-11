@@ -1,0 +1,22 @@
+import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
+import test, { after } from 'node:test';
+import assert from 'node:assert/strict';
+import { build } from 'esbuild';
+import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+const dir = await mkdtemp(join(tmpdir(), 'nanodot-nav-'));
+const entry = join(dir, 'entry.ts');
+await writeFile(entry, `import { createElement as h } from '${process.cwd()}/node_modules/react/index.js';
+import { renderToStaticMarkup } from '${process.cwd()}/node_modules/react-dom/server.node.js';
+import { MuseSidebar } from '${process.cwd()}/src/client/MuseSidebar.tsx';
+import { en } from '${process.cwd()}/src/client/locales.ts';
+export function render() { return renderToStaticMarkup(h(MuseSidebar, { collapsed: true, width: 300, t: (key) => en[key] || key, renderSlot: () => null, startSession: () => {}, toggleSidebar: () => {}, selectPanel: () => {}, openProfile: () => {}, issuesUrl: '', chatActions: {}, usePanels: f => f([]), usePanelInfo: f => f({activePanelId: null}), useShortcuts: f => f([]) })); }`);
+await build({ entryPoints: [entry], outfile: join(dir, 'out.cjs'), bundle: true, platform: 'node', format: 'cjs', plugins: [{ name: 'host-primitives', setup(b) { if (process.env.NAV_BASELINE) b.onLoad({filter:/MuseSidebar\.tsx$/}, () => ({contents: readFileSync(process.env.NAV_BASELINE, 'utf8'), loader:'tsx', resolveDir: process.cwd() + '/src/client' })); b.onResolve({filter: /^@deepseek-ai\/dsh-client-ui-primitives$/}, () => ({path:'host', namespace:'fixture'})); b.onLoad({filter: /.*/, namespace:'fixture'}, () => ({ contents:'export const Toast = () => null; export const Modal = () => null; export const Button = () => null; export const Input = () => null;', loader:'js' })); } }] });
+const { render } = createRequire(import.meta.url)(join(dir, 'out.cjs'));
+test('desktop keeps four primary destinations accessible through the real sidebar', () => {
+  const html = render();
+  for (const label of ['Chats', 'Tasks', 'Devices', 'Settings']) assert.ok(html.includes(`aria-label="${label}"`), `Missing ${label}`);
+});
+after(() => rm(dir, { recursive: true, force: true }));

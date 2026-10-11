@@ -1,8 +1,8 @@
-import { CalendarDays, Code2, FileImage, FileSpreadsheet, FileText, Globe, LibraryBig, Loader2, Search } from "lucide-react";
+import { CalendarDays, Code2, FileImage, FileSpreadsheet, FileText, Globe, LibraryBig, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { api, fileUrl } from "../api";
 import { TabHeader } from "../components/TabHeader";
-import { LoadError } from "../components/LoadError";
+import { DotStatus } from "../DotStatus";
 import { useT } from "../i18n";
 import { useStore } from "../store";
 import type { FileInfo } from "../types";
@@ -58,26 +58,22 @@ export function LibraryScreen() {
         {(files?.length ?? 0) > 8 && (
           <label className="mt-2.5 flex items-center gap-2 rounded-full bg-surface-2 px-3.5 py-2">
             <Search size={16} className="text-muted" />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("Search files")} className="flex-1 bg-transparent text-[14.5px] outline-none" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} aria-label={t("Search files")} placeholder={t("Search files")} className="flex-1 bg-transparent text-[0.90625rem] outline-none" />
           </label>
         )}
       </div>
 
       <div className="flex-1 overflow-y-auto pb-6">
-        {files === null && error && <LoadError message={error} onRetry={() => setAttempt((n) => n + 1)} />}
+        {files === null && error && <DotStatus state="error" message={error} onRetry={() => { setError(null); setAttempt((n) => n + 1); }} />}
         {files === null && !error && (
-          <div className="flex justify-center py-10 text-muted">
-            <Loader2 className="animate-spin" size={20} />
-          </div>
+          <DotStatus state="loading" message={t("Loading…")} />
         )}
         {files !== null && shown.length === 0 && (
           <div className="flex flex-col items-center px-8 pt-9 text-center">
             <LibraryBig size={34} className="text-muted" />
-            <div className="mt-3.5 text-[16px] font-medium text-muted">
-              {query ? t("No files match.") : segment === 0 ? t("Nothing created yet") : t("No media yet")}
-            </div>
+            <DotStatus state="empty" message={query ? t("No files match.") : segment === 0 ? t("Nothing created yet") : t("No media yet")} />
             {!query && (
-              <p className="mt-1 text-[12px] text-muted">
+              <p className="mt-1 text-[0.75rem] text-muted">
                 {segment === 0 ? t("Documents, tables and pages I write for you will show up here.") : t("Photos, screenshots and recordings I produce will show up here.")}
               </p>
             )}
@@ -106,7 +102,7 @@ export function Segmented({ labels, selected, onSelect }: { labels: string[]; se
           role="tab"
           aria-selected={i === selected}
           onClick={() => onSelect(i)}
-          className={cx("flex-1 rounded-full text-[14px] font-semibold transition", i === selected ? "bg-surface-2" : "bg-transparent")}
+          className={cx("flex-1 rounded-full text-[0.875rem] font-semibold transition", i === selected ? "bg-surface-2" : "bg-transparent")}
         >
           {label}
         </button>
@@ -139,8 +135,8 @@ function FileRow({ file, onOpen }: { file: FileInfo; onOpen: () => void }) {
         {kind === "image" ? <img src={fileUrl(file.path)} alt="" loading="lazy" className="h-full w-full object-cover" /> : icon}
       </span>
       <span className="min-w-0 flex-1 space-y-0.5">
-        <span className="block truncate text-[15px] font-medium">{file.name}</span>
-        <span className="block truncate text-[12px] text-muted">{[relativeDay(file.modified), formatSize(file.size), dir].filter(Boolean).join(" · ")}</span>
+        <span className="block truncate text-[0.9375rem] font-medium">{file.name}</span>
+        <span className="block truncate text-[0.75rem] text-muted">{[relativeDay(file.modified), formatSize(file.size), dir].filter(Boolean).join(" · ")}</span>
       </span>
     </button>
   );

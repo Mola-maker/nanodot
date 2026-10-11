@@ -1,5 +1,6 @@
 import { Check, Globe, Hand, Laptop, MessageSquare, MoreHorizontal, Pencil, RefreshCw, Smartphone, Square, Wifi, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { DotStatus } from "../DotStatus";
 import { api } from "../api";
 import { PageBar } from "../components/BackBar";
 import { CloudCard } from "../components/CloudCard";
@@ -25,15 +26,17 @@ export function DevicesScreen() {
   const t = useT();
   const hub = state.hub;
   const hands = state.hands;
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const reload = async () => {
     try {
+      setLoadError(null);
       const [h, hs] = await Promise.all([api.hub(), api.hands()]);
       dispatch({ type: "ws", msg: { kind: "hub", hub: h } });
       dispatch({ type: "ws", msg: { kind: "hands_state", hands: hs } });
-    } catch {
-      /* offline; the live socket fills it in */
+    } catch (error) {
+      setLoadError((error as Error).message);
     }
   };
   useEffect(() => {
@@ -73,17 +76,20 @@ export function DevicesScreen() {
       <PageBar
         title={t("Devices")}
         actions={
-          <button type="button" onClick={() => void refresh()} aria-label={t("Refresh")} title={t("Refresh")} className="flex h-9 w-9 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-fg">
+          <button type="button" disabled={refreshing} onClick={() => void refresh()} aria-label={t("Refresh")} title={t("Refresh")} className="flex h-9 w-9 items-center justify-center rounded-full text-muted hover:bg-surface-2 hover:text-fg">
             <RefreshCw size={17} className={cx(refreshing && "animate-spin")} />
           </button>
         }
       />
+      {loadError && <DotStatus state="error" message={t(loadError)} onRetry={() => void refresh()} />}
+      {refreshing && <DotStatus state="loading" message={t("Loading…")} />}
+      {!refreshing && !loadError && hub && <DotStatus state={connected ? "ready" : !signedIn ? "empty" : hub.state === "refused" || hub.state === "disconnected" ? "error" : "loading"} message={connected ? t("Online") : hub.detail || t(signedIn ? "Loading…" : "Signed out")} onRetry={!connected && signedIn ? () => void refresh() : undefined} />}
       <div className="@container flex-1 overflow-y-auto pb-8">
         {/* the header: what devices are for, and how many there are */}
         <div className="px-5 pb-4 pt-1">
-          <p className="text-[14px] leading-[20px] text-muted">{t("Every device signed in to your account is a Muse of its own, on the same conversations. Type @ and a device's name in the chat to hand it work; a computer lends its hands.")}</p>
+          <p className="text-[0.875rem] leading-[1.25rem] text-muted">{t("Every device signed in to your account is a Muse of its own, on the same conversations. Type @ and a device's name in the chat to hand it work; a computer lends its hands.")}</p>
           {hub && signedIn && total > 0 && (
-            <p className="mt-1.5 text-[12.5px] font-medium uppercase tracking-wide text-muted/80">
+            <p className="mt-1.5 text-[0.78125rem] font-medium uppercase tracking-wide text-muted/80">
               {total === 1 ? t("1 device") : t("{n} devices", { n: total })} · {t("{n} online", { n: online })}
             </p>
           )}
@@ -112,7 +118,7 @@ export function DevicesScreen() {
               ))}
             </div>
           )}
-          <p className="px-1 pt-3 text-[12.5px] leading-[18px] text-muted">{t("A chat addressed to a device runs there; you see every step here and answer its approvals.")}</p>
+          <p className="px-1 pt-3 text-[0.78125rem] leading-[1.125rem] text-muted">{t("A chat addressed to a device runs there; you see every step here and answer its approvals.")}</p>
         </div>
 
         {hands && !hands.reason?.includes("phone") && (
@@ -129,12 +135,12 @@ export function DevicesScreen() {
 }
 
 function SectionLabel({ children }: { children: ReactNode }) {
-  return <p className="px-1 pb-2 text-[12.5px] font-medium uppercase tracking-wide text-muted/80">{children}</p>;
+  return <p className="px-1 pb-2 text-[0.78125rem] font-medium uppercase tracking-wide text-muted/80">{children}</p>;
 }
 
 /** The small grey line under a switch row inside a card. */
 function Note({ children }: { children: ReactNode }) {
-  return <p className="px-4 pb-3 text-[12.5px] leading-[18px] text-muted">{children}</p>;
+  return <p className="px-4 pb-3 text-[0.78125rem] leading-[1.125rem] text-muted">{children}</p>;
 }
 
 /** The card's shell: 16 px corners, the surface on the page background, a hairline so it holds in both themes. */
@@ -189,7 +195,7 @@ function Chips({ items }: { items: string[] }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {items.map((c) => (
-        <span key={c} className="rounded-full bg-surface-2 px-2.5 py-1 text-[12px] font-medium text-fg/80">
+        <span key={c} className="rounded-full bg-surface-2 px-2.5 py-1 text-[0.75rem] font-medium text-fg/80">
           {c}
         </span>
       ))}
@@ -258,7 +264,7 @@ function ThisDeviceCard({ hub, hands, onChange }: { hub: HubView; hands?: HandsS
                 autoFocus
                 aria-label={t("This device's name")}
                 placeholder={t("A name your other devices will see")}
-                className="h-9 min-w-0 flex-1 rounded-xl bg-surface-2 px-3 text-[15px] outline-none focus:ring-2 focus:ring-accent/40"
+                className="h-9 min-w-0 flex-1 rounded-xl bg-surface-2 px-3 text-[0.9375rem] outline-none focus:ring-2 focus:ring-accent/40"
               />
               <button type="submit" disabled={busy || !draft.trim()} aria-label={t("Save")} className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-accent-fg disabled:opacity-40">
                 <Check size={16} />
@@ -269,7 +275,7 @@ function ThisDeviceCard({ hub, hands, onChange }: { hub: HubView; hands?: HandsS
             </form>
           ) : (
             <div className="flex items-center gap-1.5">
-              <span className="truncate text-[16px] font-semibold leading-[22px]">{hub.device.name}</span>
+              <span className="truncate text-[1rem] font-semibold leading-[1.375rem]">{hub.device.name}</span>
               <button
                 type="button"
                 onClick={() => {
@@ -284,7 +290,7 @@ function ThisDeviceCard({ hub, hands, onChange }: { hub: HubView; hands?: HandsS
               </button>
             </div>
           )}
-          <p className="mt-0.5 flex items-center gap-1.5 text-[13px] leading-[18px] text-muted">
+          <p className="mt-0.5 flex items-center gap-1.5 text-[0.8125rem] leading-[1.125rem] text-muted">
             <OnlineDot online={connected} />
             <span className="truncate">{[status, osLine(self ?? {})].filter(Boolean).join(" · ")}</span>
           </p>
@@ -304,7 +310,7 @@ function ThisDeviceCard({ hub, hands, onChange }: { hub: HubView; hands?: HandsS
         <Note>{t("They can run commands, read files and see its screen here; each step still goes through the Sentinel.")}</Note>
       </div>
       {(hub.state === "refused" || hub.state === "disconnected") && hub.detail && (
-        <div className="mt-3 rounded-xl bg-amber-500/12 px-3 py-2 text-[12.5px] text-amber-700 dark:text-amber-300">{hub.detail}</div>
+        <div className="mt-3 rounded-xl bg-amber-500/12 px-3 py-2 text-[0.78125rem] text-amber-700 dark:text-amber-300">{hub.detail}</div>
       )}
     </DeviceShell>
   );
@@ -320,8 +326,8 @@ function DeviceCard({ device: d, onAsk, onForget }: { device: HubDevice; onAsk: 
       <div className="flex items-start gap-3.5">
         <Glyph kind={d.kind} online={d.online} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[16px] font-semibold leading-[22px]">{d.name}</p>
-          <p className="mt-0.5 flex items-center gap-1.5 text-[13px] leading-[18px] text-muted">
+          <p className="truncate text-[1rem] font-semibold leading-[1.375rem]">{d.name}</p>
+          <p className="mt-0.5 flex items-center gap-1.5 text-[0.8125rem] leading-[1.125rem] text-muted">
             <OnlineDot online={d.online} />
             <span className="truncate">{[presence(d, t), osLine(d)].filter(Boolean).join(" · ")}</span>
           </p>
@@ -329,9 +335,9 @@ function DeviceCard({ device: d, onAsk, onForget }: { device: HubDevice; onAsk: 
         <OverflowMenu label={t("More about {name}", { name: d.name })} items={[{ label: t("Forget this device"), onClick: onForget, danger: true }]} />
       </div>
       <Chips items={can} />
-      {takesTasks && <p className="text-[12.5px] leading-[18px] text-muted">{t("Type @{name} in the chat to hand it work.", { name: d.name })}</p>}
+      {takesTasks && <p className="text-[0.78125rem] leading-[1.125rem] text-muted">{t("Type @{name} in the chat to hand it work.", { name: d.name })}</p>}
       {d.online && (
-        <button type="button" onClick={onAsk} className="flex h-9 w-fit items-center gap-1.5 rounded-full bg-accent/10 px-3.5 text-[13.5px] font-medium text-accent hover:bg-accent/15">
+        <button type="button" onClick={onAsk} className="flex h-9 w-fit items-center gap-1.5 rounded-full bg-accent/10 px-3.5 text-[0.84375rem] font-medium text-accent hover:bg-accent/15">
           <MessageSquare size={14} /> {t("Ask")}
         </button>
       )}
@@ -374,7 +380,7 @@ function OverflowMenu({ label, items }: { label: string; items: Array<{ label: s
                   setOpen(false);
                   it.onClick();
                 }}
-                className={cx("w-full px-4 py-2.5 text-left text-[14px] hover:bg-surface-2", it.danger && "text-red-600 dark:text-red-400")}
+                className={cx("w-full px-4 py-2.5 text-left text-[0.875rem] hover:bg-surface-2", it.danger && "text-red-600 dark:text-red-400")}
               >
                 {it.label}
               </button>
@@ -397,8 +403,8 @@ function EmptyDevices({ hub, signedIn }: { hub: HubView | undefined; signedIn: b
           <Smartphone size={22} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[15px] font-semibold leading-[20px]">{ready ? t("Add a device") : t("No other device yet")}</p>
-          <p className="mt-1 text-[13px] leading-[18px] text-muted">
+          <p className="text-[0.9375rem] font-semibold leading-[1.25rem]">{ready ? t("Add a device") : t("No other device yet")}</p>
+          <p className="mt-1 text-[0.8125rem] leading-[1.125rem] text-muted">
             {!signedIn
               ? t("Sign in above to see them.")
               : !ready
@@ -410,7 +416,7 @@ function EmptyDevices({ hub, signedIn }: { hub: HubView | undefined; signedIn: b
         </div>
       </div>
       {ready && (
-        <a href={DOWNLOAD_URL} target="_blank" rel="noopener noreferrer" className="flex h-9 w-fit items-center gap-1.5 rounded-full bg-accent/10 px-3.5 text-[13.5px] font-medium text-accent hover:bg-accent/15">
+        <a href={DOWNLOAD_URL} target="_blank" rel="noopener noreferrer" className="flex h-9 w-fit items-center gap-1.5 rounded-full bg-accent/10 px-3.5 text-[0.84375rem] font-medium text-accent hover:bg-accent/15">
           {t("Get the apps")}
         </a>
       )}
@@ -451,7 +457,7 @@ function HandsCard({ hands, onChange }: { hands: HandsStatus; onChange: () => vo
               : hands.reason || t("Nothing can drive this screen yet.")}
         </MuseCaption>
         <MuseDivider inset={16} />
-        <div className="flex items-center gap-2 px-4 py-3 text-[13px] text-muted">
+        <div className="flex items-center gap-2 px-4 py-3 text-[0.8125rem] text-muted">
           <span>{t("Driver")}:</span>
           {(["auto", "desktop", "pyautogui", "xdotool"] as const).map((b) => (
             <button
@@ -468,7 +474,7 @@ function HandsCard({ hands, onChange }: { hands: HandsStatus; onChange: () => vo
         {(hands.device?.platform === "darwin" || hands.window?.available) && (
           <>
             <MuseDivider inset={16} />
-            <div className="flex flex-wrap items-center gap-2 px-4 py-3 text-[13px] text-muted">
+            <div className="flex flex-wrap items-center gap-2 px-4 py-3 text-[0.8125rem] text-muted">
               <span>{t("Where")}:</span>
               {(["auto", "window", "screen"] as const).map((m) => (
                 <button

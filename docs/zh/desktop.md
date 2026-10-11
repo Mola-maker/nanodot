@@ -403,3 +403,9 @@ bundle（同一身份、hardened runtime、它自己的标识符 `io.github.nano
   放回去。
 - 日志是 `~/.nanomuse/desktop/desktop.log`（操作器的每个动作一行，`operator: click at 1249,1096`）；
   启动器那边的在 `journalctl --user -n 200`。
+
+## Dot 导航 {#dot-navigation}
+
+侧栏提供聊天、任务、设备和设置。任务菜单保留动态、点子、目标和资源库，已保存的内容不变。搜索、新聊天、最近打开的文档和 Harness 面板仍可从原有控件及更多菜单进入。设置保留已安装插件的页面。Windows/Linux 使用 Ctrl+K、macOS 使用 Cmd+K 打开聊天搜索。原生窗口控件和拖入文件沿用原有操作。
+
+控件显示键盘焦点、禁用状态和状态文字。加载及连接错误会提供状态播报；设备刷新和房间操作失败保留原有恢复入口。系统字体响应浏览器文字缩放；减少动态效果会停用循环指示器和过渡。

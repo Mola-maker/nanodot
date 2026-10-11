@@ -1,5 +1,6 @@
-import { LayoutGrid, Lightbulb, Loader2, MessageCircle, Newspaper, SquareCheckBig, WifiOff } from "lucide-react";
+import { MessageCircle, MonitorSmartphone, SlidersHorizontal, SquareCheckBig, WifiOff } from "lucide-react";
 import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
+import { DotStatus } from "./DotStatus";
 import { api, setToken } from "./api";
 import { BrandMark } from "./components/BrandMark";
 import { DesktopRemoteHint } from "./components/DesktopRemoteHint";
@@ -13,7 +14,7 @@ import { FeedScreen } from "./screens/FeedScreen";
 import { SignInGate } from "./screens/SignInGate";
 import { signInDoorNeeded } from "./gate";
 import { useStore, type Tab } from "./store";
-import { useT } from "./i18n";
+import { PRIMARY_NAVIGATION, useT } from "./i18n";
 import { cx } from "./util";
 
 // The chat and the feed are what opens first; every other screen arrives as its own chunk
@@ -34,26 +35,38 @@ const SettingsScreen = lazy(() => import("./screens/SettingsScreen").then((m) =>
 const SkillsScreen = lazy(() => import("./screens/SkillsScreen").then((m) => ({ default: m.SkillsScreen })));
 
 function Loading() {
-  return (
-    <div className="flex h-full min-h-[40vh] items-center justify-center text-muted">
-      <Loader2 className="animate-spin" size={20} />
-    </div>
-  );
+  const t = useT();
+  return <DotStatus state="loading" message={t("Loading…")} />;
 }
 
-/** The five glyphs: outlined at rest, filled with the page's ink when selected — the fill is the state. */
+/** Four destinations use a filled glyph and a text label for the selected state. */
 const glyph = (active: boolean) => ({ size: 26, strokeWidth: active ? 2 : 1.7, fill: active ? "currentColor" : "none", fillOpacity: active ? 0.18 : 0 });
+const TASK_ROOMS = ["feed", "ideas", "goals", "library"] as const;
+const SETTINGS_ROOMS = ["you", "memory", "connections", "channels", "skills", "account", "coding", "avatar"] as const;
 const TABS: Array<{ id: Tab; label: string; icon: (active: boolean) => ReactNode }> = [
-  { id: "chat", label: "Chat", icon: (a) => <MessageCircle {...glyph(a)} /> },
-  { id: "feed", label: "Feed", icon: (a) => <Newspaper {...glyph(a)} /> },
-  { id: "ideas", label: "Ideas", icon: (a) => <Lightbulb {...glyph(a)} /> },
-  { id: "goals", label: "Goals", icon: (a) => <SquareCheckBig {...glyph(a)} /> },
-  { id: "library", label: "Library", icon: (a) => <LayoutGrid {...glyph(a)} /> },
+  { id: "chat", label: PRIMARY_NAVIGATION[0], icon: (a) => <MessageCircle {...glyph(a)} /> },
+  { id: "feed", label: PRIMARY_NAVIGATION[1], icon: (a) => <SquareCheckBig {...glyph(a)} /> },
+  { id: "devices", label: PRIMARY_NAVIGATION[2], icon: (a) => <MonitorSmartphone {...glyph(a)} /> },
+  { id: "you", label: PRIMARY_NAVIGATION[3], icon: (a) => <SlidersHorizontal {...glyph(a)} /> },
 ];
 
 export default function App() {
-  const { state, setTab, openFile } = useStore();
+  const { state, setTab, setDrawer, openFile } = useStore();
   const firstSignIn = useFirstSignIn();
+  const tasksActive = (TASK_ROOMS as readonly string[]).includes(state.tab);
+  const settingsActive = (SETTINGS_ROOMS as readonly string[]).includes(state.tab);
+  useEffect(() => {
+    const key = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setTab("chat");
+        if (!window.matchMedia("(min-width: 64rem)").matches) setDrawer(true);
+        window.dispatchEvent(new Event("nanomuse:search-chats"));
+      }
+    };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, [setTab, setDrawer]);
   const t = useT();
 
   // The document title follows the agent's name.
@@ -77,7 +90,7 @@ export default function App() {
   useEffect(() => {
     const jump = () => {
       const tab = window.location.hash.slice(1) as Tab;
-      if (tab && TABS.some((x) => x.id === tab)) setTab(tab);
+      if (tab && (TABS.some((x) => x.id === tab) || (TASK_ROOMS as readonly string[]).includes(tab))) setTab(tab);
       else if (tab === "devices" || tab === "you" || tab === "memory" || tab === "connections" || tab === "channels" || tab === "skills" || tab === "account" || tab === "coding" || tab === "avatar") setTab(tab);
     };
     jump();
@@ -131,19 +144,20 @@ export default function App() {
       )}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         {state.gone && (
-          <div className="flex items-center justify-center gap-2 bg-surface-2 text-muted text-[12.5px] py-1">
+          <div className="flex items-center justify-center gap-2 bg-surface-2 text-muted text-[0.78125rem] py-1">
             <WifiOff size={14} /> {t(state.lite ? "This demo has ended." : "This Nanodot has stopped. Reload the page once it is running again.")}
           </div>
         )}
         {!state.gone && !state.connected && state.loaded && (
-          <div className="flex items-center justify-center gap-2 bg-amber-500/15 text-amber-700 dark:text-amber-300 text-[12.5px] py-1">
-            <WifiOff size={14} /> {t("Reconnecting to your Nanodot…")}
-          </div>
+          <DotStatus state="error" message={t("Dot is offline.")} onRetry={() => window.location.reload()} />
         )}
         {!state.lite && <DesktopRemoteHint />}
+        {tasksActive && <nav aria-label={t("Tasks")} className="dot-task-rooms">
+          {TASK_ROOMS.map((room) => <button key={room} type="button" aria-current={state.tab === room ? "page" : undefined} onClick={() => setTab(room)}>{t(room[0].toUpperCase() + room.slice(1))}</button>)}
+        </nav>}
         <main className="mx-auto min-h-0 w-full flex-1 wide:max-w-[900px]">
           <Suspense fallback={<Loading />}>
-            {state.tab === "chat" && <ChatScreen />}
+            <div hidden={state.tab !== "chat"} className="h-full"><ChatScreen /></div>
             {state.tab === "feed" && <FeedScreen />}
             {state.tab === "ideas" && <IdeasScreen />}
             {state.tab === "goals" && <GoalsScreen />}
@@ -159,14 +173,12 @@ export default function App() {
             {state.tab === "avatar" && <AvatarStudioScreen />}
           </Suspense>
         </main>
-        {/* Muse's bottom bar, as the Android app draws it: a plain strip, five glyphs, the current one
-            filled and dark, the others outlined and softer — no labels, no pill. In lite (the phone in
-            the showcase) it shows whatever the width; otherwise a wide window has the sidebar instead. */}
-        <nav className={cx("safe-bottom shrink-0 bg-bg", !state.lite && "wide:hidden")}>
+        {/* Compact windows keep every primary destination in reach below the content. */}
+        <nav aria-label={t("Main navigation")} className={cx("safe-bottom shrink-0 bg-bg", !state.lite && "wide:hidden")}>
           <ul className="flex h-14 items-center justify-evenly">
             {TABS.map((tab) => {
-              const active = state.tab === tab.id;
-              const badge = tab.id === "chat" ? pendingApprovals : tab.id === "feed" ? feedUnseen : tab.id === "goals" ? proposals : 0;
+              const active = tab.id === "feed" ? tasksActive : tab.id === "you" ? settingsActive : state.tab === tab.id;
+              const badge = tab.id === "chat" ? pendingApprovals : tab.id === "feed" ? feedUnseen + proposals : 0;
               return (
                 <li key={tab.id}>
                   <button
@@ -174,11 +186,11 @@ export default function App() {
                     onClick={() => setTab(tab.id)}
                     aria-label={t(tab.label)}
                     aria-current={active ? "page" : undefined}
-                    className={cx("relative flex h-12 w-12 items-center justify-center rounded-full transition", active ? "text-fg" : "text-fg/70 hover:text-fg")}
+                    className={cx("relative flex min-h-12 min-w-12 flex-col items-center justify-center rounded-xl transition", active ? "text-fg" : "text-fg/70 hover:text-fg")}
                   >
-                    {tab.icon(active)}
+                    {tab.icon(active)}<span className="text-xs">{t(tab.label)}</span>
                     {badge > 0 && (
-                      <span className="absolute right-1 top-1 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
+                      <span className="absolute right-1 top-1 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-rose-500 px-1 text-[0.625rem] font-bold text-white">
                         {badge}
                       </span>
                     )}
@@ -194,7 +206,7 @@ export default function App() {
       {firstSteps}
       {state.toast && (
         <div className="pointer-events-none fixed inset-x-0 bottom-24 z-[70] flex justify-center px-4">
-          <div className="rise rounded-2xl bg-fg text-bg px-4 py-2 text-[13.5px] shadow-lg max-w-sm text-center">{state.toast}</div>
+          <div className="rise rounded-2xl bg-fg text-bg px-4 py-2 text-[0.84375rem] shadow-lg max-w-sm text-center">{state.toast}</div>
         </div>
       )}
     </div>
@@ -208,19 +220,7 @@ function Connecting({ error }: { error: string | null }) {
     <div className="mx-auto flex h-[100dvh] max-w-sm flex-col items-center justify-center px-6 text-center">
       {/* the web's splash: the app's mark, no face (the face is the Muse, who is not here yet) */}
       <BrandMark size={72} />
-      {error ? (
-        <>
-          <p className="mt-6 text-[15px] font-medium">{t("Could not reach your Nanodot.")}</p>
-          <p className="mt-1.5 text-[13px] text-muted">{t(error)}</p>
-          <button type="button" onClick={() => window.location.reload()} className="mt-5 rounded-full bg-fg px-5 py-2 text-[14px] font-medium text-bg">
-            {t("Try again")}
-          </button>
-        </>
-      ) : (
-        <p className="mt-6 flex items-center gap-2 text-[14px] text-muted">
-          <Loader2 className="animate-spin" size={16} /> {t("Connecting to your Nanodot…")}
-        </p>
-      )}
+      <DotStatus state={error ? "error" : "loading"} message={error ? `${t("Could not reach your Nanodot.")} ${t(error)}` : t("Connecting to your Nanodot…")} onRetry={error ? () => window.location.reload() : undefined} />
     </div>
   );
 }
@@ -231,8 +231,9 @@ function TokenGate() {
   return (
     <div className="mx-auto flex h-[100dvh] max-w-md flex-col items-center justify-center px-6 text-center">
       <BrandMark size={88} />
-      <h1 className="mt-4 text-[22px] font-bold">{t("Connect to your Nanodot")}</h1>
-      <p className="mt-2 text-[14px] text-muted">
+      <DotStatus state="error" message={t("401: Access token required.")} />
+      <h1 className="mt-4 text-[1.375rem] font-bold">{t("Connect to your Nanodot")}</h1>
+      <p className="mt-2 text-[0.875rem] text-muted">
         {t("This app talks to the Nanodot server you run yourself. Scan the QR code printed by")}{" "}
         <code className="rounded bg-surface-2 px-1">nanomuse serve</code>{t(", or paste the access token below.")}
       </p>
@@ -250,9 +251,9 @@ function TokenGate() {
           onChange={(e) => setValue(e.target.value)}
           aria-label={t("Access token")}
           placeholder={t("Access token")}
-          className="flex-1 rounded-2xl bg-surface-2 px-4 py-2.5 text-[15px] outline-none focus:ring-2 focus:ring-accent/40"
+          className="flex-1 rounded-2xl bg-surface-2 px-4 py-2.5 text-[0.9375rem] outline-none focus:ring-2 focus:ring-accent/40"
         />
-        <button type="submit" className="rounded-2xl bg-accent text-accent-fg px-4 font-medium">
+        <button type="submit" disabled={!value.trim()} className="rounded-2xl bg-accent text-accent-fg px-4 font-medium">
           {t("Connect")}
         </button>
       </form>

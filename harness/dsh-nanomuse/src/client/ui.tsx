@@ -6,6 +6,7 @@
  * quotes, tables) — the harness's renderer lives behind its own module table
  * and is not ours to import.
  */
+import { DotStatus } from './DotStatus.tsx'
 import { Modal } from '@deepseek-ai/dsh-client-ui-primitives'
 import { createElement as h, Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
 import type { Translate } from './api.ts'
@@ -69,7 +70,7 @@ export function MoreButton({ label, items, quiet, size = 30, icon }: { label: st
       type: 'button',
       ref: button,
       className: `nm-icon-btn nm-more${quiet ? ' nm-quiet' : ''}`,
-      style: { width: size, height: size },
+      style: { width: Math.max(size, 44), height: Math.max(size, 44) },
       title: label,
       'aria-label': label,
       'aria-haspopup': 'menu',
@@ -112,7 +113,7 @@ export function RoomToggle({ t, panel }: { t: Translate; panel: string }): React
 export function Empty({ icon, text, children }: { icon: ReactNode; text: string; children?: ReactNode }): ReactNode {
   return h('div', { className: 'nm-empty' },
     h('div', { className: 'nm-empty-icon' }, icon),
-    h('div', { className: 'nm-empty-text' }, text),
+    h(DotStatus, { state: 'empty', message: text }),
     children ?? null)
 }
 

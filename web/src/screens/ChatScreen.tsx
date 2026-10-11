@@ -184,7 +184,7 @@ export function ChatScreen() {
   );
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="dot-chat flex min-h-0 h-full flex-col">
       {/* Header: Muse's — the face on its disc, the name tag with what it is doing, the round hamburger and menu */}
       <MuseHeader
         profile={profile}
@@ -204,16 +204,16 @@ export function ChatScreen() {
         under={
           thread && thread.id !== "main" ? (
             thread.device ? (
-              <span className="flex max-w-full items-center gap-1 rounded-full bg-accent/12 px-2.5 py-0.5 text-[11.5px] font-medium text-accent">
+              <span className="flex max-w-full items-center gap-1 rounded-full bg-accent/12 px-2.5 py-0.5 text-[0.71875rem] font-medium text-accent">
                 {deviceOnline === false ? <span className="h-1.5 w-1.5 rounded-full bg-border" /> : <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
                 <span className="truncate">{t("on {device}", { device: thread.device_name || thread.device })}</span>
               </span>
             ) : thread.remote_from ? (
-              <span className="flex max-w-full items-center gap-1 rounded-full bg-surface-2 px-2.5 py-0.5 text-[11.5px] font-medium text-fg/80">
+              <span className="flex max-w-full items-center gap-1 rounded-full bg-surface-2 px-2.5 py-0.5 text-[0.71875rem] font-medium text-fg/80">
                 <MonitorSmartphone size={11} /> <span className="truncate">{t("from {device}", { device: thread.remote_from.name })}</span>
               </span>
             ) : (
-              <span className="truncate rounded-full bg-surface-2 px-2.5 py-0.5 text-[11.5px] font-medium text-fg/80">{thread.title}</span>
+              <span className="truncate rounded-full bg-surface-2 px-2.5 py-0.5 text-[0.71875rem] font-medium text-fg/80">{thread.title}</span>
             )
           ) : undefined
         }
@@ -226,7 +226,7 @@ export function ChatScreen() {
             <div className="flex justify-center">
               <button
                 type="button"
-                className="text-[12.5px] text-accent px-3 py-1 rounded-full bg-surface-2"
+                className="text-[0.78125rem] text-accent px-3 py-1 rounded-full bg-surface-2"
                 onClick={() => void loadEvents(activeThread, events[0]?.id)}
               >
                 {t("Load earlier messages")}
@@ -277,7 +277,7 @@ export function ChatScreen() {
           <button
             type="button"
             onClick={jumpToBottom}
-            className="sticky bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-surface border border-border shadow px-3 py-1.5 text-[12.5px] flex items-center gap-1"
+            className="sticky bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-surface border border-border shadow px-3 py-1.5 text-[0.78125rem] flex items-center gap-1"
           >
             <ChevronDown size={14} /> {t("Latest")}{pendingApprovals ? ` · ${t("{n} approval", { n: pendingApprovals })}` : ""}
           </button>
@@ -385,7 +385,7 @@ function needsDivider(prev: TimelineEvent | undefined, event: TimelineEvent): bo
 function TimeDivider({ ts }: { ts?: string }) {
   const label = timeDivider(ts);
   if (!label) return null;
-  return <div className="pt-2 pb-0.5 text-center text-[11.5px] font-medium text-muted">{label}</div>;
+  return <div className="pt-2 pb-0.5 text-center text-[0.71875rem] font-medium text-muted">{label}</div>;
 }
 
 function UserBubble({ event, onOpenFile }: { event: UserEvent; onOpenFile: (path: string) => void }) {
@@ -396,18 +396,18 @@ function UserBubble({ event, onOpenFile }: { event: UserEvent; onOpenFile: (path
   return (
     <div className="rise flex flex-col items-end pl-12">
       {event.via === "call" ? (
-        <span className="mb-1 flex items-center gap-1 text-[11.5px] font-medium text-muted">
+        <span className="mb-1 flex items-center gap-1 text-[0.71875rem] font-medium text-muted">
           <Phone size={11} /> {t("said on a call")}
         </span>
       ) : event.via ? (
-        <span className="mb-1 text-[11.5px] font-medium text-muted">{t("asked from {device}", { device: event.via })}</span>
+        <span className="mb-1 text-[0.71875rem] font-medium text-muted">{t("asked from {device}", { device: event.via })}</span>
       ) : event.to_device_name || event.to_device ? (
-        <span className="mb-1 flex items-center gap-1 text-[11.5px] font-medium text-accent">
+        <span className="mb-1 flex items-center gap-1 text-[0.71875rem] font-medium text-accent">
           <MonitorSmartphone size={11} /> {t("to {device}", { device: event.to_device_name || event.to_device || "" })}
         </span>
       ) : (
         (event.via_device_name || event.via_device) && (
-          <span className="mb-1 text-[11.5px] font-medium text-muted">{t("From {device}", { device: event.via_device_name || event.via_device || "" })}</span>
+          <span className="mb-1 text-[0.71875rem] font-medium text-muted">{t("From {device}", { device: event.via_device_name || event.via_device || "" })}</span>
         )
       )}
       {pictures.length > 0 && (
@@ -434,14 +434,14 @@ function UserBubble({ event, onOpenFile }: { event: UserEvent; onOpenFile: (path
         >
           <span className="rounded-xl bg-accent/12 p-2 text-accent">{f.kind === "data" ? <Table2 size={17} /> : <FileText size={17} />}</span>
           <span className="min-w-0">
-            <span className="block truncate text-[14px] font-medium">{f.name}</span>
-            <span className="block text-[11.5px] text-muted">{fileSize(f.size)}</span>
+            <span className="block truncate text-[0.875rem] font-medium">{f.name}</span>
+            <span className="block text-[0.71875rem] text-muted">{fileSize(f.size)}</span>
           </span>
         </button>
       ))}
       {event.text && (
         <div className="bubble-user max-w-full rounded-[20px] bg-bubble-user px-4 py-2.5 text-bubble-user-fg">
-          <div className="md text-[15px] leading-[1.45] whitespace-pre-wrap break-words">{event.text}</div>
+          <div className="md text-[0.9375rem] leading-[1.45] whitespace-pre-wrap break-words">{event.text}</div>
         </div>
       )}
     </div>
@@ -501,12 +501,12 @@ function AssistantBubble({
     <div className={cx("rise flex items-end gap-2 pr-10", continued && "-mt-1")}>
       <div className="min-w-0 max-w-full">
         {reasoning && (
-          <button type="button" className="mb-1 ml-1 text-[12px] text-muted" onClick={() => setShowReasoning((s) => !s)}>
+          <button type="button" className="mb-1 ml-1 text-[0.75rem] text-muted" onClick={() => setShowReasoning((s) => !s)}>
             {showReasoning ? t("Hide thinking") : t("Show thinking")}
           </button>
         )}
         {reasoning && showReasoning && (
-          <div className="mb-1.5 rounded-2xl bg-surface-2/70 px-3 py-2 text-[13px] text-muted whitespace-pre-wrap break-words">
+          <div className="mb-1.5 rounded-2xl bg-surface-2/70 px-3 py-2 text-[0.8125rem] text-muted whitespace-pre-wrap break-words">
             {reasoning}
           </div>
         )}
@@ -519,7 +519,7 @@ function AssistantBubble({
           ) : (
             <div key={i} className={cx("my-1 max-w-[340px] rounded-[20px] bg-surface-2 px-3.5 py-2.5 wide:max-w-[600px]", spoken && "border border-accent/15")}>
               {spoken && i === 0 && (
-                <div className="mb-0.5 flex items-center gap-1 text-[11px] font-medium text-accent/80">
+                <div className="mb-0.5 flex items-center gap-1 text-[0.6875rem] font-medium text-accent/80">
                   <Phone size={10} /> {t("said on a call")}
                 </div>
               )}
@@ -533,7 +533,7 @@ function AssistantBubble({
             <span className="inline-block w-1.5 h-4 align-middle bg-accent/70 animate-pulse rounded-sm" />
           </div>
         )}
-        {modelUsed && !streaming && <div className="ml-1 text-[11px] text-muted">{t("Answered by nanoMuse Cloud this time ({model})", { model: modelUsed })}</div>}
+        {modelUsed && !streaming && <div className="ml-1 text-[0.6875rem] text-muted">{t("Answered by nanoMuse Cloud this time ({model})", { model: modelUsed })}</div>}
       </div>
     </div>
   );
@@ -546,11 +546,11 @@ function QuietLine({ text, about, ts }: { text: string; about?: string; ts?: str
   const label = about ? localLabel(about.replace(/^Working on your goal: /, "")) : t("background check");
   return (
     <div className="rise flex justify-center px-6">
-      <button type="button" onClick={() => setOpen((o) => !o)} className="max-w-full rounded-2xl px-3 py-1.5 text-[12px] text-muted text-center leading-snug">
+      <button type="button" onClick={() => setOpen((o) => !o)} className="max-w-full rounded-2xl px-3 py-1.5 text-[0.75rem] text-muted text-center leading-snug">
         <span className="inline-flex items-center gap-1.5">
           <Moon size={12} /> {t("Checked on {label}: nothing new", { label })}{ts ? ` · ${timeShort(ts)}` : ""}
         </span>
-        {open && <span className="block mt-1 text-left whitespace-pre-wrap text-[12.5px]">{text}</span>}
+        {open && <span className="block mt-1 text-left whitespace-pre-wrap text-[0.78125rem]">{text}</span>}
       </button>
     </div>
   );
@@ -564,7 +564,7 @@ function TypingIndicator({ label }: { label?: string }) {
         <span className="typing-dot h-2 w-2 rounded-full bg-muted" />
         <span className="typing-dot h-2 w-2 rounded-full bg-muted" />
       </div>
-      {label && <span className="text-[12px] text-muted">{label}</span>}
+      {label && <span className="text-[0.75rem] text-muted">{label}</span>}
     </div>
   );
 }
@@ -596,7 +596,7 @@ function useLiveWorking(who: WorkingPresence | undefined): WorkingPresence | nul
 function WorkingLine({ who }: { who: WorkingPresence }) {
   const t = useT();
   return (
-    <div className="flex items-center gap-1.5 px-1 text-[12px] text-muted">
+    <div className="flex items-center gap-1.5 px-1 text-[0.75rem] text-muted">
       <Loader2 size={12} className="animate-spin" />
       <span>{t("{device} is working…", { device: who.device_name || who.device })}</span>
     </div>
@@ -616,8 +616,8 @@ function EmptyChat({ name, device, onSend }: { name: string; device?: string; on
   // The face is already in the header above; here the agent speaks, as it does on the phone.
   return (
     <div className="flex flex-col items-center text-center px-6 pt-10 pb-6 gap-3">
-      <div className="text-[20px] font-semibold">{device ? t("This chat goes to {device}.", { device }) : t("Hi, I'm {name}.", { name })}</div>
-      <p className="text-muted text-[14.5px] leading-snug max-w-sm">
+      <div className="text-[1.25rem] font-semibold">{device ? t("This chat goes to {device}.", { device }) : t("Hi, I'm {name}.", { name })}</div>
+      <p className="text-muted text-[0.90625rem] leading-snug max-w-sm">
         {device
           ? t("Whatever you ask here, the {name} on {device} does where it is: its shell, its files, its screen. Every step shows up here, and anything that needs an approval asks you here.", { name, device })
           : t("I don't just answer; I get things done: research, plans, files, code, email, long-running goals. Everything I do shows up here, and anything hard to undo waits for your approval.")}
@@ -628,7 +628,7 @@ function EmptyChat({ name, device, onSend }: { name: string; device?: string; on
             key={s}
             type="button"
             onClick={() => onSend(s)}
-            className="rounded-full bg-surface-2 px-3.5 py-1.5 text-[13.5px] hover:bg-border/60"
+            className="rounded-full bg-surface-2 px-3.5 py-1.5 text-[0.84375rem] hover:bg-border/60"
           >
             {s}
           </button>
@@ -651,6 +651,7 @@ function Composer({
 }) {
   const { state, draft, draftFiles, toast } = useStore();
   const [text, setText] = useState("");
+  const sendingRef = useRef(false);
   const [sending, setSending] = useState(false);
   // voice input: the words recognised so far replace what dictation put in the box, after
   // whatever was typed before the mic was tapped
@@ -769,10 +770,11 @@ function Composer({
   const submit = (e?: FormEvent) => {
     e?.preventDefault();
     const trimmed = text.trim();
-    if ((!trimmed && attached.length === 0) || uploading || sending) return;
+    if ((!trimmed && attached.length === 0) || uploading || sendingRef.current) return;
     if (dictation.listening) dictation.stop();
     // the draft leaves the box at once (it feels sent) and comes back if sending failed
     const files = pending;
+    sendingRef.current = true;
     setSending(true);
     setText("");
     setPending([]);
@@ -782,13 +784,13 @@ function Composer({
         setText((cur) => cur || trimmed);
         setPending((cur) => (cur.length ? cur : files));
       })
-      .finally(() => setSending(false));
+      .finally(() => { sendingRef.current = false; setSending(false); });
   };
 
   return (
-    <form onSubmit={submit} className="shrink-0 bg-bg px-3 pt-1.5 pb-1">
+    <form onSubmit={submit} className="dot-composer shrink-0 bg-bg px-3 pt-1.5 pb-1">
       {busy && !waiting && (
-        <div className="px-2 pb-1 text-[12px] text-muted">{t("{name} is working; anything you send now is picked up right away.", { name })}</div>
+        <div className="px-2 pb-1 text-[0.75rem] text-muted">{t("{name} is working; anything you send now is picked up right away.", { name })}</div>
       )}
       {matches.length > 0 && (
         <ul className="mb-2 max-h-72 overflow-y-auto rounded-3xl border border-border/70 bg-surface shadow-lg divide-y divide-border/70" role="listbox" aria-label={t("Skills")}>
@@ -797,8 +799,8 @@ function Composer({
               <button type="button" onClick={() => pick(sk)} className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-surface-2/70 active:bg-surface-2">
                 <Wand2 size={16} className="shrink-0 text-accent" />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[14px] font-medium">/{sk.name}</span>
-                  <span className="block truncate text-[12.5px] text-muted">{sk.description}</span>
+                  <span className="block text-[0.875rem] font-medium">/{sk.name}</span>
+                  <span className="block truncate text-[0.78125rem] text-muted">{sk.description}</span>
                 </span>
               </button>
             </li>
@@ -812,8 +814,8 @@ function Composer({
               <button type="button" onClick={() => pickDevice(d)} className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-surface-2/70 active:bg-surface-2">
                 <span className="shrink-0 text-accent">{d.kind === "computer" ? <Monitor size={16} /> : <Smartphone size={16} />}</span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[14px] font-medium">@{d.name}</span>
-                  <span className="block truncate text-[12.5px] text-muted">{d.online ? t("Runs this there and reports back") : t("Offline")}</span>
+                  <span className="block text-[0.875rem] font-medium">@{d.name}</span>
+                  <span className="block truncate text-[0.78125rem] text-muted">{d.online ? t("Runs this there and reports back") : t("Offline")}</span>
                 </span>
               </button>
             </li>
@@ -821,7 +823,7 @@ function Composer({
         </ul>
       )}
       {target && (
-        <div className="flex items-center gap-1.5 px-2 pb-1 text-[12px] text-muted">
+        <div className="flex items-center gap-1.5 px-2 pb-1 text-[0.75rem] text-muted">
           <MonitorSmartphone size={12} /> {t("This goes to {device}.", { device: target.name })}
         </div>
       )}
@@ -835,8 +837,8 @@ function Composer({
                 <div className="flex h-16 w-40 items-center gap-2 px-2.5">
                   <span className="rounded-xl bg-accent/12 p-1.5 text-accent">{chipKind(p.file.name) === "data" ? <Table2 size={16} /> : <FileText size={16} />}</span>
                   <span className="min-w-0">
-                    <span className="block truncate text-[12.5px] font-medium">{p.file.name}</span>
-                    <span className="block text-[11px] text-muted">{p.error ? t("Upload failed") : fileSize(p.info?.size ?? p.file.size)}</span>
+                    <span className="block truncate text-[0.78125rem] font-medium">{p.file.name}</span>
+                    <span className="block text-[0.6875rem] text-muted">{p.error ? t("Upload failed") : fileSize(p.info?.size ?? p.file.size)}</span>
                   </span>
                 </div>
               )}
@@ -906,12 +908,12 @@ function Composer({
           }}
           rows={1}
           placeholder={waiting ? t("Answer {name}…", { name }) : pending.length > 0 ? t("Say what to do with it…") : t("Message")}
-          className="flex-1 resize-none bg-transparent px-1 py-2 text-[15px] leading-[1.4] outline-none placeholder:text-muted"
+          className="min-w-0 flex-1 resize-none bg-transparent px-1 py-2 text-[0.9375rem] leading-[1.4] outline-none placeholder:text-muted"
         />
         {dictation.supported && <MicButton listening={dictation.listening} onClick={toggleDictation} />}
         <button
           type="submit"
-          disabled={(!text.trim() && attached.length === 0) || uploading}
+          disabled={(!text.trim() && attached.length === 0) || uploading || sending}
           aria-label={t("Send")}
           className={cx(
             "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition active:scale-95",
@@ -1000,7 +1002,7 @@ export function ThreadList({
   const row = (th: ThreadMeta) => (
           <li key={th.id} className={cx("group flex items-center gap-2 px-3", compact ? "py-2 rounded-xl hover:bg-surface-2/60" : "py-2.5", th.id === active && "bg-surface-2/60")}>
             <button type="button" onClick={() => onPick(th.id)} className="flex-1 text-left min-w-0">
-              <div className={cx("font-medium truncate flex items-center gap-2", compact ? "text-[13.5px]" : "text-[15px]")}>
+              <div className={cx("font-medium truncate flex items-center gap-2", compact ? "text-[0.84375rem]" : "text-[0.9375rem]")}>
                 {th.device ? (
                   <span className="text-accent">{kindOf(th.device) === "computer" ? <Monitor size={14} /> : <Smartphone size={14} />}</span>
                 ) : th.remote_from ? (
@@ -1009,7 +1011,7 @@ export function ThreadList({
                 <span className="truncate">{th.id === "main" ? t(th.title) : th.title}</span>
                 {th.busy && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400 animate-pulse" />}
               </div>
-              <div className={cx("text-muted", compact ? "text-[11.5px]" : "text-[12px]")}>
+              <div className={cx("text-muted", compact ? "text-[0.71875rem]" : "text-[0.75rem]")}>
                 {t("{n} events", { n: th.events })}{th.queued ? ` · ${t("{n} queued", { n: th.queued })}` : ""} · {timeShort(th.updated_at)}
               </div>
             </button>
@@ -1029,7 +1031,7 @@ export function ThreadList({
           </li>
   );
   const listCls = cx("divide-y divide-border overflow-hidden", compact ? "rounded-xl" : "rounded-2xl border border-border");
-  const heading = "px-3 pb-1 pt-3 text-[11.5px] font-semibold uppercase tracking-wide text-muted";
+  const heading = "px-3 pb-1 pt-3 text-[0.71875rem] font-semibold uppercase tracking-wide text-muted";
 
   return (
     <div>
@@ -1049,21 +1051,21 @@ export function ThreadList({
             </button>
           </div>
           <ul className={listCls}>{threads.filter((th) => th.id !== "main").map(row)}</ul>
-          {threads.every((th) => th.id === "main") && <p className="px-3 py-2 text-[12px] text-muted">{t("A side chat keeps one topic apart from the rest.")}</p>}
+          {threads.every((th) => th.id === "main") && <p className="px-3 py-2 text-[0.75rem] text-muted">{t("A side chat keeps one topic apart from the rest.")}</p>}
         </>
       ) : (
         <ul className={listCls}>{threads.map(row)}</ul>
       )}
       {devices.length > 0 && (
         <div className="mt-4">
-          <div className="mb-1.5 text-[12px] font-medium text-muted">{t("Ask one of your devices")}</div>
+          <div className="mb-1.5 text-[0.75rem] font-medium text-muted">{t("Ask one of your devices")}</div>
           <div className="flex flex-wrap gap-2">
             {devices.map((d) => (
               <button
                 key={d.id}
                 type="button"
                 onClick={() => void ask(d)}
-                className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-[13px] font-medium hover:bg-surface-2"
+                className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-[0.8125rem] font-medium hover:bg-surface-2"
               >
                 {d.kind === "phone" ? <Smartphone size={14} className="text-accent" /> : <Monitor size={14} className="text-accent" />}
                 {d.name}
@@ -1081,7 +1083,7 @@ export function ThreadList({
             if (e.key === "Enter" && !creating) void create();
           }}
           placeholder={compact ? t("New side chat") : t("New side chat, e.g. “Trip to Kyoto”")}
-          className={cx("min-w-0 flex-1 bg-surface-2 outline-none focus:ring-2 focus:ring-accent/40", compact ? "rounded-xl px-3 py-2 text-[13px]" : "rounded-2xl px-3.5 py-2.5 text-[14px]")}
+          className={cx("min-w-0 flex-1 bg-surface-2 outline-none focus:ring-2 focus:ring-accent/40", compact ? "rounded-xl px-3 py-2 text-[0.8125rem]" : "rounded-2xl px-3.5 py-2.5 text-[0.875rem]")}
         />
         <button
           type="button"

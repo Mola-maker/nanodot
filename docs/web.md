@@ -229,3 +229,11 @@ cd web && npm run lint && LANG=en_US.UTF-8 npx vitest run && npm run build
 
 The build writes `nanomuse/server/static/`, which is committed with the change;
 `web/tsconfig.tsbuildinfo` is a by-product and is not.
+
+## Dot navigation {#dot-navigation}
+
+Chat, Tasks, Devices and Settings are available in the bottom bar on compact windows and the rail on wide windows. Tasks contains Feed, Ideas, Goals and Library; existing direct links such as `#goals` still work. Settings and the existing chat context controls keep access to models, connections, skills, memory and the coding console. The Web app continues to use the local runtime's relative `/api` and `/api/cloud` endpoints.
+
+Switching sections keeps the chat composer and uploaded attachment chips mounted, so a draft is retained. Ctrl+K or Cmd+K opens chat search; Escape closes the compact chats drawer. Loading, empty results and errors use text announcements, with retry where the owning request supports it. A 401 response opens the access-token screen; runtime 429 responses remain visible with the server's explanation. The offline banner offers reload. System fonts, visible focus and minimum 44-pixel control heights support keyboard use and text scaling. Reduced motion turns off repeating indicators and transitions.
+
+Controlled browser checks live in `scripts/ui/verify-web.mjs` and `scripts/ui/verify-desktop.mjs`; set `PLAYWRIGHT_MODULE`, `CHROMIUM_PATH`, and (for Web) `UI_BASE_URL`. These fixtures simulate runtime protocols and make no model calls. `scripts/ui/verify-electron.mjs` uses the locally staged desktop shell and a task-owned profile; Windows/macOS builds and native smoke checks require their respective runners.

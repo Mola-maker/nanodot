@@ -28,6 +28,7 @@ export function ChatsDrawer() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, setDrawer]);
+  useEffect(() => { if (open) requestAnimationFrame(() => panel.current?.querySelector<HTMLInputElement>("input")?.focus()); }, [open]);
   useEffect(() => {
     if (!open) {
       setQuery("");
@@ -87,7 +88,7 @@ export function ChatsDrawer() {
     <div className="fixed inset-0 z-50">
       <div className="rise absolute inset-0 bg-black/40" onClick={() => setDrawer(false)} />
       <nav ref={panel} role="dialog" aria-modal="true" aria-label={t("Chats")} className="drawer-in safe-top safe-bottom absolute inset-y-0 left-0 flex w-[82vw] max-w-[320px] flex-col bg-bg shadow-2xl">
-        <div className="px-5 pt-5 pb-2 text-[24px] font-bold leading-7 tracking-tight">{name}</div>
+        <div className="px-5 pt-5 pb-2 text-[1.5rem] font-bold leading-7 tracking-tight">{name}</div>
 
         {/* the main chat, Devices and the coding agents: rows, one tap away like a chat */}
         <Row icon={<Home size={20} />} label={t("Main chat")} selected={chatHere && state.activeThread === "main"} onClick={() => pick("main")} />
@@ -97,13 +98,13 @@ export function ChatsDrawer() {
         )}
 
         <div className="mt-3 px-5 pb-1">
-          <span className="text-[14px] font-medium text-muted">{t("Side chats")}</span>
+          <span className="text-[0.875rem] font-medium text-muted">{t("Side chats")}</span>
         </div>
         {side.length === 0 && !query ? (
           <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
             <MessageSquare size={28} className="mb-3 text-muted/70" />
-            <div className="text-[17px] font-semibold">{t("Start a side chat")}</div>
-            <div className="mt-1 text-[13px] leading-snug text-muted">{t("Side chats are an optional way to keep conversations organised by topic.")}</div>
+            <div className="text-[1.0625rem] font-semibold">{t("Start a side chat")}</div>
+            <div className="mt-1 text-[0.8125rem] leading-snug text-muted">{t("Side chats are an optional way to keep conversations organised by topic.")}</div>
           </div>
         ) : (
           <ul className="min-h-0 flex-1 overflow-y-auto py-1">
@@ -120,7 +121,7 @@ export function ChatsDrawer() {
                 onKeep={() => setConfirm(null)}
               />
             ))}
-            {side.length === 0 && <li className="px-5 py-3 text-[13px] text-muted">{t("No chats match.")}</li>}
+            {side.length === 0 && <li className="px-5 py-3 text-[0.8125rem] text-muted">{t("No chats match.")}</li>}
           </ul>
         )}
 
@@ -137,8 +138,8 @@ export function ChatsDrawer() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={t("Search")}
-              className="min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted"
+              placeholder={t("Search chats")} aria-label={t("Search chats")}
+              className="min-w-0 flex-1 bg-transparent text-[0.9375rem] outline-none placeholder:text-muted"
             />
             {query && (
               <button type="button" onClick={() => setQuery("")} aria-label={t("Clear")} className="text-muted">
@@ -163,8 +164,8 @@ function Row({ icon, label, detail, selected, onClick }: { icon: ReactNode; labe
       className={cx("mx-2 flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left", selected ? "bg-surface-2" : "hover:bg-surface-2/60")}
     >
       <span className="text-fg">{icon}</span>
-      <span className="min-w-0 flex-1 truncate text-[16px]">{label}</span>
-      {detail && <span className="shrink-0 text-[13px] text-muted">{detail}</span>}
+      <span className="min-w-0 flex-1 truncate text-[1rem]">{label}</span>
+      {detail && <span className="shrink-0 text-[0.8125rem] text-muted">{detail}</span>}
     </button>
   );
 }
@@ -192,11 +193,11 @@ function SideRow({
   if (confirming) {
     return (
       <li className="mx-2 flex items-center gap-2 rounded-2xl bg-surface-2 px-3 py-2">
-        <span className="min-w-0 flex-1 truncate text-[13.5px]">{t("Delete this side chat and its history?")}</span>
-        <button type="button" onClick={onDelete} className="rounded-full bg-rose-500 px-3 py-1 text-[12.5px] font-semibold text-white">
+        <span className="min-w-0 flex-1 truncate text-[0.84375rem]">{t("Delete this side chat and its history?")}</span>
+        <button type="button" onClick={onDelete} className="rounded-full bg-rose-500 px-3 py-1 text-[0.78125rem] font-semibold text-white">
           {t("Delete")}
         </button>
-        <button type="button" onClick={onKeep} className="rounded-full px-2 py-1 text-[12.5px] text-muted">
+        <button type="button" onClick={onKeep} className="rounded-full px-2 py-1 text-[0.78125rem] text-muted">
           {t("Keep")}
         </button>
       </li>
@@ -212,9 +213,9 @@ function SideRow({
         ) : null}
         {/* a chat started on another device of the account is a normal chat here (C8): no
             badge in the list — the turns written elsewhere carry their caption instead */}
-        <span className="min-w-0 flex-1 truncate text-[15px]">{thread.title || t("New chat")}</span>
+        <span className="min-w-0 flex-1 truncate text-[0.9375rem]">{thread.title || t("New chat")}</span>
         {thread.busy && <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-amber-400" />}
-        <span className="shrink-0 text-[12px] text-muted">{relativeDay(thread.updated_at)}</span>
+        <span className="shrink-0 text-[0.75rem] text-muted">{relativeDay(thread.updated_at)}</span>
       </button>
       <button type="button" aria-label={t("Delete")} onClick={onAskDelete} className="p-1.5 text-muted/70 opacity-0 hover:text-rose-500 focus:opacity-100 group-hover:opacity-100">
         <Trash2 size={15} />

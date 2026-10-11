@@ -17,6 +17,7 @@
  * gets them: being ready only skips the account pages. What the pages decide lives on the
  * host (`$DSH_HOME/nanomuse/firstrun.json`), not in this browser.
  */
+import { DotStatus } from './DotStatus.tsx'
 import { useModalLayer } from '@deepseek-ai/dsh-client-ui-primitives'
 import { createElement as h, Fragment, useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
@@ -74,8 +75,8 @@ function Pill({ children, onClick, disabled, type = 'button', ghost = false, sma
   return h('button', { type, disabled, onClick, className: `nm-pill${ghost ? ' nm-pill-ghost' : ''}${small ? ' nm-pill-sm' : ''} ${className}`.trim() }, children)
 }
 
-function Spinner(): ReactNode {
-  return h('div', { className: 'nm-spinner', role: 'progressbar', 'aria-busy': true })
+function Spinner({ message }: { message: string }): ReactNode {
+  return h(DotStatus, { state: 'loading', message })
 }
 
 /** Six boxes over one real input, so paste, IME and autofill all land in the same place. */
@@ -280,7 +281,7 @@ export function makeOnboarding(t: Translate, _actions: OnboardingActions) {
 
     let body: ReactNode
     if (starting) {
-      body = h('div', { className: 'nm-ob-center' }, h(Spinner))
+      body = h('div', { className: 'nm-ob-center' }, h(Spinner, { message: t('dotLoading') }))
     } else if (signIn === 'identifier') {
       // the sign-in pages are the app's own, so the app's mark is their hero (the face comes later: the welcome and "Meet" pages)
       body = h('form', { className: 'nm-ob-center nm-ob-form', onSubmit: sendCode },
@@ -290,7 +291,7 @@ export function makeOnboarding(t: Translate, _actions: OnboardingActions) {
         // SMS codes reach mainland-China numbers only; everyone else gets an e-mail (the Settings sign-in says the same)
         h('p', { className: 'nm-ob-fine' }, t('identifierHint')),
         h('p', { className: 'nm-ob-fine' }, t('obTermsLead'), link(PRIVACY_URL, t('obPrivacy')), t('obTermsEnd')),
-        error ? h('div', { className: 'nm-ob-error', role: 'alert' }, error) : null,
+        error ? h('div', { className: 'nm-ob-error', role: 'alert', 'aria-live': 'assertive' }, error) : null,
         h(Pill, { type: 'submit', disabled: busy || identifier.trim().length < 3, className: 'nm-ob-wide' }, busy ? t('sending') : t('obContinue')),
         h('button', { type: 'button', className: 'nm-ob-link', onClick: () => { setError(undefined); setSignIn(null) } }, t('obBack')))
     } else if (signIn === 'code') {
@@ -305,7 +306,7 @@ export function makeOnboarding(t: Translate, _actions: OnboardingActions) {
           ? h('input', { className: 'nm-field', value: invite, placeholder: t('obInviteCode'), autoComplete: 'off', autoCapitalize: 'characters', 'aria-label': t('obInviteCode'), onChange: (e: FormEvent<HTMLInputElement>) => setInvite(e.currentTarget.value.replace(/[^0-9a-zA-Z-]/g, '').slice(0, 16)) })
           : h('button', { type: 'button', className: 'nm-ob-link nm-inline', disabled: busy, onClick: () => setInviteOpen(true) }, t('obHaveInvite')),
         inviteOpen ? h('p', { className: 'nm-ob-fine' }, t('obInviteHint', { bonus: config.invitee_bonus_cny ?? 5 })) : null,
-        error ? h('div', { className: 'nm-ob-error', role: 'alert' }, error) : null,
+        error ? h('div', { className: 'nm-ob-error', role: 'alert', 'aria-live': 'assertive' }, error) : null,
         h(Pill, { disabled: busy || code.length !== 6, onClick: () => verify(code), className: 'nm-ob-wide' }, busy ? t('signingIn') : t('obNext')),
         h('div', { className: 'nm-ob-links' },
           h('button', { type: 'button', className: 'nm-ob-link', onClick: () => { setError(undefined); setSignIn('password') } }, t('obOtherWay')),
@@ -317,7 +318,7 @@ export function makeOnboarding(t: Translate, _actions: OnboardingActions) {
         h('h1', { className: 'nm-ob-title' }, t('obPasswordTitle')),
         h('p', { className: 'nm-ob-fine' }, identifier.trim()),
         h('input', { className: 'nm-field', type: 'password', value: password, placeholder: t('obPassword'), autoComplete: 'current-password', autoFocus: true, 'aria-label': t('obPassword'), onChange: (e: FormEvent<HTMLInputElement>) => setPassword(e.currentTarget.value) }),
-        error ? h('div', { className: 'nm-ob-error', role: 'alert' }, error) : null,
+        error ? h('div', { className: 'nm-ob-error', role: 'alert', 'aria-live': 'assertive' }, error) : null,
         h(Pill, { type: 'submit', disabled: busy || password.length === 0, className: 'nm-ob-wide' }, busy ? t('signingIn') : t('obSignIn')),
         h('div', { className: 'nm-ob-links' },
           h('button', { type: 'button', className: 'nm-ob-link', onClick: () => { setError(undefined); setSignIn('code') } }, t('obUseCode')),
@@ -349,7 +350,7 @@ export function makeOnboarding(t: Translate, _actions: OnboardingActions) {
         h('h1', { className: 'nm-ob-title nm-ob-title-sm' }, t('frPasswordTitle')),
         h('p', { className: 'nm-ob-sub' }, t('frPasswordSub')),
         h('input', { className: 'nm-field', type: 'password', value: password, placeholder: t('obPassword'), autoComplete: 'new-password', autoFocus: true, 'aria-label': t('obPassword'), onChange: (e: FormEvent<HTMLInputElement>) => setPassword(e.currentTarget.value) }),
-        error ? h('div', { className: 'nm-ob-error', role: 'alert' }, error) : null,
+        error ? h('div', { className: 'nm-ob-error', role: 'alert', 'aria-live': 'assertive' }, error) : null,
         h(Pill, { type: 'submit', disabled: busy || password.length < 6, className: 'nm-ob-wide nm-fr-primary' }, busy ? t('sending') : t('frPasswordSet')),
         h('button', { type: 'button', className: 'nm-ob-skip', onClick: () => { setPassword(''); setPasswordSeen(true) } }, t('frSkip')),
         h('p', { className: 'nm-ob-fine' }, t('frPasswordFine')))
