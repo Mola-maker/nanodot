@@ -319,7 +319,14 @@ class DotForegroundAcceptanceTest {
         val panelBounds = if (type == AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY) onMain {
             val panel = service.dotOverlay.panelView
             if (panel?.isAttachedToWindow == true && panel.isShown && panel.windowVisibility == android.view.View.VISIBLE)
-                Rect().takeIf { panel.getGlobalVisibleRect(it) } else null
+                Rect().takeIf { panel.getGlobalVisibleRect(it) }?.apply {
+                    // Global visible bounds are root/window-relative; accessibility uses screen coordinates.
+                    val onScreen = IntArray(2)
+                    val inWindow = IntArray(2)
+                    panel.getLocationOnScreen(onScreen)
+                    panel.getLocationInWindow(inWindow)
+                    offset(onScreen[0] - inWindow[0], onScreen[1] - inWindow[1])
+                } else null
         } else null
         if (type == AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY && panelBounds == null) return null
         fun find(node: AccessibilityNodeInfo, windowId: Int, viewport: Rect): Rect? {
