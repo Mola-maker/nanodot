@@ -71,13 +71,17 @@ export async function verifyLive({ base, key, stage = 'no-ai', freePlanConfirmed
     for (const origin of [BASE, 'https://www.molamaker.si']) {
       const response = await request('/v1/chat/completions', { method: 'OPTIONS', headers: { Origin: origin, 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'authorization,content-type' } });
       check(response.headers.get('Access-Control-Allow-Origin') === origin, 'Exact CORS origin missing.');
+      for (const [header, required] of [['Access-Control-Allow-Methods', ['GET', 'POST', 'OPTIONS']], ['Access-Control-Allow-Headers', ['Authorization', 'Content-Type']]]) {
+        const allowed = (response.headers.get(header) ?? '').split(',').map(value => value.trim().toLowerCase());
+        check(required.every(value => allowed.includes(value.toLowerCase())), `Required CORS ${header} missing or incomplete.`);
+      }
       await record(`preflight ${origin}`, response, 204, { privateResponse: true });
     }
     const denied = await request('/v1/models', { headers: { Origin: 'https://forbidden.example' } });
     check(!denied.headers.has('Access-Control-Allow-Origin'), 'Foreign origin was allowed.');
     await record('foreign origin', denied, 403, { json: true, privateResponse: true });
     for (const path of ['/', '/connect/', '/privacy', '/docs/', '/site.js', '/style.css']) await record(`website ${path}`, await request(path), 200);
-    await record('unknown webpage', await request('/task6-missing-page'), 404);
+    await record('unknown webpage', await request('/task6-missing-page'), 404, { privateResponse: true });
     const redirect = await fetcher('https://www.molamaker.si/connect/', { redirect: 'manual', signal: AbortSignal.timeout(30000) });
     check(redirect.status === 301 && redirect.headers.get('Location') === `${base}/connect/`, 'www canonical redirect missing.');
     report.checks.push({ name: 'www redirect without Bearer', status: 'PASS', httpStatus: 301 });
@@ -101,15 +105,35 @@ export async function verifyLive({ base, key, stage = 'no-ai', freePlanConfirmed
     const edgeId = response.headers.get('X-Request-ID') ?? response.headers.get('CF-Ray');
     report.lastResponse = { httpStatus: response.status, ...(edgeId && /^[A-Za-z0-9-]{1,100}$/.test(edgeId) ? { requestId: edgeId } : {}) };
     check(response.ok && response.headers.get('Content-Type')?.includes('text/event-stream') && response.headers.get('Cache-Control') === 'no-store', `AI stream failed HTTP${response.status}.`);
-    const reader = response.body.getReader(); const decoder = new TextDecoder(); let transcript = '';
+    const reader = response.body.getReader(); const decoder = new TextDecoder(); let transcript = ''; let cancellation;
     try {
       while (true) {
-        const { value, done } = await reader.read(); if (done) break;
+        let result;
+        if (stage === 'cancel') {
+          // A buffered chunk or closed stream is not active-reader cancellation evidence.
+          // Observe a pending read across one event-loop turn before aborting locally.
+          const pendingRead = reader.read().then(result => ({ result }), error => ({ error }));
+          const active = Symbol('pending'); let observationTimer;
+          const observed = await Promise.race([pendingRead, new Promise(resolve => { observationTimer = setTimeout(() => resolve(active), 0); })]);
+          clearTimeout(observationTimer);
+          if (observed === active) {
+            controller.abort();
+            try { await reader.cancel(); } catch (error) { if (error?.name !== 'AbortError') throw error; }
+            const outcome = await pendingRead;
+            check(outcome.result?.done === true || outcome.error?.name === 'AbortError', 'Active read did not close or abort after local cancellation.');
+            cancellation = { pendingRead: true, abortSignal: controller.signal.aborted, readerResult: outcome.error ? 'AbortError' : 'closed' };
+            break;
+          }
+          if (observed.error) throw observed.error;
+          result = observed.result;
+          check(!result.done, 'SSE ended before active-reader cancellation; cancellation remains unverified.');
+        } else result = await reader.read();
+        const { value, done } = result; if (done) break;
         transcript += decoder.decode(value, { stream: true });
         check(transcript.length <= 2 * 1024 * 1024, 'SSE output exceeded verifier bound.');
-        if (stage === 'cancel') { controller.abort(); await reader.cancel().catch(() => {}); break; }
       }
     } finally { reader.releaseLock(); }
+    if (stage === 'cancel') check(cancellation?.pendingRead && cancellation.abortSignal, 'Active-reader cancellation evidence missing.');
     if (stage !== 'cancel') {
       check(transcript.includes('data: [DONE]'), 'SSE missing terminal DONE.');
       let content = '';
@@ -121,7 +145,7 @@ export async function verifyLive({ base, key, stage = 'no-ai', freePlanConfirmed
     }
     check(!transcript.includes(key), 'Stream contained credential.');
     const requestId = response.headers.get('X-Request-ID') ?? response.headers.get('CF-Ray');
-    report.checks.push({ ...(requestId && /^[A-Za-z0-9-]{1,100}$/.test(requestId) ? { requestId } : {}), name: stage, status: 'PASS', responseSha256: hash(transcript), note: stage === 'cancel' ? 'Reader/transport aborted locally; upstream completion and native UI remain unverified.' : 'Protocol and Chinese content passed; semantic fixture/proposal review remains pending.' });
+    report.checks.push({ ...(requestId && /^[A-Za-z0-9-]{1,100}$/.test(requestId) ? { requestId } : {}), name: stage, status: 'PASS', responseSha256: hash(transcript), ...(cancellation ? { cancellation } : {}), note: stage === 'cancel' ? 'Pending reader closed or aborted after local abort/cancel; upstream AI completion and native UI remain unverified.' : 'Protocol and Chinese content passed; semantic fixture/proposal review remains pending.' });
     return report;
   } finally { clearTimeout(timer); }
   } catch (cause) {

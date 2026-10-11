@@ -61,7 +61,10 @@ jobs:
           node scripts/site/build.mjs
           node scripts/gateway/verify-live.mjs --scan-site gateway/public --report gateway/static-scan.json
       - name: Compile without credentials or deployment
+        env:
+          WRANGLER_LOG_PATH: ${{ github.workspace }}/evidence/task-6/wrangler-logs/
         run: |
+          mkdir -p "$WRANGLER_LOG_PATH"
           npm --prefix gateway run dry-run
           cd gateway
           npx wrangler deploy --config wrangler.operator.jsonc --dry-run --outdir dist-operator

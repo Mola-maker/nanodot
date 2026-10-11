@@ -54,11 +54,16 @@ node --test site/tests/*.test.mjs
 NANODOT_DOCS_BASE=/docs/ npm --prefix website run docs:build
 node scripts/site/build.mjs
 node scripts/gateway/verify-live.mjs --scan-site gateway/public --report evidence/task-6/static-scan.json
+export WRANGLER_LOG_PATH="$PWD/evidence/task-6/wrangler-logs/"
+mkdir -p "$WRANGLER_LOG_PATH"
 npm --prefix gateway run dry-run
 cd gateway
 npx wrangler deploy --config wrangler.operator.jsonc --dry-run --outdir dist-operator
 npx wrangler deploy --config wrangler.operator-relay.jsonc --dry-run --outdir dist-relay
 ```
+
+Wrangler 编译日志写入忽略且可写的 `evidence/task-6/wrangler-logs/`，而非可能只读的默认 home 目录。
+此设置用于下一次本就需要执行的 dry-run；不为隐藏已存错误重复运行。
 
 需要 Node22。gateway 测试池 `remoteBindings:false`，CI 不调用模型。旧 GitHub Pages 原始源码发布路径已关闭。
 默认文档构建保留旧 base，仅网关使用 `/docs/`。生成产物/证据忽略。Phase B 前保存 commit、产物哈希、
@@ -75,7 +80,7 @@ npx wrangler deploy --config wrangler.operator-relay.jsonc --dry-run --outdir di
 node scripts/gateway/verify-live.mjs --base https://molamaker.si --report evidence/task-6/no-ai.json
 ```
 
-检查 health 配置、未鉴权/已鉴权 models、API JSON/no-store404、未知网页404、根域/www 精确 CORS、
+检查 health 配置、未鉴权/已鉴权 models、API JSON/no-store404、未知网页 no-store404、根域/www 精确 CORS 及必需的 methods/headers、
 preflight、外域拒绝、网页/静态文件和不带 Bearer 的 www301。所有鉴权重定向都拒绝，包括同 host，
 不会转发 Bearer。响应检查只搜索实际测试 key；静态构建检查另行进行，builder 仅复制固定审查列表。
 缺少生产 secret 返回503，不能冒充401通过。
@@ -84,6 +89,8 @@ preflight、外域拒绝、网页/静态文件和不带 Bearer 的 www301。所�
 所有客户端、探针、取消、失败、重试均在实际 dispatch 前保留次数，最多15、不重置/退款。
 `text`、`vision`、`care`、`cancel` 阶段必须显式带 `--live-ai --free-plan-confirmed --ledger PATH`。
 视觉还需非私密本地 PNG、`--image-sha256`，不抓取远端图片。记录响应哈希、状态和脱敏请求 ID；
+取消阶段必须观察到跨事件循环仍未完成的 reader read，再触发本地 abort/cancel，并确认该 read 关闭或 AbortError。
+空流或在此之前自然结束的流验收失败；本地取消不能证明上游 AI 已物理停止。
 不记录凭据/提示词。自动检查中文 SSE 与无 tools 结构，图片标记语义、关怀 proposal 和原生取消仍需人工/客户端观察。
 
 预分配：Android文字1、desktop1、Web1、iOS1、视觉1、ASR1、私密中文/混合TTS2、条件生产TTS2、

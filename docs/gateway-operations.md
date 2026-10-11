@@ -64,11 +64,17 @@ node --test site/tests/*.test.mjs
 NANODOT_DOCS_BASE=/docs/ npm --prefix website run docs:build
 node scripts/site/build.mjs
 node scripts/gateway/verify-live.mjs --scan-site gateway/public --report evidence/task-6/static-scan.json
+export WRANGLER_LOG_PATH="$PWD/evidence/task-6/wrangler-logs/"
+mkdir -p "$WRANGLER_LOG_PATH"
 npm --prefix gateway run dry-run
 cd gateway
 npx wrangler deploy --config wrangler.operator.jsonc --dry-run --outdir dist-operator
 npx wrangler deploy --config wrangler.operator-relay.jsonc --dry-run --outdir dist-relay
 ```
+
+Wrangler compilation logs use the ignored writable `evidence/task-6/wrangler-logs/` directory
+instead of a potentially read-only default home directory. Apply this on the next already-required
+dry-run; never rerun merely to hide retained logging errors.
 
 Node 22 is required. The gateway test pool sets `remoteBindings:false`; no models run in CI.
 The old raw-source GitHub Pages publishing path is closed. Default documentation builds
@@ -90,7 +96,7 @@ node scripts/gateway/verify-live.mjs --base https://molamaker.si --report eviden
 ```
 
 It checks health/configuration, unauthorized/authorized models, JSON/no-store API 404,
-unknown webpage 404, exact apex/www CORS preflight, foreign-origin refusal, public pages/assets,
+unknown webpage no-store 404, exact apex/www CORS preflight with required methods/headers, foreign-origin refusal, public pages/assets,
 and credential-free www301. Every authenticated redirect is refused, including same-host
 redirects; Bearer is never forwarded. Static built-site checks and response scans are distinct:
 the verifier scans fetched public responses for the actual test key, while the builder copies
@@ -103,7 +109,10 @@ failures and retries. Maximum 15; never reset/refund it. The verifier has explic
 Vision additionally requires a local nonprivate PNG and `--image-sha256`; no remote image fetch.
 It records response hashes/status and sanitized request IDs, not credentials/prompts. Chinese
 SSE and no-tools structure are automatic checks; image text semantics, care proposal and
-native cancellation still require human/client observation. No successful HTTP implies those.
+native cancellation still require human/client observation. The cancel stage must observe a read pending across
+an event-loop turn, invoke local abort/cancel and observe that read close or reject with AbortError.
+Empty streams or streams naturally ended before that point fail. Local cancellation does not
+prove that upstream AI physically stopped. No successful HTTP implies those.
 
 Budget before dispatch: Android text1, desktop text1, Web text1, iOS text1, vision1, ASR1,
 private Chinese/mixed TTS2, conditional production TTS2, care1, cancel1 = 12, leaving3 reserved

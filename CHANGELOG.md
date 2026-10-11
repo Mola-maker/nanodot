@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Required observed active-reader cancellation in the live verifier; empty or naturally completed streams fail cancellation acceptance. Strengthened required preflight headers and error-cache checks, and configured ignored writable dry-run logs.
+
 - Added exact-domain gateway CORS, credential-safe www redirects, an inference recovery switch, protected manual version publishing and bilingual deployment/rollback instructions. Prepared bounded protocol acceptance and private audio/counter probes; real deployment and device acceptance remained pending.
 
 - Added an optional Nanodot · Workers AI connection with dedicated project credentials and UUID ownership across clients. Project credentials remain bound during native provider edits, and unsaved Web keys are cleared before a changed destination is previewed. Connecting preserves existing Cloud accounts and model selections; local protocol fixtures pass, while deployment and live model/voice acceptance remain pending.
