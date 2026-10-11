@@ -540,7 +540,9 @@ class ManualForegroundApiProofTest {
                 if(publicTarget) { geometry("targetBounds",target?.bounds); geometry("cardBounds",measured); geometry("bubbleBounds",bubble) }
                 return result
             }
-            fun publicAxEvidence():JSONObject {
+            var refreshNode:AccessibilityNodeInfo?=null; var refreshCardId:Int?=null; var refreshTargetRef:String?=null
+            var beforeVisible=false
+            fun publicAxEvidence(captureInstruction:Boolean=false):JSONObject {
                 val state=controller.state.value; val target=checkNotNull(state.target); val proposal=checkNotNull(state.proposal)
                 check(state.state==CareState.AwaitingUser && target.description==ForegroundApiHostFixture.ONE &&
                     proposal.targetRef==target.ref && proposal.action==CareAction.Focus && proposal.instruction==focusInstruction &&
@@ -549,6 +551,7 @@ class ManualForegroundApiProofTest {
                 val card=field(window,"card") as View; check(card.isAttachedToWindow)
                 val native=card.createAccessibilityNodeInfo()
                 val cardId=try { native.windowId } finally { native.recycle() }; check(cardId>=0 && host(actual,cardId))
+                if(captureInstruction) { refreshCardId=cardId; refreshTargetRef=target.ref }
                 val bubble=field(window.focus,"instruction") as? RectPx
                 val names=listOf("exactTextAny","exactTextVisible","exactDescriptionAny","exactDescriptionVisible",
                     "normalizedTextAny","normalizedTextVisible","containsTextAny","containsTextVisible")
@@ -564,6 +567,9 @@ class ManualForegroundApiProofTest {
                         matches.forEachIndexed { match,yes -> if(yes) { counts[index][match*2]++; if(visible) counts[index][match*2+1]++ } }
                     }
                     if(text==focusInstruction || description==focusInstruction) {
+                        if(captureInstruction && text==focusInstruction && node.windowId==cardId && refreshNode==null) {
+                            refreshNode=AccessibilityNodeInfo.obtain(node); beforeVisible=visible
+                        }
                         if(bounds.length()<8) {
                             val r=android.graphics.Rect(); node.getBoundsInScreen(r)
                             val usable=r.width()>0 && r.height()>0
@@ -587,6 +593,7 @@ class ManualForegroundApiProofTest {
                     try { check(root.packageName?.toString()==app.packageName); visit(root,1) }
                     finally { root.recycle() }
                 } finally { windows.forEach { it.recycle() } }
+                if(captureInstruction) check(nullChildren==0 && truncated==0 && counts[1][0]==1 && refreshNode!=null)
                 val result=JSONObject().put("exactOwnedRoot",true).put("visited",visited).put("nullChildren",nullChildren)
                     .put("truncatedBranches",truncated).put("instructionMatches",bounds).put("boundsOmitted",boundsOmitted)
                 listOf("goal","instruction").forEachIndexed { index,label ->
@@ -609,6 +616,28 @@ class ManualForegroundApiProofTest {
                 check(controller.verifiedSteps.value.isEmpty())
                 android.util.Log.i("ForegroundCareFocusKeyless",focusResult.put("publicAxEvidence",publicAxEvidence()).toString())
             }
+            try {
+                inst.runOnMainSync { publicAxEvidence(captureInstruction=true) }
+                check(android.os.Looper.myLooper()!=android.os.Looper.getMainLooper())
+                val node=checkNotNull(refreshNode)
+                val success=node.refresh() // One read-only, cache-bypassing query for this exact public node.
+                inst.runOnMainSync {
+                    val state=controller.state.value; val target=checkNotNull(state.target); val proposal=checkNotNull(state.proposal)
+                    check(field(actual.dotInteraction,"careWindow")===ownedWindow && state.state==CareState.AwaitingUser &&
+                        target.description==ForegroundApiHostFixture.ONE && target.ref==refreshTargetRef && proposal.targetRef==target.ref &&
+                        proposal.action==CareAction.Focus && proposal.instruction==focusInstruction &&
+                        proposal.expectation==CareExpectation.Focused(target.ref))
+                    val card=field(checkNotNull(ownedWindow),"card") as View; check(card.isAttachedToWindow)
+                    val current=card.createAccessibilityNodeInfo()
+                    try { check(current.windowId==refreshCardId && host(actual,current.windowId)) } finally { current.recycle() }
+                    val bounds=android.graphics.Rect(); node.getBoundsInScreen(bounds)
+                    android.util.Log.i("ForegroundCareRefreshKeyless",JSONObject().put("phase","settled_public_refresh")
+                        .put("refreshAttempted",true).put("beforeVisible",beforeVisible).put("refreshSuccess",success)
+                        .put("afterVisible",node.isVisibleToUser).put("afterExactText",node.text?.toString()?.trim()==focusInstruction)
+                        .put("afterCardWindowIdMatch",node.windowId==refreshCardId).put("afterPositiveBounds",bounds.width()>0 && bounds.height()>0)
+                        .put("afterRefreshGuide",focusConditions()).toString())
+                }
+            } finally { refreshNode?.recycle(); refreshNode=null }
         } finally {
             if(installed) {
                 var failures=0
