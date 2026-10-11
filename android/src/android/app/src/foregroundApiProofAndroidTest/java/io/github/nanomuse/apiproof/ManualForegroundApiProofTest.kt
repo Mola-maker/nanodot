@@ -17,6 +17,7 @@ import android.view.View
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
 import androidx.lifecycle.ViewModelProvider
+import androidx.room.withTransaction
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.openminis.app.MinisApp
@@ -252,6 +253,7 @@ class ManualForegroundApiProofTest {
             config.agentLoopModelEntryIds.isEmpty() && config.agentLoopGroupIds.isEmpty() &&
             config.defaultPrimaryGroupId==null && config.defaultSubGroupId==null && config.voiceInputGroupId==null &&
             config.voiceOutputGroupId==null && config.visionGroupId==null)
+        check(!io.github.nanomuse.cloud.NanoMuseCloud.isSignedIn(app))
         check(field(ChatViewModelStore,"pendingTransfer")==null)
         check(field(io.github.nanomuse.dot.voice.DotVoiceRuntime,"entry")==null)
         check(field(com.openminis.app.logging.AppLogger,"enabled")==false && field(com.openminis.app.logging.AppLogger,"captureActive")==false)
@@ -276,6 +278,25 @@ class ManualForegroundApiProofTest {
             put("verified",JsonArray(history.map { invoke("proposalJson",it) }))
         }.toString()
     }
+    // Inspect only fixture-scoped counts, never arbitrary sync owner or mapping contents.
+    // Holding the sync transaction keeps all three inventories coherent through chat deletion.
+    private suspend fun <T> absentSync(id:String,messageIds:Set<String>,deleteOwnedChat:suspend () -> T):T {
+        check(UUID.fromString(id).toString()==id && messageIds.size<=2)
+        val database=io.github.nanomuse.sync.SyncDatabase.get(app)
+        return database.withTransaction {
+            val sql=database.openHelper.readableDatabase
+            fun count(query:String,args:List<String>):Long = sql.query(androidx.sqlite.db.SimpleSQLiteQuery(query,args.toTypedArray())).use { cursor ->
+                check(cursor.moveToFirst()); cursor.getLong(0).also { check(it>=0) }
+            }
+            val messageQuery="SELECT COUNT(*) FROM sync_messages WHERE sessionId = ?" +
+                if(messageIds.isEmpty()) "" else " OR messageId IN (${messageIds.joinToString(",") { "?" }})"
+            withAbsentForegroundSync(
+                ownerCount={ count("SELECT COUNT(*) FROM session_owners WHERE sessionId = ?",listOf(id)) },
+                conversationCount={ count("SELECT COUNT(*) FROM sync_conversations WHERE sessionId = ?",listOf(id)) },
+                messageCount={ count(messageQuery,listOf(id)+messageIds.sorted()) },
+            ) { deleteOwnedChat() }
+        }
+    }
     private fun ownedCleanup(id:String,title:String,context:ForegroundPublicContext,recorded:JSONArray) = runBlocking {
         val row=app.chatRepository.getSession(id) ?: return@runBlocking
         val messages=app.chatRepository.dao.loadMessages(id)
@@ -289,9 +310,9 @@ class ManualForegroundApiProofTest {
                         (message.role=="assistant" && part.getString("value").trim()=="READY"))
             }
         }) { "Unknown owned rows preserved" }
-        app.chatRepository.dao.deleteMessages(id); app.chatRepository.dao.deleteSession(id)
-        val sync=io.github.nanomuse.sync.SyncDatabase.get(app).dao()
-        sync.removeOwners(listOf(id)); sync.removeConversations(listOf(id)); sync.removeMessagesOfAll(listOf(id))
+        absentSync(id,expected.keys) {
+            app.chatRepository.dao.deleteMessages(id); app.chatRepository.dao.deleteSession(id)
+        }
         check(!File(context.filesDir,"media").exists() && !java.nio.file.Files.isSymbolicLink(File(context.filesDir,"media").toPath()))
         removeOwnedSessionDirectories(context.filesDir,id)
         // Any ordinary app-owned session directory must be public and empty before removal.
@@ -403,6 +424,9 @@ class ManualForegroundApiProofTest {
                 expectedSystem=canonical.javaClass.getDeclaredMethod("buildSystemPrompt").apply { isAccessible=true }.invoke(canonical) as String
             }
             check(public.applicationContext===public && public.filesDir.canonicalPath.startsWith(ownerRoot.canonicalPath+File.separator))
+            // The direct public DAO insertion bypasses normal owner claim, but startup
+            // reconciliation is not assumed absent: fail before key consumption if it ran.
+            runBlocking { absentSync(ownId,emptySet()) { Unit } }
             val key=checkNotNull(PrivateProofInput.consume(object:ContextWrapper(app) { override fun getCacheDir()=ownerRoot }))
             val chat=ForegroundApiTransport(ProofSlot.Chat,gate,key,expectedSystem,REQUEST,tools,checkpoint={ partial ->
                 await("Real streaming delta was not visible in production panel") { canonical.isStreaming.value && overlayText(actual,partial) }

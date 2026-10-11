@@ -94,3 +94,17 @@ internal fun sameJson(first: Any?, second: Any?): Boolean = when {
     first is Number && second is Number -> first.toDouble() == second.toDouble()
     else -> first == second
 }
+
+/** A cleanup callback must not run until every fixture-scoped sync inventory is absent. */
+internal inline fun <T> withAbsentForegroundSync(
+    ownerCount: () -> Long,
+    conversationCount: () -> Long,
+    messageCount: () -> Long,
+    deleteOwnedChat: () -> T,
+): T {
+    val owners = ownerCount()
+    val conversations = conversationCount()
+    val messages = messageCount()
+    check(owners == 0L && conversations == 0L && messages == 0L) { "Unexpected fixture sync evidence preserved" }
+    return deleteOwnedChat()
+}
