@@ -175,12 +175,12 @@ def test_alternate_palettes_reach_semantic_tokens_and_preserve_unrelated_colors(
         desktop, "html[data-nanomuse] body[data-ds-dark-theme]"
     )
     theme = (root / THEME).read_text(encoding="utf-8")
-    assert (
-        f"private val TealDarkTertiary = Color(0xFF{brand.themeColors['dark']['care'][1:]})"
-        in theme
-    )
-    assert "tertiary = TealDarkTertiary," in theme
-    assert "onTertiary = TealDarkOnTertiary," in theme
+    assert "private val DarkColorScheme = io.github.nanomuse.dot.DotColors.darkScheme" in theme
+    colors = (
+        root / "android/src/android/app/src/main/java/io/github/nanomuse/dot/DotColors.kt"
+    ).read_text(encoding="utf-8")
+    assert f"tertiary = Color(0xFF{brand.themeColors['dark']['care'][1:]})," in colors
+    assert f"onTertiary = Color(0xFF{brand.themeColors['dark']['onPrimary'][1:]})," in colors
     assert ".custom-chip { color: #136F63; }" in web
     for relative, value in preserved.items():
         assert (root / relative).read_text(encoding="utf-8") == value

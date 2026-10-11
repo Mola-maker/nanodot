@@ -17,8 +17,10 @@ from pathlib import Path
 
 if __package__:
     from .brand_profile import BrandProfile, load_brand
+    from .ui_tokens import render_dot_colors
 else:
     from brand_profile import BrandProfile, load_brand
+    from ui_tokens import render_dot_colors
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION_NAME = "1.0.1"
@@ -350,7 +352,7 @@ def _android_colors(java, res, brand, edit, write) -> None:
     light, dark = brand.themeColors["light"], brand.themeColors["dark"]
     upstream = java / "com/openminis/app"
     theme = upstream / "ui/theme/Theme.kt"
-    if theme.exists():
+    if theme.exists() and "DotColors.lightScheme" not in theme.read_text(encoding="utf-8"):
         text = theme.read_text(encoding="utf-8")
         # The upstream dark scheme omitted its tertiary slots. Keep these four
         # declarations beside the other dark tokens and bind only that scheme.
@@ -529,19 +531,8 @@ def _android_colors(java, res, brand, edit, write) -> None:
         res / "values/colors.xml",
         [(r'(<color name="seed">)#[0-9A-Fa-f]+', rf"\g<1>{light['primary']}")],
     )
-    # Care is already in the real Material tertiary slot; expose both modes for future overlays.
-    write(
-        java / "io/github/nanomuse/dot/DotColors.kt",
-        "package io.github.nanomuse.dot\n\nimport androidx.compose.ui.graphics.Color\n\n"
-        "// Generated from brand.nanodot.json; Material tertiary carries the care accent.\n"
-        "object DotColors {\n"
-        + "".join(
-            f"    val {mode.title()}{token[0].upper() + token[1:]} = Color(0xFF{value[1:]})\n"
-            for mode, palette in brand.themeColors.items()
-            for token, value in palette.items()
-        )
-        + "}\n",
-    )
+    # Both UI and P0 branding use the same renderer; never restore a stale M3 mapping.
+    write(java / "io/github/nanomuse/dot/DotColors.kt", render_dot_colors(brand))
 
 
 def _ios_brand(ios, brand, edit, write) -> None:

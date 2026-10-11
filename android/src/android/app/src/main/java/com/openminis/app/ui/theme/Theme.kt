@@ -5,8 +5,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
@@ -15,133 +13,9 @@ import androidx.compose.ui.text.font.FontWeight // nanoMuse
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Accent: iOS blue, desaturated. [T-android-accent-blue-parity]
-//
-// Was a teal (#2E8B8B / #4DD9D9) that predated iOS settling on blue. The hue
-// now comes from iOS Assets.xcassets/AccentColor.colorset (sRGB components
-// r0.212 g0.525 b0.933 -> #3686EE light, r0.329 g0.565 b0.894 -> #5490E4 dark),
-// but iOS's saturation (84% / 73%) read as glaring on Android's darker
-// surfaces, so SATURATION is dialled back ~30% with hue and lightness kept:
-//   light  #3686EE  S84% L57%  ->  #528AD2  S59% L57%
-//   dark   #5490E4  S73% L61%  ->  #6A94CE  S51% L61%
-//
-// Lightness is deliberately NOT raised, which is the other way to "lighten".
-// It would have softened dark mode further but pushed light-mode contrast on
-// white from 3.62 to 2.62 — below WCAG AA's 4.5 for text. Desaturating keeps
-// dark mode at 5.93 (passing) and leaves light mode where it was.
-//
-// Names keep the `Teal` prefix only to avoid churning 90+ call sites; the
-// value is the contract, not the name.
-private val TealPrimary = Color(0xFF136F63)
-private val TealOnPrimary = Color(0xFFFFFFFF)
-private val TealPrimaryContainer = Color(0xFFF4F7F8)
-private val TealOnPrimaryContainer = Color(0xFF16252C)
-private val TealSecondary = Color(0xFF136F63)
-private val TealOnSecondary = Color(0xFFFFFFFF)
-private val TealSecondaryContainer = Color(0xFFF4F7F8)
-private val TealOnSecondaryContainer = Color(0xFF16252C)
-private val TealTertiary = Color(0xFF7057A3)
-private val TealOnTertiary = Color(0xFFFFFFFF)
-private val TealTertiaryContainer = Color(0xFFF4F7F8)
-private val TealOnTertiaryContainer = Color(0xFF16252C)
-private val TealBackground = Color(0xFFF4F7F8)
-private val TealOnBackground = Color(0xFF16252C)
-private val TealSurface = Color(0xFFFFFFFF)
-private val TealOnSurface = Color(0xFF16252C)
-private val TealSurfaceVariant = Color(0xFFF4F7F8)
-private val TealOnSurfaceVariant = Color(0xFF16252C)
-private val TealOutline = Color(0xFF687980)
-
-private val TealDarkPrimary = Color(0xFF7DD6C5)
-private val TealDarkOnPrimary = Color(0xFF10191D)
-private val TealDarkPrimaryContainer = Color(0xFF10191D)
-private val TealDarkOnPrimaryContainer = Color(0xFFE5EDF0)
-private val TealDarkSecondary = Color(0xFF7DD6C5)
-private val TealDarkOnSecondary = Color(0xFF10191D)
-private val TealDarkSecondaryContainer = Color(0xFF10191D)
-private val TealDarkOnSecondaryContainer = Color(0xFFE5EDF0)
-private val TealDarkTertiary = Color(0xFFC7B4F7)
-private val TealDarkOnTertiary = Color(0xFF10191D)
-private val TealDarkTertiaryContainer = Color(0xFF10191D)
-private val TealDarkOnTertiaryContainer = Color(0xFFE5EDF0)
-private val TealDarkBackground = Color(0xFF10191D)
-private val TealDarkOnBackground = Color(0xFFE5EDF0)
-private val TealDarkSurface = Color(0xFF182329)
-private val TealDarkOnSurface = Color(0xFFE5EDF0)
-private val TealDarkSurfaceVariant = Color(0xFF10191D)
-private val TealDarkOnSurfaceVariant = Color(0xFFE5EDF0)
-private val TealDarkOutline = Color(0xFF8EABB5)
-
-// Neutral grouped-card surfaces (iOS-style system-grouped background).
-// Override Material3's tonal `surfaceContainer*` so cards don't pick up the
-// teal primary tint.
-// Light: page = #F2F2F7 gray, card = white
-// Dark:  page = #000, card = #1C1C1E
-private val NeutralGroupedBg = Color(0xFFF4F7F8)
-private val NeutralGroupedCard = Color(0xFFFFFFFF)
-private val NeutralGroupedCardElevated = Color(0xFFFFFFFF)
-private val NeutralOutline = Color(0xFF687980)
-
-private val NeutralDarkGroupedBg = Color(0xFF10191D)
-private val NeutralDarkGroupedCard = Color(0xFF182329)
-private val NeutralDarkGroupedCardElevated = Color(0xFF182329)
-private val NeutralDarkOutline = Color(0xFF8EABB5)
-
-private val LightColorScheme = lightColorScheme(
-    primary = TealPrimary,
-    onPrimary = TealOnPrimary,
-    primaryContainer = TealPrimaryContainer,
-    onPrimaryContainer = TealOnPrimaryContainer,
-    secondary = TealSecondary,
-    onSecondary = TealOnSecondary,
-    secondaryContainer = TealSecondaryContainer,
-    onSecondaryContainer = TealOnSecondaryContainer,
-    tertiary = TealTertiary,
-    onTertiary = TealOnTertiary,
-    tertiaryContainer = TealTertiaryContainer,
-    onTertiaryContainer = TealOnTertiaryContainer,
-    background = NeutralGroupedBg,
-    onBackground = TealOnBackground,
-    surface = NeutralGroupedBg,
-    onSurface = TealOnSurface,
-    surfaceVariant = NeutralGroupedCard,
-    onSurfaceVariant = TealOnSurfaceVariant,
-    surfaceContainerLowest = NeutralGroupedBg,
-    surfaceContainerLow = NeutralGroupedCard,
-    surfaceContainer = NeutralGroupedCard,
-    surfaceContainerHigh = NeutralGroupedCardElevated,
-    surfaceContainerHighest = NeutralGroupedCardElevated,
-    outline = NeutralOutline,
-    outlineVariant = NeutralOutline,
-)
-
-private val DarkColorScheme = darkColorScheme(
-    primary = TealDarkPrimary,
-    onPrimary = TealDarkOnPrimary,
-    primaryContainer = TealDarkPrimaryContainer,
-    onPrimaryContainer = TealDarkOnPrimaryContainer,
-    secondary = TealDarkSecondary,
-    onSecondary = TealDarkOnSecondary,
-    secondaryContainer = TealDarkSecondaryContainer,
-    onSecondaryContainer = TealDarkOnSecondaryContainer,
-    tertiary = TealDarkTertiary, // nanoMuse: profile care accent
-    onTertiary = TealDarkOnTertiary,
-    tertiaryContainer = TealDarkTertiaryContainer,
-    onTertiaryContainer = TealDarkOnTertiaryContainer,
-    background = NeutralDarkGroupedBg,
-    onBackground = TealDarkOnBackground,
-    surface = NeutralDarkGroupedBg,
-    onSurface = TealDarkOnSurface,
-    surfaceVariant = NeutralDarkGroupedCard,
-    onSurfaceVariant = TealDarkOnSurfaceVariant,
-    surfaceContainerLowest = NeutralDarkGroupedBg,
-    surfaceContainerLow = NeutralDarkGroupedCard,
-    surfaceContainer = NeutralDarkGroupedCard,
-    surfaceContainerHigh = NeutralDarkGroupedCardElevated,
-    surfaceContainerHighest = NeutralDarkGroupedCardElevated,
-    outline = NeutralDarkOutline,
-    outlineVariant = NeutralDarkOutline,
-)
+// nanoMuse: shared generated M3 roles preserve the brand on-colors in both themes.
+private val LightColorScheme = io.github.nanomuse.dot.DotColors.lightScheme
+private val DarkColorScheme = io.github.nanomuse.dot.DotColors.darkScheme
 
 // App-wide FAB accent color (warm beige, matching iOS New Chat button).
 // Reads from ChatPalette so it follows the in-app theme override (theme_mode pref),
@@ -201,7 +75,11 @@ private fun museTypography(): Typography {
         titleLarge = base.titleLarge.muse(22, 28, FontWeight.SemiBold),
         titleMedium = base.titleMedium.muse(17, 22, FontWeight.SemiBold),
         titleSmall = base.titleSmall.muse(15, 20, FontWeight.Medium),
-        bodyLarge = base.bodyLarge.muse(16, 24),
+        // nanoMuse: system-font body size comes from the UI token authority.
+        bodyLarge = base.bodyLarge.copy(
+            fontSize = io.github.nanomuse.dot.ui.DotTokens.Type.Body,
+            lineHeight = 24.sp, letterSpacing = 0.sp,
+        ),
         bodyMedium = base.bodyMedium.muse(14, 20),
         bodySmall = base.bodySmall.muse(13, 18),
         labelLarge = base.labelLarge.muse(15, 20, FontWeight.Medium),

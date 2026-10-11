@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Added one source for Nanodot spacing, system typography and motion across native and Web clients, completed Android Material color roles, and documented accessible component states in English and Chinese.
+
 ### Nanodot P0
 
 - Establish the shared Nanodot brand profile, default assistant Dot, application ID `io.github.nanodot.app` and external `nanodot://` scheme. Internal Kotlin packages, `minis://` routes, sandbox paths and CLI names remain stable.
