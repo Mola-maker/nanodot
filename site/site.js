@@ -1,119 +1,43 @@
-// nanoMuse landing page: language toggle + the live phone mock in the hero.
-(function () {
-  "use strict";
-
-  // ---- language -------------------------------------------------------------------
-  var html = document.documentElement;
-  function setLang(lang) {
-    html.lang = lang;
-    try {
-      localStorage.setItem("nanomuse-site-lang", lang);
-    } catch (e) {
-      /* private mode */
-    }
-    document.title = lang === "zh-CN" ? "nanoMuse — 开源的个人 AI 智能体" : "nanoMuse — an open-source personal AI agent";
-  }
-  var saved = null;
-  try {
-    saved = localStorage.getItem("nanomuse-site-lang");
-  } catch (e) {
-    /* ignore */
-  }
-  var fromUrl = /[?&]lang=(zh|en)/.exec(location.search);
-  if (fromUrl) setLang(fromUrl[1] === "zh" ? "zh-CN" : "en");
-  else if (saved) setLang(saved);
-  else setLang(/^zh/i.test(navigator.language || "") ? "zh-CN" : "en");
-  document.getElementById("lang").addEventListener("click", function () {
-    setLang(html.lang === "zh-CN" ? "en" : "zh-CN");
-  });
-
-  // ---- mascot ---------------------------------------------------------------------
-  var MASCOT = window.NANOMUSE_MASCOT || {};
-  function panda(el, mood) {
-    if (!el || el.dataset.current === mood) return;
-    el.dataset.current = mood;
-    var badge = el.querySelector(".badge");
-    // The drawing runs past the bottom of its 200×200 box on purpose (the body sits on the
-    // edge); the app clips it to a circle, so does the page.
-    el.innerHTML = '<span class="clip">' + (MASCOT[mood] || MASCOT.idle || "") + "</span>";
-    if (badge) el.appendChild(badge);
-    else if (el.classList.contains("avatar")) {
-      var b = document.createElement("span");
-      b.className = "badge";
-      b.textContent = "1";
-      el.appendChild(b);
-    }
-    el.classList.toggle("waiting", mood === "waiting");
-  }
-  Array.prototype.forEach.call(document.querySelectorAll(".beat-panda"), function (el) {
-    panda(el, el.dataset.mood);
-  });
-
-  // ---- the phone mock ---------------------------------------------------------------
-  var body = document.getElementById("phone-body");
-  var status = document.getElementById("phone-status");
-  var avatar = document.getElementById("phone-avatar");
-  if (!body || !status || !avatar) return;
-  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  function add(id) {
-    var tpl = document.getElementById("tpl-" + id);
-    if (!tpl) return null;
-    var node = tpl.content.firstElementChild.cloneNode(true);
-    node.dataset.id = id;
-    body.appendChild(node);
-    return node;
-  }
-  function find(id) {
-    return body.querySelector('[data-id="' + id + '"]');
-  }
-  function done(id) {
-    var n = find(id);
-    if (n) n.classList.add("done");
-  }
-  function state(mood, s) {
-    panda(avatar, mood);
-    status.dataset.state = s;
-  }
-
-  // One task, start to finish, then again. Times in ms from the start of a cycle.
-  var steps = [
-    [0, function () { body.innerHTML = ""; state("idle", "idle"); }],
-    [700, function () { add("u1"); }],
-    [1600, function () { state("working", "working"); add("chip-amap"); }],
-    [3300, function () { done("chip-amap"); add("chip-phone"); }],
-    [5600, function () { done("chip-phone"); state("waiting", "waiting"); add("approval"); }],
-    [8600, function () { var b = body.querySelector("[data-allow]"); if (b) b.classList.add("pressed"); }],
-    [9100, function () { var a = find("approval"); if (a) a.remove(); state("working", "working"); add("chip-lark"); }],
-    [10600, function () { done("chip-lark"); state("happy", "done"); add("a1"); }],
-    [13600, function () { state("idle", "idle"); }],
-  ];
-  var CYCLE = 17000;
-
-  if (reduced) {
-    // A single still frame: the approval moment, which is the point of the product.
-    body.innerHTML = "";
-    add("u1");
-    done(add("chip-amap") && "chip-amap");
-    done(add("chip-phone") && "chip-phone");
-    add("approval");
-    state("waiting", "waiting");
-    return;
-  }
-
-  var timers = [];
-  function cycle() {
-    timers.forEach(clearTimeout);
-    timers = steps.map(function (st) {
-      return setTimeout(st[1], st[0]);
+/* Preferences only: no credential inputs, inference, analytics or remote assets. */
+(() => {
+  const html = document.documentElement;
+  const params = new URLSearchParams(location.search);
+  const saved = name => { try { return localStorage.getItem(name); } catch { return null; } };
+  const store = (name, value) => { try { localStorage.setItem(name, value); } catch { /* private mode */ } };
+  let lang = params.get('lang') ?? saved('nanodot-site-lang') ?? (/^zh/i.test(navigator.language) ? 'zh' : 'en');
+  let theme = params.get('theme') ?? saved('nanodot-site-theme');
+  const languageButton = document.getElementById('lang');
+  const themeButton = document.getElementById('theme');
+  function applyLanguage() {
+    lang = lang === 'zh' ? 'zh' : 'en';
+    html.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    languageButton.textContent = lang === 'zh' ? 'English' : '中文';
+    languageButton.setAttribute('aria-label', lang === 'zh' ? '切换到英文' : 'Switch to Chinese');
+    document.querySelectorAll('[data-docs], [data-docs-path]').forEach(link => {
+      link.href = `/docs/${lang === 'zh' ? 'zh/' : ''}${link.dataset.docsPath ?? ''}`;
     });
-    timers.push(setTimeout(cycle, CYCLE));
+    const titles = { '/': ['Meet Dot', '认识 Dot'], '/connect/': ['Connect', '接入'], '/privacy.html': ['Privacy', '隐私'], '/privacy': ['Privacy', '隐私'] };
+    document.title = `${(titles[location.pathname] ?? ['404', '404'])[lang === 'zh' ? 1 : 0]} · Nanodot`;
+    applyTheme();
   }
-  cycle();
-
-  // Pause the show while the tab is hidden so it does not drift.
-  document.addEventListener("visibilitychange", function () {
-    if (document.hidden) timers.forEach(clearTimeout);
-    else cycle();
+  function applyTheme() {
+    if (theme === 'light' || theme === 'dark') html.dataset.dotTheme = theme;
+    else delete html.dataset.dotTheme;
+    const dark = theme === 'dark' || (!theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    themeButton.textContent = lang === 'zh' ? (dark ? '浅色外观' : '深色外观') : (dark ? 'Light theme' : 'Dark theme');
+    themeButton.setAttribute('aria-label', lang === 'zh' ? (dark ? '切换到浅色外观' : '切换到深色外观') : (dark ? 'Switch to light theme' : 'Switch to dark theme'));
+  }
+  if (!['light', 'dark'].includes(theme)) theme = null;
+  languageButton.addEventListener('click', () => { lang = lang === 'zh' ? 'en' : 'zh'; store('nanodot-site-lang', lang); applyLanguage(); });
+  themeButton.addEventListener('click', () => { const dark = theme === 'dark' || (!theme && matchMedia('(prefers-color-scheme: dark)').matches); theme = dark ? 'light' : 'dark'; store('nanodot-site-theme', theme); applyTheme(); });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+  document.querySelectorAll('.download-card').forEach(card => {
+    const time = card.querySelector('time');
+    if (time && Date.parse(time.dateTime) <= Date.now()) {
+      card.querySelector('.expired').hidden = false;
+      card.querySelector('.artifact-link').href = '/docs/build';
+      card.querySelector('.artifact-link').innerHTML = '<span class="en">Build from source</span><span class="zh">从源码构建</span>';
+    }
   });
+  applyLanguage();
 })();

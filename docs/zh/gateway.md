@@ -1,6 +1,6 @@
 # 私有 Workers AI 网关
 
-`gateway/` 提供私有鉴权、持久化免费额度准入计数、白名单模型列表和聊天/视觉协议适配。配置有效时，聊天处理器可以尝试推理。有界WAV转写可以尝试推理；中文合成在真实验收前仍返回 `503 tts_unverified`，不消耗准入额度。空的静态资源暂存目录不代表网站已完成。此项工作不更改已有 App 连接或 nanoMuse Cloud。
+`gateway/` 提供私有鉴权、持久化免费额度准入计数、白名单模型列表和聊天/视觉协议适配。配置有效时，聊天处理器可以尝试推理。有界WAV转写可以尝试推理；中文合成在真实验收前仍返回 `503 tts_unverified`，不消耗准入额度。产品站源码单独构建到静态资源暂存目录；源码完成不代表已经部署上线。此项工作不更改已有 App 连接或 nanoMuse Cloud。
 
 预定 origin 为 `https://molamaker.si`，OpenAI base URL 为 `https://molamaker.si/v1`。这只是预定部署地址，不表示已验收线上服务。已有 Cloud 和第三方服务商保留真实 origin。
 
@@ -28,7 +28,7 @@ API 使用 `Authorization: Bearer` 请求头。缺失或错误凭据返回 JSON 
 
 API 首先检查 secret 和 `AI`、`ASSETS`、`FREE_GATE` bindings。配置缺失或错误时，在鉴权前返回 JSON `503 gateway_unconfigured`。配置有效时先鉴权，再选择路由和方法；未知 `/v1` 路由返回 JSON `404`，推理路由的不支持方法返回 JSON `405`。API 错误不会回退到 HTML 静态资源，错误响应不缓存。
 
-`GET /healthz` 只报告 `deployed`、`configured` 和 `inferenceEnabled`，不调用 AI 或消耗额度。配置不完整时返回 `503`，配置有效且聊天处理器可以尝试推理时报告 `inferenceEnabled: true`。它仅描述代码和配置就绪程度。健康响应不能证明账户套餐、模型访问或真实推理已经验收。其他非 API GET/HEAD 请求通过 `ASSETS` 提供资源；Worker 先运行，静态资源无法绕过 API 路由。
+`GET /healthz` 只报告 `deployed`、`configured` 和 `inferenceEnabled`，不调用 AI 或消耗额度。配置不完整时返回 `503`，配置有效且聊天处理器可以尝试推理时报告 `inferenceEnabled: true`。它仅描述代码和配置就绪程度。健康响应不能证明账户套餐、模型访问或真实推理已经验收。其他非 API GET/HEAD 请求通过 `ASSETS` 提供资源；Worker 在 `/v1`、`/v1/*` 与 `/healthz` 之前运行，静态资源无法绕过 API 路由。不存在的产品页面以状态码 404 返回自定义错误页。
 
 ## 聊天和图片协议
 
@@ -76,3 +76,11 @@ npm --prefix gateway run dry-run
 准备好的普通话WAV由离线eSpeak生成，不是人声录音，真实ASR尚未运行。ASR阶段保存实际结果，可懂度仍需人工评审。候选中文合成必须经独立私有operator probe，使用专门非公开operator凭据，且明确确认绑定生产服务**同一个真实FreeGate namespace / script_name与全局对象**。Task6负责评审、创建/部署临时probe；本次没有添加生产公开probe路由，没有部署。probe用同一有界合成handler及operator指定的候选语言测试，生产目录/flag始终保持禁用；probe成功本身不等于生产能力验收。
 
 候选与已验证生产阶段各发一条中文、一条中英混合请求，要求 `audio/mpeg`，保存真实文件，使用ffprobe确认codec/时长，再用ffmpeg -xerror完整解码，随后仍等待人工听验。`--stage listen --listened-chinese-and-mixed` 只为哈希吻合、已解码的这两份文件记录操作者明确的听验确认。脚本不会自动启用生产变量、创建凭据、部署或虚构听验。缺少解码工具时在发起合成前失败。候选证据、禁用生产和最终生产验收是不同阶段；获批设置准确语言和flag后还须重新验收生产。具体选项见 `node scripts/gateway/verify-audio.mjs --help`，凭据值不得放在命令参数或报告中。
+
+## 产品站构建 {#product-site-build}
+
+`site/` 中的双语静态产品页将当前 P0 下载与预览中的网关、浮球、关怀源码分开说明。六个下载均为临时 GitHub Actions 产物 ZIP，需要登录 GitHub，页面标示 UTC 到期时间与 ZIP 范围的 SHA-256。未签名 iOS device app/archive 不能直接安装，不是 IPA 或 TestFlight 发布。P0 构建不包含新的网关、浮球、关怀集成。
+
+使用 Node 22：`NANODOT_DOCS_BASE=/docs/ npm --prefix website run docs:build`，然后 `node scripts/site/build.mjs`。可选的 `NANODOT_DOCS_BASE` 覆盖新根部署的文档 base，保留已有 `DOCS_BASE` 行为及默认 `/nanodot/docs/`。导出的 `buildSite({outDir, docsDir})` 将已编译文档复制到 `/docs/`，将原创离线 Dot 图形复制到专用输出，默认 `gateway/public/`，不执行部署。运行 `node --test site/tests/*.test.mjs` 和网关测试；本地路由检查需要本地监听端口，省略 AI binding，不调用真实模型。
+
+接入指南不接收凭据输入。隐私页说明用户主动触发的图片/音频发送到 Cloudflare、项目不持久存储 payload 与供应商自己的数据政策。已有 Cloud/服务商数据流保持独立。

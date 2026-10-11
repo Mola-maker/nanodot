@@ -6,6 +6,7 @@
 //   npm run docs:build    # .vitepress/dist, also the dead-link check
 //   DOCS_BASE=/docs/ npm run docs:build   # for nanomuse.cn/docs/
 //
+// NANODOT_DOCS_BASE=/docs/ is the optional gateway deployment override.
 // DOCS_BASE defaults to /nanodot/docs/. Override it for the destination that you deploy;
 // building this site does not publish it or claim ownership of nanomuse.cn.
 import { posix } from 'node:path'
@@ -13,7 +14,7 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig, type DefaultTheme } from 'vitepress'
 
 const REPO = 'https://github.com/Mola-maker/nanodot'
-const base = process.env.DOCS_BASE ?? '/nanodot/docs/'
+const base = process.env.NANODOT_DOCS_BASE ?? process.env.DOCS_BASE ?? '/nanodot/docs/'
 
 // Directories under docs/ that are not pages of the site: task briefs and traces are
 // working notes, the archive is the Python line's record, the release notes and the

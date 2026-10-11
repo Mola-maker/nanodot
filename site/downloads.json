@@ -1,0 +1,68 @@
+[
+  {
+    "platform": "android-arm64",
+    "label": "Android ARM64 · debug APK inside ZIP",
+    "url": "https://github.com/Mola-maker/nanodot/actions/runs/38063419898/artifacts/11673749677",
+    "sha256": "091a7e7a92ec8ba2019831479d77fb2b54b567146398c41ba2d632eefcb18515",
+    "status": "available",
+    "expiresAt": "2026-10-24T15:30:13Z",
+    "checksumScope": "GitHub artifact ZIP",
+    "sourceCommit": "9736baf447611da903d4bc8d5e1eaa3a998ad457",
+    "labelZh": "Android ARM64 · ZIP 内为 debug APK"
+  },
+  {
+    "platform": "macos-arm64",
+    "label": "macOS Apple Silicon · DMG / ZIP inside ZIP",
+    "url": "https://github.com/Mola-maker/nanodot/actions/runs/38064149128/artifacts/11675095670",
+    "sha256": "c31ed0e860ceecbedaddb8ec961a8aca378038363ce1b02d130b9a4f63229cb1",
+    "status": "available",
+    "expiresAt": "2027-01-08T15:34:17Z",
+    "checksumScope": "GitHub artifact ZIP",
+    "sourceCommit": "7ed8ce6e2fd1a24c4a525ca22e7ef0e0f3dbb5e5",
+    "labelZh": "macOS Apple Silicon · ZIP 内为 DMG / ZIP"
+  },
+  {
+    "platform": "windows-x64",
+    "label": "Windows x64 · EXE inside ZIP",
+    "url": "https://github.com/Mola-maker/nanodot/actions/runs/38064149128/artifacts/11675075994",
+    "sha256": "f1eee573fa89e7a8391efc9942d014bda78a076f277bb3eafe6b560869c9afa7",
+    "status": "available",
+    "expiresAt": "2027-01-08T15:34:17Z",
+    "checksumScope": "GitHub artifact ZIP",
+    "sourceCommit": "7ed8ce6e2fd1a24c4a525ca22e7ef0e0f3dbb5e5",
+    "labelZh": "Windows x64 · ZIP 内为 EXE"
+  },
+  {
+    "platform": "linux-x64",
+    "label": "Linux x64 · AppImage / DEB / tar.gz inside ZIP",
+    "url": "https://github.com/Mola-maker/nanodot/actions/runs/38064149128/artifacts/11674836769",
+    "sha256": "2e723a03f7726780ce766f25c89c2ae5a282c883a7d157055f74573ba501e064",
+    "status": "available",
+    "expiresAt": "2027-01-08T15:34:17Z",
+    "checksumScope": "GitHub artifact ZIP",
+    "sourceCommit": "7ed8ce6e2fd1a24c4a525ca22e7ef0e0f3dbb5e5",
+    "labelZh": "Linux x64 · ZIP 内为 AppImage / DEB / tar.gz"
+  },
+  {
+    "platform": "macos-x64",
+    "label": "macOS Intel · DMG / ZIP inside ZIP",
+    "url": "https://github.com/Mola-maker/nanodot/actions/runs/38064149128/artifacts/11674747052",
+    "sha256": "7089876cef3b8e5cb53ecdd420c27cfafe2bc3d15abbc1757cdcdbccc0391b30",
+    "status": "available",
+    "expiresAt": "2027-01-08T15:34:17Z",
+    "checksumScope": "GitHub artifact ZIP",
+    "sourceCommit": "7ed8ce6e2fd1a24c4a525ca22e7ef0e0f3dbb5e5",
+    "labelZh": "macOS Intel · ZIP 内为 DMG / ZIP"
+  },
+  {
+    "platform": "ios-arm64",
+    "label": "iOS ARM64 · unsigned app / archive inside ZIP",
+    "url": "https://github.com/Mola-maker/nanodot/actions/runs/38063422268/artifacts/11675120423",
+    "sha256": "74d9456cbfa465e57ed6591e778287f095fdf0a5f5b66ebbdfe287a7a7ae2781",
+    "status": "unsigned",
+    "expiresAt": "2026-10-24T15:39:44Z",
+    "checksumScope": "GitHub artifact ZIP",
+    "sourceCommit": "9736baf447611da903d4bc8d5e1eaa3a998ad457",
+    "labelZh": "iOS ARM64 · ZIP 内为未签名 app / archive"
+  }
+]
