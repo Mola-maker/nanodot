@@ -1123,4 +1123,26 @@
     <string name="nm_dot_chat_compact">壓縮並傳送</string>
     <string name="nm_dot_chat_cancel">取消</string>
     <string name="nm_care_clarify_no_nodes">你在這個頁面上能看到哪個控制項？</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">我會一步步引導你。</string>
+    <string name="nm_care_goal">你想完成什麼？</string>
+    <string name="nm_care_start">開始引導</string>
+    <string name="nm_care_copy">複製文字</string>
+    <string name="nm_care_repeat">重複說明</string>
+    <string name="nm_care_pause">暫停</string>
+    <string name="nm_care_reobserve">重新辨識</string>
+    <string name="nm_care_end">結束引導</string>
+    <string name="nm_care_resume">繼續</string>
+    <string name="nm_care_change_goal">修改目標</string>
+    <string name="nm_care_confirm">我已完成這一步</string>
+    <string name="nm_care_observing">正在查看畫面</string>
+    <string name="nm_care_clarifying">需要補充資訊</string>
+    <string name="nm_care_awaiting">等待你操作</string>
+    <string name="nm_care_verifying">正在檢查結果</string>
+    <string name="nm_care_completed">引導已結束</string>
+    <string name="nm_care_recovering">請核對這一步</string>
+    <string name="nm_care_paused">引導已暫停</string>
+    <string name="nm_care_unavailable">暫時無法讀取或確認目前畫面。你可以重新辨識、修改目標或結束引導。</string>
+    <string name="nm_care_provider_missing">請在設定 → 模型中選擇可用的文字模型，然後重新辨識。</string>
 </resources>

@@ -1157,4 +1157,26 @@
     <string name="nm_dot_chat_compact">Compactar e enviar</string>
     <string name="nm_dot_chat_cancel">Cancelar</string>
     <string name="nm_care_clarify_no_nodes">Qual controle você consegue ver nesta página?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">Vou orientar você passo a passo.</string>
+    <string name="nm_care_goal">O que você quer fazer?</string>
+    <string name="nm_care_start">Iniciar orientação</string>
+    <string name="nm_care_copy">Copiar texto</string>
+    <string name="nm_care_repeat">Repetir instrução</string>
+    <string name="nm_care_pause">Pausar</string>
+    <string name="nm_care_reobserve">Observar novamente</string>
+    <string name="nm_care_end">Encerrar orientação</string>
+    <string name="nm_care_resume">Retomar</string>
+    <string name="nm_care_change_goal">Alterar objetivo</string>
+    <string name="nm_care_confirm">Concluí esta etapa</string>
+    <string name="nm_care_observing">Observando esta tela</string>
+    <string name="nm_care_clarifying">É preciso um detalhe</string>
+    <string name="nm_care_awaiting">Aguardando você</string>
+    <string name="nm_care_verifying">Verificando o resultado</string>
+    <string name="nm_care_completed">Orientação encerrada</string>
+    <string name="nm_care_recovering">Confira esta etapa</string>
+    <string name="nm_care_paused">Orientação pausada</string>
+    <string name="nm_care_unavailable">Não foi possível ler ou verificar esta tela. Observe novamente, altere o objetivo ou encerre a orientação.</string>
+    <string name="nm_care_provider_missing">Escolha um modelo de texto disponível em Configurações → Modelos e observe novamente.</string>
 </resources>

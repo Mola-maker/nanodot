@@ -1157,4 +1157,26 @@
     <string name="nm_dot_chat_compact">Paikliin at ipadala</string>
     <string name="nm_dot_chat_cancel">Kanselahin</string>
     <string name="nm_care_clarify_no_nodes">Aling kontrol ang nakikita mo sa pahinang ito?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">Gagabayan kita nang paisa-isang hakbang.</string>
+    <string name="nm_care_goal">Ano ang gusto mong gawin?</string>
+    <string name="nm_care_start">Simulan ang gabay</string>
+    <string name="nm_care_copy">Kopyahin ang teksto</string>
+    <string name="nm_care_repeat">Ulitin ang tagubilin</string>
+    <string name="nm_care_pause">I-pause</string>
+    <string name="nm_care_reobserve">Tingnan muli</string>
+    <string name="nm_care_end">Tapusin ang gabay</string>
+    <string name="nm_care_resume">Ipagpatuloy</string>
+    <string name="nm_care_change_goal">Baguhin ang layunin</string>
+    <string name="nm_care_confirm">Natapos ko na ang hakbang na ito</string>
+    <string name="nm_care_observing">Tinitingnan ang screen</string>
+    <string name="nm_care_clarifying">May kailangang detalye</string>
+    <string name="nm_care_awaiting">Hinihintay ka</string>
+    <string name="nm_care_verifying">Sinusuri ang resulta</string>
+    <string name="nm_care_completed">Tapos na ang gabay</string>
+    <string name="nm_care_recovering">Suriin ang hakbang na ito</string>
+    <string name="nm_care_paused">Naka-pause ang gabay</string>
+    <string name="nm_care_unavailable">Hindi mabasa o masuri ang screen na ito. Tingnan muli, baguhin ang layunin, o tapusin ang gabay.</string>
+    <string name="nm_care_provider_missing">Pumili ng magagamit na text model sa Mga Setting → Mga Modelo, pagkatapos ay tingnan muli.</string>
 </resources>

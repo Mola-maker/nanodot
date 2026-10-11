@@ -1153,4 +1153,26 @@
     <string name="nm_dot_chat_compact">圧縮して送信</string>
     <string name="nm_dot_chat_cancel">キャンセル</string>
     <string name="nm_care_clarify_no_nodes">このページにはどの操作項目が見えますか？</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">一歩ずつ案内します。</string>
+    <string name="nm_care_goal">何をしたいですか？</string>
+    <string name="nm_care_start">案内を開始</string>
+    <string name="nm_care_copy">テキストをコピー</string>
+    <string name="nm_care_repeat">説明を繰り返す</string>
+    <string name="nm_care_pause">一時停止</string>
+    <string name="nm_care_reobserve">もう一度確認</string>
+    <string name="nm_care_end">案内を終了</string>
+    <string name="nm_care_resume">再開</string>
+    <string name="nm_care_change_goal">目標を変更</string>
+    <string name="nm_care_confirm">この手順を完了しました</string>
+    <string name="nm_care_observing">画面を確認中</string>
+    <string name="nm_care_clarifying">追加の情報が必要です</string>
+    <string name="nm_care_awaiting">操作を待っています</string>
+    <string name="nm_care_verifying">結果を確認中</string>
+    <string name="nm_care_completed">案内が終了しました</string>
+    <string name="nm_care_recovering">この手順を確認してください</string>
+    <string name="nm_care_paused">案内を一時停止中</string>
+    <string name="nm_care_unavailable">この画面を読み取り、確認できませんでした。再確認するか、目標を変更するか、案内を終了してください。</string>
+    <string name="nm_care_provider_missing">設定 → モデルで利用可能なテキストモデルを選び、もう一度確認してください。</string>
 </resources>

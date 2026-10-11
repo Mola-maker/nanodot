@@ -1153,4 +1153,26 @@
     <string name="nm_dot_chat_compact">압축 후 보내기</string>
     <string name="nm_dot_chat_cancel">취소</string>
     <string name="nm_care_clarify_no_nodes">이 페이지에서 어떤 조작 항목이 보이나요?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">한 단계씩 안내할게요.</string>
+    <string name="nm_care_goal">무엇을 하고 싶으세요?</string>
+    <string name="nm_care_start">안내 시작</string>
+    <string name="nm_care_copy">텍스트 복사</string>
+    <string name="nm_care_repeat">설명 반복</string>
+    <string name="nm_care_pause">일시 중지</string>
+    <string name="nm_care_reobserve">다시 확인</string>
+    <string name="nm_care_end">안내 종료</string>
+    <string name="nm_care_resume">재개</string>
+    <string name="nm_care_change_goal">목표 변경</string>
+    <string name="nm_care_confirm">이 단계를 완료했어요</string>
+    <string name="nm_care_observing">화면 확인 중</string>
+    <string name="nm_care_clarifying">추가 정보가 필요해요</string>
+    <string name="nm_care_awaiting">사용자 작업 대기 중</string>
+    <string name="nm_care_verifying">결과 확인 중</string>
+    <string name="nm_care_completed">안내가 종료되었어요</string>
+    <string name="nm_care_recovering">이 단계를 확인하세요</string>
+    <string name="nm_care_paused">안내 일시 중지</string>
+    <string name="nm_care_unavailable">이 화면을 읽거나 확인할 수 없어요. 다시 확인하거나 목표를 변경하거나 안내를 종료하세요.</string>
+    <string name="nm_care_provider_missing">설정 → 모델에서 사용 가능한 텍스트 모델을 선택한 후 다시 확인하세요.</string>
 </resources>

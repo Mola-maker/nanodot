@@ -1157,4 +1157,26 @@
     <string name="nm_dot_chat_compact">Sıkıştır ve gönder</string>
     <string name="nm_dot_chat_cancel">İptal</string>
     <string name="nm_care_clarify_no_nodes">Bu sayfada hangi kontrolü görebiliyorsun?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">Size adım adım rehberlik edeceğim.</string>
+    <string name="nm_care_goal">Ne yapmak istiyorsunuz?</string>
+    <string name="nm_care_start">Rehberliği başlat</string>
+    <string name="nm_care_copy">Metni kopyala</string>
+    <string name="nm_care_repeat">Talimatı tekrarla</string>
+    <string name="nm_care_pause">Duraklat</string>
+    <string name="nm_care_reobserve">Yeniden bak</string>
+    <string name="nm_care_end">Rehberliği bitir</string>
+    <string name="nm_care_resume">Sürdür</string>
+    <string name="nm_care_change_goal">Hedefi değiştir</string>
+    <string name="nm_care_confirm">Bu adımı tamamladım</string>
+    <string name="nm_care_observing">Ekrana bakılıyor</string>
+    <string name="nm_care_clarifying">Bir ayrıntı gerekiyor</string>
+    <string name="nm_care_awaiting">Siz bekleniyorsunuz</string>
+    <string name="nm_care_verifying">Sonuç kontrol ediliyor</string>
+    <string name="nm_care_completed">Rehberlik bitti</string>
+    <string name="nm_care_recovering">Bu adımı kontrol edin</string>
+    <string name="nm_care_paused">Rehberlik duraklatıldı</string>
+    <string name="nm_care_unavailable">Bu ekran okunamadı veya doğrulanamadı. Yeniden bakın, hedefi değiştirin ya da rehberliği bitirin.</string>
+    <string name="nm_care_provider_missing">Ayarlar → Modeller bölümünden kullanılabilir bir metin modeli seçip yeniden bakın.</string>
 </resources>

@@ -171,6 +171,11 @@ First-run: enable "Nanodot" under Settings → Accessibility, then `service ping
         com.openminis.app.service.SessionActivityTracker.updateToolStatus(
             statusForSubAction(sub, args.positional.getOrNull(1), args),
         )
+        // nanoMuse: revoke Care before real agent actions, retaining read-only node/screen access.
+        val careLease = if (sub in setOf("tap", "input", "scroll", "gesture") ||
+            sub == "dialog" && args.positional.getOrNull(1) == "dismiss" ||
+            sub == "extract" && args.hasFlag("auto-scroll"))
+            io.github.nanomuse.dot.care.CareOperationGate.acquire() else null
         return try {
             when (sub) {
                 "ui"        -> uiSub(args)
@@ -194,7 +199,7 @@ First-run: enable "Nanodot" under Settings → Accessibility, then `service ping
         } catch (e: Throwable) {
             AppLogger.warning(TAG, "uncaught: ${e.javaClass.simpleName} ${e.message}")
             err(args, "INTERNAL", "${e.javaClass.simpleName}: ${e.message ?: ""}")
-        }
+        } finally { careLease?.close() }
     }
 
     // ── service ──────────────────────────────────────────────────────────

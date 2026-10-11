@@ -47,6 +47,13 @@ class DotOverlayController(
     private val service: AccessibilityService,
     private val delegate: ((DotIntent) -> Unit)? = null,
 ) {
+    private val careWindows = mutableSetOf<View>()
+    private val careActive = androidx.compose.runtime.mutableStateOf(false)
+    fun registerCareWindow(view: View) { careWindows.add(view) }
+    fun unregisterCareWindow(view: View) { careWindows.remove(view) }
+    fun setCareActive(active: Boolean) { careActive.value = active }
+    private fun ownedViews() = listOfNotNull(orbView, panelView) + careWindows.toList()
+    private fun suspendCare() { (service as? MinisAccessibilityService)?.dotInteraction?.pauseCare(hide=true) }
     private val handler = Handler(Looper.getMainLooper())
     private val windows = service.getSystemService(WindowManager::class.java)
     private val displays = service.getSystemService(DisplayManager::class.java)
@@ -140,14 +147,14 @@ class DotOverlayController(
     fun setLocked(locked: Boolean) {
         checkMainThread()
         this.locked = locked
-        if (locked) cancelGesture()
+        if (locked) { cancelGesture(); suspendCare() }
         sync()
     }
 
     fun setEnabled(enabled: Boolean) {
         checkMainThread()
         this.enabled = enabled
-        if (!enabled) cancelGesture()
+        if (!enabled) { cancelGesture(); suspendCare() }
         sync()
     }
 
@@ -158,6 +165,7 @@ class DotOverlayController(
     /** Recreate with new display bounds, clearing all pending touch/tap work. */
     fun onDisplayChanged() {
         checkMainThread()
+        (service as? MinisAccessibilityService)?.dotInteraction?.onHostGeometryChanged()
         cancelGesture()
         registry.sync(emptySet())
         sync()
@@ -188,7 +196,7 @@ class DotOverlayController(
     @Suppress("DEPRECATION")
     fun ownsWindow(window: android.view.accessibility.AccessibilityWindowInfo): Boolean {
         if (window.type != android.view.accessibility.AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY) return false
-        return listOfNotNull(orbView, panelView).any { view ->
+        return ownedViews().any { view ->
             val node = view.createAccessibilityNodeInfo() ?: return@any false
             try { node.windowId >= 0 && node.windowId == window.id } finally { node.recycle() }
         }
@@ -199,7 +207,7 @@ class DotOverlayController(
      */
     suspend fun <T> withHiddenForCapture(block: suspend () -> T): T {
         checkMainThread()
-        val owned = listOfNotNull(orbView, panelView).filter { it.isAttachedToWindow }
+        val owned = ownedViews().filter { it.isAttachedToWindow }
         val alphas = owned.map { it.alpha }
         try {
             for (view in owned) {
@@ -222,7 +230,7 @@ class DotOverlayController(
             return block()
         } finally {
             owned.forEachIndexed { index, view ->
-                if ((orbView === view || panelView === view) && view.isAttachedToWindow) {
+                if ((view in ownedViews()) && view.isAttachedToWindow) {
                     view.alpha = alphas[index]; view.invalidate()
                 }
             }
@@ -369,7 +377,7 @@ class DotOverlayController(
         view.setViewTreeSavedStateRegistryOwner(owner)
         val composition = ComposeView(service).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent { DotOrb(::onIntent) }
+            setContent { DotOrb(::onIntent, careActive.value) }
         }
         view.addView(composition, FrameLayout.LayoutParams(size, size))
         val flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or

@@ -74,6 +74,8 @@ class MinisAccessibilityService : AccessibilityService() {
         dotOverlay.connect()
         // nanoMuse: connected sampling remains idle until an explicit capture request.
         dotScreen.connect()
+        // nanoMuse: attach the serial Care owner without capturing or contacting a model.
+        dotInteraction.connect()
         // [T-android-a11y-miui-service-failure] Breadcrumb on (re)bind. On OEM
         // ROMs (MIUI etc.) the system kills + rebinds this service repeatedly,
         // surfacing "此服务出现故障"; a connect log lets us correlate a degraded
@@ -98,7 +100,9 @@ class MinisAccessibilityService : AccessibilityService() {
         dotOverlay.refreshLockState()
         if (event == null) return
         // nanoMuse: host geometry/content updates invalidate asynchronous scene results.
-        dotScreen.onAccessibilityEvent(event)
+        val dotSceneChanged = dotScreen.onAccessibilityEvent(event)
+        // nanoMuse: only actual host/IME geometry or content changes invalidate Care.
+        dotInteraction.onSceneChanged(dotSceneChanged)
         // nanoMuse: settled host/IME frames constrain the actual focusable Dot panel.
         dotOverlay.refreshPanelGeometry()
         val rec = RecordedEvent(

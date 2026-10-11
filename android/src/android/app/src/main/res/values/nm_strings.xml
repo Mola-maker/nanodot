@@ -1134,4 +1134,26 @@
     <string name="nm_dot_chat_compact">Compact and send</string>
     <string name="nm_dot_chat_cancel">Cancel</string>
     <string name="nm_care_clarify_no_nodes">Which control can you see on this page?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">I will guide you step by step.</string>
+    <string name="nm_care_goal">What would you like to do?</string>
+    <string name="nm_care_start">Start guiding</string>
+    <string name="nm_care_copy">Copy text</string>
+    <string name="nm_care_repeat">Repeat instruction</string>
+    <string name="nm_care_pause">Pause</string>
+    <string name="nm_care_reobserve">Look again</string>
+    <string name="nm_care_end">End guidance</string>
+    <string name="nm_care_resume">Resume</string>
+    <string name="nm_care_change_goal">Change goal</string>
+    <string name="nm_care_confirm">I completed this step</string>
+    <string name="nm_care_observing">Looking at this screen</string>
+    <string name="nm_care_clarifying">A detail is needed</string>
+    <string name="nm_care_awaiting">Waiting for you</string>
+    <string name="nm_care_verifying">Checking the result</string>
+    <string name="nm_care_completed">Guidance ended</string>
+    <string name="nm_care_recovering">Check this step</string>
+    <string name="nm_care_paused">Guidance paused</string>
+    <string name="nm_care_unavailable">I could not read or verify this screen. Look again, change the goal, or end guidance.</string>
+    <string name="nm_care_provider_missing">Choose an available text model in Settings → Models, then look again.</string>
 </resources>

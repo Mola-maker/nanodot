@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Added Android triple-tap care guidance with a touch-through target outline, accessible instruction and goal controls, explicit copy/confirmation, and service/automatic-operation ownership; native and real-model acceptance remained separate gates.
+
 - Added an Android care controller foundation that advanced only from fresh target evidence or explicit user confirmation, cleared stale targets on pause or scene changes, and closed owned snapshots; care UI and native acceptance remained pending.
 
 - Rejected whitespace-separated numeric calls in Android care instructions, copy text and expectations while retaining ordinary text guidance.
