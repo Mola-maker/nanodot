@@ -34,7 +34,7 @@ function noAiFetcher(requests = []) {
     const headers = { 'Cache-Control': 'no-store' };
     if (url.startsWith('https://www.')) return new Response(null, { status: 301, headers: { Location: 'https://molamaker.si/connect/' } });
     if (origin === 'https://forbidden.example') return Response.json({ error: {} }, { status: 403, headers });
-    if (init.method === 'OPTIONS') return new Response(null, { status: 204, headers: { ...headers, 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Authorization, Content-Type' } });
+    if (init.method === 'OPTIONS') return new Response(null, { status: 204, headers: { ...headers, 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Methods': 'GET, HEAD, POST', 'Access-Control-Allow-Headers': 'Authorization, Content-Type' } });
     if (path === '/healthz') return Response.json({ deployed: true, configured: true, inferenceEnabled: false }, { headers });
     if (path === '/v1/models') return init.headers?.Authorization ? Response.json({ object: 'list', data: ['@cf/qwen/qwen3-30b-a3b-fp8', '@cf/google/gemma-4-26b-a4b-it', '@cf/openai/whisper-large-v3-turbo'].map(id => ({ id })) }, { headers }) : Response.json({ error: {} }, { status: 401, headers });
     if (path.startsWith('/v1')) return Response.json({ error: {} }, { status: 404, headers });
@@ -42,11 +42,12 @@ function noAiFetcher(requests = []) {
   };
 }
 
-test('no-AI acceptance exercises discovery/auth/assets/preflight without POST inference', async () => {
+test('no-AI acceptance matches production GET, HEAD, POST preflight without POST inference', async () => {
   const { verifyLive } = await import('./verify-live.mjs'); const key = randomUUID(); const requests = [];
   const fetcher = noAiFetcher(requests);
   const report = await verifyLive({ base: 'https://molamaker.si', key, fetcher });
   assert.equal(report.aiAttempts, 0); assert.equal(report.ttsAdvertised, false);
+  assert.equal(report.checks.filter(check => check.name.startsWith('preflight ') && check.status === 'PASS').length, 2);
   assert.equal(requests.some(([,init]) => init.method === 'POST'), false);
   assert.equal(JSON.stringify(report).includes(key), false);
   assert.equal(requests.at(-1)[1].headers, undefined);
@@ -102,7 +103,7 @@ test('static scanner permits documentation naming a PEM header but rejects a key
 for (const header of ['Access-Control-Allow-Methods', 'Access-Control-Allow-Headers']) {
   test(`no-AI acceptance rejects absent or incomplete ${header}`, async () => {
     const { verifyLive } = await import('./verify-live.mjs');
-    for (const value of [null, header.endsWith('Methods') ? 'GET, OPTIONS' : 'Content-Type']) {
+    for (const value of (header.endsWith('Methods') ? [null, 'GET, OPTIONS', 'GET, POST'] : [null, 'Content-Type'])) {
       const fixture = noAiFetcher();
       await assert.rejects(() => verifyLive({ base: 'https://molamaker.si', key: randomUUID(), fetcher: async (url, init) => {
         const response = await fixture(url, init);

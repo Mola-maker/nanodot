@@ -71,7 +71,7 @@ export async function verifyLive({ base, key, stage = 'no-ai', freePlanConfirmed
     for (const origin of [BASE, 'https://www.molamaker.si']) {
       const response = await request('/v1/chat/completions', { method: 'OPTIONS', headers: { Origin: origin, 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'authorization,content-type' } });
       check(response.headers.get('Access-Control-Allow-Origin') === origin, 'Exact CORS origin missing.');
-      for (const [header, required] of [['Access-Control-Allow-Methods', ['GET', 'POST', 'OPTIONS']], ['Access-Control-Allow-Headers', ['Authorization', 'Content-Type']]]) {
+      for (const [header, required] of [['Access-Control-Allow-Methods', ['GET', 'HEAD', 'POST']], ['Access-Control-Allow-Headers', ['Authorization', 'Content-Type']]]) {
         const allowed = (response.headers.get(header) ?? '').split(',').map(value => value.trim().toLowerCase());
         check(required.every(value => allowed.includes(value.toLowerCase())), `Required CORS ${header} missing or incomplete.`);
       }
