@@ -257,6 +257,10 @@ and Care use the same bottom bubble presentation: your messages and goals on the
 actual replies, questions, instructions and confirmed steps on the left. The native window
 is bounded to the host and keyboard area; touches outside its rectangle reach the host.
 History and controls scroll within it, including with enlarged text.
+Care's instruction leader routes around the measured card and enters the current instruction
+bubble from its side, leaving chat controls and text clear. The route stays inside the observed
+host after keyboard clipping. If neither exterior side has room, the target outline and chat
+remain visible without a leader until valid layout geometry is available.
 Short keyboard-clipped hosts use a compact collapse control beside the transcript, with a
 full 48dp scrolling control viewport; they use the available host height instead of leaving
 the chat at the ordinary proportional height cap. Enlarged text uses the same compact budget,

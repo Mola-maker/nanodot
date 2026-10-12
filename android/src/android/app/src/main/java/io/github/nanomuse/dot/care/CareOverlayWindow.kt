@@ -50,10 +50,18 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
     private var instructionId: String?=null
     private fun updateLeader() {
         val view=card ?: return
-        val r=instructionBounds ?: return
-        if(!view.isAttachedToWindow || session.focusBounds(scene())==null) return
+        val r=instructionBounds
+        val key=instructionId
+        val host=viewport()
+        if(r==null || key==null || key!=session.instructionKey() || host==null ||
+            !view.isAttachedToWindow || view.width<=0 || view.height<=0 || session.focusBounds(scene())==null) {
+            focus.setInstructionBubble(null); return
+        }
         val location=IntArray(2); view.getLocationOnScreen(location)
-        focus.setInstructionBubble(RectPx(r.left+location[0],r.top+location[1],r.right+location[0],r.bottom+location[1]))
+        val measuredCard=RectPx(location[0].toFloat(),location[1].toFloat(),
+            (location[0]+view.width).toFloat(),(location[1]+view.height).toFloat())
+        focus.setInstructionBubble(RectPx(r.left+location[0],r.top+location[1],r.right+location[0],r.bottom+location[1]),
+            measuredCard,host,key)
     }
     private val job=scope.launch {
         combine(session.controller.state,session.visible,session.editingGoal) { _,_,_ -> Unit }.collect { render() }

@@ -27,11 +27,16 @@ class CareFocusLayer(private val service: AccessibilityService, private val chan
         private set
     private var animation: ValueAnimator?=null
     private var instruction: RectPx?=null
+    private var instructionCard: RectPx?=null
+    private var instructionViewport: RectPx?=null
     private var identity: String?=null
     private var progress=1f
-    fun setInstructionBubble(bounds: RectPx?) {
+    fun setInstructionBubble(bounds: RectPx?, cardBounds: RectPx?=null, viewport: RectPx?=null, key: String?=null) {
+        if(bounds!=null && (key==null || key!=identity)) return // A stale message cannot replace the current anchor.
         instruction=bounds?.takeIf { it.width>0 && it.height>0 &&
             listOf(it.left,it.top,it.right,it.bottom).all(Float::isFinite) }
+        instructionCard=cardBounds.takeIf { instruction!=null }
+        instructionViewport=viewport.takeIf { instruction!=null }
         if (instruction != null && progress == 0f && animation == null) startTrace()
         view?.invalidate()
     }
@@ -40,9 +45,11 @@ class CareFocusLayer(private val service: AccessibilityService, private val chan
             clear(); return
         }
         if(this.bounds==bounds && identity==key && view!=null) return
-        val bubble=instruction
+        val bubble=instruction.takeIf { identity==key }
+        val card=instructionCard.takeIf { identity==key }
+        val viewport=instructionViewport.takeIf { identity==key }
         clear() // A new position never interpolates through unrelated controls.
-        this.bounds=bounds; identity=key; instruction=bubble
+        this.bounds=bounds; identity=key; instruction=bubble; instructionCard=card; instructionViewport=viewport
         progress = if (motionEnabled()) 0f else 1f
         val paint=Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style=Paint.Style.STROKE; strokeWidth=3*service.resources.displayMetrics.density
@@ -63,13 +70,13 @@ class CareFocusLayer(private val service: AccessibilityService, private val chan
                 measure.getSegment(0f,measure.length*cue.outline,traced,true)
                 canvas.drawPath(traced,paint)
                 instruction?.let { bubble ->
-                    val endX=((bubble.left+bubble.right)/2)-location[0]
-                    val above=bubble.bottom<=bounds.top
-                    val startX=((bounds.left+bounds.right)/2)-location[0]
-                    val startY=(if(above) bounds.top else bounds.bottom)-location[1]
-                    val endY=(if(above) bubble.bottom else bubble.top)-location[1]
-                    val bend=(startY+endY)/2
-                    val line=Path().apply { moveTo(startX,startY); lineTo(startX,bend); lineTo(endX,bend); lineTo(endX,endY) }
+                    val route=careLeaderRoute(bounds,bubble,instructionCard,instructionViewport,
+                        paint.strokeWidth,4*service.resources.displayMetrics.density) ?: return@let
+                    val endX=route.last().x-location[0]; val endY=route.last().y-location[1]
+                    val line=Path().apply {
+                        moveTo(route.first().x-location[0],route.first().y-location[1])
+                        route.drop(1).forEach { lineTo(it.x-location[0],it.y-location[1]) }
+                    }
                     val leader=PathMeasure(line,false); val segment=Path()
                     leader.getSegment(0f,leader.length*cue.leader,segment,true)
                     canvas.drawPath(segment,paint)
@@ -98,6 +105,7 @@ class CareFocusLayer(private val service: AccessibilityService, private val chan
     }
     fun clear() {
         animation?.cancel(); animation=null
-        view?.let { windows.removeViewImmediate(it) }; view=null; bounds=null; identity=null; instruction=null; progress=1f; changed(null)
+        view?.let { windows.removeViewImmediate(it) }; view=null; bounds=null; identity=null; instruction=null
+        instructionCard=null; instructionViewport=null; progress=1f; changed(null)
     }
 }

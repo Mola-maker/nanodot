@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Routed Android Care instruction leaders outside the measured chat card and into the current bubble's side, preserving chat and target outlines when no safe side route fit; native visual acceptance remained pending.
+
 - Fixed the Android capture scanner's effective motion detection, visible drawing lifetime and full-display perimeter around system bars.
 
 - Preserved at least 48dp of foreground chat history in short keyboard hosts at 200% text size after native pixel rounding.
