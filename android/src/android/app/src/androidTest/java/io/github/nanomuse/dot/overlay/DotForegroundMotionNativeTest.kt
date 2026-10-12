@@ -131,6 +131,33 @@ class DotForegroundMotionNativeTest {
         return rect
     }
 
+    private fun awaitHostReady(service: MinisAccessibilityService) {
+        var previous: Pair<Int, Rect>? = null
+        var unchangedSince = SystemClock.uptimeMillis()
+        await("External test host native application window must settle before orb input") {
+            var observed: Pair<Int, Rect>? = null
+            val windows = service.windows
+            try {
+                for (window in windows) {
+                    if (window.type != AccessibilityWindowInfo.TYPE_APPLICATION || !window.isActive || !window.isFocused) continue
+                    val root = window.root ?: continue
+                    try {
+                        if (root.packageName?.toString() == instrumentation.context.packageName) {
+                            val frame = Rect(); window.getBoundsInScreen(frame)
+                            if (!frame.isEmpty) observed = window.id to frame
+                        }
+                    } finally { root.recycle() }
+                }
+            } finally { windows.forEach { it.recycle() } }
+            val now = SystemClock.uptimeMillis()
+            if (observed == null || observed != previous) {
+                touchTimings.add("hostGeometry previous=$previous current=$observed")
+                previous = observed; unchangedSince = now
+            }
+            observed != null && now - unchangedSince >= ViewConfiguration.getDoubleTapTimeout()
+        }
+    }
+
     /** Read-only failure evidence; never dispatches a touch or changes controller state. */
     private fun releaseDiagnostics(service: MinisAccessibilityService, orb: String,
         dragged: Rect, observed: Rect, releaseReturnedAt: Long): String {
@@ -232,6 +259,9 @@ class DotForegroundMotionNativeTest {
                 root?.let { try { it.packageName?.toString() == instrumentation.context.packageName }
                     finally { it.recycle() } } == true
             }
+            // An active root can appear during Activity entry. Match the gesture fixture's
+            // native active/focused window readiness before creating the first DOWN time.
+            awaitHostReady(connected)
             val orb = connected.getString(R.string.nm_dot_orb_description)
             await("Visible orb required") { bounds(connected, orb) != null }
             val start = requireNotNull(bounds(connected, orb))
