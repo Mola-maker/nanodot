@@ -39,8 +39,16 @@ class DotForegroundGestureNativeTest {
         ParcelFileDescriptor.AutoCloseInputStream(automation.executeShellCommand(command)).use { it.readBytes() }
     }
     private fun restore(key: String, value: String?) {
+        require(key in setOf("enabled_accessibility_services", "accessibility_enabled"))
         if (value == null) shell("settings delete secure $key")
-        else shell("settings put secure $key $value")
+        else {
+            // UiAutomationConnection uses Runtime.exec(String), not sh -c. Quotes would
+            // become literal argv characters; '$' in a nested class is already preserved.
+            // Validate every argv value before mutation, including final restoration.
+            require(if (key == "accessibility_enabled") value in setOf("0", "1")
+                else value.split(':').all { it.matches(Regex("[A-Za-z0-9_.$]+/[A-Za-z0-9_.$]+")) })
+            shell("settings put secure $key $value")
+        }
     }
     private fun await(message: String, check: () -> Boolean) {
         val end = SystemClock.uptimeMillis() + 10000
@@ -54,6 +62,15 @@ class DotForegroundGestureNativeTest {
         var result = false
         instrumentation.runOnMainSync { result = check() }
         return result
+    }
+    private fun assertInitialForegroundEmpty(service: MinisAccessibilityService) {
+        instrumentation.runOnMainSync {
+            assertNull("Use an isolated profile without a mounted Dot panel", service.dotOverlay.panelView)
+            assertFalse("Use an isolated profile without a visible Care session", service.dotInteraction.careSession.visible.value)
+            assertNull("Use an isolated profile without a foreground binding", service.dotInteraction.foreground.state.value.binding)
+            assertEquals("Use an isolated profile without an active foreground mode",
+                DotForegroundMode.Idle, service.dotInteraction.foreground.state.value.mode)
+        }
     }
     private fun bounds(service: MinisAccessibilityService, label: String): Rect? {
         fun visit(node: AccessibilityNodeInfo): Rect? {
@@ -102,6 +119,8 @@ class DotForegroundGestureNativeTest {
         assumeTrue("Unlock the isolated profile before running this fixture",
             !context.getSystemService(KeyguardManager::class.java).isKeyguardLocked &&
                 context.getSystemService(PowerManager::class.java).isInteractive)
+        // Reject an unsuitable live session before settings/overlay changes or host launch.
+        MinisAccessibilityService.getInstance()?.let(::assertInitialForegroundEmpty)
         val oldFlags = automation.serviceInfo.flags
         val oldEnabled = DotPreferences(context).showOnAccessibilityConnected()
         var service: MinisAccessibilityService? = null
@@ -126,6 +145,7 @@ class DotForegroundGestureNativeTest {
                 MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true
             }
             val connected = requireNotNull(MinisAccessibilityService.getInstance())
+            assertInitialForegroundEmpty(connected)
             service = connected
             instrumentation.runOnMainSync { connected.dotOverlay.setEnabled(true) }
             instrumentation.context.startActivity(Intent().setComponent(ComponentName(
