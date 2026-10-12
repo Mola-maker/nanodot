@@ -203,27 +203,47 @@ class DotOverlayLifecycleTest {
             awaitState { owner.state.value.operation == io.github.nanomuse.dot.DotForegroundOperation.Replying }
             val label = service.getString(com.openminis.app.R.string.nm_dot_chat_stop)
             var clicked = false
+            val diagnostics = java.io.File(service.cacheDir, "dot-stop-native-tree.txt")
             val until = SystemClock.uptimeMillis() + 5000
             while (!clicked && SystemClock.uptimeMillis() < until) {
-                val windows = service.windows
-                try { windows.filter { it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY }.forEach { window ->
-                    val root = window.root
-                    try {
-                        root?.findAccessibilityNodeInfosByText(label)?.forEach { node ->
-                            try {
-                                if (!clicked && node.isVisibleToUser) {
-                                    if (node.isClickable) clicked = node.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK)
-                                    else {
-                                        val parent = node.parent
-                                        try { if (parent?.isClickable == true) clicked = parent.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK) }
-                                        finally { parent?.recycle() }
-                                    }
-                                }
-                            }
-                            finally { node.recycle() }
+                val dump = StringBuilder("Stop label=$label\n")
+                fun visit(node: AccessibilityNodeInfo, depth: Int): Boolean {
+                    val bounds = android.graphics.Rect()
+                    node.getBoundsInScreen(bounds)
+                    dump.append("  ".repeat(depth)).append("text=${node.text} desc=${node.contentDescription} bounds=$bounds clickable=${node.isClickable} visible=${node.isVisibleToUser} enabled=${node.isEnabled} actions=${node.actionList}\n")
+                    if (node.isVisibleToUser && node.isEnabled &&
+                        (node.text?.toString() == label || node.contentDescription?.toString() == label)) {
+                        if (node.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
+                            dump.append("CLICK matched node succeeded\n")
+                            return true
                         }
-                    } finally { root?.recycle() }
+                        var ancestor = node.parent
+                        while (ancestor != null) {
+                            val current = ancestor
+                            val next = current.parent
+                            val accepted = current.isVisibleToUser && current.isEnabled && current.isClickable &&
+                                current.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            dump.append("CLICK ancestor clickable=${current.isClickable} accepted=$accepted\n")
+                            current.recycle()
+                            if (accepted) { next?.recycle(); return true }
+                            ancestor = next
+                        }
+                    }
+                    for (index in 0 until node.childCount) {
+                        val child = node.getChild(index) ?: continue
+                        try { if (visit(child, depth + 1)) return true }
+                        finally { child.recycle() }
+                    }
+                    return false
+                }
+                val windows = service.windows
+                try { windows.filter { it.type == AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY }.forEach { window ->
+                    dump.append("WINDOW id=${window.id} type=${window.type}\n")
+                    val root = window.root
+                    try { if (!clicked && root != null) clicked = visit(root, 0) }
+                    finally { root?.recycle() }
                 } } finally { windows.forEach { it.recycle() } }
+                diagnostics.writeText(dump.toString())
                 instrumentation.waitForIdleSync()
             }
             assertTrue("Visible Stop must invoke the mounted control", clicked)
