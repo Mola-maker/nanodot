@@ -103,17 +103,17 @@ class DotForegroundMotionNativeTest {
             return null
         } finally { windows.forEach { it.recycle() } }
     }
-    private fun touch(time: Long, action: Int, x: Float, y: Float) {
+    private fun touch(time: Long, action: Int, x: Float, y: Float, waitForDispatch: Boolean = false) {
         val injectedAt = SystemClock.uptimeMillis()
         val event = MotionEvent.obtain(time, injectedAt, action, x, y, 0)
             .apply { source = InputDevice.SOURCE_TOUCHSCREEN }
         try {
-            // The public API still synchronizes window transactions on DOWN/UP. Queue
-            // target dispatch without another wait; measure rather than assume its cost.
-            assertTrue("Global touch accepted", automation.injectInputEvent(event, false))
+            // The public API synchronizes window transactions on DOWN/UP in both modes.
+            // The interruption DOWN additionally waits for delivery before its geometry check.
+            assertTrue("Global touch accepted", automation.injectInputEvent(event, waitForDispatch))
         }
         finally {
-            touchTimings.add("action=$action sinceDown=${injectedAt - time}ms " +
+            touchTimings.add("action=$action at=$injectedAt sinceDown=${injectedAt - time}ms " +
                 "inject=${SystemClock.uptimeMillis() - injectedAt}ms x=$x y=$y")
             event.recycle()
         }
@@ -122,14 +122,19 @@ class DotForegroundMotionNativeTest {
         kotlin.math.abs(a.left - b.left) <= 3 && kotlin.math.abs(a.top - b.top) <= 3
 
     private fun nativeBounds(service: MinisAccessibilityService): Rect? {
+        val requestedAt = SystemClock.uptimeMillis()
+        var sampledAt = requestedAt
         var rect: Rect? = null
         instrumentation.runOnMainSync {
+            sampledAt = SystemClock.uptimeMillis()
             service.dotOverlay.orbView?.takeIf { it.isAttachedToWindow && it.isShown && it.width > 0 && it.height > 0 }?.let { view ->
                 val xy = IntArray(2)
                 view.getLocationOnScreen(xy)
                 rect = Rect(xy[0], xy[1], xy[0] + view.width, xy[1] + view.height)
             }
         }
+        touchTimings.add("nativeRead requested=$requestedAt sampled=$sampledAt " +
+            "returned=${SystemClock.uptimeMillis()} rect=${rect?.toShortString()}")
         return rect
     }
 
@@ -320,14 +325,10 @@ class DotForegroundMotionNativeTest {
                     releaseDiagnostics(connected, orb, dragged, snapping, releaseReturnedAt))
             }
             assertTrue("Interrupt before edge", snapping.left > host.left + 8 && snapping.right < host.right - 8)
-            // Re-read immediately before input: another native frame may have arrived
-            // since the active-snap observation, and must still be away from the edge.
-            val hitbox = requireNotNull(nativeBounds(connected))
-            touchTimings.add("secondHitbox=${hitbox.toShortString()} nativeSnap=${snapping.toShortString()}")
-            assertTrue("Native interruption hitbox remains before edge",
-                hitbox.left > host.left + 8 && hitbox.right < host.right - 8)
-            pointer = SystemClock.uptimeMillis(); x = hitbox.exactCenterX(); y = hitbox.exactCenterY()
-            touch(requireNotNull(pointer), MotionEvent.ACTION_DOWN, x, y)
+            // Use this native frame as the hitbox and inject immediately. In r4 the
+            // orb reached its edge between this observation and a redundant Main read.
+            pointer = SystemClock.uptimeMillis(); x = snapping.exactCenterX(); y = snapping.exactCenterY()
+            touch(requireNotNull(pointer), MotionEvent.ACTION_DOWN, x, y, waitForDispatch = true)
             Thread.sleep(20)
             val afterDown = requireNotNull(nativeBounds(connected))
             touchTimings.add("afterSecondDown=${afterDown.toShortString()} " +
@@ -338,6 +339,8 @@ class DotForegroundMotionNativeTest {
             pointerOffsetY = afterDown.exactCenterY() - y
             assertTrue("DOWN interrupts before native edge arrival",
                 afterDown.left > host.left + 8 && afterDown.right < host.right - 8)
+            assertTrue("Delivered DOWN remains inside the interrupted native orb",
+                x >= afterDown.left && x < afterDown.right && y >= afterDown.top && y < afterDown.bottom)
             moveTo(.25f, .65f)
             val held = requireNotNull(nativeBounds(connected))
             // MOVE enters drag before long-press deadline, so this hold cannot admit voice.
