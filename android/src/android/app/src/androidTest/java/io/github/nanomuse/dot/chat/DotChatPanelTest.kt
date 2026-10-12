@@ -76,7 +76,7 @@ class DotChatPanelTest {
         val data = StringBuilder()
         fun walk(node: android.view.accessibility.AccessibilityNodeInfo, depth: Int) {
             val bounds = android.graphics.Rect(); node.getBoundsInScreen(bounds)
-            data.append(" ".repeat(depth)).append("id=${node.windowId} class=${node.className} text=${node.text} editable=${node.isEditable} bounds=$bounds children=${node.childCount}\n")
+            data.append(" ".repeat(depth)).append("id=${node.windowId} class=${node.className} text=${node.text} editable=${node.isEditable} clickable=${node.isClickable} enabled=${node.isEnabled} visible=${node.isVisibleToUser} scrollable=${node.isScrollable} bounds=$bounds children=${node.childCount}\n")
             for (index in 0 until node.childCount) {
                 val child = node.getChild(index) ?: continue
                 try { walk(child,depth+1) } finally { child.recycle() }
@@ -600,6 +600,7 @@ class DotChatPanelTest {
         val originalFont = shell("settings get system font_scale").trim()
         require(originalFont == "null" || originalFont.matches(Regex("[0-9]+(?:\\.[0-9]+)?")))
         val adapter = DotChatAdapter.create(app)
+        var restoreCanonicalHistory: (() -> Unit)? = null
         try {
             shell("settings put system font_scale 2.0")
             waitFor { service.resources.configuration.fontScale == 2f }
@@ -617,6 +618,8 @@ class DotChatPanelTest {
             @Suppress("UNCHECKED_CAST")
             val history = field(vm, "_messages") as kotlinx.coroutines.flow.MutableStateFlow<List<com.openminis.app.ui.chat.ChatMessage>>
             instrumentation.runOnMainSync {
+                val canonicalBeforeFixture = history.value
+                restoreCanonicalHistory = { history.value = canonicalBeforeFixture }
                 history.value = (0 until 40).map { index ->
                     com.openminis.app.ui.chat.ChatMessage("placement-$index", if (index % 2 == 0) "user" else "assistant", "Retained history $index")
                 }
@@ -674,19 +677,32 @@ class DotChatPanelTest {
                     try { if (scrollControls(child)) return true } finally { child.recycle() } }
                 return false
             }
+            savePanelNative("placement-controls-before")
             for ((text,input) in listOf(expand to false, null to true, stop to false)) {
-                waitFor {
+                val control = if (input) "input" else if (text == expand) "expand" else "stop"
+                println("T3_PLACEMENT_CONTROL seeking=$control minimumVisibleDp=48")
+                try { waitFor {
                     val windows = service.windows
                     try { windows.filter { it.type == AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY }.any { window ->
                         window.root?.let { root -> try {
                             if (reachable(root,text,input)) true else { scrollControls(root); false }
                         } finally { root.recycle() } } == true }
                     } finally { windows.forEach { it.recycle() } }
+                } } catch (failure: AssertionError) {
+                    try { saveHostState("placement-$control-timeout"); savePanelNative("placement-$control-timeout") }
+                    catch (diagnosticFailure: Throwable) { failure.addSuppressed(diagnosticFailure) }
+                    throw AssertionError("Native placement control $control did not reach visible48dp", failure)
                 }
+                println("T3_PLACEMENT_CONTROL reachable=$control minimumVisibleDp=48")
             }
             println("T3_PLACEMENT sameWindow=true sameList=true sameBinding=true draftAndPositionRetained=true inertStreamCalls=1 fontScale=2 controlsReachable=true")
         } finally {
-            instrumentation.runOnMainSync { service.dotOverlay.setForegroundTarget(null); service.dotOverlay.collapsePanel(); adapter.binding.value?.let(adapter::cancel) }
+            instrumentation.runOnMainSync {
+                // The synthetic transcript is a presentation fixture, not an assistant reply.
+                // Restore the exact canonical messages before cancellation can persist them.
+                restoreCanonicalHistory?.invoke()
+                service.dotOverlay.setForegroundTarget(null); service.dotOverlay.collapsePanel(); adapter.binding.value?.let(adapter::cancel)
+            }
             shell(if (originalFont == "null") "settings delete system font_scale" else "settings put system font_scale $originalFont")
             assertEquals(originalFont, shell("settings get system font_scale").trim())
         }
