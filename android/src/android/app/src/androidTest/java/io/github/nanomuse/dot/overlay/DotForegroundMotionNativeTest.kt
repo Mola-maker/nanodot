@@ -12,6 +12,7 @@ import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings
 import android.view.InputDevice
+import android.view.InputEvent
 import android.view.MotionEvent
 import android.view.WindowInsets
 import android.view.WindowManager
@@ -37,6 +38,19 @@ class DotForegroundMotionNativeTest {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private val context get() = instrumentation.targetContext
     private val automation get() = instrumentation.getUiAutomation(UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES)
+    // Framework @TestApi, intentionally limited to this native instrumentation fixture.
+    // The public two-argument overload always waits for window animations, which can
+    // finish the very snap this test must interrupt before DOWN reaches InputDispatcher.
+    private val injectWithoutAnimationWait by lazy {
+        try {
+            UiAutomation::class.java.getMethod("injectInputEvent", InputEvent::class.java,
+                java.lang.Boolean.TYPE, java.lang.Boolean.TYPE)
+        } catch (failure: ReflectiveOperationException) {
+            throw AssertionError("Native interruption test requires the framework " +
+                "UiAutomation.injectInputEvent(InputEvent, boolean, boolean) test API; " +
+                "no hidden-API policy override or public waiting fallback is permitted", failure)
+        }
+    }
     private val touchTimings = mutableListOf<String>()
     private var latestFailureGeometry = "no mounted geometry observed"
     private fun setting(key: String): String? = Settings.Secure.getString(context.contentResolver, key)
@@ -108,13 +122,20 @@ class DotForegroundMotionNativeTest {
         val event = MotionEvent.obtain(time, injectedAt, action, x, y, 0)
             .apply { source = InputDevice.SOURCE_TOUCHSCREEN }
         try {
-            // The public API synchronizes window transactions on DOWN/UP in both modes.
-            // The interruption DOWN additionally waits for delivery before its geometry check.
-            assertTrue("Global touch accepted", automation.injectInputEvent(event, waitForDispatch))
+            // AOSP UiAutomationConnection still synchronizes input transactions on DOWN/UP
+            // and injects through InputManager. Only its animation-completion wait is disabled;
+            // animation duration, production state, and native event delivery are unchanged.
+            val accepted = try {
+                injectWithoutAnimationWait.invoke(automation, event, waitForDispatch, false) as Boolean
+            } catch (failure: ReflectiveOperationException) {
+                throw AssertionError("Framework global injection without animation wait is unavailable; " +
+                    "this native interruption test cannot use the public waiting fallback", failure)
+            }
+            assertTrue("Global touch accepted", accepted)
         }
         finally {
             touchTimings.add("action=$action at=$injectedAt sinceDown=${injectedAt - time}ms " +
-                "inject=${SystemClock.uptimeMillis() - injectedAt}ms x=$x y=$y")
+                "inject=${SystemClock.uptimeMillis() - injectedAt}ms waitForAnimations=false x=$x y=$y")
             event.recycle()
         }
     }
@@ -247,6 +268,9 @@ class DotForegroundMotionNativeTest {
         val oldPosition = listOf("dot_orb_x", "dot_orb_y").associateWith { prefs.all[it] }
         assumeTrue("Animated snap requires nonzero animator scale",
             Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f)
+        // Resolve before fixture mutation or timed input. Unsupported framework access fails
+        // explicitly instead of skipping native acceptance or mutating hidden-API settings.
+        injectWithoutAnimationWait
         var pointer: Long? = null
         var x = 0f
         var y = 0f
