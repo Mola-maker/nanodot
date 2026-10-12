@@ -175,21 +175,56 @@ class DotForegroundGestureNativeTest {
         } finally { windows.forEach { it.recycle() } }
         println(out.toString())
     }
+    private fun awaitHostReady(service: MinisAccessibilityService) {
+        var previous: Pair<Int, Rect>? = null
+        var unchangedSince = SystemClock.uptimeMillis()
+        await("External test host native application window must settle before orb input") {
+            var observed: Pair<Int, Rect>? = null
+            val windows = service.windows
+            try {
+                for (window in windows) {
+                    if (window.type != AccessibilityWindowInfo.TYPE_APPLICATION || !window.isActive || !window.isFocused) continue
+                    val root = window.root ?: continue
+                    try {
+                        if (root.packageName?.toString() == instrumentation.context.packageName) {
+                            val frame = Rect(); window.getBoundsInScreen(frame)
+                            if (!frame.isEmpty) observed = window.id to frame
+                        }
+                    } finally { root.recycle() }
+                }
+            } finally { windows.forEach { it.recycle() } }
+            val now = SystemClock.uptimeMillis()
+            if (observed == null || observed != previous) {
+                println("DOT_NATIVE_GESTURE hostGeometry previous=$previous current=$observed")
+                previous = observed; unchangedSince = now
+            }
+            observed != null && now - unchangedSince >= ViewConfiguration.getDoubleTapTimeout()
+        }
+    }
     private fun tap(rect: Rect) {
         val downTime = SystemClock.uptimeMillis()
-        fun inject(action: Int) {
+        fun inject(action: Int): Long {
             val event = MotionEvent.obtain(downTime, SystemClock.uptimeMillis(), action,
                 rect.exactCenterX(), rect.exactCenterY(), 0).apply { source = InputDevice.SOURCE_TOUCHSCREEN }
             try {
-                val accepted = automation.injectInputEvent(event, true)
-                println("DOT_NATIVE_GESTURE inputAction=$action downTime=$downTime eventTime=${event.eventTime} x=${event.x} y=${event.y} rawX=${event.rawX} rawY=${event.rawY} accepted=$accepted")
+                val injectionStart = SystemClock.uptimeMillis()
+                // Queue global native input without waiting for target dispatch completion.
+                // The public API still synchronizes window transactions; measure that cost.
+                val accepted = automation.injectInputEvent(event, false)
+                val returnedAt = SystemClock.uptimeMillis()
+                println("DOT_NATIVE_GESTURE inputAction=$action downTime=$downTime eventTime=${event.eventTime} x=${event.x} y=${event.y} rawX=${event.rawX} rawY=${event.rawY} accepted=$accepted injectionMs=${returnedAt - injectionStart}")
                 assertTrue("Android must accept the native touch", accepted)
+                return event.eventTime
             }
             finally { event.recycle() }
         }
         inject(MotionEvent.ACTION_DOWN)
         Thread.sleep(24)
-        inject(MotionEvent.ACTION_UP)
+        val upTime = inject(MotionEvent.ACTION_UP)
+        val heldMs = upTime - downTime
+        println("DOT_NATIVE_GESTURE heldMs=$heldMs longPressMs=${ViewConfiguration.getLongPressTimeout()}")
+        assertTrue("Injected input must remain a short tap, not a blocked long press ($heldMs ms)",
+            heldMs < ViewConfiguration.getLongPressTimeout())
     }
 
     @Test fun realOrbTapCountsMountChatScreenAndCare() {
@@ -237,16 +272,13 @@ class DotForegroundGestureNativeTest {
             instrumentation.runOnMainSync { connected.dotOverlay.setEnabled(true) }
             instrumentation.context.startActivity(Intent().setComponent(ComponentName(
                 instrumentation.context, ScreenHostFixture::class.java)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-            await("External fixture must be the capture host") {
-                val root = connected.rootInActiveWindow
-                root?.let { try { it.packageName?.toString() == instrumentation.context.packageName }
-                    finally { it.recycle() } } == true
-            }
+            awaitHostReady(connected)
             val orb = connected.getString(R.string.nm_dot_orb_description)
             val collapse = connected.getString(R.string.nm_dot_chat_collapse)
             val interval = (ViewConfiguration.getDoubleTapTimeout() / 4).coerceAtLeast(1).toLong()
             for ((count, mode) in listOf(1 to DotForegroundMode.Chat,
                 2 to DotForegroundMode.Screen, 3 to DotForegroundMode.Care)) {
+                awaitHostReady(connected)
                 await("Visible orb required before $count native taps") { bounds(connected, orb) != null }
                 val hit = requireNotNull(bounds(connected, orb))
                 diagnose(connected, "before-$count-taps", hit, orb, collapse)
