@@ -46,9 +46,11 @@ node scripts/providers-json.mjs --check         # the clients' copies of the pro
 # Desktop shell (harness/desktop/)
 cd harness/desktop && npm ci && npm run typecheck && npm test
 
-# Android (android/src/android); JDK 21, NDK r27c; natives first: bash scripts/android/build-natives.sh
-cd android/src/android && ./gradlew :app:assembleDebug --console=plain --no-daemon
-./gradlew :app:testDebugUnitTest --tests 'io.github.nanomuse.*' --console=plain --no-daemon # our unit tests; CI runs them too
+# Android: fixed toolchain and profile/receipt details in docs/build.md
+bash scripts/build-nanodot-apk.sh doctor
+bash scripts/build-nanodot-apk.sh check
+bash scripts/build-nanodot-apk.sh debug-x86_64 --with-test # chat-only emulator candidate
+bash scripts/build-nanodot-apk.sh debug # arm64, also used by CI
 
 # iOS (android/src/ios); macOS only; the device build must finish with zero warnings in NanoMuse/
 xcodebuild build -project Minis.xcodeproj -scheme Minis -configuration Debug -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO

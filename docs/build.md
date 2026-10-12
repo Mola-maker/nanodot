@@ -125,3 +125,37 @@ The future floating ball and care mode have separate later-phase acceptance.
 
 Retain [GPL terms](../LICENSE), [NOTICE](../NOTICE), [third-party notices](../THIRD_PARTY_NOTICES.md)
 and the pinned submodule/source information with distributable builds.
+
+## Android workflow profiles {#android-workflow-profiles}
+
+Source your existing toolchain environment, or pass its path with `NANODOT_ENV_FILE`.
+The wrapper sources that file and `scripts/android/env.sh` before preflight. It never
+installs or repairs toolchains. `doctor` reads JDK 21, Go 1.26 (local toolchain only),
+SDK API 36, build-tools 35.0.0, NDK 27.2.12479018 and CMake 3.22.1; it does not run Gradle.
+
+```sh
+bash scripts/build-nanodot-apk.sh doctor
+bash scripts/build-nanodot-apk.sh check
+bash scripts/build-nanodot-apk.sh debug-x86_64 --with-test
+bash scripts/build-nanodot-apk.sh debug
+bash scripts/build-nanodot-apk.sh release
+```
+
+`check` runs debug unit tests with x86_64; `debug-x86_64` skips the arm64 native
+preparation and builds a chat-only APK. `--with-test` adds the instrumentation APK
+in the same Gradle invocation for either debug profile. It does not run device tests.
+No diagnostic voice flag is enabled. Release requires the dedicated signing configuration.
+
+Each APK candidate lives in a unique `dist/nanodot/<commit>-<profile>-<ABI>-<unique>/`
+folder with `receipt.json`. It records the commit, tree, dirty state, source-byte
+fingerprint, requested tasks, ABI flag, inspected APK package/version/SDK/ABIs,
+main and optional test SHA256, certificate digest and actual toolchain output.
+Source changes during the build reject the candidate. Existing native inputs are
+hashed with explicitly unverified provenance; their presence does not prove a fresh
+arm64 native build. Main/test certificate mismatch rejects the pair. Keep the pair
+and receipt together; SHA256 identifies the APK bytes used for installation.
+
+The original debug/release APK, SHA256, badging, signature and `build-<mode>.json`
+paths remain available for CI. Those compatibility files are overwritten on the
+next build; use the unique folder to retain a candidate. Builds alone do not prove
+installation, instrumentation execution, native arm64 behavior or release lint.

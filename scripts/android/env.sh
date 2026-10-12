@@ -2,10 +2,10 @@
 # Toolchain for building android/ (source this). Every variable can be set
 # beforehand; the defaults below are only used when the path exists.
 #
-#   JAVA_HOME          JDK 17 or 21
+#   JAVA_HOME          JDK 21
 #   ANDROID_HOME       Android SDK with platforms;android-36, build-tools;35+, cmake;3.22.1
 #   ANDROID_NDK_HOME   NDK r27c (27.2.12479018) — also used by deps/build_proot.sh
-#   GOROOT / GOPATH    Go 1.25+ with gomobile and gobind on PATH (rclone.aar)
+#   GOROOT / GOPATH    Go 1.26 with gomobile and gobind on PATH (rclone.aar)
 
 _default() { # var path
   if [ -z "${!1:-}" ] && [ -e "$2" ]; then export "$1"="$2"; fi
@@ -16,6 +16,7 @@ _default JAVA_HOME "$HOME/.local/toolchains/jdk-21.0.12.1+1"
 # then on macOS
 _default ANDROID_HOME "${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}"
 _default ANDROID_HOME "$HOME/Library/Android/sdk"
+_default ANDROID_NDK_HOME "${ANDROID_HOME:-}/ndk/27.2.12479018"
 _default ANDROID_NDK_HOME "$HOME/.local/toolchains/android-ndk-r27c"
 _default GOROOT "$HOME/.local/toolchains/go"
 _default GOPATH "$HOME/go"
