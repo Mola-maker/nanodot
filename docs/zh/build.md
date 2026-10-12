@@ -145,3 +145,11 @@ Release 必须使用专用签名配置。
 原 debug/release APK、SHA256、badging、signature 和 `build-<mode>.json` 路径保留，
 供 CI 使用。这些兼容文件会在下次构建时覆盖；保留候选请使用唯一目录。
 构建成功本身不能证明安装、instrumentation 执行、arm64 原生行为或 release lint 通过。
+
+默认 `check` 覆盖完整 debug 单元测试集。若明确只检查本地 nanoMuse 回归范围，可用
+`NANODOT_TEST_SCOPE=nanomuse bash scripts/build-nanodot-apk.sh check`；
+这不代表完整测试集通过，不会静默过滤失败。可选且有界的环境设置包括
+`NANODOT_OFFLINE=1`（Gradle 离线）、`NANODOT_JVM_HEAP_MB=4096`（512–32768 MiB）
+和 `NANODOT_KOTLIN_IN_PROCESS=1`。它们直接转成 Gradle 参数，不使用 eval；
+APK 记录包含这些选项。Instrumentation APK 可以没有版本字段；记录使用 null，
+文件名采用配对主 APK 的版本。

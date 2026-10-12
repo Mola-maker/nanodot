@@ -159,3 +159,12 @@ The original debug/release APK, SHA256, badging, signature and `build-<mode>.jso
 paths remain available for CI. Those compatibility files are overwritten on the
 next build; use the unique folder to retain a candidate. Builds alone do not prove
 installation, instrumentation execution, native arm64 behavior or release lint.
+
+The default `check` covers the full debug unit suite. For the explicitly narrower
+local nanoMuse regression scope, use `NANODOT_TEST_SCOPE=nanomuse bash
+scripts/build-nanodot-apk.sh check`; this is not a full-suite pass. No failures are
+silently filtered. Optional bounded environment settings are `NANODOT_OFFLINE=1`
+(Gradle offline), `NANODOT_JVM_HEAP_MB=4096` (512–32768 MiB), and
+`NANODOT_KOTLIN_IN_PROCESS=1`. These become literal Gradle arguments without eval;
+APK receipts record the options. Instrumentation APKs may have no version fields;
+the receipt records null and their filenames use the paired main APK's version.

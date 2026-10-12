@@ -28,12 +28,34 @@ def profile(name: str, paired: bool) -> tuple[str, str, list[str], bool]:
     return mode, abi, tasks, name in ("debug", "release")
 
 
+def gradle_options(env: dict) -> list[str]:
+    result = []
+    scope = env.get("NANODOT_TEST_SCOPE", "all")
+    if scope not in ("all", "nanomuse"):
+        raise ValueError("NANODOT_TEST_SCOPE must be all or nanomuse")
+    if scope == "nanomuse":
+        result += ["--tests", "io.github.nanomuse.*"]
+    for key in ("NANODOT_OFFLINE", "NANODOT_KOTLIN_IN_PROCESS"):
+        if env.get(key, "0") not in ("0", "1"):
+            raise ValueError(f"{key} must be 0 or 1")
+    if env.get("NANODOT_OFFLINE") == "1":
+        result.append("--offline")
+    heap = env.get("NANODOT_JVM_HEAP_MB")
+    if heap:
+        if not heap.isdigit() or not 512 <= int(heap) <= 32768:
+            raise ValueError("NANODOT_JVM_HEAP_MB must be 512..32768")
+        result.append(f"-Dorg.gradle.jvmargs=-Xmx{heap}m -Dfile.encoding=UTF-8")
+    if env.get("NANODOT_KOTLIN_IN_PROCESS") == "1":
+        result.append("-Pkotlin.compiler.execution.strategy=in-process")
+    return result
+
+
 def validate_java(value: str) -> None:
     if not re.search(r'version "21[.\"]', value):
         raise ValueError("JDK 21 required")
 
 
-def parse_badging(value: str) -> dict:
+def parse_badging(value: str, *, test_apk: bool = False) -> dict:
     result = {}
     for field, pattern in {
         "applicationId": r"package: name='([^']+)'",
@@ -43,6 +65,9 @@ def parse_badging(value: str) -> dict:
         "targetSdk": r"targetSdkVersion:'(\d+)'",
     }.items():
         match = re.search(pattern, value)
+        if not match and test_apk and field in ("versionCode", "versionName"):
+            result[field] = None
+            continue
         if not match:
             raise ValueError(f"Missing APK {pattern.split(':')[0]}")
         result[field] = (
@@ -135,11 +160,14 @@ def doctor(root: Path) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", choices=["doctor", "receipt"])
+    parser.add_argument("action", choices=["doctor", "receipt", "options"])
     parser.add_argument("--profile", default="debug")
     parser.add_argument("--with-test", action="store_true")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
+    if args.action == "options":
+        print("\n".join(gradle_options(dict(os.environ))))
+        return
     toolchain = doctor(root)
     if args.action == "doctor":
         print(json.dumps(toolchain, indent=2))
@@ -168,7 +196,7 @@ def main() -> None:
             )
         )
         badging = run(str(Path(toolchain["buildTools"]) / "aapt"), "dump", "badging", str(apk))
-        metadata = parse_badging(badging)
+        metadata = parse_badging(badging, test_apk=kind == "test")
         if kind == "main":
             validate_artifact(metadata, brand["androidApplicationId"], abi)
         elif metadata["applicationId"] != brand["androidApplicationId"] + ".test":
@@ -179,7 +207,10 @@ def main() -> None:
         cert = re.search(r"Signer #1 certificate SHA-256 digest: (\S+)", signature)
         if not cert:
             raise ValueError("Missing signing certificate SHA-256")
-        name = f"Nanodot-{identity_before['sourceCommit'][:12]}-{metadata['versionName']}-{args.profile}-{abi}-{kind}.apk"
+        filename_version = (
+            metadata["versionName"] if kind == "main" else artifacts[0]["versionName"]
+        )
+        name = f"Nanodot-{identity_before['sourceCommit'][:12]}-{filename_version}-{args.profile}-{abi}-{kind}.apk"
         shutil.copy2(apk, candidate / name)
         artifacts.append(
             {
@@ -217,6 +248,7 @@ def main() -> None:
         "abi": abi,
         "buildType": mode,
         "tasks": tasks,
+        "gradleOptions": gradle_options(dict(os.environ)),
         "diagnosticFlags": [f"-Pnm.abi={abi}"],
         "toolchain": toolchain,
         "nativeCache": {

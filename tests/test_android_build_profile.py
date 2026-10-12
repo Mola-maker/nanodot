@@ -77,3 +77,36 @@ def test_source_identity_detects_uncommitted_byte_change(tmp_path):
     assert before["sourceCommit"] == after["sourceCommit"]
     assert before["sourceFingerprint"] != after["sourceFingerprint"]
     assert after["sourceDirty"]
+
+
+def test_test_apk_allows_empty_versions_without_weakening_main():
+    h = helper()
+    value = "package: name='example.app.test' versionCode='' versionName=''\nsdkVersion:'26'\ntargetSdkVersion:'35'\n"
+    assert h.parse_badging(value, test_apk=True)["versionName"] is None
+    assert h.parse_badging(value, test_apk=True)["versionCode"] is None
+    with pytest.raises(ValueError, match="versionCode"):
+        h.parse_badging(value)
+
+
+def test_scoped_checks_are_explicit_and_bounded():
+    h = helper()
+    assert h.gradle_options({}) == []
+    assert h.gradle_options({"NANODOT_TEST_SCOPE": "nanomuse"}) == [
+        "--tests",
+        "io.github.nanomuse.*",
+    ]
+    with pytest.raises(ValueError, match="NANODOT_TEST_SCOPE"):
+        h.gradle_options({"NANODOT_TEST_SCOPE": "arbitrary"})
+
+
+def test_offline_memory_options_are_literal_arguments():
+    h = helper()
+    assert h.gradle_options(
+        {"NANODOT_OFFLINE": "1", "NANODOT_JVM_HEAP_MB": "4096", "NANODOT_KOTLIN_IN_PROCESS": "1"}
+    ) == [
+        "--offline",
+        "-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8",
+        "-Pkotlin.compiler.execution.strategy=in-process",
+    ]
+    with pytest.raises(ValueError, match="HEAP"):
+        h.gradle_options({"NANODOT_JVM_HEAP_MB": "4096; echo unsafe"})

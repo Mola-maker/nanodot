@@ -22,6 +22,14 @@ fi
 python_cmd="${NANODOT_PYTHON:-python3}"
 cd "$root"
 helper=scripts/android/build_profile.py
+if [[ "$mode" != check && "${NANODOT_TEST_SCOPE:-all}" != all ]]; then
+  echo "NANODOT_TEST_SCOPE only applies to check" >&2; exit 2
+fi
+options_text="$("$python_cmd" "$helper" options)"
+options=()
+while IFS= read -r option; do
+  [[ -z "$option" ]] || options+=("$option")
+done <<< "$options_text"
 GOTOOLCHAIN=local "$python_cmd" "$helper" doctor
 [[ "$mode" != doctor ]] || exit 0
 if [[ -n "$paired" && "$mode" != debug && "$mode" != debug-x86_64 ]]; then
@@ -48,7 +56,7 @@ if [[ "$mode" != check ]]; then
   rm -f "android/src/android/app/build/outputs/apk/$build_type/app-$build_type.apk"
   [[ -z "$paired" ]] || rm -f android/src/android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 fi
-(cd android/src/android && ./gradlew "${tasks[@]}" "-Pnm.abi=$abi" --console=plain --no-daemon \
+(cd android/src/android && ./gradlew "${tasks[@]}" "${options[@]}" "-Pnm.abi=$abi" --console=plain --no-daemon \
   --max-workers="${NANODOT_GRADLE_WORKERS:-4}")
 [[ "$mode" != check ]] || exit 0
 args=(receipt --profile "$mode")
