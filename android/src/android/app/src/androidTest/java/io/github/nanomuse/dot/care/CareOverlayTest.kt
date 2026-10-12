@@ -133,18 +133,43 @@ class CareOverlayTest {
             } }
             return result
         }
+        fun saveControls(stage: String) {
+            val dump = StringBuilder("CARE_COMPACT $stage\n")
+            instrumentation.runOnMainSync {
+                val view = card(); val p = view.layoutParams as WindowManager.LayoutParams
+                dump.append("card=${p.x},${p.y},${p.width},${p.height} host=${service.dotScreen.hostViewport()} density=${service.resources.displayMetrics.density} font=${service.resources.configuration.fontScale}\n")
+            }
+            fun visit(node: AccessibilityNodeInfo, depth: Int) {
+                val bounds = Rect(); node.getBoundsInScreen(bounds)
+                dump.append(" ".repeat(depth)).append("class=${node.className} text=${node.text} bounds=$bounds visible=${node.isVisibleToUser} scrollable=${node.isScrollable} clickable=${node.isClickable} enabled=${node.isEnabled} actions=${node.actionList.map { it.id }}\n")
+                for (i in 0 until node.childCount) node.getChild(i)?.let { try { visit(it, depth + 1) } finally { it.recycle() } }
+            }
+            val windows = automation.windows
+            try { windows.filter { it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY }.forEach { native ->
+                native.root?.let { try { visit(it, 0) } finally { it.recycle() } }
+            } } finally { windows.forEach { it.recycle() } }
+            java.io.File(service.cacheDir, "care-compact-$stage-native-tree.txt").writeText(dump.toString())
+            if (stage == "before" || stage == "timeout") automation.takeScreenshot()?.let { bitmap ->
+                try { java.io.File(service.cacheDir, "care-compact-$stage-native.png").outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) } }
+                finally { bitmap.recycle() }
+            }
+        }
         fun reach(label: String): Rect {
-            repeat(20) {
+            repeat(20) { step ->
                 controlBounds(label)?.let { return it }
                 withNodes { all ->
-                    // Compact status and adjustment share the LOWER 48dp controls viewport;
-                    // scrolling the independent transcript cannot reveal these buttons.
-                    all.filter { it.isScrollable }.maxByOrNull { node ->
-                        Rect().also(node::getBoundsInScreen).top
-                    }?.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
+                    // Select the actual lower controls ScrollView, never a transcript or
+                    // an offscreen child label. Keep the strict >=48dp clipped hit requirement.
+                    val selected = all.filter { it.isScrollable && it.isVisibleToUser && it.className?.toString() == "android.widget.ScrollView" }
+                        .maxByOrNull { Rect().also(it::getBoundsInScreen).top }
+                    val bounds = selected?.let { Rect().also(it::getBoundsInScreen) }
+                    val accepted = selected?.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD) ?: false
+                    println("CARE_COMPACT_SCROLL step=$step lowerViewport=$bounds accepted=$accepted")
                 }
                 automation.waitForIdle(100, 2000)
+                if (step < 3) saveControls("scroll-$step")
             }
+            saveControls("timeout")
             error("48dp Care control unreachable: $label")
         }
         try {
@@ -180,6 +205,7 @@ class CareOverlayTest {
             val history = session.conversation.state.value
             val generation = session.controller.generation
             val before = (retained.layoutParams as WindowManager.LayoutParams).y
+            saveControls("before")
             val adjust = reach(service.getString(com.openminis.app.R.string.nm_dot_foreground_adjust))
             tap(adjust.exactCenterX(), adjust.exactCenterY())
             awaitMain("Actual named Care adjustment moves its same window") { (card().layoutParams as WindowManager.LayoutParams).y > before }

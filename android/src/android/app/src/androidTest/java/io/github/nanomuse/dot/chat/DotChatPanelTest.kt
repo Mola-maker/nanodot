@@ -424,7 +424,8 @@ class DotChatPanelTest {
         }
         return provider
     }
-    private fun openCanonical(adapter: DotChatAdapter, id: String): ChatViewModel {
+    private fun openCanonical(adapter: DotChatAdapter, id: String,
+        foregroundOwner: io.github.nanomuse.dot.DotInteractionCoordinator? = null): ChatViewModel {
         val service=requireNotNull(MinisAccessibilityService.getInstance())
         val app=service.application as MinisApp
         lateinit var vm: ChatViewModel
@@ -433,7 +434,13 @@ class DotChatPanelTest {
             assertSame(vm,ViewModelProvider(ChatViewModelStore.ownerFor(id),ChatViewModel.factory(
                 id,app.chatRepository,app.providerRepository,app,app.memoryRepository,app.skillRepository,app.mcpRepository))[ChatViewModel::class.java])
             service.dotOverlay.setEnabled(true)
-            service.dotOverlay.showPanel(adapter) { adapter.binding.value?.let(adapter::cancel) }
+            if (foregroundOwner == null) service.dotOverlay.showPanel(adapter) { adapter.binding.value?.let(adapter::cancel) }
+            else {
+                val previousActive = ChatViewModelStore.activeSessionId
+                ChatViewModelStore.setActiveSession(id)
+                try { foregroundOwner.connect(); foregroundOwner.handle(io.github.nanomuse.dot.gesture.DotIntent.Single) }
+                finally { ChatViewModelStore.setActiveSession(previousActive) }
+            }
         }
         waitFor { shell("logcat -d -v brief -s System.out:I").contains("loadSession EXIT session=$id ") }
         try {
@@ -600,17 +607,20 @@ class DotChatPanelTest {
         val originalFont = shell("settings get system font_scale").trim()
         require(originalFont == "null" || originalFont.matches(Regex("[0-9]+(?:\\.[0-9]+)?")))
         val adapter = DotChatAdapter.create(app)
+        val foregroundOwner = io.github.nanomuse.dot.DotInteractionCoordinator(service, adapter)
         var restoreCanonicalHistory: (() -> Unit)? = null
         try {
             shell("settings put system font_scale 2.0")
             waitFor { service.resources.configuration.fontScale == 2f }
             waitForSettledFixtureHost()
             saveHostState("font-ready")
-            val vm = openCanonical(adapter, fixtureId)
+            val vm = openCanonical(adapter, fixtureId, foregroundOwner)
             val provider = configureInert(vm, "DOT_PLACEMENT_INERT")
             val binding = requireNotNull(adapter.binding.value)
             instrumentation.runOnMainSync { assertTrue(adapter.send(binding, "Owned placement stream")) }
-            waitFor { provider.streamEntered.isCompleted }
+            waitFor { provider.streamEntered.isCompleted &&
+                foregroundOwner.foreground.state.value.operation == io.github.nanomuse.dot.DotForegroundOperation.Replying }
+            assertEquals(binding, foregroundOwner.foreground.state.value.binding)
             // Register only this fixture's locally persisted user rows for its existing cleanup guard.
             runBlocking { app.chatRepository.dao.loadMessages(fixtureId).forEach { row ->
                 check(row.role == "user"); ownedMessageParts[row.id] = row.partsJson
@@ -672,10 +682,27 @@ class DotChatPanelTest {
                 return false
             }
             fun scrollControls(root: android.view.accessibility.AccessibilityNodeInfo): Boolean {
-                if (root.isScrollable && containsNativeText(root, expand)) return root.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
-                for (i in 0 until root.childCount) { val child = root.getChild(i) ?: continue
-                    try { if (scrollControls(child)) return true } finally { child.recycle() } }
-                return false
+                var selected: android.view.accessibility.AccessibilityNodeInfo? = null
+                var selectedTop = Int.MIN_VALUE
+                fun visit(node: android.view.accessibility.AccessibilityNodeInfo) {
+                    val bounds = android.graphics.Rect(); node.getBoundsInScreen(bounds)
+                    // Offscreen labels are absent from native AX. Locate the actual LOWER
+                    // ScrollView instead of requiring the inaccessible Expand descendant.
+                    if (node.isScrollable && node.isVisibleToUser && node.className?.toString() == "android.widget.ScrollView" &&
+                        bounds.height() >= 48 * service.resources.displayMetrics.density - 1 && bounds.top > selectedTop) {
+                        selected?.recycle(); selected = android.view.accessibility.AccessibilityNodeInfo.obtain(node); selectedTop = bounds.top
+                    }
+                    for (i in 0 until node.childCount) node.getChild(i)?.let { try { visit(it) } finally { it.recycle() } }
+                }
+                visit(root)
+                return try {
+                    selected?.let { node ->
+                        val bounds = android.graphics.Rect(); node.getBoundsInScreen(bounds)
+                        val accepted = node.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
+                        println("T3_PLACEMENT_SCROLL lowerViewport=$bounds accepted=$accepted")
+                        accepted
+                    } ?: false
+                } finally { selected?.recycle() }
             }
             savePanelNative("placement-controls-before")
             for ((text,input) in listOf(expand to false, null to true, stop to false)) {
@@ -701,7 +728,9 @@ class DotChatPanelTest {
                 // The synthetic transcript is a presentation fixture, not an assistant reply.
                 // Restore the exact canonical messages before cancellation can persist them.
                 restoreCanonicalHistory?.invoke()
-                service.dotOverlay.setForegroundTarget(null); service.dotOverlay.collapsePanel(); adapter.binding.value?.let(adapter::cancel)
+                service.dotOverlay.setForegroundTarget(null)
+                foregroundOwner.disconnect()
+                service.dotInteraction.disconnect(); service.dotInteraction.connect()
             }
             shell(if (originalFont == "null") "settings delete system font_scale" else "settings put system font_scale $originalFont")
             assertEquals(originalFont, shell("settings get system font_scale").trim())
