@@ -12,6 +12,7 @@ import android.os.SystemClock
 import android.provider.Settings
 import android.view.InputDevice
 import android.view.MotionEvent
+import android.view.WindowManager
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -33,6 +34,7 @@ class DotForegroundMotionNativeTest {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private val context get() = instrumentation.targetContext
     private val automation get() = instrumentation.getUiAutomation(UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES)
+    private val touchTimings = mutableListOf<String>()
     private fun setting(key: String): String? = Settings.Secure.getString(context.contentResolver, key)
     private fun shell(command: String) {
         ParcelFileDescriptor.AutoCloseInputStream(automation.executeShellCommand(command)).use { it.readBytes() }
@@ -98,13 +100,46 @@ class DotForegroundMotionNativeTest {
         } finally { windows.forEach { it.recycle() } }
     }
     private fun touch(time: Long, action: Int, x: Float, y: Float) {
-        val event = MotionEvent.obtain(time, SystemClock.uptimeMillis(), action, x, y, 0)
+        val injectedAt = SystemClock.uptimeMillis()
+        val event = MotionEvent.obtain(time, injectedAt, action, x, y, 0)
             .apply { source = InputDevice.SOURCE_TOUCHSCREEN }
         try { assertTrue("Global touch accepted", automation.injectInputEvent(event, true)) }
-        finally { event.recycle() }
+        finally {
+            touchTimings.add("action=$action sinceDown=${injectedAt - time}ms " +
+                "inject=${SystemClock.uptimeMillis() - injectedAt}ms x=$x y=$y")
+            event.recycle()
+        }
     }
     private fun near(a: Rect, b: Rect?): Boolean = b != null &&
         kotlin.math.abs(a.left - b.left) <= 3 && kotlin.math.abs(a.top - b.top) <= 3
+
+    /** Read-only failure evidence; never dispatches a touch or changes controller state. */
+    private fun releaseDiagnostics(service: MinisAccessibilityService, orb: String,
+        dragged: Rect, observed: Rect, releaseReturnedAt: Long): String {
+        val samples = mutableListOf<String>()
+        fun sample() {
+            var native = "missing"
+            instrumentation.runOnMainSync {
+                service.dotOverlay.orbView?.let { view ->
+                    val location = IntArray(2)
+                    view.getLocationOnScreen(location)
+                    val p = view.layoutParams as? WindowManager.LayoutParams
+                    native = "attached=${view.isAttachedToWindow} " +
+                        "rect=${Rect(location[0], location[1], location[0] + view.width, location[1] + view.height).toShortString()} " +
+                        "layout=${p?.x},${p?.y}"
+                }
+            }
+            samples.add("afterUp=${SystemClock.uptimeMillis() - releaseReturnedAt}ms " +
+                "native=($native) ax=${bounds(service, orb)?.toShortString()}")
+        }
+        // Sample only after the original assertion has already failed. These observations
+        // cannot turn an unobserved or completed snap into passing interruption evidence.
+        sample()
+        repeat(3) { Thread.sleep(64); sample() }
+        return "dragged=${dragged.toShortString()} observed=${observed.toShortString()} " +
+            "scale=${Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)} " +
+            "touches=${touchTimings.joinToString("; ")} samples=${samples.joinToString("; ")}"
+    }
 
     @Test fun nativeDragInterruptsSnapAndPersistsLatestPlacement() {
         // Read originals before UiAutomation connects; never clear app data or credentials.
@@ -188,9 +223,13 @@ class DotForegroundMotionNativeTest {
             val dragged = requireNotNull(bounds(connected, orb))
             assertFalse("Drag changes native position", near(start, dragged))
             touch(requireNotNull(pointer), MotionEvent.ACTION_UP, x, y); pointer = null
+            val releaseReturnedAt = SystemClock.uptimeMillis()
             Thread.sleep(32)
             val snapping = requireNotNull(bounds(connected, orb))
-            assertFalse("Release starts animated snap", near(dragged, snapping))
+            if (near(dragged, snapping)) {
+                fail("Release starts animated snap: " +
+                    releaseDiagnostics(connected, orb, dragged, snapping, releaseReturnedAt))
+            }
             assertTrue("Interrupt before edge", snapping.left > host.left + 8 && snapping.right < host.right - 8)
             pointer = SystemClock.uptimeMillis(); x = snapping.exactCenterX(); y = snapping.exactCenterY()
             touch(requireNotNull(pointer), MotionEvent.ACTION_DOWN, x, y)
