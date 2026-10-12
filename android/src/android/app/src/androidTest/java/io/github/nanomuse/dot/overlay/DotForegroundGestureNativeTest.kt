@@ -105,15 +105,20 @@ class DotForegroundGestureNativeTest {
             return null
         } finally { windows.forEach { it.recycle() } }
     }
-    private fun settledTarget(service: MinisAccessibilityService, label: String, onTimeout: () -> Unit): Rect {
+    private fun settledTarget(service: MinisAccessibilityService, label: String, mode: DotForegroundMode,
+        onTimeout: () -> Unit): Rect {
         var previous: NativeTarget? = null
         var unchangedSince = SystemClock.uptimeMillis()
         var settled: NativeTarget? = null
         await("Native collapse node and owning window must settle before input", onTimeout) {
-            // Attachment/insets/layout listeners post geometry updates after first visibility.
-            // Drain Main work, then require repeated native geometry agreement, resetting on drift.
-            instrumentation.waitForIdleSync()
-            val current = nativeTarget(service, label)
+            // Animated Compose windows need not reach global queue idle. Observe the owner on
+            // Main, then poll native geometry within await's deadline, resetting on any drift.
+            val mounted = onMain {
+                service.dotOverlay.isConnected && service.dotInteraction.foreground.state.value.mode == mode &&
+                    if (mode == DotForegroundMode.Care) service.dotInteraction.careSession.visible.value
+                    else service.dotOverlay.panelView?.isAttachedToWindow == true
+            }
+            val current = if (mounted) nativeTarget(service, label) else null
             val now = SystemClock.uptimeMillis()
             if (current == null || current != previous) {
                 println("DOT_NATIVE_GESTURE collapseGeometry previous=$previous current=$current")
@@ -256,7 +261,7 @@ class DotForegroundGestureNativeTest {
                         else connected.dotOverlay.panelView?.isAttachedToWindow == true } &&
                         bounds(connected, collapse) != null
                 }
-                val closeHit = settledTarget(connected, collapse) {
+                val closeHit = settledTarget(connected, collapse, mode) {
                     diagnose(connected, "collapse-$mode-geometry-timeout", hit, orb, collapse)
                 }
                 println("DOT_NATIVE_GESTURE collapseSettledHit=$closeHit mode=$mode")
