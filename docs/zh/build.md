@@ -153,3 +153,7 @@ Release 必须使用专用签名配置。
 和 `NANODOT_KOTLIN_IN_PROCESS=1`。它们直接转成 Gradle 参数，不使用 eval；
 APK 记录包含这些选项。Instrumentation APK 可以没有版本字段；记录使用 null，
 文件名采用配对主 APK 的版本。
+
+所有配置都显式传入并记录 `-Pnm.manualVoiceProof=false`，避免继承的 Gradle 属性
+启用语音诊断实现。兼容 JSON 的 `file` 指向同目录 APK；`candidateReceipt`
+指向包含配对证据的正式记录。

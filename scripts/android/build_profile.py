@@ -29,7 +29,7 @@ def profile(name: str, paired: bool) -> tuple[str, str, list[str], bool]:
 
 
 def gradle_options(env: dict) -> list[str]:
-    result = []
+    result = ["-Pnm.manualVoiceProof=false"]
     scope = env.get("NANODOT_TEST_SCOPE", "all")
     if scope not in ("all", "nanomuse"):
         raise ValueError("NANODOT_TEST_SCOPE must be all or nanomuse")
@@ -249,7 +249,7 @@ def main() -> None:
         "buildType": mode,
         "tasks": tasks,
         "gradleOptions": gradle_options(dict(os.environ)),
-        "diagnosticFlags": [f"-Pnm.abi={abi}"],
+        "diagnosticFlags": [f"-Pnm.abi={abi}", "-Pnm.manualVoiceProof=false"],
         "toolchain": toolchain,
         "nativeCache": {
             "provenance": "unverified local inputs; hashes identify bytes only",
@@ -260,7 +260,16 @@ def main() -> None:
     (candidate / "receipt.json").write_text(json.dumps(receipt, indent=2) + "\n")
     if args.profile in ("debug", "release"):
         (output / f"build-{mode}.json").write_text(
-            json.dumps({**receipt, **artifacts[0]}, indent=2) + "\n"
+            json.dumps(
+                {
+                    **receipt,
+                    **artifacts[0],
+                    "file": legacy.name,
+                    "candidateReceipt": str((candidate / "receipt.json").relative_to(output)),
+                },
+                indent=2,
+            )
+            + "\n"
         )
     print(candidate / "receipt.json")
 

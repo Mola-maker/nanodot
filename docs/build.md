@@ -168,3 +168,7 @@ silently filtered. Optional bounded environment settings are `NANODOT_OFFLINE=1`
 `NANODOT_KOTLIN_IN_PROCESS=1`. These become literal Gradle arguments without eval;
 APK receipts record the options. Instrumentation APKs may have no version fields;
 the receipt records null and their filenames use the paired main APK's version.
+
+Every profile explicitly passes `-Pnm.manualVoiceProof=false` and records it, so inherited
+Gradle properties cannot enable the diagnostic voice implementation. Compatibility JSON
+`file` resolves beside that JSON; `candidateReceipt` links to the canonical paired receipt.

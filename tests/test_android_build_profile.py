@@ -90,8 +90,9 @@ def test_test_apk_allows_empty_versions_without_weakening_main():
 
 def test_scoped_checks_are_explicit_and_bounded():
     h = helper()
-    assert h.gradle_options({}) == []
+    assert h.gradle_options({}) == ["-Pnm.manualVoiceProof=false"]
     assert h.gradle_options({"NANODOT_TEST_SCOPE": "nanomuse"}) == [
+        "-Pnm.manualVoiceProof=false",
         "--tests",
         "io.github.nanomuse.*",
     ]
@@ -104,9 +105,54 @@ def test_offline_memory_options_are_literal_arguments():
     assert h.gradle_options(
         {"NANODOT_OFFLINE": "1", "NANODOT_JVM_HEAP_MB": "4096", "NANODOT_KOTLIN_IN_PROCESS": "1"}
     ) == [
+        "-Pnm.manualVoiceProof=false",
         "--offline",
         "-Dorg.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8",
         "-Pkotlin.compiler.execution.strategy=in-process",
     ]
     with pytest.raises(ValueError, match="HEAP"):
         h.gradle_options({"NANODOT_JVM_HEAP_MB": "4096; echo unsafe"})
+
+
+def test_compatibility_receipt_resolves_legacy_and_canonical_pair(tmp_path, monkeypatch):
+    import json
+    import sys
+
+    h = helper()
+    h.__file__ = str(tmp_path / "scripts/android/build_profile.py")
+    (tmp_path / "config").mkdir()
+    (tmp_path / "config/brand.nanodot.json").write_text(
+        json.dumps({"androidApplicationId": "example.app"})
+    )
+    for subpath in ("debug/app-debug.apk", "androidTest/debug/app-debug-androidTest.apk"):
+        p = tmp_path / "android/src/android/app/build/outputs/apk" / subpath
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_bytes(subpath.encode())
+    identity = {"sourceCommit": "a" * 40}
+    monkeypatch.setenv("NANODOT_SOURCE_IDENTITY", json.dumps(identity))
+    monkeypatch.setattr(h, "source", lambda root: identity)
+    monkeypatch.setattr(h, "doctor", lambda root: {"buildTools": "/fake/tools"})
+    monkeypatch.setattr(
+        sys, "argv", ["build_profile", "receipt", "--profile", "debug", "--with-test"]
+    )
+
+    def inspect(*args):
+        if "verify" in args:
+            return "Signer #1 certificate SHA-256 digest: abcdef"
+        test = "androidTest" in args[-1]
+        package = "example.app.test" if test else "example.app"
+        versions = "versionCode='' versionName=''" if test else "versionCode='1' versionName='1.0'"
+        return f"package: name='{package}' {versions}\nsdkVersion:'26'\ntargetSdkVersion:'35'\nnative-code: 'arm64-v8a'\n"
+
+    monkeypatch.setattr(h, "run", inspect)
+    h.main()
+    output = tmp_path / "dist/nanodot"
+    legacy = json.loads((output / "build-debug.json").read_text())
+    assert (output / legacy["file"]).is_file()
+    assert h.sha(output / legacy["file"]) == legacy["sha256"]
+    canonical = output / legacy["candidateReceipt"]
+    receipt = json.loads(canonical.read_text())
+    assert receipt["sourceCommit"] == identity["sourceCommit"]
+    assert len(receipt["artifacts"]) == 2
+    for artifact in receipt["artifacts"]:
+        assert h.sha(canonical.parent / artifact["file"]) == artifact["sha256"]
