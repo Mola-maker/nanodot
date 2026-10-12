@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Preserved the mounted Dot chat, draft and transcript state during foreground target avoidance, keyboard and display changes; added owner-backed status and compact Expand/placement controls with localized labels.
+
 - Unified Dot breathing, press, trail and edge-snap motion durations across generated platform tokens; Android uses measured release velocity and interruptible native springs, with immediate reduced-motion cleanup.
 - Scoped Android Dot foreground admission to the accessibility connection, rejected late capture/status results after Stop or account replacement, and recreated transient Care owners on reconnect while preserving canonical history.
 

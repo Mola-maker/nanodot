@@ -1205,4 +1205,9 @@
     <string name="nm_dot_bubble_you">Tu</string>
     <string name="nm_dot_bubble_assistant">Dot</string>
     <string name="nm_care_step_confirmed">Pas confirmat</string>
+    <string name="nm_dot_foreground_capturing">Citirea ecranului curent</string>
+    <string name="nm_dot_foreground_error">Această interacțiune necesită atenție</string>
+    <string name="nm_dot_foreground_disconnected">Dot este deconectat</string>
+    <string name="nm_dot_foreground_expand">Extinde</string>
+    <string name="nm_dot_foreground_adjust">Trage pentru ajustare</string>
 </resources>

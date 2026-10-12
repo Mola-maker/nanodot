@@ -22,6 +22,8 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.VelocityTracker
 import androidx.compose.ui.platform.AndroidUiDispatcher
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -125,16 +127,54 @@ class DotOverlayController(
     private var panelComposition: ComposeView? = null
     private var panelOwner: DotOverlayOwner? = null
     private var panelAdapter: DotChatAdapter? = null
+    internal var panelTranscriptState: androidx.compose.foundation.lazy.LazyListState? = null
+        private set
     private var panelCollapse: (() -> Unit)? = null
     private var panelStop: ((io.github.nanomuse.dot.chat.SessionBinding) -> Unit)? = null
     internal var panelHostWindowId: Int? = null
         private set
     private var panelParams: WindowManager.LayoutParams? = null
     private var geometryPending = false
+    private var foregroundTarget: RectPx? = null
+    private val panelPlacement = androidx.compose.runtime.mutableStateOf(ForegroundPlacement.Bottom)
+    private var panelExpanded = false
+    private var panelMotion: Job? = null
+    private var panelAdjustment: Pair<Float, Float>? = null
+    private var panelGeometry: Pair<RectPx, ForegroundFrame>? = null
+    /** Current validated Care bounds only; relayout never changes conversation admission. */
+    fun setForegroundTarget(target: RectPx?) {
+        checkMainThread()
+        if (foregroundTarget == target) return
+        foregroundTarget = target
+        panelExpanded = false; panelAdjustment = null; panelGeometry = null
+        panelMotion?.cancel(); panelMotion = null
+        refreshPanelGeometry()
+    }
+    private fun expandPanel() {
+        panelExpanded = true; panelAdjustment = null; panelGeometry = null
+        refreshPanelGeometry()
+    }
+    private fun adjustPanel() {
+        val host = hostViewport() ?: return
+        val p = panelParams ?: return
+        movePanel(0f, if (p.y < host.top + host.height / 2f) host.height else -host.height)
+    }
+    private fun movePanel(dx: Float, dy: Float) {
+        panelMotion?.cancel(); panelMotion = null
+        val view = panelView ?: return
+        val p = panelParams ?: return
+        val host = hostViewport() ?: return
+        p.x = (p.x + dx).roundToInt().coerceIn(host.left.roundToInt(), (host.right - p.width).roundToInt().coerceAtLeast(host.left.roundToInt()))
+        p.y = (p.y + dy).roundToInt().coerceIn(host.top.roundToInt(), (host.bottom - p.height).roundToInt().coerceAtLeast(host.top.roundToInt()))
+        panelAdjustment = (if (host.width > p.width) (p.x - host.left) / (host.width - p.width) else 0f) to
+            (if (host.height > p.height) (p.y - host.top) / (host.height - p.height) else 0f)
+        windows.updateViewLayout(view, p)
+    }
     private var voicePermissionWindow = false
     /** Keep the binding/window owners while allowing the real permission Activity to be visible. */
     fun setVoicePermissionWindow(visible: Boolean) {
         voicePermissionWindow = visible
+        if (visible) { panelMotion?.cancel(); panelMotion = null; panelGeometry = null }
         ownedViews().forEach { it.visibility = if (visible) View.INVISIBLE else View.VISIBLE }
         if (!visible) refreshPanelGeometry()
     }
@@ -187,6 +227,7 @@ class DotOverlayController(
 
     fun disconnect() {
         checkMainThread()
+        setForegroundTarget(null)
         cancelCaptureScan()
         cancelGesture()
         if (isConnected) {
@@ -216,14 +257,17 @@ class DotOverlayController(
 
     private fun deviceLocked() = keyguard.isKeyguardLocked || !power.isInteractive
 
-    /** Recreate with new display bounds, clearing all pending touch/tap work. */
+    /** Refresh native bounds and orb while retaining the mounted conversation owner. */
     fun onDisplayChanged() {
         checkMainThread()
         cancelCaptureScan()
         (service as? MinisAccessibilityService)?.dotInteraction?.onHostGeometryChanged()
         cancelGesture()
-        registry.sync(emptySet())
+        panelMotion?.cancel(); panelMotion = null
+        panelGeometry = null
+        registry.sync(if (panelView != null) setOf(OverlayKind.Panel) else emptySet())
         sync()
+        refreshPanelGeometry()
     }
 
     fun onIntent(intent: DotIntent) {
@@ -259,6 +303,7 @@ class DotOverlayController(
     suspend fun <T> withHiddenForCapture(block: suspend () -> T): T {
         checkMainThread()
         cancelSnap()
+        panelMotion?.cancel(); panelMotion = null; panelGeometry = null
         visualActive.value = false
         val resumeScan = captureScanner.pauseForCapture()
         clearTrail()
@@ -289,6 +334,7 @@ class DotOverlayController(
         } finally {
             resumeScan()
             visualActive.value = true
+            refreshPanelGeometry()
             owned.forEachIndexed { index, view ->
                 if (view in ownedViews()) {
                     view.alpha = alphas[index]; view.invalidate()
@@ -323,6 +369,7 @@ class DotOverlayController(
 
     /** Two traversals must agree before adopting host/IME bounds, including split-screen hosts. */
     fun refreshPanelGeometry() {
+        if (panelGeometry?.first != hostViewport()) { panelMotion?.cancel(); panelMotion = null }
         if (voicePermissionWindow) return
         val view = panelView ?: return
         if (geometryPending) return
@@ -334,10 +381,30 @@ class DotOverlayController(
                 if (voicePermissionWindow) return@postOnAnimation
                 if (panelView === view && first != null && first == hostViewport()) {
                     panelParams?.let { p ->
-                        val frame=foregroundFrame(first,first.height*.55f,service.resources.displayMetrics.density).bounds
-                        p.x = frame.left.roundToInt(); p.y = frame.top.roundToInt()
+                        var next = foregroundFrame(first, first.height * .55f, service.resources.displayMetrics.density,
+                            if (panelExpanded) null else foregroundTarget)
+                        panelAdjustment?.takeIf { next.placement == ForegroundPlacement.Compact }?.let { (x, y) ->
+                            val bounds = next.bounds
+                            val left = first.left + (first.width - bounds.width).coerceAtLeast(0f) * x.coerceIn(0f, 1f)
+                            val top = first.top + (first.height - bounds.height).coerceAtLeast(0f) * y.coerceIn(0f, 1f)
+                            next = next.copy(bounds = RectPx(left, top, left + bounds.width, top + bounds.height))
+                        }
+                        if (panelGeometry == (first to next)) return@let
+                        panelGeometry = first to next
+                        panelPlacement.value = next.placement
+                        val frame = next.bounds
+                        panelMotion?.cancel(); panelMotion = null
+                        val fromX = p.x; val fromY = p.y
+                        val animate = motionEnabled && visualActive.value && (p.x != frame.left.roundToInt() || p.y != frame.top.roundToInt()) && p.width == frame.width.roundToInt() && p.height == frame.height.roundToInt()
                         p.width = frame.width.roundToInt(); p.height = frame.height.roundToInt()
-                        if (p.width > 0 && p.height > 0) windows.updateViewLayout(view,p)
+                        fun apply(progress: Float) {
+                            if (panelView !== view || panelParams !== p || hostViewport() != first) return
+                            p.x = (fromX + (frame.left - fromX) * progress).roundToInt().coerceIn(first.left.roundToInt(), (first.right - p.width).roundToInt().coerceAtLeast(first.left.roundToInt()))
+                            p.y = (fromY + (frame.top - fromY) * progress).roundToInt().coerceIn(first.top.roundToInt(), (first.bottom - p.height).roundToInt().coerceAtLeast(first.top.roundToInt()))
+                            if (p.width > 0 && p.height > 0) windows.updateViewLayout(view, p)
+                        }
+                        if (animate) panelMotion = motionScope.launch { DotCrystalMotion.snap(0f, 1f, 0f) { apply(it.coerceIn(0f, 1f)) } }
+                        else apply(1f)
                     }
                 } else if (panelView === view) {
                     if (first == null && hostViewport() == null) collapsePanel()
@@ -379,11 +446,19 @@ class DotOverlayController(
         view.setViewTreeSavedStateRegistryOwner(owner)
         val composition = ComposeView(service).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent { MinisTheme { io.github.nanomuse.dot.ui.DotMotionHost { DotChatPanel(adapter, ::collapsePanel, panelStop ?: { binding -> adapter.cancel(binding); adapter.bind(binding.sessionId); Unit }) } } }
+            setContent { MinisTheme { io.github.nanomuse.dot.ui.DotMotionHost {
+                val evidence by (foregroundState ?: kotlinx.coroutines.flow.MutableStateFlow(io.github.nanomuse.dot.DotForegroundState())).collectAsState()
+                DotChatPanel(adapter, ::collapsePanel,
+                    panelStop ?: { binding -> adapter.cancel(binding); adapter.bind(binding.sessionId); Unit },
+                    evidence, panelPlacement.value, ::expandPanel, ::adjustPanel, ::movePanel,
+                    onTranscriptState = { panelTranscriptState = it })
+            } } }
         }
         view.addView(composition, FrameLayout.LayoutParams(-1,-1))
         val host = hostViewport()
-        val frame=host?.let { foregroundFrame(it,it.height*.55f,service.resources.displayMetrics.density).bounds }
+        val initial = host?.let { foregroundFrame(it,it.height*.55f,service.resources.displayMetrics.density, foregroundTarget) }
+        panelPlacement.value = initial?.placement ?: ForegroundPlacement.Bottom
+        val frame = initial?.bounds
         val p = WindowManager.LayoutParams(frame?.width?.roundToInt() ?: 1, frame?.height?.roundToInt() ?: 1,
             WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
             WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
@@ -413,6 +488,7 @@ class DotOverlayController(
     }
 
     private fun removePanel() {
+        panelMotion?.cancel(); panelMotion = null; panelExpanded = false; panelTranscriptState = null; panelAdjustment = null; panelGeometry = null
         val onCollapse = panelCollapse
         panelCollapse = null; panelAdapter = null; panelStop = null
         removeBackCallback?.invoke(); removeBackCallback = null
@@ -446,7 +522,7 @@ class DotOverlayController(
                 io.github.nanomuse.dot.ui.DotMotionHost {
                     DotOrb(::onIntent, careActive.value, visualActive.value, pressed.value, dragging.value) {
                         motionEnabled = it
-                        if (!it) { cancelSnap(); clearTrail() }
+                        if (!it) { cancelSnap(); clearTrail(); panelMotion?.cancel(); panelMotion = null; panelGeometry = null; refreshPanelGeometry() }
                     }
                 }
             }

@@ -2,7 +2,12 @@ package io.github.nanomuse.dot.overlay
 
 import io.github.nanomuse.dot.screen.RectPx
 
-internal data class ForegroundFrame(val bounds: RectPx, val movedUp: Boolean)
+enum class ForegroundPlacement { Bottom, AboveTarget, Compact }
+
+internal data class ForegroundFrame(
+    val bounds: RectPx, val movedUp: Boolean,
+    val placement: ForegroundPlacement = ForegroundPlacement.Bottom,
+)
 
 /** Placement in the observed host's screen coordinates, after its IME clipping. */
 internal fun foregroundFrame(
@@ -46,7 +51,8 @@ internal fun foregroundFrame(
         // leave the rest of that target touchable outside the panel.
         RectPx(left, top, left + width, top + height)
     }
-    return ForegroundFrame(moved, moved.top < ordinary.top)
+    return ForegroundFrame(moved, moved.top < ordinary.top,
+        if (aboveHeight >= minimumUsefulHeight) ForegroundPlacement.AboveTarget else ForegroundPlacement.Compact)
 }
 
 private fun RectPx.isUsable(): Boolean =

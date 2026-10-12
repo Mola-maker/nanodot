@@ -1197,4 +1197,9 @@
     <string name="nm_dot_bubble_you">あなた</string>
     <string name="nm_dot_bubble_assistant">Dot</string>
     <string name="nm_care_step_confirmed">この手順を確認しました</string>
+    <string name="nm_dot_foreground_capturing">現在の画面を読み取り中</string>
+    <string name="nm_dot_foreground_error">この操作には対応が必要です</string>
+    <string name="nm_dot_foreground_disconnected">Dot は切断されています</string>
+    <string name="nm_dot_foreground_expand">展開</string>
+    <string name="nm_dot_foreground_adjust">ドラッグして調整</string>
 </resources>

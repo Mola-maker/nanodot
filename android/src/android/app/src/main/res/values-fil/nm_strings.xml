@@ -1201,4 +1201,9 @@
     <string name="nm_dot_bubble_you">Ikaw</string>
     <string name="nm_dot_bubble_assistant">Dot</string>
     <string name="nm_care_step_confirmed">Nakumpirma ang hakbang</string>
+    <string name="nm_dot_foreground_capturing">Binabasa ang kasalukuyang screen</string>
+    <string name="nm_dot_foreground_error">Kailangan ng pansin ang interaksyong ito</string>
+    <string name="nm_dot_foreground_disconnected">Hindi nakakonekta ang Dot</string>
+    <string name="nm_dot_foreground_expand">Palawakin</string>
+    <string name="nm_dot_foreground_adjust">I-drag para ayusin</string>
 </resources>

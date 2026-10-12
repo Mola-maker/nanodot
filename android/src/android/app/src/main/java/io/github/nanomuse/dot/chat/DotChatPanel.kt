@@ -20,7 +20,11 @@ import java.util.Date
 
 /** The service's focusable accessibility window renders the same VM state as the main chat. */
 @Composable
-fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit, onStop: (SessionBinding) -> Unit) {
+fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit, onStop: (SessionBinding) -> Unit,
+    foreground: io.github.nanomuse.dot.DotForegroundState? = null,
+    placement: io.github.nanomuse.dot.overlay.ForegroundPlacement = io.github.nanomuse.dot.overlay.ForegroundPlacement.Bottom,
+    onExpand: () -> Unit = {}, onAdjust: () -> Unit = {}, onDrag: (Float, Float) -> Unit = { _, _ -> },
+    onTranscriptState: (androidx.compose.foundation.lazy.LazyListState) -> Unit = {}) {
     val binding by adapter.binding.collectAsState()
     val preview by adapter.preview.collectAsState()
     val captureError by adapter.captureError.collectAsState()
@@ -40,6 +44,7 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit, onStop: (Sessi
     val compact by (vm?.showCompactBeforeSendPrompt ?: remember { kotlinx.coroutines.flow.MutableStateFlow(false) }).collectAsState()
     LaunchedEffect(messages, error, streaming, attachments, consumed) { adapter.releaseConsumedFiles() }
     val listState = rememberLazyListState()
+    SideEffect { onTranscriptState(listState) }
     val motion=io.github.nanomuse.dot.ui.LocalDotMotionEnabled.current
     LaunchedEffect(messages.size, preview) {
         if (listState.layoutInfo.totalItemsCount > 0) {
@@ -47,8 +52,11 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit, onStop: (Sessi
             else listState.scrollToItem(listState.layoutInfo.totalItemsCount - 1)
         }
     }
-    DotForegroundChat(status = if (busy) stringResource(R.string.nm_status_replying) else null, onCollapse = onCollapse, history = {
-            LazyColumn(Modifier.fillMaxSize(), state = listState, verticalArrangement = Arrangement.spacedBy(DotTokens.Space.S12)) {
+    DotForegroundChat(placementCompact = placement == io.github.nanomuse.dot.overlay.ForegroundPlacement.Compact,
+        onExpand = onExpand, onAdjust = onAdjust, onDrag = onDrag,
+        capsule = foreground?.let { state -> { io.github.nanomuse.dot.ui.DotForegroundStatus(state, { binding?.let(onStop) }) } },
+        status = if (foreground == null && busy) stringResource(R.string.nm_status_replying) else null, onCollapse = onCollapse, history = {
+            LazyColumn(Modifier.fillMaxSize().testTag("dot_transcript"), state = listState, verticalArrangement = Arrangement.spacedBy(DotTokens.Space.S12)) {
                 if (messages.isEmpty()) item { Text(stringResource(R.string.nm_dot_chat_empty), fontSize = DotTokens.Type.Body) }
                 items(messages.filterNot { it.isInternalBridge }, key = { it.id }) { message ->
                     DotMessageBubble(message.role == "user") {

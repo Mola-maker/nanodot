@@ -100,8 +100,9 @@ class DotChatPanelTest {
             val view = service.dotOverlay.panelView ?: return@runOnMainSync
             val host = service.dotScreen.hostViewport(service.dotOverlay.panelHostWindowId) ?: return@runOnMainSync
             val point = IntArray(2); view.getLocationOnScreen(point)
-            matches = point[0] == host.left.toInt() && point[1] == host.top.toInt() &&
-                view.width == host.width.toInt() && view.height == host.height.toInt()
+            val expected = io.github.nanomuse.dot.overlay.foregroundFrame(host, host.height * .55f, service.resources.displayMetrics.density).bounds
+            matches = point[0] == Math.round(expected.left) && point[1] == Math.round(expected.top) &&
+                view.width == Math.round(expected.width) && view.height == Math.round(expected.height)
             if (matches) println("T4_SETTLED_PANEL host=$host frame=${point[0]},${point[1]},${view.width},${view.height}")
         }
         return matches
@@ -525,6 +526,96 @@ class DotChatPanelTest {
             println("T4_MEDIA attachmentId=${attachment.id} persistedMessageId=$messageId mediaId=${media.getString("id")} exactReceipt=true confirmedHistoryKept=true admittedStreamStopped=true zeroSockets=true heldBoundary=RoomUserInsert")
         } finally { instrumentation.runOnMainSync { vm.messages.value.filter { it.isQueued }.forEach { vm.removeQueuedPrompt(requireNotNull(it.queuedPromptId)) };adapter.binding.value?.let(adapter::cancel);MinisAccessibilityService.getInstance()?.dotOverlay?.collapsePanel() } }
     }
+    /** Actual mounted service panel, canonical VM, inert held stream and native 200% controls. */
+    @Test fun placementKeepsDraftHistoryAndBinding() {
+        val service = requireNotNull(MinisAccessibilityService.getInstance())
+        val app = service.application as MinisApp
+        val originalFont = shell("settings get system font_scale").trim()
+        require(originalFont == "null" || originalFont.matches(Regex("[0-9]+(?:\\.[0-9]+)?")))
+        val adapter = DotChatAdapter.create(app)
+        try {
+            shell("settings put system font_scale 2.0")
+            waitFor { service.resources.configuration.fontScale == 2f }
+            val vm = openCanonical(adapter, fixtureId)
+            val provider = configureInert(vm, "DOT_PLACEMENT_INERT")
+            val binding = requireNotNull(adapter.binding.value)
+            instrumentation.runOnMainSync { assertTrue(adapter.send(binding, "Owned placement stream")) }
+            waitFor { provider.streamEntered.isCompleted }
+            // Register only this fixture's locally persisted user rows for its existing cleanup guard.
+            runBlocking { app.chatRepository.dao.loadMessages(fixtureId).forEach { row ->
+                check(row.role == "user"); ownedMessageParts[row.id] = row.partsJson
+            } }
+            @Suppress("UNCHECKED_CAST")
+            val history = field(vm, "_messages") as kotlinx.coroutines.flow.MutableStateFlow<List<com.openminis.app.ui.chat.ChatMessage>>
+            instrumentation.runOnMainSync {
+                history.value = (0 until 40).map { index ->
+                    com.openminis.app.ui.chat.ChatMessage("placement-$index", if (index % 2 == 0) "user" else "assistant", "Retained history $index")
+                }
+                adapter.editInput("Retained placement draft")
+            }
+            waitFor { service.dotOverlay.panelTranscriptState?.layoutInfo?.totalItemsCount == 40 }
+            val view = requireNotNull(service.dotOverlay.panelView)
+            val list = requireNotNull(service.dotOverlay.panelTranscriptState)
+            runBlocking(Dispatchers.Main) { list.scrollToItem(8, 17) }
+            val before = list.firstVisibleItemIndex to list.firstVisibleItemScrollOffset
+            val host = requireNotNull(service.dotScreen.hostViewport(service.dotOverlay.panelHostWindowId))
+            for (target in listOf(host, null, RectPx(host.left, host.bottom - 120f, host.right, host.bottom))) {
+                instrumentation.runOnMainSync { service.dotOverlay.setForegroundTarget(target) }
+                instrumentation.waitForIdleSync()
+                // Wait for two host traversals and the shared 240ms placement response.
+                Thread.sleep(400)
+                instrumentation.runOnMainSync {
+                    assertSame(view, service.dotOverlay.panelView)
+                    assertSame(list, service.dotOverlay.panelTranscriptState)
+                    assertEquals(before, list.firstVisibleItemIndex to list.firstVisibleItemScrollOffset)
+                    assertEquals(binding, adapter.binding.value)
+                    assertEquals("Retained placement draft", vm.inputText.value)
+                    assertTrue(vm.isStreaming.value)
+                    assertEquals(1, provider.streamCalls.get())
+                }
+            }
+            instrumentation.runOnMainSync { service.dotOverlay.onDisplayChanged(); service.dotOverlay.setForegroundTarget(host) }
+            Thread.sleep(400)
+            instrumentation.runOnMainSync {
+                assertSame(view, service.dotOverlay.panelView)
+                assertSame(list, service.dotOverlay.panelTranscriptState)
+                assertEquals(before, list.firstVisibleItemIndex to list.firstVisibleItemScrollOffset)
+                assertEquals(binding, adapter.binding.value)
+            }
+            val expand = app.getString(com.openminis.app.R.string.nm_dot_foreground_expand)
+            val stop = app.getString(com.openminis.app.R.string.nm_dot_chat_stop)
+            fun reachable(root: android.view.accessibility.AccessibilityNodeInfo, text: String?, input: Boolean): Boolean {
+                val bounds = android.graphics.Rect(); root.getBoundsInScreen(bounds)
+                if ((if (input) root.isEditable else root.isClickable && root.isEnabled && containsNativeText(root, requireNotNull(text))) &&
+                    bounds.width() > 0 && bounds.height() >= 48 * service.resources.displayMetrics.density - 1) return true
+                for (i in 0 until root.childCount) { val child = root.getChild(i) ?: continue
+                    try { if (reachable(child,text,input)) return true } finally { child.recycle() } }
+                return false
+            }
+            fun scrollControls(root: android.view.accessibility.AccessibilityNodeInfo): Boolean {
+                if (root.isScrollable && containsNativeText(root, expand)) return root.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
+                for (i in 0 until root.childCount) { val child = root.getChild(i) ?: continue
+                    try { if (scrollControls(child)) return true } finally { child.recycle() } }
+                return false
+            }
+            for ((text,input) in listOf(expand to false, null to true, stop to false)) {
+                waitFor {
+                    val windows = service.windows
+                    try { windows.filter { it.type == AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY }.any { window ->
+                        window.root?.let { root -> try {
+                            if (reachable(root,text,input)) true else { scrollControls(root); false }
+                        } finally { root.recycle() } } == true }
+                    } finally { windows.forEach { it.recycle() } }
+                }
+            }
+            println("T3_PLACEMENT sameWindow=true sameList=true sameBinding=true draftAndPositionRetained=true inertStreamCalls=1 fontScale=2 controlsReachable=true")
+        } finally {
+            instrumentation.runOnMainSync { service.dotOverlay.setForegroundTarget(null); service.dotOverlay.collapsePanel(); adapter.binding.value?.let(adapter::cancel) }
+            shell(if (originalFont == "null") "settings delete system font_scale" else "settings put system font_scale $originalFont")
+            assertEquals(originalFont, shell("settings get system font_scale").trim())
+        }
+    }
+
     @Test fun idleCanonicalNewDraftCancellationDoesNotInventInterruptedReply() {
         val app = instrumentation.targetContext.applicationContext as MinisApp
         val adapter = DotChatAdapter.create(app)

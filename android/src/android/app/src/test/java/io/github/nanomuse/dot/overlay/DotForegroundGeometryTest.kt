@@ -17,6 +17,7 @@ class DotForegroundGeometryTest {
         val frame = foregroundFrame(RectPx(120f, 70f, 720f, 870f), 320f, 1f)
         assertEquals(RectPx(240f, 542f, 600f, 862f), frame.bounds)
         assertFalse(frame.movedUp)
+        assertEquals(ForegroundPlacement.Bottom, frame.placement)
     }
 
     @Test fun narrowHostRetainsSideMarginsWithoutExceedingItsWidth() {
@@ -45,6 +46,7 @@ class DotForegroundGeometryTest {
         val frame = foregroundFrame(RectPx(0f, 24f, 400f, 824f), 240f, 1f, target)
         assertEquals(RectPx(20f, 402f, 380f, 642f), frame.bounds)
         assertTrue(frame.movedUp)
+        assertEquals(ForegroundPlacement.AboveTarget, frame.placement)
         assertTrue(frame.bounds.bottom < target.top)
     }
 
@@ -61,6 +63,7 @@ class DotForegroundGeometryTest {
         val frame = foregroundFrame(RectPx(50f, 20f, 450f, 420f), 220f, 1f, target)
         assertEquals(RectPx(70f, 28f, 430f, 192f), frame.bounds)
         assertTrue(frame.movedUp)
+        assertEquals(ForegroundPlacement.AboveTarget, frame.placement)
         assertTrue(frame.bounds.bottom < target.top)
     }
 
@@ -69,6 +72,7 @@ class DotForegroundGeometryTest {
         val frame = foregroundFrame(host, 240f, 1f, host)
         assertEquals(RectPx(20f, 32f, 380f, 272f), frame.bounds)
         assertTrue(frame.movedUp)
+        assertEquals(ForegroundPlacement.Compact, frame.placement)
         assertTrue(frame.bounds.height >= 96f)
         assertTrue(frame.bounds.bottom < host.bottom)
     }
@@ -85,6 +89,7 @@ class DotForegroundGeometryTest {
             RectPx(0f, 650f, 200f, 780f))
         assertEquals(RectPx(320f, 576f, 680f, 816f), frame.bounds)
         assertFalse(frame.movedUp)
+        assertEquals(ForegroundPlacement.Bottom, frame.placement)
     }
 
     @Test fun invalidOrOffHostTargetsCannotMoveThePanel() {
@@ -96,6 +101,7 @@ class DotForegroundGeometryTest {
             val frame = foregroundFrame(host, 240f, 1f, target)
             assertEquals(RectPx(20f, 576f, 380f, 816f), frame.bounds)
             assertFalse(frame.movedUp)
+        assertEquals(ForegroundPlacement.Bottom, frame.placement)
         }
     }
 

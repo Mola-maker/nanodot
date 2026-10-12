@@ -1201,4 +1201,9 @@
     <string name="nm_dot_bubble_you">Tú</string>
     <string name="nm_dot_bubble_assistant">Dot</string>
     <string name="nm_care_step_confirmed">Paso confirmado</string>
+    <string name="nm_dot_foreground_capturing">Leyendo la pantalla actual</string>
+    <string name="nm_dot_foreground_error">Esta interacción necesita atención</string>
+    <string name="nm_dot_foreground_disconnected">Dot está desconectado</string>
+    <string name="nm_dot_foreground_expand">Ampliar</string>
+    <string name="nm_dot_foreground_adjust">Arrastra para ajustar</string>
 </resources>

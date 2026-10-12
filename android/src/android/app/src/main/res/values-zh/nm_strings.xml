@@ -1174,4 +1174,9 @@
     <string name="nm_dot_bubble_you">你</string>
     <string name="nm_dot_bubble_assistant">Dot</string>
     <string name="nm_care_step_confirmed">这一步已确认</string>
+    <string name="nm_dot_foreground_capturing">正在读取当前屏幕</string>
+    <string name="nm_dot_foreground_error">此交互需要处理</string>
+    <string name="nm_dot_foreground_disconnected">Dot 已断开连接</string>
+    <string name="nm_dot_foreground_expand">展开</string>
+    <string name="nm_dot_foreground_adjust">拖动调整位置</string>
 </resources>

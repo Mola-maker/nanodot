@@ -1197,4 +1197,9 @@
     <string name="nm_dot_bubble_you">Anda</string>
     <string name="nm_dot_bubble_assistant">Dot</string>
     <string name="nm_care_step_confirmed">Langkah dikonfirmasi</string>
+    <string name="nm_dot_foreground_capturing">Membaca layar saat ini</string>
+    <string name="nm_dot_foreground_error">Interaksi ini perlu perhatian</string>
+    <string name="nm_dot_foreground_disconnected">Dot terputus</string>
+    <string name="nm_dot_foreground_expand">Perluas</string>
+    <string name="nm_dot_foreground_adjust">Seret untuk menyesuaikan</string>
 </resources>

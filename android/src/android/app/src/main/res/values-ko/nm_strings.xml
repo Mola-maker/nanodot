@@ -1197,4 +1197,9 @@
     <string name="nm_dot_bubble_you">나</string>
     <string name="nm_dot_bubble_assistant">Dot</string>
     <string name="nm_care_step_confirmed">단계 확인됨</string>
+    <string name="nm_dot_foreground_capturing">현재 화면을 읽는 중</string>
+    <string name="nm_dot_foreground_error">이 상호작용에 조치가 필요합니다</string>
+    <string name="nm_dot_foreground_disconnected">Dot 연결이 끊어졌습니다</string>
+    <string name="nm_dot_foreground_expand">펼치기</string>
+    <string name="nm_dot_foreground_adjust">드래그하여 조정</string>
 </resources>

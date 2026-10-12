@@ -1201,4 +1201,9 @@
     <string name="nm_dot_bubble_you">Siz</string>
     <string name="nm_dot_bubble_assistant">Dot</string>
     <string name="nm_care_step_confirmed">Adım doğrulandı</string>
+    <string name="nm_dot_foreground_capturing">Geçerli ekran okunuyor</string>
+    <string name="nm_dot_foreground_error">Bu etkileşim dikkat gerektiriyor</string>
+    <string name="nm_dot_foreground_disconnected">Dot bağlantısı kesildi</string>
+    <string name="nm_dot_foreground_expand">Genişlet</string>
+    <string name="nm_dot_foreground_adjust">Ayarlamak için sürükle</string>
 </resources>

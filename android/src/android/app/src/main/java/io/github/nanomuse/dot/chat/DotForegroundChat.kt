@@ -1,6 +1,8 @@
 package io.github.nanomuse.dot.chat
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -25,13 +27,16 @@ import io.github.nanomuse.dot.ui.DotTokens
 /** Shared chrome inside a bounded native window; no transparent full-screen touch surface. */
 @Composable
 fun DotForegroundChat(status: String? = null, onCollapse: () -> Unit,
-    history: @Composable () -> Unit, controls: @Composable () -> Unit) {
+    history: @Composable () -> Unit, controls: @Composable () -> Unit,
+    placementCompact: Boolean = false, onExpand: () -> Unit = {},
+    onAdjust: () -> Unit = {}, onDrag: (Float, Float) -> Unit = { _, _ -> },
+    capsule: (@Composable () -> Unit)? = null) {
     val colors = MaterialTheme.colorScheme
     Surface(Modifier.fillMaxSize(), shape = RoundedCornerShape(24.dp),
         color = colors.surface.copy(alpha = .97f), contentColor = colors.onSurface,
         border = BorderStroke(1.dp, colors.primary.copy(alpha = .35f)), tonalElevation = 4.dp) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
-            val compact = maxHeight < 280.dp * LocalDensity.current.fontScale
+            val compact = placementCompact || maxHeight < 280.dp * LocalDensity.current.fontScale
             val padding = if (compact) 4.dp else DotTokens.Space.S12
             val controlsHeight = if (compact) 48.dp else minOf(160.dp, maxHeight * .42f)
             val collapse = stringResource(R.string.nm_dot_chat_collapse)
@@ -40,6 +45,7 @@ fun DotForegroundChat(status: String? = null, onCollapse: () -> Unit,
             Column(Modifier.fillMaxSize().padding(padding).padding(end = if (compact) 52.dp else 0.dp),
                 // Reserve rounding headroom for the 48dp history in short hosts at enlarged fonts.
                 verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 8.dp)) {
+            capsule?.invoke()
             if (compact) {
                 status?.let { Text(it, style = MaterialTheme.typography.labelSmall, maxLines = 1,
                     overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics {
@@ -58,7 +64,20 @@ fun DotForegroundChat(status: String? = null, onCollapse: () -> Unit,
             }
             Box(Modifier.weight(1f).fillMaxWidth().testTag("dot_foreground_history")) { history() }
             Column(Modifier.height(controlsHeight).fillMaxWidth().testTag("dot_foreground_controls")
-                .verticalScroll(rememberScrollState())) { controls() }
+                .verticalScroll(rememberScrollState())) {
+            if (placementCompact) {
+                Row(Modifier.fillMaxWidth()) {
+                    TextButton(onExpand, Modifier.weight(1f).heightIn(min = DotTokens.TouchTarget).testTag("dot_foreground_expand")) {
+                        Text(stringResource(R.string.nm_dot_foreground_expand))
+                    }
+                    TextButton(onAdjust, Modifier.weight(1f).heightIn(min = DotTokens.TouchTarget).testTag("dot_foreground_adjust")
+                        .pointerInput(onDrag) { detectDragGestures { change, amount -> change.consume(); onDrag(amount.x, amount.y) } }) {
+                        Text(stringResource(R.string.nm_dot_foreground_adjust))
+                    }
+                }
+            }
+                controls()
+            }
             }
             if (compact) IconButton(onClick = onCollapse, modifier = Modifier.align(Alignment.TopEnd).size(48.dp)) {
                 Icon(Icons.Default.KeyboardArrowDown, contentDescription = collapse)

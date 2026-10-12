@@ -12,6 +12,8 @@ import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
@@ -66,8 +68,8 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
     private val job=scope.launch {
         combine(session.controller.state,session.visible,session.editingGoal) { _,_,_ -> Unit }.collect { render() }
     }
-    fun clearFocus() = focus.clear()
-    fun hide() { focus.clear(); removeCard(); registry?.setCareActive(false) }
+    fun clearFocus() { focus.clear(); registry?.setForegroundTarget(null) }
+    fun hide() { clearFocus(); removeCard(); registry?.setCareActive(false) }
     fun stopSpeech() { player?.stop() }
     fun refreshGeometry() { if(session.visible.value) render() }
     @Suppress("DEPRECATION") // Direct Back support on API26–32 also needs keyboard-first behavior.
@@ -83,10 +85,11 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
         session.observeConversation()
         val host=viewport()
         if(!session.visible.value || host==null || host.width<=0 || host.height<=0) {
-            focus.clear(); removeCard(); registry?.setCareActive(false); return
+            clearFocus(); removeCard(); registry?.setCareActive(false); return
         }
         registry?.setCareActive(true)
         val target=session.focusBounds(scene())
+        registry?.setForegroundTarget(target)
         val nextId=if(target==null) null else session.instructionKey()
         if(nextId!=instructionId) { instructionId=nextId; instructionBounds=null; focus.setInstructionBubble(null) }
         if(target==null) focus.clear() else focus.show(target, nextId.orEmpty())
@@ -131,7 +134,13 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
         view.setViewTreeLifecycleOwner(lifecycle); view.setViewTreeSavedStateRegistryOwner(lifecycle)
         val content=ComposeView(service).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent { MinisTheme { io.github.nanomuse.dot.ui.DotMotionHost { CarePanel(session,::copy,onRepeat={ instruction ->
+            setContent { MinisTheme { io.github.nanomuse.dot.ui.DotMotionHost {
+                val evidence by (registry?.foregroundState ?: kotlinx.coroutines.flow.MutableStateFlow(io.github.nanomuse.dot.DotForegroundState())).collectAsState()
+                CarePanel(session,::copy,capsule = {
+                    io.github.nanomuse.dot.ui.DotForegroundStatus(evidence, {
+                        (service as? MinisAccessibilityService)?.dotInteraction?.pauseCare(hide = true)
+                    })
+                },onRepeat={ instruction ->
                 val speaker=player ?: ReadAloudPlayer(service).also { player=it }
                 speaker.speak(instruction)
             },onInstructionBounds={ id,bounds ->
@@ -194,7 +203,7 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
         stopSpeech()
     }
     fun close() {
-        job.cancel(); focus.clear(); removeCard(); player?.shutdown(); player=null
+        job.cancel(); clearFocus(); removeCard(); player?.shutdown(); player=null
         registry?.setCareActive(false)
     }
 }

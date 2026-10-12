@@ -201,6 +201,22 @@ class DotOverlayLifecycleTest {
                 assertTrue(adapter.send(oldBinding, "first local reply"))
             }
             awaitState { owner.state.value.operation == io.github.nanomuse.dot.DotForegroundOperation.Replying }
+            val retainedView = service.dotOverlay.panelView
+            val retainedList = service.dotOverlay.panelTranscriptState
+            val host = requireNotNull(service.dotScreen.hostViewport(service.dotOverlay.panelHostWindowId))
+            instrumentation.runOnMainSync {
+                service.dotOverlay.setForegroundTarget(io.github.nanomuse.dot.screen.RectPx(host.left, host.bottom - 120f, host.right, host.bottom))
+                service.dotOverlay.onDisplayChanged()
+            }
+            Thread.sleep(400)
+            instrumentation.runOnMainSync {
+                assertSame(retainedView, service.dotOverlay.panelView)
+                assertSame(retainedList, service.dotOverlay.panelTranscriptState)
+                assertEquals(oldBinding, adapter.binding.value)
+                assertEquals(before, owner.ticket())
+                assertTrue(stream.value)
+                service.dotOverlay.setForegroundTarget(null)
+            }
             val label = service.getString(com.openminis.app.R.string.nm_dot_chat_stop)
             var clicked = false
             val diagnostics = java.io.File(service.cacheDir, "dot-stop-native-tree.txt")

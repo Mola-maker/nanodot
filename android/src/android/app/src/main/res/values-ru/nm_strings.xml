@@ -1209,4 +1209,9 @@
     <string name="nm_dot_bubble_you">Вы</string>
     <string name="nm_dot_bubble_assistant">Dot</string>
     <string name="nm_care_step_confirmed">Шаг подтверждён</string>
+    <string name="nm_dot_foreground_capturing">Чтение текущего экрана</string>
+    <string name="nm_dot_foreground_error">Это взаимодействие требует внимания</string>
+    <string name="nm_dot_foreground_disconnected">Dot отключён</string>
+    <string name="nm_dot_foreground_expand">Развернуть</string>
+    <string name="nm_dot_foreground_adjust">Перетащите для настройки</string>
 </resources>
