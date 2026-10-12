@@ -130,6 +130,22 @@ Target35 visible-permission/foreground-service, notification/lock/revocation and
 checks on the selected virtual device remain pending. Genuine Chinese ASR and audible Chinese
 system/cloud TTS are separate gates; successful JVM tests do not prove either audio path works.
 
+An explicitly selected diagnostic debug build (`-Pnm.manualVoiceProof=true`) adds internal,
+passive voice observation for a running same-process AndroidJUnitRunner and a frozen public
+Dot session. It binds the real reply player, queue generation, TTS client and original request
+ID before submission, and observes synthesis PCM in the original progress listener. ASR
+records the successful recognizer factory and platform callback generations separately from
+application commits, buffered-partial replacement and error salvage. It does not change
+recognition, fallback, playback queues or sending behavior.
+
+The observer retains only owned evidence in memory, bounded to 30 seconds, 8 MiB and 256
+events. Missing, expired or revoked ownership prevents payload collection; malformed,
+overflowed or ambiguous evidence stays incomplete. The fixture invalidates ownership,
+cancels and joins actual resources before detaching. There is no file, network, broadcast,
+socket or device audio-mix recorder. Ordinary debug and every release compile only a
+stateless producer with no registration or collection code. Diagnostic APK/release DEX
+checks and actual Chinese platform recognition and synthesis remain separate acceptance gates.
+
 ## Dot scene sampling
 
 Dot’s read-only screen repository copies accessible host nodes and redacts password text

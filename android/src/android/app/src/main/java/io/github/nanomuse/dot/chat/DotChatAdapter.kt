@@ -1,5 +1,7 @@
 package io.github.nanomuse.dot.chat
 
+import io.github.nanomuse.dot.voice.proof.VoiceProofTap
+
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -72,6 +74,8 @@ class DotChatAdapter(
     fun readReply(context: android.content.Context, text: String) {
         if (com.openminis.app.speech.SpeechRecognitionManager.occupied()) return
         val player = speaker.value ?: com.openminis.app.speech.ReadAloudPlayer(context).also { speaker.value = it }
+        if (VoiceProofTap.active)
+            VoiceProofTap.reply(this, player, text)
         player.speak(text, explicit = true)
     }
     fun stopReply() { speaker.value?.stop() }

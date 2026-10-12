@@ -1,5 +1,8 @@
 package com.openminis.app.speech
 
+// nanoMuse: source-selected passive voice proof producer.
+import io.github.nanomuse.dot.voice.proof.VoiceProofTap
+
 import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -161,6 +164,9 @@ class SystemSpeechRecognitionEngine(
     override fun startOwned(locale: Locale, continuous: Boolean?, listener: SpeechRecognitionEngine.Listener) {
         cleanupFailure = null
         ++captureGeneration // nanoMuse: invalidate delayed VAD work from a previous capture.
+        // nanoMuse: bind the actual selected engine's capture generation, without starting a recognizer.
+        if (VoiceProofTap.active)
+            VoiceProofTap.captureBegin(this, captureGeneration)
         this.listener = listener
         bufferedPartial = null
         heardSpeech = false
@@ -512,6 +518,9 @@ class SystemSpeechRecognitionEngine(
         val all = joinedTranscript(bufferedPartial.orEmpty())
         segmentTranscript.setLength(0)
         bufferedPartial = null
+        // nanoMuse: continuous application commit is distinct from a platform final.
+        if (VoiceProofTap.ownsCapture(this, captureGeneration, platformGeneration))
+            VoiceProofTap.asr(this, captureGeneration, platformGeneration, "application_continuous_end") { all }
         if (all.isNotEmpty()) listener?.onFinal(all) else listener?.onFinal("")
         tearDown()
     }
@@ -564,10 +573,17 @@ class SystemSpeechRecognitionEngine(
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
                     allowOnDeviceRetry
                 val r = if (wantOnDevice) {
-                    try { SpeechRecognizer.createOnDeviceSpeechRecognizer(appContext) }
-                    catch (_: Throwable) { SpeechRecognizer.createSpeechRecognizer(appContext) }
+                    // nanoMuse: record the branch that really succeeded; keep usingOnDevice policy unchanged.
+                    try { SpeechRecognizer.createOnDeviceSpeechRecognizer(appContext).also {
+                        VoiceProofTap.factory(this, captureGeneration, generation, it, "on_device")
+                    } }
+                    catch (_: Throwable) { SpeechRecognizer.createSpeechRecognizer(appContext).also {
+                        VoiceProofTap.factory(this, captureGeneration, generation, it, "regular_fallback")
+                    } }
                 } else {
-                    SpeechRecognizer.createSpeechRecognizer(appContext)
+                    SpeechRecognizer.createSpeechRecognizer(appContext).also {
+                        VoiceProofTap.factory(this, captureGeneration, generation, it, "regular")
+                    }
                 }
                 usingOnDevice = wantOnDevice
                 pendingLocale = locale
@@ -827,11 +843,36 @@ class SystemSpeechRecognitionEngine(
         override fun onEndOfSpeech() { if (generation == platformGeneration) callbacks.onEndOfSpeech() }
         override fun onEvent(eventType: Int, params: Bundle?) { if (generation == platformGeneration) callbacks.onEvent(eventType, params) }
         override fun onRmsChanged(rms: Float) { if (generation == platformGeneration) callbacks.onRmsChanged(rms) }
-        override fun onPartialResults(results: Bundle?) { if (generation == platformGeneration) callbacks.onPartialResults(results) }
-        override fun onResults(results: Bundle?) { if (generation == platformGeneration) callbacks.onResults(results) }
-        override fun onSegmentResults(results: Bundle) { if (generation == platformGeneration) callbacks.onSegmentResults(results) }
-        override fun onEndOfSegmentedSession() { if (generation == platformGeneration) callbacks.onEndOfSegmentedSession() }
-        override fun onError(error: Int) { if (generation == platformGeneration) callbacks.onError(error) }
+        // nanoMuse: passive platform entry is inside the original generation guard, before one forwarding.
+        override fun onPartialResults(results: Bundle?) { if (generation == platformGeneration) {
+            observePlatform(generation, "platform_partial", results)
+            callbacks.onPartialResults(results)
+        } }
+        override fun onResults(results: Bundle?) { if (generation == platformGeneration) {
+            observePlatform(generation, "platform_results", results)
+            callbacks.onResults(results)
+        } }
+        override fun onSegmentResults(results: Bundle) { if (generation == platformGeneration) {
+            observePlatform(generation, "platform_segment", results)
+            callbacks.onSegmentResults(results)
+        } }
+        override fun onEndOfSegmentedSession() { if (generation == platformGeneration) {
+            observePlatform(generation, "platform_segmented_end", null)
+            callbacks.onEndOfSegmentedSession()
+        } }
+        override fun onError(error: Int) { if (generation == platformGeneration) {
+            observePlatform(generation, "platform_error", null, error)
+            callbacks.onError(error)
+        } }
+    }
+
+    // nanoMuse: no Bundle read or payload copy outside the registered public capture owner.
+    private fun observePlatform(generation: Long, kind: String, results: Bundle?, error: Int? = null) {
+        if (VoiceProofTap.ownsCapture(this, captureGeneration, generation))
+            VoiceProofTap.asr(this, captureGeneration, generation, kind) {
+                if (error != null) error.toString()
+                else results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty()
+            }
     }
 
     private val callbacks = object : RecognitionListener {
@@ -880,6 +921,9 @@ class SystemSpeechRecognitionEngine(
                 Log.i(TAG, "[partial] reset detected (${prev.length}→${text.length}) — folding previous into transcript")
                 if (segmentTranscript.isNotEmpty()) segmentTranscript.append(' ')
                 segmentTranscript.append(prev)
+                // nanoMuse: preserve partial folding as application provenance, not platform final.
+                if (VoiceProofTap.ownsCapture(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration))
+                    VoiceProofTap.asr(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration, "application_partial_fold") { prev }
             }
             bufferedPartial = text
         }
@@ -892,6 +936,9 @@ class SystemSpeechRecognitionEngine(
             // Prefer the final; fall back to the last partial when the
             // recognizer returned an empty final but did hear something.
             val committed = text.ifEmpty { bufferedPartial.orEmpty() }
+            // nanoMuse: an empty platform result's buffered replacement remains explicitly application salvage.
+            if (text.isEmpty() && committed.isNotEmpty() && VoiceProofTap.ownsCapture(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration))
+                VoiceProofTap.asr(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration, "application_empty_final_salvage") { committed }
             Log.i(
                 TAG,
                 "onResults finalLen=${text.length} bufferedLen=${bufferedPartial?.length ?: 0} " +
@@ -947,6 +994,9 @@ class SystemSpeechRecognitionEngine(
          */
         override fun onEndOfSegmentedSession() {
             val tail = bufferedPartial.orEmpty()
+            // nanoMuse: a trailing partial does not become a platform segment final in evidence.
+            if (tail.isNotEmpty() && VoiceProofTap.ownsCapture(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration))
+                VoiceProofTap.asr(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration, "application_trailing_partial") { tail }
             bufferedPartial = null
             Log.i(
                 TAG,
@@ -976,6 +1026,9 @@ class SystemSpeechRecognitionEngine(
             sessionCommitted = true
             if (text.isBlank() && heardSpeech) {
                 Log.w(TAG, "[commit] speech heard but zero text — surfacing TRANSCRIPTION_FAILED")
+                // nanoMuse: record only the original application outcome, no synthesized platform result.
+                if (VoiceProofTap.ownsCapture(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration))
+                    VoiceProofTap.asr(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration, "application_commit_error") { "TRANSCRIPTION_FAILED" }
                 listener?.onError(
                     RecognitionError.TRANSCRIPTION_FAILED,
                     "Speech detected but nothing was transcribed. If this keeps happening, " +
@@ -985,6 +1038,9 @@ class SystemSpeechRecognitionEngine(
                 tearDown()
                 return
             }
+            // nanoMuse: the original listener receives the original final exactly once.
+            if (VoiceProofTap.ownsCapture(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration))
+                VoiceProofTap.asr(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration, "application_commit") { text }
             listener?.onFinal(text)
             tearDown()
         }
@@ -1058,6 +1114,9 @@ class SystemSpeechRecognitionEngine(
             if (salvaged.isNotEmpty()) {
                 Log.i(TAG, "[continuous] salvaging ${salvaged.length} chars from error $errorCode")
                 bufferedPartial = null
+                // nanoMuse: error salvage is an application result with a separate origin.
+                if (VoiceProofTap.ownsCapture(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration))
+                    VoiceProofTap.asr(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration, "application_error_salvage") { salvaged }
                 listener?.onFinal(salvaged)
                 tearDown()
                 return
@@ -1081,6 +1140,9 @@ class SystemSpeechRecognitionEngine(
                     "install the offline language pack in system voice-input settings, " +
                     "or switch to a provider recognizer."
             } else msg
+            // nanoMuse: retain application error identity without copying unrelated freeform error detail.
+            if (VoiceProofTap.ownsCapture(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration))
+                VoiceProofTap.asr(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration, "application_error") { effErr.name }
             listener?.onError(effErr, effMsg)
             tearDown()
         }

@@ -129,6 +129,13 @@ android {
     // without this it fails with "Cannot find the schema file in the assets
     // folder" no matter that the files exist on disk.
     sourceSets {
+        // nanoMuse: opt-in diagnostic debug only; release always compiles the stateless producer.
+        getByName("debug").java.srcDir(if (project.findProperty("nm.manualVoiceProof") == "true")
+            "src/manualVoiceProof/java" else "src/voiceProofNoop/java")
+        getByName("release").java.srcDir("src/voiceProofNoop/java")
+        if (project.findProperty("nm.manualVoiceProof") == "true") {
+            getByName("testDebug").java.srcDir("src/manualVoiceProofTest/java")
+        }
         getByName("androidTest") {
             assets.srcDirs("$projectDir/schemas")
         }

@@ -1,5 +1,7 @@
 package io.github.nanomuse.dot.voice
 
+import io.github.nanomuse.dot.voice.proof.VoiceProofTap
+
 import com.openminis.app.speech.RecognitionError
 import com.openminis.app.speech.RecognitionState
 import com.openminis.app.speech.SpeechRecognitionManager
@@ -56,8 +58,14 @@ class DotVoiceController(
         ui.value = Ui(Phase.STARTING)
         val ownedSession = DotVoiceSession(object : DotVoiceSession.Port {
             override fun start(continuous: Boolean, text: (String, Boolean) -> Unit,
-                error: (RecognitionError, String?) -> Unit): VoiceLease.Ticket? =
-                SpeechRecognitionManager.startOwned("dot", continuous, text, error, pinned, retrySelectedEngine = true)
+                error: (RecognitionError, String?) -> Unit): VoiceLease.Ticket? {
+                if (VoiceProofTap.active)
+                    VoiceProofTap.captureRequest(adapter, target, next, this@DotVoiceController)
+                return SpeechRecognitionManager.startOwned("dot", continuous, text, error, pinned,
+                    onTicket = { ticket -> if (VoiceProofTap.active)
+                        VoiceProofTap.captureTicket(adapter, target, next, ticket) },
+                    retrySelectedEngine = true)
+            }
             override fun stop(ticket: VoiceLease.Ticket) = SpeechRecognitionManager.stopOwned(ticket)
             override fun cancel(ticket: VoiceLease.Ticket) = SpeechRecognitionManager.cancelOwned(ticket)
         }, adapter::accepts, { adapter.voiceInput(it) }, adapter::writeVoiceInput,

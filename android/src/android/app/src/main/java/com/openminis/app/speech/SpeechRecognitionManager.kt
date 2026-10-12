@@ -1,5 +1,8 @@
 package com.openminis.app.speech
 
+// nanoMuse: source-selected passive voice proof producer.
+import io.github.nanomuse.dot.voice.proof.VoiceProofTap
+
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
@@ -345,6 +348,9 @@ object SpeechRecognitionManager {
         val port = object : CaptureEngine {
             override fun start(locale: Locale, continuous: Boolean?, listener: SpeechRecognitionEngine.Listener) {
                 if (offline != null && engine is SystemSpeechRecognitionEngine) engine.preferOffline = offline
+                // nanoMuse: observe only the real engine already selected for the admitted Dot ticket.
+                if (VoiceProofTap.active)
+                    VoiceProofTap.captureEngine(owner, engine)
                 engine.startOwned(locale, continuous, listener)
             }
             override fun stop() = engine.stop()

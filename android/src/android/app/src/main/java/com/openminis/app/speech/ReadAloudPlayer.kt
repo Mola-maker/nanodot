@@ -1,5 +1,8 @@
 package com.openminis.app.speech
 
+// nanoMuse: source-selected passive voice proof producer.
+import io.github.nanomuse.dot.voice.proof.VoiceProofTap
+
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
@@ -434,6 +437,9 @@ class ReadAloudPlayer(context: Context) {
         generation.requireCurrent(ticket)
         coroutineContext.ensureActive()
         if (ownsCapsule()) VoiceOutputState.activeModelLabel.value = null // system engine
+        // nanoMuse: link this real player/manager and current queue generation before system submission.
+        if (VoiceProofTap.ownsPlayer(this))
+            VoiceProofTap.system(this, system, ticket, { generation.isCurrent(ticket) }, text)
         if (!speakViaSystem(text)) {
             // [T-android-tts-silent-blackhole] Terminal state: the provider path
             // did not produce audio AND the device speech engine is unusable.
