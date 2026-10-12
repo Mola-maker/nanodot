@@ -50,7 +50,8 @@ cd harness/desktop && npm ci && npm run typecheck && npm test
 bash scripts/build-nanodot-apk.sh doctor
 bash scripts/build-nanodot-apk.sh check
 bash scripts/build-nanodot-apk.sh debug-x86_64 --with-test # chat-only emulator candidate
-bash scripts/build-nanodot-apk.sh debug # arm64, also used by CI
+bash scripts/build-nanodot-apk.sh debug --with-test # arm64 main/test pair, used by CI
+NANODOT_TEST_SCOPE=nanomuse bash scripts/build-nanodot-apk.sh check # CI scope, not full suite
 
 # iOS (android/src/ios); macOS only; the device build must finish with zero warnings in NanoMuse/
 xcodebuild build -project Minis.xcodeproj -scheme Minis -configuration Debug -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO

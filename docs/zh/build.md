@@ -157,3 +157,9 @@ APK 记录包含这些选项。Instrumentation APK 可以没有版本字段；�
 所有配置都显式传入并记录 `-Pnm.manualVoiceProof=false`，避免继承的 Gradle 属性
 启用语音诊断实现。兼容 JSON 的 `file` 指向同目录 APK；`candidateReceipt`
 指向包含配对证据的正式记录。
+
+Android CI 使用同一 `debug --with-test` 入口构建 arm64 主包/测试包组合，
+上传 `dist/nanodot/`。随后使用 x86_64 运行显式
+`NANODOT_TEST_SCOPE=nanomuse` 命名空间范围的 `check`。配对 APK 构建已编译
+instrumentation 源码；CI 不在设备上执行它们。该局部 CI 结果不能证明
+完整上游单元测试集通过。

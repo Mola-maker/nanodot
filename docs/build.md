@@ -172,3 +172,9 @@ the receipt records null and their filenames use the paired main APK's version.
 Every profile explicitly passes `-Pnm.manualVoiceProof=false` and records it, so inherited
 Gradle properties cannot enable the diagnostic voice implementation. Compatibility JSON
 `file` resolves beside that JSON; `candidateReceipt` links to the canonical paired receipt.
+
+Android CI uses the same `debug --with-test` entry to assemble the arm64 main/test
+pair and uploads `dist/nanodot/`. It then runs `check` with the explicit
+`NANODOT_TEST_SCOPE=nanomuse` namespace scope using x86_64. The paired APK build
+already compiles instrumentation sources; CI does not execute them on a device.
+This scoped CI result is not evidence that the full upstream unit suite passes.
