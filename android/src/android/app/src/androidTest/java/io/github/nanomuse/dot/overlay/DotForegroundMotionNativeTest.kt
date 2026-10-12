@@ -163,8 +163,12 @@ class DotForegroundMotionNativeTest {
         try { exerciseNativeDrag() }
         catch (failure: Throwable) {
             // Covers failures before setup and in cleanup, as well as body assertions.
-            println("DOT_NATIVE_MOTION failure=${failure.javaClass.simpleName} " +
-                "touches=${touchTimings.joinToString("; ")} geometry=$latestFailureGeometry")
+            val details = "DOT_NATIVE_MOTION failure=${failure.javaClass.simpleName} " +
+                "touches=${touchTimings.joinToString("; ")} geometry=$latestFailureGeometry"
+            println(details)
+            // Preserve the original failure, and expose evidence in instrumentation's
+            // stack trace even when System.out is routed only to device logcat.
+            failure.addSuppressed(AssertionError(details))
             throw failure
         }
     }
