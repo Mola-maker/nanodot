@@ -213,6 +213,41 @@ class DotChatPanelTest {
         }
         return connected
     }
+    private fun waitForSettledFixtureHost() {
+        var previous: Pair<Int, RectPx>? = null
+        waitFor {
+            var current: Pair<Int, RectPx>? = null
+            instrumentation.runOnMainSync {
+                val service = MinisAccessibilityService.getInstance() ?: return@runOnMainSync
+                val id = service.dotScreen.hostWindowId() ?: return@runOnMainSync
+                val viewport = service.dotScreen.hostViewport(id) ?: return@runOnMainSync
+                val display = service.getSystemService(android.hardware.display.DisplayManager::class.java).getDisplay(0)
+                val size = android.graphics.Point(); display.getRealSize(size)
+                val windows = service.windows
+                try {
+                    val window = windows.firstOrNull { it.id == id && it.type == AccessibilityWindowInfo.TYPE_APPLICATION }
+                        ?: return@runOnMainSync
+                    val bounds = android.graphics.Rect(); window.getBoundsInScreen(bounds)
+                    val root = window.root ?: return@runOnMainSync
+                    try {
+                        val rootBounds = android.graphics.Rect(); root.getBoundsInScreen(rootBounds)
+                        // Font configuration can recreate the fixture after service.resources
+                        // changes. Reject its transient root translation and absent native host.
+                        if (window.isActive && root.windowId == id && root.packageName == "io.github.nanodot.app.test" &&
+                            containsNativeText(root, "HOST_DOT_CHAT_T4_8C6A") && rootBounds == bounds &&
+                            bounds.width() > 0 && bounds.height() > 0 && bounds.left >= 0 && bounds.top >= 0 &&
+                            bounds.right <= size.x && bounds.bottom <= size.y &&
+                            viewport == RectPx(bounds.left.toFloat(), bounds.top.toFloat(), bounds.right.toFloat(), bounds.bottom.toFloat())) {
+                            current = id to viewport
+                        }
+                    } finally { root.recycle() }
+                } finally { windows.forEach { it.recycle() } }
+            }
+            val settled = current != null && current == previous
+            previous = current
+            settled
+        }
+    }
     // Read before obtaining UiAutomation: its connection temporarily enables accessibility.
     private fun secureSetting(key: String): String? = android.provider.Settings.Secure.getString(instrumentation.targetContext.contentResolver,key)
     private fun restoreSecure(key: String, value: String?) {
@@ -568,6 +603,8 @@ class DotChatPanelTest {
         try {
             shell("settings put system font_scale 2.0")
             waitFor { service.resources.configuration.fontScale == 2f }
+            waitForSettledFixtureHost()
+            saveHostState("font-ready")
             val vm = openCanonical(adapter, fixtureId)
             val provider = configureInert(vm, "DOT_PLACEMENT_INERT")
             val binding = requireNotNull(adapter.binding.value)
