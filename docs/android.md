@@ -60,7 +60,7 @@ supply `ViewConfiguration` limits and monotonic times. The orb uses these system
 When you enable Nanodot’s accessibility service, a 48dp Dot orb appears above other apps.
 The orb uses a packaged, newly generated ice-blue transparent crystal atlas: 16 frames
 breathe over 3.2 seconds. Dragging leaves a pale-blue trail of actual touch points,
-limited to 36 samples that fade within 650ms. The trail never takes touch or keyboard
+limited to 36 samples that fade within 240ms. The trail never takes touch or keyboard
 focus and its temporary window closes after fading. Cancel, lock, disable, capture hiding,
 display changes and disconnect clear it. Turning off Android animator duration scale
 holds frame zero and removes the trail; static touch and care cues remain.
@@ -623,3 +623,5 @@ like the Python package's version does.
 | `res/values*/nm_strings.xml` | Every nanoMuse string in the seventeen languages the app has (English, 简体中文, 繁體中文, German, Spanish, Filipino, French, Indonesian, Japanese, Korean, Malay, Polish, Brazilian Portuguese, Romanian, Russian, Thai, Turkish); every file carries the same keys, and a missing one falls back to English |
 
 Dot foreground admission belongs to the accessibility connection. Stop, account replacement and disconnect reject late captures and status callbacks; reconnect starts fresh transient owners. Closing the foreground interaction cancels its owned reply without stopping Hub or unrelated persistent tasks. Canonical history and alias promotion remain shared with Chat.
+
+The orb follows the pointer directly. Its decorative trail is delayed by 80 ms within the 240 ms sample lifetime. Release snaps toward the existing safe edge using the native Compose spring and measured release velocity; a new touch, geometry change, lock, disconnect or disabled motion cancels the snap. Press feedback scales the artwork to 0.96 over 100 ms without shrinking the 48 dp touch target.

@@ -13,6 +13,10 @@
   --dot-motion-page: 180ms;
   --dot-motion-press: 100ms;
   --dot-motion-focus: 200ms;
+  --dot-motion-breath: 3200ms;
+  --dot-motion-trailLag: 80ms;
+  --dot-motion-trailFade: 240ms;
+  --dot-motion-snap: 240ms;
 }
 :root, [data-dot-theme="light"] {
   --dot-background: #F4F8FF;
@@ -48,5 +52,9 @@
     --dot-motion-page: 0ms;
     --dot-motion-press: 0ms;
     --dot-motion-focus: 0ms;
+    --dot-motion-breath: 0ms;
+    --dot-motion-trailLag: 0ms;
+    --dot-motion-trailFade: 0ms;
+    --dot-motion-snap: 0ms;
   }
 }

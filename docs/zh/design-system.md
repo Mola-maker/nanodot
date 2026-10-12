@@ -13,7 +13,7 @@ Nanodot 使用各平台的原生控件和无障碍行为。默认视觉是随应
 | Touch target | 48 | Android 最小 dp；iOS 保留原生无障碍最小尺寸；指针按钮也保留足够面积 |
 | Page / press / focus | 180 / 100 / 200 ms | 动画时长，不表示必须播放动画 |
 
-Kotlin 提供 `DotTokens.Space.S4` 到 `S48`、`Type.Body/Care`、`Motion.Page/Press/Focus` 和 `TouchTarget`。Swift 提供 `NanodotTokens.Space`、`Typography`、`Motion`（秒）、`touchTarget` 和 `Colors.Light/Dark`。Swift 调用方使用可缩放的系统文字，不能用固定字号绕过动态字体。桌面从 `harness/dsh-nanomuse/src/client/dot-tokens.ts` 导出 `dotTokens`。Web 和展示站 CSS 提供 `--dot-background`、`--dot-surface`、`--dot-text`、`--dot-primary`、`--dot-on-primary`、`--dot-care`、`--dot-outline`、`--dot-space-*`、`--dot-type-*`、`--dot-touch-target` 和 `--dot-motion-*`。CSS 默认跟随系统深色模式；`data-dot-theme="light|dark"` 选择保存的外观覆盖值。这些生成的接口供后续平台框架和组件任务使用。
+Kotlin 提供 `DotTokens.Space.S4` 到 `S48`、`Type.Body/Care`、`Motion.Page/Press/Focus/Breath/TrailLag/TrailFade/Snap` 和 `TouchTarget`。Swift 提供 `NanodotTokens.Space`、`Typography`、`Motion`（秒）、`touchTarget` 和 `Colors.Light/Dark`。Swift 调用方使用可缩放的系统文字，不能用固定字号绕过动态字体。桌面从 `harness/dsh-nanomuse/src/client/dot-tokens.ts` 导出 `dotTokens`。Web 和展示站 CSS 提供 `--dot-background`、`--dot-surface`、`--dot-text`、`--dot-primary`、`--dot-on-primary`、`--dot-care`、`--dot-outline`、`--dot-space-*`、`--dot-type-*`、`--dot-touch-target` 和 `--dot-motion-*`。CSS 默认跟随系统深色模式；`data-dot-theme="light|dark"` 选择保存的外观覆盖值。这些生成的接口供后续平台框架和组件任务使用。
 
 桌面样式使用共享的明暗 tokens 提供默认蓝色色板。重新生成品牌只更新 token 导出，不改写 TypeScript 模板或用户保存的个人配色。次要和弱化文字使用 text 角色；outline 用于边框或禁用状态。现有 Chat、Tasks、Devices、Settings 导航、rem 字号和减少动态效果行为继续保留。
 
@@ -91,3 +91,5 @@ Cloud 表单、账户刷新和 Network 测试取消真实的 OkHttp 请求；保
 发送/停止在聚焦和按住时保持 primary/onPrimary 配对，使用原生波纹及100/200毫秒聚焦/按压提示（减少动态效果时静态呈现）。目标完成和动态喜欢使用原生可勾选控件，状态来自现有存储；添加及帖子信息操作具有本地化名称。云端模式/用量标签通过原生标签角色及48dp触控区域呈现实际选中状态。
 
 不可变的 Dot 前台快照包含连接与账号代际、模式、规范会话绑定和显示操作。显示操作只决定独立截屏、回复、语音与关怀所有者的展示优先级，不替代各自的生命周期。
+
+共享动效时长：Page 180ms、Press 100ms、Focus 200ms、Breath 3200ms、TrailLag 80ms、TrailFade 240ms、Snap 240ms。TrailFade 是样本总寿命，TrailLag 不延长它。Snap 表达响应时长，Android 将它转换为阻尼比 0.9 的平台弹簧，刚度不作为跨平台语义导出。

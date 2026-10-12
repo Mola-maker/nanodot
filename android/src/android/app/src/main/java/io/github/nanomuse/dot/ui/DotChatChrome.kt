@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -59,6 +60,8 @@ fun DotChatChrome(isStreaming: Boolean, hasContent: Boolean, onSend: () -> Unit,
     val cue by animateFloatAsState(if (pressed || focused) 1f else 0f,
         tween(if (!LocalDotMotionEnabled.current) 0 else if (focused && !pressed) DotTokens.Motion.Focus else DotTokens.Motion.Press),
         label = "dotChatActionCue")
+    val pressScale by animateFloatAsState(if (LocalDotMotionEnabled.current && pressed) .96f else 1f,
+        tween(if (LocalDotMotionEnabled.current) DotTokens.Motion.Press else 0), label = "dotChatPress")
     IconButton(
         onClick = if (stop) onStop else onSend,
         enabled = stop || hasContent,
@@ -69,6 +72,7 @@ fun DotChatChrome(isStreaming: Boolean, hasContent: Boolean, onSend: () -> Unit,
             .semantics { if (isStreaming) stateDescription = working },
         colors = IconButtonDefaults.iconButtonColors(contentColor = colors.onPrimary, disabledContentColor = colors.onSurfaceVariant),
     ) {
-        Icon(if (stop) Icons.Default.Stop else Icons.Default.ArrowUpward, label)
+        Icon(if (stop) Icons.Default.Stop else Icons.Default.ArrowUpward, label,
+            modifier = Modifier.graphicsLayer { scaleX = pressScale; scaleY = pressScale })
     }
 }

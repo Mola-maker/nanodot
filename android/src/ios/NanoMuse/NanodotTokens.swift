@@ -19,6 +19,10 @@ enum NanodotTokens {
         static let page: Double = 0.18
         static let press: Double = 0.1
         static let focus: Double = 0.2
+        static let breath: Double = 3.2
+        static let trailLag: Double = 0.08
+        static let trailFade: Double = 0.24
+        static let snap: Double = 0.24
     }
     static let touchTarget: CGFloat = 48
     enum Colors {

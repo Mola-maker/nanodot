@@ -4,6 +4,7 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Unified Dot breathing, press, trail and edge-snap motion durations across generated platform tokens; Android uses measured release velocity and interruptible native springs, with immediate reduced-motion cleanup.
 - Scoped Android Dot foreground admission to the accessibility connection, rejected late capture/status results after Stop or account replacement, and recreated transient Care owners on reconnect while preserving canonical history.
 
 - Routed Android Care instruction leaders outside the measured chat card and into the current bubble's side, preserving chat and target outlines when no safe side route fit; native visual acceptance remained pending.

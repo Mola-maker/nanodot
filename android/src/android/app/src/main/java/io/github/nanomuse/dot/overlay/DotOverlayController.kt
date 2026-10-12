@@ -20,6 +20,12 @@ import android.view.KeyEvent
 import android.view.inputmethod.InputMethodManager
 import android.view.Gravity
 import android.view.MotionEvent
+import android.view.VelocityTracker
+import androidx.compose.ui.platform.AndroidUiDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
@@ -72,12 +78,17 @@ class DotOverlayController(
     private val pressed = androidx.compose.runtime.mutableStateOf(false)
     private val dragging = androidx.compose.runtime.mutableStateOf(false)
     private var motionEnabled = true
+    private val motionScope = CoroutineScope(AndroidUiDispatcher.Main + SupervisorJob())
+    private var snapJob: Job? = null
+    private var snapBounds: DotWindowGeometry? = null
+    private var velocityTracker: VelocityTracker? = null
+    private var releaseVelocityX = 0f
     private val trail = CrystalTrail()
     private var trailView: DotTrailView? = null
     private val trailTick = object : Runnable {
         override fun run() {
             val points = trail.visible(SystemClock.uptimeMillis())
-            if (points.isEmpty()) { removeTrailWindow(); return }
+            if (!trail.hasPending(SystemClock.uptimeMillis())) { removeTrailWindow(); return }
             if (!motionEnabled || !visualActive.value || !isConnected || locked || !enabled) {
                 clearTrail(); return
             }
@@ -224,11 +235,7 @@ class DotOverlayController(
             val point = intent.points.lastOrNull() ?: return
             val bounds = availableBounds() ?: return
             val p = params ?: return
-            p.x = bounds.edgeX(size, point.x)
-            p.y = bounds.clamp(size, p.x, p.y).second
-            orbView?.let { windows.updateViewLayout(it, p) }
-            val position = bounds.fractions(size, p.x, p.y)
-            preferences.saveOrbPosition(position.first, position.second)
+            snapToEdge(bounds, p, bounds.edgeX(size, point.x))
         } else {
             // Later coordinator tasks provide these capabilities. Never pretend an action ran.
             if (delegate != null) delegate.invoke(intent)
@@ -251,6 +258,7 @@ class DotOverlayController(
      */
     suspend fun <T> withHiddenForCapture(block: suspend () -> T): T {
         checkMainThread()
+        cancelSnap()
         visualActive.value = false
         val resumeScan = captureScanner.pauseForCapture()
         clearTrail()
@@ -438,7 +446,7 @@ class DotOverlayController(
                 io.github.nanomuse.dot.ui.DotMotionHost {
                     DotOrb(::onIntent, careActive.value, visualActive.value, pressed.value, dragging.value) {
                         motionEnabled = it
-                        if (!it) clearTrail()
+                        if (!it) { cancelSnap(); clearTrail() }
                     }
                 }
             }
@@ -522,17 +530,23 @@ class DotOverlayController(
         val id = event.getPointerId(event.actionIndex)
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
+                cancelSnap()
+                velocityTracker?.recycle()
+                velocityTracker = VelocityTracker.obtain()
+                trackVelocity(event)
                 downPoint = point; downPosition = params?.let { it.x to it.y }; blockedTouch = false
                 clearTrail(); pressed.value = true; dragging.value = false
                 dragStarted = false; downAtMs = event.eventTime
                 accept(GestureEvent.Down(point, event.eventTime, id))
             }
             MotionEvent.ACTION_POINTER_DOWN -> {
+                velocityTracker?.recycle(); velocityTracker = null
                 restoreDownPosition(); clearTrail(); pressed.value = false; dragging.value = false; blockedTouch = true
                 accept(GestureEvent.Down(point, event.eventTime, id))
             }
             MotionEvent.ACTION_MOVE -> {
                 if (!blockedTouch) {
+                    trackVelocity(event)
                     val start = downPoint
                     val position = downPosition
                     if (start != null && !dragStarted &&
@@ -555,11 +569,67 @@ class DotOverlayController(
                 }
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
+                trackVelocity(event)
+                velocityTracker?.computeCurrentVelocity(1000, config.scaledMaximumFlingVelocity.toFloat())
+                releaseVelocityX = velocityTracker?.getXVelocity(id) ?: 0f
                 pressed.value = false; dragging.value = false
                 accept(GestureEvent.Up(point, event.eventTime, id))
-                if (event.actionMasked == MotionEvent.ACTION_UP) { downPoint = null; downPosition = null }
+                if (event.actionMasked == MotionEvent.ACTION_UP) {
+                    velocityTracker?.recycle(); velocityTracker = null
+                    downPoint = null; downPosition = null
+                }
             }
             MotionEvent.ACTION_CANCEL -> { restoreDownPosition(); cancelGesture() }
+        }
+    }
+
+    /** Window-relative MotionEvents must be converted to screen space before velocity tracking. */
+    private fun trackVelocity(event: MotionEvent) {
+        val tracker = velocityTracker ?: return
+        val raw = MotionEvent.obtain(event)
+        try {
+            raw.offsetLocation(event.rawX - event.x, event.rawY - event.y)
+            tracker.addMovement(raw)
+        } finally { raw.recycle() }
+    }
+
+    private fun savePosition(bounds: DotWindowGeometry, p: WindowManager.LayoutParams) {
+        val position = bounds.fractions(size, p.x, p.y)
+        preferences.saveOrbPosition(position.first, position.second)
+    }
+
+    private fun cancelSnap() {
+        snapJob?.cancel(); snapJob = null
+        // Keep the normalized position in the parent used by this animation, even on rotation.
+        snapBounds?.let { bounds -> params?.let { savePosition(bounds, it) } }
+        snapBounds = null
+    }
+
+    private fun snapToEdge(bounds: DotWindowGeometry, p: WindowManager.LayoutParams, edge: Int) {
+        cancelSnap()
+        val view = orbView ?: return
+        if (!motionEnabled || !visualActive.value) {
+            val target = bounds.clamp(size, edge, p.y)
+            p.x = target.first; p.y = target.second
+            windows.updateViewLayout(view, p)
+            savePosition(bounds, p)
+            return
+        }
+        snapBounds = bounds
+        snapJob = motionScope.launch {
+            DotCrystalMotion.snap(p.x.toFloat(), edge.toFloat(), releaseVelocityX) { x ->
+                // A native parent/viewport invalidation cannot advance a stale window.
+                if (orbView !== view || params !== p || availableBounds() != bounds ||
+                    !isConnected || locked || !enabled || !motionEnabled || !visualActive.value) {
+                    cancelSnap()
+                } else {
+                    val position = bounds.clamp(size, x.roundToInt(), p.y)
+                    p.x = position.first; p.y = position.second
+                    windows.updateViewLayout(view, p)
+                }
+            }
+            savePosition(bounds, p)
+            snapBounds = null; snapJob = null
         }
     }
 
@@ -571,6 +641,9 @@ class DotOverlayController(
     }
 
     private fun cancelGesture() {
+        cancelSnap()
+        velocityTracker?.recycle(); velocityTracker = null
+        releaseVelocityX = 0f
         clearTrail(); pressed.value = false; dragging.value = false
         accept(GestureEvent.Cancel)
         downPoint = null; downPosition = null; blockedTouch = false; dragStarted = false
@@ -579,7 +652,7 @@ class DotOverlayController(
     private fun recordTrail(point: PointPx, at: Long) {
         if (!motionEnabled || !visualActive.value || !isConnected || locked || !enabled) return
         trail.add(point.x, point.y, at, motionEnabled)
-        if (trail.visible(at).isEmpty()) return
+        if (!trail.hasPending(at)) return
         if (trailView == null) {
             val view = DotTrailView(service)
             val p = WindowManager.LayoutParams(-1, -1, WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,

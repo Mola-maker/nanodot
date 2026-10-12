@@ -22,6 +22,10 @@ object DotTokens {
         const val Page = 180
         const val Press = 100
         const val Focus = 200
+        const val Breath = 3200
+        const val TrailLag = 80
+        const val TrailFade = 240
+        const val Snap = 240
     }
     val TouchTarget = 48.dp
 }

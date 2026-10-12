@@ -125,7 +125,10 @@ def load_ui(path: Path) -> dict:
         or spaces != sorted(set(spaces))
     ):
         raise ValueError("space must contain sorted unique non-negative integers")
-    for group, keys in (("type", {"body", "care"}), ("motion", {"page", "press", "focus"})):
+    for group, keys in (
+        ("type", {"body", "care"}),
+        ("motion", {"page", "press", "focus", "breath", "trailLag", "trailFade", "snap"}),
+    ):
         values = data[group]
         if (
             not isinstance(values, dict)
@@ -148,7 +151,9 @@ def render_outputs(brand: BrandProfile, ui: dict) -> dict[Path, str]:
     kt += "    }\n    object Type {\n"
     kt += "".join(f"        val {k.title()} = {v}.sp\n" for k, v in ui["type"].items())
     kt += "    }\n    object Motion {\n"
-    kt += "".join(f"        const val {k.title()} = {v}\n" for k, v in ui["motion"].items())
+    kt += "".join(
+        f"        const val {k[0].upper() + k[1:]} = {v}\n" for k, v in ui["motion"].items()
+    )
     kt += f"    }}\n    val TouchTarget = {ui['touchTarget']}.dp\n}}\n"
     css = f"/* {HEADER} */\n:root {{\n"
     css += "".join(f"  --dot-space-{v}: {v}px;\n" for v in ui["space"])
@@ -172,8 +177,8 @@ def render_outputs(brand: BrandProfile, ui: dict) -> dict[Path, str]:
     css += '[data-dot-theme="dark"] {\n' + palette_css("dark") + "}\n"
     css += (
         "@media (prefers-reduced-motion: reduce) {\n  :root {\n"
-        "    --dot-motion-page: 0ms;\n    --dot-motion-press: 0ms;\n"
-        "    --dot-motion-focus: 0ms;\n  }\n}\n"
+        + "".join(f"    --dot-motion-{key}: 0ms;\n" for key in ui["motion"])
+        + "  }\n}\n"
     )
     ts_data = {
         "colors": {mode: dict(p) for mode, p in brand.themeColors.items()},

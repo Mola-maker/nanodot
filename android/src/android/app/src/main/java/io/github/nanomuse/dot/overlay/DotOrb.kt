@@ -1,5 +1,9 @@
 package io.github.nanomuse.dot.overlay
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.graphics.drawscope.scale
+import io.github.nanomuse.dot.ui.DotTokens
 import android.os.SystemClock
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -39,6 +43,9 @@ fun DotOrb(
     val dark = isSystemInDarkTheme()
     val motion = LocalDotMotionEnabled.current
     SideEffect { onMotionPreference(motion) }
+    val pressScale by animateFloatAsState(if (motion && pressed) .96f else 1f,
+        tween(if (motion) DotTokens.Motion.Press else 0), label = "dotOrbPress")
+    val frameDuration = DotTokens.Motion.Breath / 16
     val atlas = ImageBitmap.imageResource(R.drawable.nm_crystal_orb_atlas)
     var elapsed by remember { mutableLongStateOf(0L) }
     LaunchedEffect(motion, active) {
@@ -73,9 +80,10 @@ fun DotOrb(
                 dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()), alpha = alpha,
                 blendMode = mode)
         }
+        scale(pressScale) {
         val current = CrystalFrames.index(elapsed, motion, active)
         if (motion && active) {
-            CrystalBlend.draw(current, (elapsed % 200) / 200f, object : CrystalBlendCanvas {
+            CrystalBlend.draw(current, (elapsed % frameDuration) / frameDuration.toFloat(), object : CrystalBlendCanvas {
                 override fun isolatedLayer(draw: () -> Unit) {
                     val canvas = drawContext.canvas
                     canvas.saveLayer(Rect(0f, 0f, size.width, size.height), Paint())
@@ -92,5 +100,6 @@ fun DotOrb(
         }
         if (careActive) drawCircle(if (dark) DotColors.DarkCare else DotColors.LightCare,
             radius = size.minDimension * .46f, style = Stroke(2.dp.toPx()))
+        }
     }
 }

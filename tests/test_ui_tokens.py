@@ -69,7 +69,15 @@ def test_source_values_outputs_and_idempotence(tree):
     assert ui["space"] == [4, 8, 12, 16, 24, 32, 48]
     assert ui["type"] == {"body": 16, "care": 18}
     assert ui["touchTarget"] == 48
-    assert ui["motion"] == {"page": 180, "press": 100, "focus": 200}
+    assert ui["motion"] == {
+        "page": 180,
+        "press": 100,
+        "focus": 200,
+        "breath": 3200,
+        "trailLag": 80,
+        "trailFade": 240,
+        "snap": 240,
+    }
     css = first[Path("web/src/dot-tokens.css")].decode()
     assert css == first[Path("site/dot-tokens.css")].decode()
     brand = load_brand(tree / "config/brand.nanodot.json")
@@ -93,6 +101,7 @@ def test_source_values_outputs_and_idempotence(tree):
         assert f"static let {key}: CGFloat = {value}" in swift
         assert f"--dot-type-{key}: {value / 16:g}rem;" in css
     for key, value in ui["motion"].items():
+        assert f"const val {key[0].upper() + key[1:]} = {value}" in first[OUTPUTS[1]].decode()
         assert f"static let {key}: Double = {value / 1000:g}" in swift
         assert f"--dot-motion-{key}: {value}ms;" in css
     assert f"static let touchTarget: CGFloat = {ui['touchTarget']}" in swift
@@ -189,3 +198,28 @@ def test_rebrand_cannot_overwrite_token_material_mapping(tree):
     apply_brand(tree, load_brand(tree / "config/brand.nanodot.json"))
     assert snapshot(tree) == before
     assert apply_brand(tree, load_brand(tree / "config/brand.nanodot.json")) == []
+
+
+@pytest.mark.parametrize(
+    "key", ["page", "press", "focus", "breath", "trailLag", "trailFade", "snap"]
+)
+@pytest.mark.parametrize("value", [None, -1, True])
+def test_motion_keys_are_required_positive_durations(tree, key, value):
+    path = tree / "config/ui.nanodot.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if value is None:
+        data["motion"].pop(key, None)
+    else:
+        data["motion"][key] = value
+    path.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ValueError):
+        run(generator(), tree)
+
+
+def test_reduced_motion_zeroes_every_duration_in_one_media_block(tree):
+    run(generator(), tree)
+    css = (tree / "web/src/dot-tokens.css").read_text(encoding="utf-8")
+    assert css.count("@media (prefers-reduced-motion: reduce)") == 1
+    reduced = css.split("@media (prefers-reduced-motion: reduce)")[1]
+    for key in ["page", "press", "focus", "breath", "trailLag", "trailFade", "snap"]:
+        assert f"--dot-motion-{key}: 0ms;" in reduced

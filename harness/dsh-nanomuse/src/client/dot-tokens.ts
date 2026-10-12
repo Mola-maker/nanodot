@@ -37,6 +37,10 @@ export const dotTokens = {
   "motion": {
     "page": 180,
     "press": 100,
-    "focus": 200
+    "focus": 200,
+    "breath": 3200,
+    "trailLag": 80,
+    "trailFade": 240,
+    "snap": 240
   }
 } as const;

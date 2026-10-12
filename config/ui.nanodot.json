@@ -1,7 +1,26 @@
 {
   "schemaVersion": 1,
-  "space": [4, 8, 12, 16, 24, 32, 48],
-  "type": {"body": 16, "care": 18},
+  "space": [
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48
+  ],
+  "type": {
+    "body": 16,
+    "care": 18
+  },
   "touchTarget": 48,
-  "motion": {"page": 180, "press": 100, "focus": 200}
+  "motion": {
+    "page": 180,
+    "press": 100,
+    "focus": 200,
+    "breath": 3200,
+    "trailLag": 80,
+    "trailFade": 240,
+    "snap": 240
+  }
 }
