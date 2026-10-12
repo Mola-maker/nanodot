@@ -315,7 +315,7 @@ class CareOverlayTest {
         }
     }
     @Test fun oneTouchThroughTargetUserCopyBackPauseAndAccessibleControls() {
-        val service=nativeService.service() { "Root must enable the real accessibility service first" }
+        val service=nativeService.service()
         val originalFlags=automation.serviceInfo.flags
         var originalClip: android.content.ClipData?=null
         var clipboardSaved=false
