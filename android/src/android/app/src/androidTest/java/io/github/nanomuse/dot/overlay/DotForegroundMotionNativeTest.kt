@@ -6,12 +6,14 @@ import android.app.UiAutomation
 import android.content.ComponentName
 import android.content.Intent
 import android.graphics.Rect
+import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings
 import android.view.InputDevice
 import android.view.MotionEvent
+import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.ViewConfiguration
 import android.view.accessibility.AccessibilityNodeInfo
@@ -122,13 +124,32 @@ class DotForegroundMotionNativeTest {
     private fun nativeBounds(service: MinisAccessibilityService): Rect? {
         var rect: Rect? = null
         instrumentation.runOnMainSync {
-            service.dotOverlay.orbView?.takeIf { it.isAttachedToWindow }?.let { view ->
+            service.dotOverlay.orbView?.takeIf { it.isAttachedToWindow && it.isShown && it.width > 0 && it.height > 0 }?.let { view ->
                 val xy = IntArray(2)
                 view.getLocationOnScreen(xy)
                 rect = Rect(xy[0], xy[1], xy[0] + view.width, xy[1] + view.height)
             }
         }
         return rect
+    }
+
+    /** Public native window geometry, independent of cached accessibility frames. */
+    private fun nativeHostBounds(service: MinisAccessibilityService): Rect? {
+        var rect: Rect? = null
+        instrumentation.runOnMainSync {
+            service.dotOverlay.orbView?.takeIf { it.isAttachedToWindow }?.let { view ->
+                rect = if (Build.VERSION.SDK_INT >= 30) {
+                    val metrics = service.getSystemService(WindowManager::class.java).currentWindowMetrics
+                    val insets = metrics.windowInsets.getInsetsIgnoringVisibility(
+                        WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
+                    Rect(metrics.bounds).apply {
+                        left += insets.left; top += insets.top
+                        right -= insets.right; bottom -= insets.bottom
+                    }
+                } else Rect().also(view::getWindowVisibleDisplayFrame)
+            }
+        }
+        return rect?.takeUnless { it.isEmpty }
     }
 
     private fun awaitHostReady(service: MinisAccessibilityService) {
@@ -264,10 +285,10 @@ class DotForegroundMotionNativeTest {
             awaitHostReady(connected)
             val orb = connected.getString(R.string.nm_dot_orb_description)
             await("Visible orb required") { bounds(connected, orb) != null }
-            val start = requireNotNull(bounds(connected, orb))
-            val host = connected.rootInActiveWindow?.let { node ->
-                try { Rect().also { node.getBoundsInScreen(it) } } finally { node.recycle() }
-            } ?: error("Native host bounds missing")
+            val start = requireNotNull(nativeBounds(connected)) { "Attached native orb bounds missing" }
+            val host = requireNotNull(nativeHostBounds(connected)) { "Native host bounds missing" }
+            touchTimings.add("nativeHost=${host.toShortString()} initialOrb=${start.toShortString()}")
+            assertTrue("Initial orb must fit native host", host.contains(start))
             assertTrue("Host must fit meaningful drag", host.width() > start.width() * 4 &&
                 host.height() > start.height() * 4)
             var pointerOffsetX = 0f
@@ -278,7 +299,7 @@ class DotForegroundMotionNativeTest {
                 x = host.left + host.width() * fx; y = host.top + host.height() * fy
                 touch(requireNotNull(pointer), MotionEvent.ACTION_MOVE, x, y)
                 await("Native orb must follow MOVE") {
-                    bounds(connected, orb)?.let { kotlin.math.abs(it.exactCenterX() - (x + pointerOffsetX)) <= 4 &&
+                    nativeBounds(connected)?.let { kotlin.math.abs(it.exactCenterX() - (x + pointerOffsetX)) <= 4 &&
                         kotlin.math.abs(it.exactCenterY() - (y + pointerOffsetY)) <= 4 } == true
                 }
             }
@@ -286,21 +307,23 @@ class DotForegroundMotionNativeTest {
             touch(requireNotNull(pointer), MotionEvent.ACTION_DOWN, x, y)
             Thread.sleep(20)
             moveTo(.55f, .35f)
-            val dragged = requireNotNull(bounds(connected, orb))
+            val dragged = requireNotNull(nativeBounds(connected))
             assertFalse("Drag changes native position", near(start, dragged))
             touch(requireNotNull(pointer), MotionEvent.ACTION_UP, x, y); pointer = null
             val releaseReturnedAt = SystemClock.uptimeMillis()
             Thread.sleep(32)
-            val snapping = requireNotNull(bounds(connected, orb))
+            // AX cached the pre-release rectangle across moving native frames in the
+            // failing run. Observe the attached View on Main at the same strict deadline.
+            val snapping = requireNotNull(nativeBounds(connected))
             if (near(dragged, snapping)) {
                 fail("Release starts animated snap: " +
                     releaseDiagnostics(connected, orb, dragged, snapping, releaseReturnedAt))
             }
             assertTrue("Interrupt before edge", snapping.left > host.left + 8 && snapping.right < host.right - 8)
-            // AX bounds may describe an earlier frame. Aim at the actual native hitbox,
-            // and require that this fresh observation still represents unfinished motion.
+            // Re-read immediately before input: another native frame may have arrived
+            // since the active-snap observation, and must still be away from the edge.
             val hitbox = requireNotNull(nativeBounds(connected))
-            touchTimings.add("secondHitbox=${hitbox.toShortString()} axSnap=${snapping.toShortString()}")
+            touchTimings.add("secondHitbox=${hitbox.toShortString()} nativeSnap=${snapping.toShortString()}")
             assertTrue("Native interruption hitbox remains before edge",
                 hitbox.left > host.left + 8 && hitbox.right < host.right - 8)
             pointer = SystemClock.uptimeMillis(); x = hitbox.exactCenterX(); y = hitbox.exactCenterY()
@@ -316,31 +339,31 @@ class DotForegroundMotionNativeTest {
             assertTrue("DOWN interrupts before native edge arrival",
                 afterDown.left > host.left + 8 && afterDown.right < host.right - 8)
             moveTo(.25f, .65f)
-            val held = requireNotNull(bounds(connected, orb))
+            val held = requireNotNull(nativeBounds(connected))
             // MOVE enters drag before long-press deadline, so this hold cannot admit voice.
             repeat(12) {
                 Thread.sleep(100)
-                assertTrue("Canceled snap must not move orb against next touch", near(held, bounds(connected, orb)))
+                assertTrue("Canceled snap must not move orb against next touch", near(held, nativeBounds(connected)))
             }
             touch(requireNotNull(pointer), MotionEvent.ACTION_UP, x, y); pointer = null
             Thread.sleep(1500)
-            val settled = requireNotNull(bounds(connected, orb))
+            val settled = requireNotNull(nativeBounds(connected))
             assertTrue("Orb remains in native host", host.contains(settled))
             assertTrue("Second release snaps left", settled.left < host.left + start.width())
             assertTrue("Second release retains new Y", kotlin.math.abs(settled.top - held.top) <= 4)
             val saved = DotPreferences(context).orbPosition()
             instrumentation.runOnMainSync { connected.dotOverlay.setEnabled(false) }
             instrumentation.runOnMainSync { connected.dotOverlay.setEnabled(true) }
-            await("Remount uses latest persisted position") { near(settled, bounds(connected, orb)) }
+            await("Remount uses latest persisted position") { near(settled, nativeBounds(connected)) }
             Thread.sleep(1200)
-            assertTrue("Late old snap cannot override remount", near(settled, bounds(connected, orb)))
+            assertTrue("Late old snap cannot override remount", near(settled, nativeBounds(connected)))
             assertEquals("Late old snap cannot overwrite persistence", saved, DotPreferences(context).orbPosition())
 
         } catch (failure: Throwable) {
             service?.let { connected ->
                 latestFailureGeometry = runCatching {
                     val orb = connected.getString(R.string.nm_dot_orb_description)
-                    val observed = bounds(connected, orb) ?: Rect()
+                    val observed = nativeBounds(connected) ?: Rect()
                     releaseDiagnostics(connected, orb, observed, observed, SystemClock.uptimeMillis())
                 }.getOrElse { "diagnosticUnavailable=${it.javaClass.simpleName}" }
                 println("DOT_NATIVE_MOTION beforeCleanup=$latestFailureGeometry")
