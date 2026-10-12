@@ -29,6 +29,7 @@ internal class DotNativeServiceFixture {
     private var oldFlags: Int? = null
     private var oldEnabled: Boolean? = null
     private var connected: MinisAccessibilityService? = null
+    private var ownsScene = false
     private fun setting(key: String): String? = Settings.Secure.getString(context.contentResolver, key)
     private fun validate(key: String, value: String?) {
         require(key in setOf("enabled_accessibility_services", "accessibility_enabled"))
@@ -96,6 +97,7 @@ internal class DotNativeServiceFixture {
             assertNull("Use an isolated scene without a foreground binding", service.dotInteraction.foreground.state.value.binding)
             assertEquals("Use an isolated scene without an active foreground mode", DotForegroundMode.Idle,
                 service.dotInteraction.foreground.state.value.mode)
+            ownsScene = true
         }
     }
     fun service(): MinisAccessibilityService = requireNotNull(connected) { "Run connect from @Before first" }
@@ -103,7 +105,7 @@ internal class DotNativeServiceFixture {
         val raw = originals ?: return
         try {
             instrumentation.runOnMainSync {
-                connected?.let { service ->
+                connected?.takeIf { ownsScene }?.let { service ->
                     service.dotInteraction.close()
                     oldEnabled?.let(service.dotOverlay::setEnabled)
                     service.dotOverlay.refreshLockState()
@@ -118,7 +120,7 @@ internal class DotNativeServiceFixture {
             } finally {
                 raw.forEach { (key, value) -> restore(key, value) }
                 raw.forEach { (key, value) -> assertEquals("Restore raw $key", value, setting(key)) }
-                originals = null; connected = null; oldEnabled = null; oldFlags = null
+                originals = null; connected = null; oldEnabled = null; oldFlags = null; ownsScene = false
             }
         }
     }
