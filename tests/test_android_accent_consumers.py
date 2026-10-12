@@ -46,13 +46,14 @@ def fixture(tmp_path, legacy=False):
         if legacy and name in GLYPHS:
             # Seed the earlier branded glyph input so removing the migration is observable.
             target.write_text(
-                target.read_text().replace(
+                target.read_text(encoding="utf-8").replace(
                     "androidx.compose.material3.MaterialTheme.colorScheme.primary",
                     "Color(0xFF136F63)",
-                )
+                ),
+                encoding="utf-8",
             )
     user = root / "profile.json"
-    user.write_text('{"theme_mode":2,"avatar":"custom-ice","color":"#123456"}')
+    user.write_text('{"theme_mode":2,"avatar":"custom-ice","color":"#123456"}', encoding="utf-8")
     brand = load_brand(ROOT / "config/brand.nanodot.json")
     apply_brand(root, brand)
     return root, brand
@@ -101,7 +102,7 @@ def contrast(foreground, background):
 def actual_mode(root, saved_mode, system_dark):
     # Execute the literal branch table from MainActivity's actual saved theme route.
     # Android preference storage/composition delivery remains a native acceptance item.
-    main = (root / JAVA / "MainActivity.kt").read_text()
+    main = (root / JAVA / "MainActivity.kt").read_text(encoding="utf-8")
     body = re.search(r"val darkTheme = when \(themeMode\) \{([^}]+)\}", main)[1]
     branches = dict(re.findall(r"(\d+) -> (true|false)", body))
     value = branches.get(str(saved_mode))
@@ -111,7 +112,7 @@ def actual_mode(root, saved_mode, system_dark):
     else:
         dark = value == "true"
     assert "MinisTheme(darkTheme = darkTheme" in main
-    theme = (root / JAVA / "ui/theme/Theme.kt").read_text()
+    theme = (root / JAVA / "ui/theme/Theme.kt").read_text(encoding="utf-8")
     assert "val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme" in theme
     return "dark" if dark else "light"
 
@@ -124,8 +125,8 @@ def test_actual_thinking_and_picker_composites_have_readable_text(
     root, brand = fixture(tmp_path, legacy)
     mode = actual_mode(root, saved_mode, system_dark)
     palette = brand.themeColors[mode]
-    thinking = (root / JAVA / THINKING).read_text()
-    picker = (root / JAVA / PICKER).read_text()
+    thinking = (root / JAVA / THINKING).read_text(encoding="utf-8")
+    picker = (root / JAVA / PICKER).read_text(encoding="utf-8")
     variables = {"thinkingBlue": re.search(r"val thinkingBlue = ([^\n]+)", thinking)[1]}
     tint = re.search(r"\.background\((thinkingBlue.copy\(alpha = [\d.]+f\))", thinking)[1]
     badge_scope = picker[picker.index("stringResource(R.string.model_picker_default_badge)") :]
@@ -172,7 +173,7 @@ def test_saved_dark_override_changes_consumer_role_even_when_system_is_light(tmp
     root, brand = fixture(tmp_path)
     mode = actual_mode(root, saved_mode=2, system_dark=False)
     expression = expression_after(
-        (root / JAVA / PICKER).read_text(), "R.plurals.model_picker_show_models"
+        (root / JAVA / PICKER).read_text(encoding="utf-8"), "R.plurals.model_picker_show_models"
     )
     actual = rgba(expression, brand.themeColors[mode])
     assert actual == rgba(
@@ -183,7 +184,7 @@ def test_saved_dark_override_changes_consumer_role_even_when_system_is_light(tmp
 def test_foreground_glyph_migration_keeps_filled_badges_and_user_choices(tmp_path):
     root, brand = fixture(tmp_path, legacy=True)
     for name in (PICKER, *GLYPHS):
-        text = (root / JAVA / name).read_text()
+        text = (root / JAVA / name).read_text(encoding="utf-8")
         for expression in re.findall(r"\btint = (?:if \([^\n]+?\) )?([^\n]+)", text):
             if (
                 "MaterialTheme.colorScheme.primary" in expression
@@ -195,7 +196,7 @@ def test_foreground_glyph_migration_keeps_filled_badges_and_user_choices(tmp_pat
                     background = rgba(f"Color(0xFF{palette['surface'][1:]})", palette)
                     assert contrast(over(foreground, background), background[:3]) >= 4.5
     # These are deliberately white-on-blue filled badges, not foreground accents.
-    detail = (root / JAVA / DETAIL).read_text()
+    detail = (root / JAVA / DETAIL).read_text(encoding="utf-8")
     action = detail[detail.index("text = action,") :]
     foreground = expression_after(action, "text = action,")
     fill = re.search(r"\.background\((Color\(0xFF[\dA-Fa-f]{6}\)), CircleShape", action)[1]
@@ -210,16 +211,16 @@ def test_foreground_glyph_migration_keeps_filled_badges_and_user_choices(tmp_pat
         "ui/settings/SkillsManagementScreen.kt",
     ):
         assert (root / JAVA / name).read_bytes() == (ROOT / JAVA / name).read_bytes()
-    assert (
-        root / "profile.json"
-    ).read_text() == '{"theme_mode":2,"avatar":"custom-ice","color":"#123456"}'
+    assert (root / "profile.json").read_text(
+        encoding="utf-8"
+    ) == '{"theme_mode":2,"avatar":"custom-ice","color":"#123456"}'
     assert apply_brand(root, brand) == []
 
 
 @pytest.mark.parametrize("legacy", [False, True])
 def test_generic_tool_links_use_the_theme_while_terminal_pair_is_preserved(tmp_path, legacy):
     root, brand = fixture(tmp_path, legacy)
-    detail = (root / JAVA / DETAIL).read_text()
+    detail = (root / JAVA / DETAIL).read_text(encoding="utf-8")
     lazy = detail[detail.index("private fun LazyRevealToolText(") :]
     match = re.search(r"val linkColor = ([^\n]+)", lazy)
     assert match, "Generic tool text must provide a theme-aware link color"
@@ -237,14 +238,14 @@ def test_semantic_consumers_follow_alternate_profiles_without_rewriting_preferen
     import json
 
     root, original = fixture(tmp_path, legacy=True)
-    data = json.loads((ROOT / "config/brand.nanodot.json").read_text())
+    data = json.loads((ROOT / "config/brand.nanodot.json").read_text(encoding="utf-8"))
     data["themeColors"]["light"]["primary"] = "#364E72"
     data["themeColors"]["dark"]["primary"] = "#C5DDFA"
     profile = tmp_path / "alternate.json"
-    profile.write_text(json.dumps(data))
+    profile.write_text(json.dumps(data), encoding="utf-8")
     alternate = load_brand(profile)
     apply_brand(root, alternate)
-    text = (root / JAVA / THINKING).read_text()
+    text = (root / JAVA / THINKING).read_text(encoding="utf-8")
     expression = re.search(r"val thinkingBlue = ([^\n]+)", text)[1]
     for mode in ("light", "dark"):
         palette = alternate.themeColors[mode]
@@ -252,9 +253,9 @@ def test_semantic_consumers_follow_alternate_profiles_without_rewriting_preferen
     assert apply_brand(root, alternate) == []
     apply_brand(root, original)
     assert apply_brand(root, original) == []
-    assert (
-        root / "profile.json"
-    ).read_text() == '{"theme_mode":2,"avatar":"custom-ice","color":"#123456"}'
+    assert (root / "profile.json").read_text(
+        encoding="utf-8"
+    ) == '{"theme_mode":2,"avatar":"custom-ice","color":"#123456"}'
 
 
 @pytest.mark.parametrize("input_revision", ["historical", "fix1", "current"])
@@ -275,7 +276,7 @@ def test_restore_entry_preserves_fixed_fill_and_white_glyph(
     target = root / JAVA / name
     target.write_bytes(source.read_bytes())
     apply_brand(root, brand)
-    text = target.read_text()
+    text = target.read_text(encoding="utf-8")
     entry = text[text.index("private fun EntryRow(") :]
     fill = re.search(r"if \(entry.isDirectory\) (Color\(0xFF[0-9A-Fa-f]+\)) else ([^\n]+)", entry)
     assert fill, "EntryRow must retain its explicit directory/file fill branches"
@@ -290,6 +291,6 @@ def test_restore_entry_preserves_fixed_fill_and_white_glyph(
     assert file_fill == "Color(0xFF2D6396)"
     assert ink == "Color.White"
     assert apply_brand(root, brand) == []
-    assert (
-        root / "profile.json"
-    ).read_text() == '{"theme_mode":2,"avatar":"custom-ice","color":"#123456"}'
+    assert (root / "profile.json").read_text(
+        encoding="utf-8"
+    ) == '{"theme_mode":2,"avatar":"custom-ice","color":"#123456"}'

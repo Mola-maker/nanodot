@@ -65,7 +65,7 @@ def test_source_values_outputs_and_idempotence(tree):
     assert run(module, tree) and run(module, tree, check=True)
     assert snapshot(tree) == first
     assert {p: (tree / p).stat().st_mtime_ns for p in OUTPUTS} == stamps
-    ui = json.loads((tree / "config/ui.nanodot.json").read_text())
+    ui = json.loads((tree / "config/ui.nanodot.json").read_text(encoding="utf-8"))
     assert ui["space"] == [4, 8, 12, 16, 24, 32, 48]
     assert ui["type"] == {"body": 16, "care": 18}
     assert ui["touchTarget"] == 48
@@ -79,7 +79,7 @@ def test_source_values_outputs_and_idempotence(tree):
             assert f"--dot-{css_key}: {value};" in css
             assert f'"{key}": "{value}"' in first[OUTPUTS[4]].decode()
             assert f"0x{value[1:]}" in first[OUTPUTS[2]].decode()
-    ts = first[OUTPUTS[4]].decode()
+    ts = first[OUTPUTS[4]].decode().replace("\r\n", "\n")
     # The TypeScript export is a literal JSON object plus a type assertion.
     ts_values = json.loads(ts.split("export const dotTokens = ", 1)[1].removesuffix(" as const;\n"))
     assert ts_values["colors"] == {
@@ -106,9 +106,9 @@ def test_source_values_outputs_and_idempotence(tree):
         assert f"val S{value} = {value}.dp" in kt
         assert f"--dot-space-{value}: {value}px;" in css
         assert f"static let s{value}: CGFloat = {value}" in swift
-    (tree / OUTPUTS[3]).write_text("stale")
+    (tree / OUTPUTS[3]).write_text("stale", encoding="utf-8")
     assert not run(module, tree, check=True)
-    assert (tree / OUTPUTS[3]).read_text() == "stale"
+    assert (tree / OUTPUTS[3]).read_text(encoding="utf-8") == "stale"
 
 
 @pytest.mark.parametrize(
@@ -122,7 +122,7 @@ def test_invalid_input_does_not_modify_any_output(tree, mutation):
         "brand.nanodot.json" if mutation in {"color", "contrast", "unknown"} else "ui.nanodot.json"
     )
     path = tree / "config" / name
-    data = json.loads(path.read_text())
+    data = json.loads(path.read_text(encoding="utf-8"))
     if mutation == "color":
         data["themeColors"]["dark"]["primary"] = "#oops"
     elif mutation == "contrast":
@@ -137,7 +137,7 @@ def test_invalid_input_does_not_modify_any_output(tree, mutation):
         del data["touchTarget"]
     else:
         data["motion"]["focus"] = -1
-    path.write_text(json.dumps(data))
+    path.write_text(json.dumps(data), encoding="utf-8")
     with pytest.raises(ValueError):
         run(module, tree)
     assert snapshot(tree) == before
@@ -170,7 +170,7 @@ def test_material_roles_and_contrast(tree):
             roles["inverseOnSurface"]
             == brand.themeColors["dark" if mode == "light" else "light"]["text"]
         )
-    colors = (tree / OUTPUTS[0]).read_text()
+    colors = (tree / OUTPUTS[0]).read_text(encoding="utf-8")
     for role in module.material_roles(brand, "light"):
         assert f"{role} = " in colors
 
@@ -183,7 +183,8 @@ def test_rebrand_cannot_overwrite_token_material_mapping(tree):
     theme.write_text(
         "package com.openminis.app.ui.theme\n// nanoMuse: shared DotColors schemes\n"
         "private val LightColorScheme = io.github.nanomuse.dot.DotColors.lightScheme\n"
-        "private val DarkColorScheme = io.github.nanomuse.dot.DotColors.darkScheme\n"
+        "private val DarkColorScheme = io.github.nanomuse.dot.DotColors.darkScheme\n",
+        encoding="utf-8",
     )
     before = snapshot(tree)
     apply_brand(tree, load_brand(tree / "config/brand.nanodot.json"))
