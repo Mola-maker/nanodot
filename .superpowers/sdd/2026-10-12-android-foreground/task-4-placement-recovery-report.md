@@ -18,4 +18,12 @@ Review correction: `SessionBadgeStore.remove` can write `session_badge_store/bad
 
 The v2 readback uses `SharedPreferences.getString` and compares entries rather than serialized map order; the format is plain text, not JSON. `SessionBadgeStore` writes with `apply`, so root must separately retain the final disk XML after recovery completion to verify persistence. This worker did not inspect or modify device preference files.
 
+## Runtime expected-parts correction
+
+Root's `glass-r4-exact-recovery-empty-dirs` retry passed the session guard but failed the complete message entity comparison before any deletion. Root's fresh `current/owned-rows.json` is exactly equal to the prior pinned snapshot, including all three rows and every field. The previous static check reconstructed expected parts with Python's JSON encoder; it did not verify the Android `org.json` runtime encoding. That distinction made the earlier byte-exact expectation claim too broad.
+
+The cached local `org.json:json:20231013` library reproduces the incompatible quoting: `JSONObject.quote("</system-reminder>")` returns a backslash before the slash, while the database's stopped-response parts contain the literal unescaped closing tag. This local Java observation supports the serializer mismatch; it is not an Android-device execution claim.
+
+Expected `partsJson` now uses three raw Kotlin literals copied from the saved database strings, with no runtime JSON serialization or normalization. A fresh Python check extracted those actual source literals and compared their UTF-8 bytes against the fresh current rows: all three match. The full `MessageEntity` equality guard, every other metadata field and every deletion/preference/sync/media guard remain unchanged. No recovery, Gradle or device command was run by this worker.
+
 Validation by this worker is source-only: `git diff --check` and exact expected snapshot comparison. Root owns compilation, opt-in execution, actual keyed before/after evidence and native control rerun. No recovery/device/Gradle command was executed by this worker. The prepared method is not evidence that the old row has been removed.

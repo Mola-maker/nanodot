@@ -27,17 +27,15 @@ class DotPlacementExactOwnedRecoveryTest {
             id = id, title = "DOT_T4_LOCAL_ONLY_$id", modelId = "DOT_T4_LOCAL_NULL_BINDING",
             createdAt = 1791812630665L, updatedAt = 1791812645475L,
             lastMessage = "Retained history 39", memoryEnabled = 0)
-        fun parts(vararg values: String): String = org.json.JSONArray().apply {
-            values.forEach { put(org.json.JSONObject().put("type", "text").put("value", it)) }
-        }.toString()
         val expectedMessages = listOf(
             MessageEntity(id = "064e80e8-99ed-4cd9-8a18-b548c5c58276", sessionId = id, role = "user",
-                partsJson = parts("DOT_T4_LOCAL_ONLY_$id"), createdAt = 1791812630668L, sortOrder = 0),
+                partsJson = """[{"type":"text","value":"DOT_T4_LOCAL_ONLY_e48014ad-3131-4291-adc2-b47a40caf98e"}]""",
+                createdAt = 1791812630668L, sortOrder = 0),
             MessageEntity(id = "57b71a49-58d3-4c12-8540-eb676fbcdfd0", sessionId = id, role = "user",
-                partsJson = parts("Owned placement stream"), createdAt = 1791812633236L, sortOrder = 1),
+                partsJson = """[{"type":"text","value":"Owned placement stream"}]""",
+                createdAt = 1791812633236L, sortOrder = 1),
             MessageEntity(id = "5961d2f0-1cfa-4f58-bf50-bf5c0331e4fd", sessionId = id, role = "assistant",
-                partsJson = parts("Retained history 39",
-                    "<system-reminder>The user stopped this response. Content may be incomplete.</system-reminder>"),
+                partsJson = """[{"type":"text","value":"Retained history 39"},{"type":"text","value":"<system-reminder>The user stopped this response. Content may be incomplete.</system-reminder>"}]""",
                 createdAt = 1791812645475L, sortOrder = 2))
         val prefs = app.getSharedPreferences("nanomuse", android.content.Context.MODE_PRIVATE)
         val originalFirst = prefs.getString("first_conversation.session", null) to
