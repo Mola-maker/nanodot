@@ -36,6 +36,7 @@ class DotChatPanelTest {
     @Volatile private var imeAnimationRunning = false
     @Volatile private var imeAnimationEnded = false
     private var previousShownGeometry: RectPx? = null
+    private var previousPanelGeometryObservation: String? = null
     private var previousObservationFlags: Int? = null
     private var originalNativeSettings: Map<String,String?>? = null
     private var originalDisplay: Pair<String,String>? = null
@@ -103,6 +104,21 @@ class DotChatPanelTest {
             val expected = io.github.nanomuse.dot.overlay.foregroundFrame(host, host.height * .55f, service.resources.displayMetrics.density).bounds
             matches = point[0] == Math.round(expected.left) && point[1] == Math.round(expected.top) &&
                 view.width == Math.round(expected.width) && view.height == Math.round(expected.height)
+            // Preserve the exact acceptance predicate. On failure, distinguish a stale host/root
+            // observation from controller parameters or a WindowManager-clipped native frame.
+            val params = view.layoutParams as WindowManager.LayoutParams
+            val display = service.getSystemService(android.hardware.display.DisplayManager::class.java).getDisplay(0)
+            val size = android.graphics.Point(); display.getRealSize(size)
+            val observation = "hostId=${service.dotOverlay.panelHostWindowId} host=$host expected=$expected " +
+                "actual=${point[0]},${point[1]},${view.width},${view.height} " +
+                "params=${params.x},${params.y},${params.width},${params.height} " +
+                "attached=${view.isAttachedToWindow} shown=${view.isShown} " +
+                "display=$size rotation=${display.rotation} density=${service.resources.displayMetrics.density} " +
+                "fontScale=${service.resources.configuration.fontScale} matches=$matches"
+            if (observation != previousPanelGeometryObservation) {
+                println("T4_PANEL_GEOMETRY $observation")
+                previousPanelGeometryObservation = observation
+            }
             if (matches) println("T4_SETTLED_PANEL host=$host frame=${point[0]},${point[1]},${view.width},${view.height}")
         }
         return matches
@@ -376,7 +392,14 @@ class DotChatPanelTest {
             service.dotOverlay.showPanel(adapter) { adapter.binding.value?.let(adapter::cancel) }
         }
         waitFor { shell("logcat -d -v brief -s System.out:I").contains("loadSession EXIT session=$id ") }
-        waitFor { service.dotOverlay.panelView?.isAttachedToWindow == true && panelWithinSettledHost() }
+        try {
+            waitFor { service.dotOverlay.panelView?.isAttachedToWindow == true && panelWithinSettledHost() }
+        } catch (failure: AssertionError) {
+            // Capture before placement's finally collapses the window/restores font settings.
+            try { saveHostState("canonical-settle-timeout"); savePanelNative("canonical-settle-timeout") }
+            catch (diagnosticFailure: Throwable) { failure.addSuppressed(diagnosticFailure) }
+            throw failure
+        }
         return vm
     }
     private class HeldRoom(app: MinisApp) : AutoCloseable {
