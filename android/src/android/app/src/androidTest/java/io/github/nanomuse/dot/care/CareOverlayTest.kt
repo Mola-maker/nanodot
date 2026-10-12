@@ -91,13 +91,14 @@ class CareOverlayTest {
         instrumentation.runOnMainSync { owned=service.dotScreen.currentSceneKey()?.packageName==instrumentation.context.packageName }
         if(owned) automation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK)
     }
-    private fun awaitMain(description: String, condition: () -> Boolean) {
+    private fun awaitMain(description: String, onTimeout: () -> Unit = {}, condition: () -> Boolean) {
         val deadline=SystemClock.uptimeMillis()+5000
         var ready=false
         while(!ready && SystemClock.uptimeMillis()<deadline) {
             instrumentation.runOnMainSync { ready=condition() }
             if(!ready) SystemClock.sleep(50)
         }
+        if (!ready) onTimeout()
         assertTrue(description,ready)
     }
     @Test fun compactTargetCareRetainsTranscriptWhileAdjustedDraggedAndExpanded() {
@@ -105,9 +106,14 @@ class CareOverlayTest {
         val flags = automation.serviceInfo.flags
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         var viewport: RectPx? = null
-        fun card(): android.view.View = CareOverlayWindow::class.java.getDeclaredField("card").let {
-            it.isAccessible = true; it.get(window) as android.view.View
-        }
+        var requestedScene: SceneKey? = null
+        var sampledScene: SceneKey? = null
+        var plannedScene: SceneKey? = null
+        fun cardOrNull(): android.view.View? = if (!::window.isInitialized) null else
+            CareOverlayWindow::class.java.getDeclaredField("card").let {
+                it.isAccessible = true; it.get(window) as? android.view.View
+            }
+        fun card(): android.view.View = requireNotNull(cardOrNull())
         fun controlBounds(label: String): Rect? {
             var result: Rect? = null
             withNodes { all -> all.firstOrNull { it.text?.toString() == label && it.isVisibleToUser }?.let { node ->
@@ -136,8 +142,10 @@ class CareOverlayTest {
         fun saveControls(stage: String) {
             val dump = StringBuilder("CARE_COMPACT $stage\n")
             instrumentation.runOnMainSync {
-                val view = card(); val p = view.layoutParams as WindowManager.LayoutParams
-                dump.append("card=${p.x},${p.y},${p.width},${p.height} host=${service.dotScreen.hostViewport()} density=${service.resources.displayMetrics.density} font=${service.resources.configuration.fontScale}\n")
+                val view = cardOrNull(); val p = view?.layoutParams as? WindowManager.LayoutParams
+                val state = if (::session.isInitialized) session.controller.state.value else null
+                dump.append("card=${p?.x},${p?.y},${p?.width},${p?.height} attached=${view?.isAttachedToWindow} measured=${view?.width}x${view?.height} host=${service.dotScreen.hostViewport()} density=${service.resources.displayMetrics.density} font=${service.resources.configuration.fontScale}\n")
+                dump.append("state=${state?.state} error=${state?.errorCode} requested=$requestedScene sampled=$sampledScene planned=$plannedScene current=${service.dotScreen.currentSceneKey()}\n")
             }
             fun visit(node: AccessibilityNodeInfo, depth: Int) {
                 val bounds = Rect(); node.getBoundsInScreen(bounds)
@@ -149,7 +157,7 @@ class CareOverlayTest {
                 native.root?.let { try { visit(it, 0) } finally { it.recycle() } }
             } } finally { windows.forEach { it.recycle() } }
             java.io.File(service.cacheDir, "care-compact-$stage-native-tree.txt").writeText(dump.toString())
-            if (stage == "before" || stage == "timeout") automation.takeScreenshot()?.let { bitmap ->
+            if (stage == "before" || stage.endsWith("timeout")) automation.takeScreenshot()?.let { bitmap ->
                 try { java.io.File(service.cacheDir, "care-compact-$stage-native.png").outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) } }
                 finally { bitmap.recycle() }
             }
@@ -184,12 +192,14 @@ class CareOverlayTest {
                     // Controlled wide target is delivered through the real Care controller,
                     // validator and session, never through ordinary Chat's injected target hook.
                     val scene = requireNotNull(service.dotScreen.currentSceneKey())
+                    sampledScene = scene
                     val host = requireNotNull(service.dotScreen.hostViewport())
                     val node = NodeDto("wide-target", host, "Wide fixture", null, null, "container", false, true, false, true, false)
                     CaptureOutcome.Success(ScreenSnapshot("wide-fixture", generation, 1, scene, host, 0,
                         RectPx(0f, 0f, 0f, 0f), null, listOf(node), null,
                         ScreenTransform(host, host.width.toInt(), host.height.toInt())))
-                }, { service.dotScreen.currentSceneKey() }, { _, snapshot, _ ->
+                }, { service.dotScreen.currentSceneKey().also { requestedScene = it } }, { _, snapshot, _ ->
+                    plannedScene = snapshot.scene
                     CarePlanResult.Step(CareProposal(snapshot.id, snapshot.scene, "wide-target", CareAction.Focus,
                         "Touch the fixture target", null, CareExpectation.Focused("wide-target"), .9f))
                 })
@@ -197,8 +207,17 @@ class CareOverlayTest {
                 window = CareOverlayWindow(service, scope, session, { viewport ?: service.dotScreen.hostViewport() }, { service.dotScreen.currentSceneKey() })
                 session.enter(); session.submitGoal("Keep this Care goal")
             }
-            awaitMain("Real Care owner must reach compact target collision") {
-                session.controller.state.value.state == CareState.AwaitingUser && card().isAttachedToWindow && card().height > 1
+            var previousEntry = ""
+            awaitMain("Real Care owner must reach compact target collision", onTimeout = { saveControls("entry-timeout") }) {
+                val state = session.controller.state.value
+                val view = cardOrNull()
+                val current = service.dotScreen.currentSceneKey()
+                val observation = "state=${state.state} error=${state.errorCode} generation=${session.controller.generation} visible=${session.visible.value} editing=${session.editingGoal.value} requested=$requestedScene sampled=$sampledScene planned=$plannedScene current=$current attached=${view?.isAttachedToWindow} shown=${view?.isShown} height=${view?.height} host=${service.dotScreen.hostViewport()}"
+                if (observation != previousEntry) {
+                    println("CARE_COMPACT_ENTRY time=${SystemClock.uptimeMillis()} $observation")
+                    previousEntry = observation
+                }
+                state.state == CareState.AwaitingUser && view?.isAttachedToWindow == true && view.height > 1
             }
             automation.waitForIdle(300, 3000)
             val retained = card()
