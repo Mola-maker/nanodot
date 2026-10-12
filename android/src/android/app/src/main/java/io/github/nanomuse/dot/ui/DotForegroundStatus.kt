@@ -10,6 +10,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
 import com.openminis.app.R
 import io.github.nanomuse.dot.DotForegroundMode
 import io.github.nanomuse.dot.DotForegroundOperation
@@ -23,10 +24,12 @@ fun DotForegroundStatus(state: DotForegroundState, onStop: () -> Unit, modifier:
         verticalAlignment = Alignment.CenterVertically) {
         Text(description, modifier = Modifier.weight(1f).semantics {
             stateDescription = description; liveRegion = LiveRegionMode.Polite
-        }, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }, fontSize = 14.sp, lineHeight = 18.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         TextButton(onStop, enabled = canStopForeground(state),
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
             modifier = Modifier.heightIn(min = DotTokens.TouchTarget).testTag("dot_foreground_stop")) {
-            Text(stringResource(R.string.nm_dot_chat_stop), fontSize = DotTokens.Type.Body)
+            Text(stringResource(R.string.nm_dot_chat_stop), fontSize = DotTokens.Type.Body,
+                lineHeight = 20.sp, maxLines = 1, softWrap = false)
         }
     }
 }

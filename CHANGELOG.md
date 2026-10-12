@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Kept full Dot reply lines visible in short keyboard hosts at 200% text by sharing compact status/Stop with the scrolling controls viewport.
+
 - Preserved the mounted Dot chat, draft and transcript state during foreground target avoidance, keyboard and display changes; added owner-backed status and compact Expand/placement controls with localized labels.
 
 - Unified Dot breathing, press, trail and edge-snap motion durations across generated platform tokens; Android uses measured release velocity and interruptible native springs, with immediate reduced-motion cleanup.

@@ -586,8 +586,15 @@ class DotChatPanelTest {
             val stop = app.getString(com.openminis.app.R.string.nm_dot_chat_stop)
             fun reachable(root: android.view.accessibility.AccessibilityNodeInfo, text: String?, input: Boolean): Boolean {
                 val bounds = android.graphics.Rect(); root.getBoundsInScreen(bounds)
-                if ((if (input) root.isEditable else root.isClickable && root.isEnabled && containsNativeText(root, requireNotNull(text))) &&
-                    bounds.width() > 0 && bounds.height() >= 48 * service.resources.displayMetrics.density - 1) return true
+                val panel = requireNotNull(service.dotOverlay.panelView)
+                val panelOrigin = IntArray(2); panel.getLocationOnScreen(panelOrigin)
+                val panelBounds = android.graphics.Rect(panelOrigin[0], panelOrigin[1], panelOrigin[0] + panel.width, panelOrigin[1] + panel.height)
+                val currentHost = requireNotNull(service.dotScreen.hostViewport(service.dotOverlay.panelHostWindowId))
+                val hostBounds = android.graphics.Rect(Math.round(currentHost.left), Math.round(currentHost.top), Math.round(currentHost.right), Math.round(currentHost.bottom))
+                val visibleBounds = android.graphics.Rect(bounds)
+                val intersects = visibleBounds.intersect(panelBounds) && visibleBounds.intersect(hostBounds)
+                if (root.isVisibleToUser && intersects && (if (input) root.isEditable else root.isClickable && root.isEnabled && containsNativeText(root, requireNotNull(text))) &&
+                    visibleBounds.width() > 0 && visibleBounds.height() >= 48 * service.resources.displayMetrics.density - 1) return true
                 for (i in 0 until root.childCount) { val child = root.getChild(i) ?: continue
                     try { if (reachable(child,text,input)) return true } finally { child.recycle() } }
                 return false

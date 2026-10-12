@@ -45,16 +45,26 @@ class DotForegroundLayoutTest {
                             if(case=="up") assertTrue(frame.movedUp)
                             activity.setContent { MinisTheme {
                                 Box(Modifier.size((frame.bounds.width/density).dp,(frame.bounds.height/density).dp)) {
-                                    DotForegroundChat("Current instruction", {}, history = {
+                                    DotForegroundChat("Current instruction", {}, capsule = {
+                                        io.github.nanomuse.dot.ui.DotForegroundStatus(
+                                            io.github.nanomuse.dot.DotForegroundState(connected = true,
+                                                mode = io.github.nanomuse.dot.DotForegroundMode.Chat,
+                                                operation = io.github.nanomuse.dot.DotForegroundOperation.Replying), {},
+                                            Modifier.onGloballyPositioned { measured["control"] = it.boundsInWindow() })
+                                    }, history = {
                                         LazyColumn(Modifier.fillMaxSize().onGloballyPositioned { measured["history"] = it.boundsInWindow() }) {
                                             item { DotMessageBubble(user) {
-                                                Text(if(user) "User goal" else "Touch Search",fontSize=if(user) DotTokens.Type.Body else DotTokens.Type.Care,modifier=Modifier.onGloballyPositioned { measured["text"] = it.boundsInWindow() })
+                                                Text(if(user) "User goal" else "Touch Search",fontSize=if(user) DotTokens.Type.Body else DotTokens.Type.Care,modifier=Modifier.onGloballyPositioned {
+                                                    measured["text"] = it.boundsInWindow()
+                                                    val origin = it.localToWindow(androidx.compose.ui.geometry.Offset.Zero)
+                                                    measured["text_full"] = Rect(origin.x, origin.y, origin.x + it.size.width, origin.y + it.size.height)
+                                                })
                                             } }
                                             item { DotMessageBubble(false) { Text("Actual instruction",fontSize=DotTokens.Type.Care) } }
                                         }
                                     }, controls = {
                                         Column(Modifier.fillMaxWidth()) {
-                                            Button({},Modifier.fillMaxWidth().heightIn(min=48.dp).onGloballyPositioned { measured["control"] = it.boundsInWindow() }) { Text("Start") }
+                                            Button({},Modifier.fillMaxWidth().heightIn(min=48.dp)) { Text("Start") }
                                             OutlinedTextField("Retained draft",{},Modifier.fillMaxWidth())
                                             Button({},Modifier.fillMaxWidth().heightIn(min=48.dp)) { Text("End") }
                                         }
@@ -63,11 +73,16 @@ class DotForegroundLayoutTest {
                             } }
                         }
                         val deadline = SystemClock.uptimeMillis()+5000
-                        while(measured.size<3 && SystemClock.uptimeMillis()<deadline) Thread.sleep(20)
+                        while(measured.size<4 && SystemClock.uptimeMillis()<deadline) Thread.sleep(20)
                         val label="$case user=$user font=$scale measured=$measured"
-                        assertEquals(label,3,measured.size)
+                        assertEquals(label,4,measured.size)
                         assertTrue("Visible transcript $label",requireNotNull(measured["history"]).height >= 48*density-.5f)
-                        assertTrue("Whole 48dp touch viewport $label",requireNotNull(measured["control"]).height >= 48*density-.5f)
+                        assertTrue("Visible 48dp status/Stop viewport $label",requireNotNull(measured["control"]).height >= 48*density-.5f)
+                        val visibleText = requireNotNull(measured["text"])
+                        val fullText = requireNotNull(measured["text_full"])
+                        val viewport = requireNotNull(measured["history"])
+                        assertEquals("Whole reply line height $label", fullText.height, visibleText.height, .5f)
+                        assertTrue("Reply line inside history viewport $label", fullText.top >= viewport.top - .5f && fullText.bottom <= viewport.bottom + .5f)
                         assertTrue("Real message text $label",requireNotNull(measured["text"]).height >= (if(user) 16 else 18)*scale*density-.5f)
                         println("FOREGROUND_LAYOUT $label")
                     }

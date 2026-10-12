@@ -45,7 +45,7 @@ fun DotForegroundChat(status: String? = null, onCollapse: () -> Unit,
             Column(Modifier.fillMaxSize().padding(padding).padding(end = if (compact) 52.dp else 0.dp),
                 // Reserve rounding headroom for the 48dp history in short hosts at enlarged fonts.
                 verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 8.dp)) {
-            capsule?.invoke()
+            if (!compact) capsule?.invoke()
             if (compact) {
                 status?.let { Text(it, style = MaterialTheme.typography.labelSmall, maxLines = 1,
                     overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics {
@@ -65,6 +65,7 @@ fun DotForegroundChat(status: String? = null, onCollapse: () -> Unit,
             Box(Modifier.weight(1f).fillMaxWidth().testTag("dot_foreground_history")) { history() }
             Column(Modifier.height(controlsHeight).fillMaxWidth().testTag("dot_foreground_controls")
                 .verticalScroll(rememberScrollState())) {
+            if (compact) capsule?.invoke()
             if (placementCompact) {
                 Row(Modifier.fillMaxWidth()) {
                     TextButton(onExpand, Modifier.weight(1f).heightIn(min = DotTokens.TouchTarget).testTag("dot_foreground_expand")) {
