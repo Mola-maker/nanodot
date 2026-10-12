@@ -38,15 +38,18 @@ class DotForegroundGestureNativeTest {
     private fun shell(command: String) {
         ParcelFileDescriptor.AutoCloseInputStream(automation.executeShellCommand(command)).use { it.readBytes() }
     }
-    private fun restore(key: String, value: String?) {
+    private fun validateSetting(key: String, value: String?) {
         require(key in setOf("enabled_accessibility_services", "accessibility_enabled"))
+        require(value == null || if (key == "accessibility_enabled") value in setOf("0", "1")
+            else value.split(':').all { it.matches(Regex("[A-Za-z0-9_.$]+/[A-Za-z0-9_.$]+")) })
+    }
+    private fun restore(key: String, value: String?) {
+        validateSetting(key, value)
         if (value == null) shell("settings delete secure $key")
         else {
             // UiAutomationConnection uses Runtime.exec(String), not sh -c. Quotes would
             // become literal argv characters; '$' in a nested class is already preserved.
             // Validate every argv value before mutation, including final restoration.
-            require(if (key == "accessibility_enabled") value in setOf("0", "1")
-                else value.split(':').all { it.matches(Regex("[A-Za-z0-9_.$]+/[A-Za-z0-9_.$]+")) })
             shell("settings put secure $key $value")
         }
     }
@@ -111,11 +114,12 @@ class DotForegroundGestureNativeTest {
     @Test fun realOrbTapCountsMountChatScreenAndCare() {
         // Read originals before UiAutomation connects; never clear app data or credentials.
         val original = listOf("enabled_accessibility_services", "accessibility_enabled").associateWith(::setting)
+        // Validate exact raw originals with the restoration validator before UiAutomation
+        // connects or any fixture mutation; empty colon entries must fail here, not in finally.
+        original.forEach { (key, value) -> validateSetting(key, value) }
         val own = ComponentName(context.packageName, MinisAccessibilityService::class.java.name).flattenToString()
         val services = original["enabled_accessibility_services"].orEmpty().split(':').filter { it.isNotEmpty() }
         assumeTrue("Grant the real accessibility service before running this fixture", own in services)
-        require(services.all { it.matches(Regex("[A-Za-z0-9_.$]+/[A-Za-z0-9_.$]+")) })
-        require(original["accessibility_enabled"] in listOf(null, "0", "1"))
         assumeTrue("Unlock the isolated profile before running this fixture",
             !context.getSystemService(KeyguardManager::class.java).isKeyguardLocked &&
                 context.getSystemService(PowerManager::class.java).isInteractive)
