@@ -53,13 +53,15 @@ class DotForegroundGestureNativeTest {
             shell("settings put secure $key $value")
         }
     }
-    private fun await(message: String, check: () -> Boolean) {
+    private fun await(message: String, onTimeout: () -> Unit = {}, check: () -> Boolean) {
         val end = SystemClock.uptimeMillis() + 10000
         while (SystemClock.uptimeMillis() < end) {
             if (check()) return
             Thread.sleep(50)
         }
-        assertTrue(message, check())
+        val settled = check()
+        if (!settled) onTimeout()
+        assertTrue(message, settled)
     }
     private fun onMain(check: () -> Boolean): Boolean {
         var result = false
@@ -98,12 +100,60 @@ class DotForegroundGestureNativeTest {
             return null
         } finally { windows.forEach { it.recycle() } }
     }
+    private fun diagnose(service: MinisAccessibilityService, stage: String, hit: Rect,
+        orbLabel: String, collapseLabel: String) {
+        // Never print binding IDs, conversation content, host text, accounts, or screenshots.
+        val out = StringBuilder("DOT_NATIVE_GESTURE stage=$stage hit=$hit")
+        out.append(" orbNode=").append(bounds(service, orbLabel))
+            .append(" collapseNode=").append(bounds(service, collapseLabel))
+        instrumentation.runOnMainSync {
+            val state = service.dotInteraction.foreground.state.value
+            out.append(" mode=${state.mode} operation=${state.operation} bindingPresent=${state.binding != null}")
+                .append(" foregroundConnected=${state.connected} epoch=${state.epoch}")
+                .append(" overlayConnected=${service.dotOverlay.isConnected} windows=${service.dotOverlay.windowCount}")
+                .append(" careVisible=${service.dotInteraction.careSession.visible.value}")
+            fun viewStatus(name: String, view: android.view.View?) {
+                out.append(" $name-present=${view != null}")
+                view?.let {
+                    val xy = IntArray(2); it.getLocationOnScreen(xy)
+                    val rect = Rect(xy[0], xy[1], xy[0] + it.width, xy[1] + it.height)
+                    val flags = (it.layoutParams as? android.view.WindowManager.LayoutParams)?.flags
+                    out.append(" $name-screen=$rect $name-attached=${it.isAttachedToWindow}")
+                        .append(" $name-shown=${it.isShown} $name-alpha=${it.alpha} $name-flags=$flags")
+                }
+            }
+            viewStatus("orb", service.dotOverlay.orbView)
+            viewStatus("panel", service.dotOverlay.panelView)
+            val display = service.dotOverlay.orbView?.display
+            val size = android.graphics.Point()
+            display?.getRealSize(size)
+            val metrics = service.resources.displayMetrics
+            out.append(" display=${display?.displayId} rotation=${display?.rotation} realSize=$size")
+                .append(" metrics=${metrics.widthPixels}x${metrics.heightPixels} density=${metrics.density}")
+                .append(" fontScale=${service.resources.configuration.fontScale}")
+        }
+        out.append(" interactive=${context.getSystemService(PowerManager::class.java).isInteractive}")
+            .append(" keyguard=${context.getSystemService(KeyguardManager::class.java).isKeyguardLocked}")
+            .append(" doubleTapMs=${ViewConfiguration.getDoubleTapTimeout()} axFlags=${automation.serviceInfo.flags}")
+        val windows = service.windows
+        try {
+            windows.forEach { window ->
+                val rect = Rect(); window.getBoundsInScreen(rect)
+                out.append(" nativeWindow(type=${window.type},bounds=$rect,active=${window.isActive},focused=${window.isFocused})")
+            }
+        } finally { windows.forEach { it.recycle() } }
+        println(out.toString())
+    }
     private fun tap(rect: Rect) {
         val downTime = SystemClock.uptimeMillis()
         fun inject(action: Int) {
             val event = MotionEvent.obtain(downTime, SystemClock.uptimeMillis(), action,
                 rect.exactCenterX(), rect.exactCenterY(), 0).apply { source = InputDevice.SOURCE_TOUCHSCREEN }
-            try { assertTrue("Android must accept the native touch", automation.injectInputEvent(event, true)) }
+            try {
+                val accepted = automation.injectInputEvent(event, true)
+                println("DOT_NATIVE_GESTURE inputAction=$action downTime=$downTime eventTime=${event.eventTime} x=${event.x} y=${event.y} rawX=${event.rawX} rawY=${event.rawY} accepted=$accepted")
+                assertTrue("Android must accept the native touch", accepted)
+            }
             finally { event.recycle() }
         }
         inject(MotionEvent.ACTION_DOWN)
@@ -166,17 +216,21 @@ class DotForegroundGestureNativeTest {
                 2 to DotForegroundMode.Screen, 3 to DotForegroundMode.Care)) {
                 await("Visible orb required before $count native taps") { bounds(connected, orb) != null }
                 val hit = requireNotNull(bounds(connected, orb))
+                diagnose(connected, "before-$count-taps", hit, orb, collapse)
                 repeat(count) { index -> tap(hit); if (index + 1 < count) Thread.sleep(interval) }
                 // Let the platform-configured reducer deadline classify the completed tap sequence.
                 Thread.sleep(ViewConfiguration.getDoubleTapTimeout().toLong() + 100)
-                await("$count native taps must mount $mode and a visible collapse control") {
+                diagnose(connected, "after-$count-tap-arbitration", hit, orb, collapse)
+                await("$count native taps must mount $mode and a visible collapse control",
+                    onTimeout = { diagnose(connected, "mount-$mode-timeout", hit, orb, collapse) }) {
                     onMain { connected.dotInteraction.foreground.state.value.mode == mode &&
                         if (mode == DotForegroundMode.Care) connected.dotInteraction.careSession.visible.value
                         else connected.dotOverlay.panelView?.isAttachedToWindow == true } &&
                         bounds(connected, collapse) != null
                 }
                 tap(requireNotNull(bounds(connected, collapse)))
-                await("Native collapse must remove the mounted $mode panel") {
+                await("Native collapse must remove the mounted $mode panel",
+                    onTimeout = { diagnose(connected, "collapse-$mode-timeout", hit, orb, collapse) }) {
                     onMain { connected.dotOverlay.panelView == null && !connected.dotInteraction.careSession.visible.value } &&
                         bounds(connected, collapse) == null
                 }
