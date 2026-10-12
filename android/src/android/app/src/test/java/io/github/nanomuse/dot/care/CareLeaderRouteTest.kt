@@ -82,6 +82,22 @@ class CareLeaderRouteTest {
         assertEquals(100f,route.last().x,0f)
     }
 
+    @Test fun terminalCircleStrokeCannotEscapeTheClippedViewport() {
+        // Circle radius is stroke, and its STROKE paint adds another half-stroke outside it.
+        assertNull(careLeaderRoute(RectPx(251f,2085f,829f,2232f),RectPx(100f,96f,893f,112.75f),
+            RectPx(68f,96f,1013f,500f),viewport,stroke,clearance))
+    }
+
+    @Test fun terminalCircleOuterInkMayTouchTheExactViewportBoundary() {
+        val route=requireNotNull(careLeaderRoute(RectPx(251f,2085f,829f,2232f),RectPx(100f,96f,893f,119.625f),
+            RectPx(68f,96f,1013f,500f),viewport,stroke,clearance))
+        val end=route.last()
+        val outerRadius=stroke+stroke/2
+        val terminalInk=RectPx(end.x-outerRadius,end.y-outerRadius,end.x+outerRadius,end.y+outerRadius)
+        assertEquals(96f,terminalInk.top,0f)
+        assertTrue("The complete stroked terminal footprint fits",contains(viewport,terminalInk))
+    }
+
     private fun assertSafeRoute(target: RectPx, card: RectPx, bubble: RectPx, protectedContent: RectPx) {
         val points = requireNotNull(careLeaderRoute(target,bubble,card,viewport,stroke,clearance))
         assertTrue("The leader must connect the target to a current bubble side", points.size >= 2)

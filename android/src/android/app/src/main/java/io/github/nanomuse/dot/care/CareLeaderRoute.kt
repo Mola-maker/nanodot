@@ -14,6 +14,7 @@ internal fun careLeaderRoute(target: RectPx, bubble: RectPx, card: RectPx?, view
         target.width<=strokeWidth || target.height<=strokeWidth || bubble.height<=strokeWidth*2 ||
         !viewport.contains(target) || !viewport.contains(card) || !card.contains(bubble) || target.overlaps(card)) return null
     val radius=strokeWidth/2
+    val terminalInkRadius=strokeWidth+radius // drawCircle radius plus its STROKE paint's outer half.
     val targetY=target.top+target.height/2
     val bubbleY=bubble.top+bubble.height/2
     fun candidate(left: Boolean): List<PointPx>? {
@@ -24,7 +25,8 @@ internal fun careLeaderRoute(target: RectPx, bubble: RectPx, card: RectPx?, view
         // Before the final side entry, even the stroke plus its clearance stays outside the card.
         if(points.zipWithNext().any { (a,b) -> !viewport.contains(ink(a,b,radius)) } ||
             points.zipWithNext().dropLast(1).any { (a,b) -> card.overlaps(ink(a,b,radius+clearance)) } ||
-            !viewport.contains(RectPx(end.x-strokeWidth,end.y-strokeWidth,end.x+strokeWidth,end.y+strokeWidth))) return null
+            !viewport.contains(RectPx(end.x-terminalInkRadius,end.y-terminalInkRadius,
+                end.x+terminalInkRadius,end.y+terminalInkRadius))) return null
         // The final horizontal segment approaches from the same exterior side; never cross the bubble.
         if(if(left) rail>end.x else rail<end.x) return null
         return points
