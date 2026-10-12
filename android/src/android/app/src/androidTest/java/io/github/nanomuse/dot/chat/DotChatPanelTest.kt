@@ -204,6 +204,15 @@ class DotChatPanelTest {
         while (!condition() && SystemClock.uptimeMillis()<until) Thread.sleep(100)
         assertTrue("native state did not settle", condition())
     }
+    private fun overlayConnectedOnMain(): Boolean {
+        var connected = false
+        // The instance is published in onCreate before onServiceConnected initializes the
+        // lazy main-thread controller. A background first read can deadlock its initialization.
+        instrumentation.runOnMainSync {
+            connected = MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true
+        }
+        return connected
+    }
     // Read before obtaining UiAutomation: its connection temporarily enables accessibility.
     private fun secureSetting(key: String): String? = android.provider.Settings.Secure.getString(instrumentation.targetContext.contentResolver,key)
     private fun restoreSecure(key: String, value: String?) {
@@ -257,7 +266,7 @@ class DotChatPanelTest {
         automation.serviceInfo = observation
         println("T4_NATIVE_OBSERVATION flagsBefore=$previousObservationFlags flagsAfter=${automation.serviceInfo.flags}")
         shell("input keyevent 224"); shell("input keyevent 82")
-        if (MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected != true) {
+        if (!overlayConnectedOnMain()) {
             // Remove only our DEAD binding; preserve TalkBack and every unrelated service.
             val originalServices = originalNativeSettings?.get("enabled_accessibility_services")
             val others = originalServices.orEmpty().split(':').filter { it.isNotEmpty() && it != ownService }
@@ -270,7 +279,7 @@ class DotChatPanelTest {
             restoreSecure("enabled_accessibility_services",(others + ownService).joinToString(":"))
             restoreSecure("accessibility_enabled","1")
         }
-        waitFor { MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true }
+        waitFor { overlayConnectedOnMain() }
         shell("am start -W -n io.github.nanodot.app.test/io.github.nanomuse.dot.screen.ScreenHostFixture --es marker HOST_DOT_CHAT_T4_8C6A -f 0x10008000")
         waitFor {
             val root = MinisAccessibilityService.getInstance()?.rootInActiveWindow
