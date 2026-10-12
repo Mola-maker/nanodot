@@ -21,6 +21,13 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class ScreenRepositoryTest {
     companion object {
+        private fun overlayConnectedOnMain(): Boolean {
+            var connected = false
+            InstrumentationRegistry.getInstrumentation().runOnMainSync {
+                connected = MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true
+            }
+            return connected
+        }
         @JvmStatic @AfterClass fun releaseFrameworkGrant() {
             val instrumentation = InstrumentationRegistry.getInstrumentation()
             val automation = instrumentation.getUiAutomation(UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES)
@@ -30,7 +37,7 @@ class ScreenRepositoryTest {
             shell("settings put secure accessibility_enabled 0")
             val deadline = SystemClock.uptimeMillis()+10000
             var dump = shell("dumpsys accessibility")
-            while ((MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true ||
+            while ((overlayConnectedOnMain() ||
                 dump.contains("io.github.nanodot.app/com.openminis.app.accessibility.MinisAccessibilityService")) && SystemClock.uptimeMillis()<deadline) {
                 Thread.sleep(100); dump = shell("dumpsys accessibility")
             }
@@ -44,16 +51,18 @@ class ScreenRepositoryTest {
     @Before fun bindThroughFramework() {
         shell("input keyevent 224"); shell("input keyevent 82")
         shell("cmd statusbar collapse")
-        if (MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected != true) {
+        if (!overlayConnectedOnMain()) {
             shell("settings delete secure enabled_accessibility_services")
             shell("settings put secure accessibility_enabled 0")
             waitUntil { !shell("dumpsys accessibility").contains("Binding services:{{io.github.nanodot.app/") }
             shell("settings put secure enabled_accessibility_services io.github.nanodot.app/com.openminis.app.accessibility.MinisAccessibilityService")
             shell("settings put secure accessibility_enabled 1")
         }
-        waitUntil { MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true }
-        service = requireNotNull(MinisAccessibilityService.getInstance())
-        instrumentation.runOnMainSync { LegacyProjectionService.stop(instrumentation.targetContext) }
+        waitUntil { overlayConnectedOnMain() }
+        instrumentation.runOnMainSync {
+            service = requireNotNull(MinisAccessibilityService.getInstance())
+            LegacyProjectionService.stop(instrumentation.targetContext)
+        }
         waitUntil { LegacyProjectionService.capture == null }
         host()
     }

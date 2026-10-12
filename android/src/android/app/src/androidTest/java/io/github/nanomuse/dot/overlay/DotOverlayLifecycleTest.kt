@@ -90,17 +90,32 @@ class DotOverlayLifecycleTest {
             shell("input keyevent 82")
             val wakeDeadline = SystemClock.uptimeMillis() + 5000
             var awake = false
+            var observed: android.view.View? = null
+            var stableSince = SystemClock.uptimeMillis()
             while (!awake && SystemClock.uptimeMillis() < wakeDeadline) {
                 instrumentation.runOnMainSync {
                     service.dotOverlay.refreshLockState()
-                    awake = service.getSystemService(PowerManager::class.java).isInteractive && service.dotOverlay.orbView?.isAttachedToWindow == true
+                    val now = SystemClock.uptimeMillis()
+                    val interactive = service.getSystemService(PowerManager::class.java).isInteractive
+                    val unlocked = !service.getSystemService(android.app.KeyguardManager::class.java).isKeyguardLocked
+                    val view = service.dotOverlay.orbView
+                    val attached = view?.isAttachedToWindow == true
+                    if (!interactive || !unlocked || !attached || observed !== view) {
+                        observed = if (interactive && unlocked && attached) view else null
+                        stableSince = now
+                    }
+                    println("DOT_LIFECYCLE_WAKE time=$now interactive=$interactive unlocked=$unlocked attached=$attached view=${System.identityHashCode(view)} stableMs=${now - stableSince}")
+                    if (interactive && unlocked && attached && observed === view && now - stableSince >= 200) {
+                        // Assert during the SAME Main observation. A later traversal may
+                        // legitimately recreate geometry, so a second read is a TOCTOU race.
+                        assertTrue(requireNotNull(view).isAttachedToWindow)
+                        assertSame(view, service.dotOverlay.orbView)
+                        awake = true
+                    }
                 }
                 if (!awake) Thread.sleep(32)
             }
-            assertTrue("Waking must restore the real attached orb", awake)
-        }
-        instrumentation.runOnMainSync {
-            assertTrue(requireNotNull(service.dotOverlay.orbView).isAttachedToWindow)
+            assertTrue("Waking must restore the same attached orb while unlocked/interactive for200ms", awake)
         }
     }
 
