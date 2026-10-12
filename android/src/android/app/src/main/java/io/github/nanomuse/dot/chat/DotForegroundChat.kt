@@ -1,6 +1,5 @@
 package io.github.nanomuse.dot.chat
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.layout.*
@@ -23,6 +22,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.openminis.app.R
 import io.github.nanomuse.dot.ui.DotTokens
+import io.github.nanomuse.dot.ui.DotGlassSurface
+import io.github.nanomuse.dot.ui.DotGlassPlate
+import io.github.nanomuse.dot.ui.dotGlassPlateColor
 
 /** Shared chrome inside a bounded native window; no transparent full-screen touch surface. */
 @Composable
@@ -31,10 +33,7 @@ fun DotForegroundChat(status: String? = null, onCollapse: () -> Unit,
     placementCompact: Boolean = false, onExpand: () -> Unit = {},
     onAdjust: () -> Unit = {}, onDrag: (Float, Float) -> Unit = { _, _ -> },
     capsule: (@Composable () -> Unit)? = null) {
-    val colors = MaterialTheme.colorScheme
-    Surface(Modifier.fillMaxSize(), shape = RoundedCornerShape(24.dp),
-        color = colors.surface.copy(alpha = .97f), contentColor = colors.onSurface,
-        border = BorderStroke(1.dp, colors.primary.copy(alpha = .35f)), tonalElevation = 4.dp) {
+    DotGlassSurface(Modifier.fillMaxSize()) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val compact = placementCompact || maxHeight < 280.dp * LocalDensity.current.fontScale
             val padding = if (compact) 4.dp else DotTokens.Space.S12
@@ -45,13 +44,14 @@ fun DotForegroundChat(status: String? = null, onCollapse: () -> Unit,
             Column(Modifier.fillMaxSize().padding(padding).padding(end = if (compact) 52.dp else 0.dp),
                 // Reserve rounding headroom for the 48dp history in short hosts at enlarged fonts.
                 verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 8.dp)) {
-            if (!compact) capsule?.invoke()
+            if (!compact && capsule != null) DotGlassPlate(Modifier.fillMaxWidth()) { capsule() }
             if (compact) {
-                status?.let { Text(it, style = MaterialTheme.typography.labelSmall, maxLines = 1,
-                    overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics {
+                status?.let { DotGlassPlate(shape = RoundedCornerShape(4.dp)) { Text(it, style = MaterialTheme.typography.labelSmall, maxLines = 1,
+                    overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(horizontal = 4.dp).semantics {
                         stateDescription = it; liveRegion = LiveRegionMode.Polite
-                    }) }
-            } else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    }) } }
+            } else DotGlassPlate(Modifier.fillMaxWidth()) {
+                Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text("Dot", fontSize = DotTokens.Type.Body)
                     status?.let { Text(it, fontSize = DotTokens.Type.Body, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics {
@@ -62,8 +62,15 @@ fun DotForegroundChat(status: String? = null, onCollapse: () -> Unit,
                     Text(collapse, fontSize = DotTokens.Type.Body)
                 }
             }
-            Box(Modifier.weight(1f).fillMaxWidth().testTag("dot_foreground_history")) { history() }
-            Column(Modifier.height(controlsHeight).fillMaxWidth().testTag("dot_foreground_controls")
+            }
+            Box(Modifier.weight(1f).fillMaxWidth().testTag("dot_foreground_history")) {
+                // Protect bare empty-state text only; the unused transcript stays transparent.
+                CompositionLocalProvider(LocalTextStyle provides LocalTextStyle.current.copy(background = dotGlassPlateColor())) {
+                    history()
+                }
+            }
+            DotGlassPlate(Modifier.height(controlsHeight).fillMaxWidth().testTag("dot_foreground_controls")) {
+            Column(Modifier.fillMaxSize()
                 .verticalScroll(rememberScrollState())) {
             if (compact) capsule?.invoke()
             if (placementCompact) {
@@ -80,8 +87,11 @@ fun DotForegroundChat(status: String? = null, onCollapse: () -> Unit,
                 controls()
             }
             }
-            if (compact) IconButton(onClick = onCollapse, modifier = Modifier.align(Alignment.TopEnd).size(48.dp)) {
-                Icon(Icons.Default.KeyboardArrowDown, contentDescription = collapse)
+            }
+            if (compact) DotGlassPlate(Modifier.align(Alignment.TopEnd).size(48.dp), shape = RoundedCornerShape(24.dp)) {
+                IconButton(onClick = onCollapse, modifier = Modifier.fillMaxSize()) {
+                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = collapse)
+                }
             }
             }
         }
@@ -90,14 +100,12 @@ fun DotForegroundChat(status: String? = null, onCollapse: () -> Unit,
 
 @Composable
 fun DotMessageBubble(user: Boolean, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    val colors = MaterialTheme.colorScheme
     val sender = stringResource(if (user) R.string.nm_dot_bubble_you else R.string.nm_dot_bubble_assistant)
     Row(Modifier.fillMaxWidth(), horizontalArrangement = if (user) Arrangement.End else Arrangement.Start) {
-        Surface(modifier.fillMaxWidth(.9f).semantics { contentDescription = sender },
+        DotGlassPlate(modifier.fillMaxWidth(.9f).semantics { contentDescription = sender },
             shape = RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp,
                 bottomStart = if (user) 18.dp else 4.dp, bottomEnd = if (user) 4.dp else 18.dp),
-            color = if (user) colors.primary.copy(alpha = .14f) else colors.surfaceVariant,
-            contentColor = colors.onSurface) {
+            user = user) {
             Column(Modifier.padding(horizontal = 12.dp, vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp), content = content)
         }
     }
