@@ -77,7 +77,9 @@ class DotForegroundGestureNativeTest {
                 DotForegroundMode.Idle, service.dotInteraction.foreground.state.value.mode)
         }
     }
-    private fun bounds(service: MinisAccessibilityService, label: String): Rect? {
+    private data class NativeTarget(val node: Rect, val window: Rect)
+    private fun bounds(service: MinisAccessibilityService, label: String): Rect? = nativeTarget(service, label)?.node
+    private fun nativeTarget(service: MinisAccessibilityService, label: String): NativeTarget? {
         fun visit(node: AccessibilityNodeInfo): Rect? {
             if (node.isVisibleToUser && node.isEnabled &&
                 (node.text?.toString() == label || node.contentDescription?.toString() == label)) {
@@ -95,10 +97,34 @@ class DotForegroundGestureNativeTest {
         try {
             for (window in windows.filter { it.type == AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY }) {
                 val root = window.root ?: continue
-                try { visit(root)?.let { return it } } finally { root.recycle() }
+                try { visit(root)?.let { node ->
+                    val frame = Rect(); window.getBoundsInScreen(frame)
+                    if (frame.contains(node)) return NativeTarget(node, frame)
+                } } finally { root.recycle() }
             }
             return null
         } finally { windows.forEach { it.recycle() } }
+    }
+    private fun settledTarget(service: MinisAccessibilityService, label: String, onTimeout: () -> Unit): Rect {
+        var previous: NativeTarget? = null
+        var unchangedSince = SystemClock.uptimeMillis()
+        var settled: NativeTarget? = null
+        await("Native collapse node and owning window must settle before input", onTimeout) {
+            // Attachment/insets/layout listeners post geometry updates after first visibility.
+            // Drain Main work, then require repeated native geometry agreement, resetting on drift.
+            instrumentation.waitForIdleSync()
+            val current = nativeTarget(service, label)
+            val now = SystemClock.uptimeMillis()
+            if (current == null || current != previous) {
+                println("DOT_NATIVE_GESTURE collapseGeometry previous=$previous current=$current")
+                previous = current
+                unchangedSince = now
+            }
+            val ready = current != null && now - unchangedSince >= ViewConfiguration.getDoubleTapTimeout()
+            if (ready) settled = current
+            ready
+        }
+        return requireNotNull(settled).node
     }
     private fun diagnose(service: MinisAccessibilityService, stage: String, hit: Rect,
         orbLabel: String, collapseLabel: String) {
@@ -230,7 +256,11 @@ class DotForegroundGestureNativeTest {
                         else connected.dotOverlay.panelView?.isAttachedToWindow == true } &&
                         bounds(connected, collapse) != null
                 }
-                tap(requireNotNull(bounds(connected, collapse)))
+                val closeHit = settledTarget(connected, collapse) {
+                    diagnose(connected, "collapse-$mode-geometry-timeout", hit, orb, collapse)
+                }
+                println("DOT_NATIVE_GESTURE collapseSettledHit=$closeHit mode=$mode")
+                tap(closeHit)
                 await("Native collapse must remove the mounted $mode panel",
                     onTimeout = { diagnose(connected, "collapse-$mode-timeout", hit, orb, collapse) }) {
                     onMain { connected.dotOverlay.panelView == null && !connected.dotInteraction.careSession.visible.value } &&
