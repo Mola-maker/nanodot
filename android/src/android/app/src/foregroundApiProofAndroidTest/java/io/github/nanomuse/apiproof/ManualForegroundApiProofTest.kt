@@ -792,6 +792,7 @@ class ManualForegroundApiProofTest {
         } finally {
             if(installed) {
                 var failures=0
+                var joinedJobs:List<Job> = emptyList()
                 fun restore(action:()->Unit) { try { action() } catch(_:Throwable) { failures++ } }
                 restore { inst.runOnMainSync { emit("before_cleanup") } }
                 restore { inst.runOnMainSync {
@@ -802,7 +803,9 @@ class ManualForegroundApiProofTest {
                         (field(window,"job") as? Job)?.let { jobs.add(it); it.cancel() }
                     }
                 } }
-                if(nextProbe) jobs.distinct().forEach { job -> restore { job.cancel() } } // Independently cancel every captured owned probe job.
+                if(nextProbe) restore { inst.runOnMainSync {
+                    jobs.distinct().forEach { job -> restore { job.cancel() } }
+                } } // Snapshot on the same Main owner that appends jobs; failure cannot skip later cleanup.
                 restore { inst.runOnMainSync { controller.cancel() } } // Invalidate even if disconnect's focus/speech callbacks throw.
                 restore { inst.runOnMainSync { session.disconnect() } }
                 restore { inst.runOnMainSync {
@@ -812,7 +815,8 @@ class ManualForegroundApiProofTest {
                         set(actual.dotInteraction,"careWindow",null)
                     }
                 } }
-                restore { runBlocking { withTimeout(5000) { jobs.distinct().forEach { it.join() } } } }
+                restore { inst.runOnMainSync { joinedJobs=jobs.distinct() } }
+                restore { runBlocking { withTimeout(5000) { joinedJobs.forEach { it.join() } } } }
                 restore { inst.runOnMainSync {
                     check(field(controller,"active")==false && controller.state.value==CareUiState() &&
                         field(controller,"work")==null && jobs.all { it.isCompleted }) { "Keyless Care callbacks remain isolated" }
