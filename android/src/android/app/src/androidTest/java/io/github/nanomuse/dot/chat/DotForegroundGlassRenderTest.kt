@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -60,7 +61,8 @@ class DotForegroundGlassRenderTest {
                                     }
                                     Text("Host reading stays readable", color = Color.Black,
                                         modifier = Modifier.padding(top = 128.dp, start = 12.dp))
-                                    if (visible.value) DotForegroundChat(
+                                    if (visible.value) {
+                                    DotForegroundChat(
                                         status = "Current instruction", onCollapse = {}, history = {
                                             DotMessageBubble(false) {
                                                 Text("Touch Search", modifier = Modifier.onGloballyPositioned {
@@ -74,6 +76,12 @@ class DotForegroundGlassRenderTest {
                                             }
                                         }
                                     )
+                                    // Independent fixture marker: layout callbacks cannot prove a submitted frame.
+                                    // This sits outside every pixel region used for product assertions.
+                                    Canvas(Modifier.align(Alignment.BottomEnd).size(8.dp)) {
+                                        drawRect(Color.Magenta)
+                                    }
+                                    }
                                 }
                             }
                         }
@@ -86,33 +94,41 @@ class DotForegroundGlassRenderTest {
                         val black = luminance(frame.getPixel((host.left + 108 * density).toInt(), (host.top + 240 * density).toInt()))
                         return kotlin.math.abs(white - black)
                     }
+                    fun submitted(frame: Bitmap): Boolean {
+                        val host = measured["host"] ?: return false
+                        val pixel = frame.getPixel((host.right - 4 * density).toInt(), (host.bottom - 4 * density).toInt())
+                        return android.graphics.Color.red(pixel) >= 240 &&
+                            android.graphics.Color.green(pixel) <= 20 && android.graphics.Color.blue(pixel) >= 240
+                    }
                     val evidence = File(context.getExternalFilesDir(null), "foreground-glass").apply { mkdirs() }
                     fun save(frame: Bitmap, phase: String) {
                         File(evidence, "$phase-dark-$dark-scale-$scale.png").outputStream().use {
                             frame.compress(Bitmap.CompressFormat.PNG, 100, it)
                         }
-                        File(evidence, "$phase-dark-$dark-scale-$scale.txt").writeText("density=$density bounds=$measured contrast=${emptyContrast(frame)} screen=${frame.width}x${frame.height}")
+                        File(evidence, "$phase-dark-$dark-scale-$scale.txt").writeText("density=$density bounds=$measured contrast=${emptyContrast(frame)} submitted=${submitted(frame)} screen=${frame.width}x${frame.height}")
                     }
                     // Main-thread idle alone can precede the compositor's first actual frame.
                     var baseline = requireNotNull(instrumentation.uiAutomation.takeScreenshot())
                     val deadline = SystemClock.uptimeMillis() + 5000
-                    while (emptyContrast(baseline) < .8 && SystemClock.uptimeMillis() < deadline) {
+                    while ((emptyContrast(baseline) < .8 || submitted(baseline)) && SystemClock.uptimeMillis() < deadline) {
                         baseline.recycle()
                         SystemClock.sleep(60)
                         baseline = requireNotNull(instrumentation.uiAutomation.takeScreenshot())
                     }
                     save(baseline, "baseline")
-                    assertTrue("Fixture has actual white/black host pixels: ${emptyContrast(baseline)} bounds=$measured", emptyContrast(baseline) >= .8)
+                    assertTrue("Fixture has actual unobscured white/black host pixels: ${emptyContrast(baseline)} submitted=${submitted(baseline)} bounds=$measured", emptyContrast(baseline) >= .8 && !submitted(baseline))
                     scenario.onActivity { visible.value = true }
                     instrumentation.waitForIdleSync()
                     val renderDeadline = SystemClock.uptimeMillis() + 5000
-                    while (!measured.containsKey("glyph") && SystemClock.uptimeMillis() < renderDeadline) SystemClock.sleep(20)
-                    SystemClock.sleep(120)
-                    val rendered = requireNotNull(instrumentation.uiAutomation.takeScreenshot())
+                    var rendered = requireNotNull(instrumentation.uiAutomation.takeScreenshot())
+                    while ((!submitted(rendered) || !measured.containsKey("glyph")) && SystemClock.uptimeMillis() < renderDeadline) {
+                        rendered.recycle()
+                        SystemClock.sleep(60)
+                        rendered = requireNotNull(instrumentation.uiAutomation.takeScreenshot())
+                    }
                     save(rendered, "rendered")
                     try {
-                        val retained = emptyContrast(rendered) / emptyContrast(baseline)
-                        assertTrue("Host contrast retained dark=$dark scale=$scale: $retained", retained >= .55)
+                        assertTrue("Fixture submitted the visible subtree to the actual compositor dark=$dark scale=$scale bounds=$measured", submitted(rendered))
                         val glyph = requireNotNull(measured["glyph"])
                         val background = luminance(rendered.getPixel(glyph.left.toInt(), glyph.top.toInt()))
                         var readable = 0
@@ -123,6 +139,9 @@ class DotForegroundGlassRenderTest {
                             }
                         }
                         assertTrue("Native readable bubble glyphs dark=$dark scale=$scale: $readable", readable >= 8)
+                        // An opacity verdict requires an actual panel frame and readable panel glyphs first.
+                        val retained = emptyContrast(rendered) / emptyContrast(baseline)
+                        assertTrue("Host contrast retained dark=$dark scale=$scale: $retained", retained >= .55)
                         println("FOREGROUND_GLASS dark=$dark scale=$scale hostContrast=$retained readableGlyphs=$readable")
                     } finally {
                         baseline.recycle()
