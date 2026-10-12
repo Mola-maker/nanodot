@@ -4,18 +4,29 @@ title: Nanodot docs
 hero:
   name: Nanodot
   text: Dot, an open-source personal agent.
-  tagline: P0 establishes Nanodot branding, offline Dot faces and safe defaults, based on nanoMuse and OpenMinis. Build from source; device acceptance and native platform packaging need separate verification.
+  tagline: Bring your own model. Use conversation, tools, memory and scheduled work on your devices. Nanodot is a source preview based on nanoMuse and OpenMinis.
   actions:
     - theme: brand
-      text: Build P0
+      text: Build Android
       link: /build
     - theme: alt
-      text: Brand contract
-      link: /brand
+      text: Quick start
+      link: https://github.com/Mola-maker/nanodot#quick-start
     - theme: alt
       text: GitHub source
       link: https://github.com/Mola-maker/nanodot
 ---
+
+## Start with a small task
+
+Install the Python runtime from this repository, configure your model, then try a text
+conversation or the local Web console. The [README quick start](https://github.com/Mola-maker/nanodot#quick-start)
+walks through installation. You can also [build Android](build.md) for Android 8+ on ARM64.
+
+For example, ask Dot to create a travel checklist and save it as a file. Read
+[configuration](configuration.md), [permissions](sentinel.md) and [privacy](privacy.md)
+as you add tools. To help the project, [report a reproducible result](https://github.com/Mola-maker/nanodot/issues/new/choose)
+or read the [contribution guide](../CONTRIBUTING.md).
 
 ## Current scope
 

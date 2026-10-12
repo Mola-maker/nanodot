@@ -1,40 +1,129 @@
 # Nanodot
 
-<p align="center"><img src="assets/brand/nanodot-mark.svg" alt="Nanodot · Dot" width="112" height="112"></p>
+<p align="center"><img src="assets/brand/nanodot-social-preview.png" alt="Nanodot: a personal AI agent for your devices, with Dot as your assistant" width="960"></p>
 
-[English](https://github.com/Mola-maker/nanodot/blob/main/README.md) | [简体中文](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_zh.md) | [繁體中文](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_zh-TW.md) | [Español](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_es.md) | [Français](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_fr.md) | [Bahasa Indonesia](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_id.md) | [日本語](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_ja.md) | [한국어](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_ko.md) | [Русский](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_ru.md) | [Tiếng Việt](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_vi.md)
+<p align="center"><strong>Bring your own model. Work with Dot on your phone, desktop or browser.</strong></p>
 
-Nanodot is an open-source personal agent derived from [nanoMuse](https://github.com/nano-muse/nanoMuse), whose phone apps are based on [OpenMinis 1.13](https://github.com/OpenMinis/OpenMinis). Its default assistant is **Dot**. This repository contains the Android and iOS apps, desktop shell, Web console and Python runtime.
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--or--later-136f63" alt="GPL-3.0-or-later"></a>
+  <a href="pyproject.toml"><img src="https://img.shields.io/badge/Python-3.11%2B-136f63" alt="Python 3.11 or newer"></a>
+  <a href="docs/build.md"><img src="https://img.shields.io/badge/Android-8%2B%20%C2%B7%20ARM64-136f63" alt="Android 8 or newer, ARM64"></a>
+  <a href="#project-status"><img src="https://img.shields.io/badge/status-source%20preview-7057a3" alt="Source preview"></a>
+</p>
 
-## P0 scope
+<p align="center"><a href="#quick-start">Quick start</a> · <a href="docs/index.md">Documentation</a> · <a href="docs/readme/README_zh.md">简体中文</a> · <a href="https://github.com/Mola-maker/nanodot/issues">Feedback</a> · <a href="#contributing">Contribute</a></p>
 
-P0 establishes the Nanodot identity, shared brand configuration, offline Dot artwork and safe defaults. The new floating ball and care mode belong to later phases; their preference keys do not enable those features or grant accessibility permissions.
+<details>
+<summary>More languages</summary>
 
-The theme follows the system. Dot has five bundled static faces; custom names, SOUL.md, avatars, animations, models and preferences remain yours. Continuous voice defaults to off. Automatic updates are disabled; check this repository’s releases manually.
+[繁體中文](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_zh-TW.md) | [Español](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_es.md) | [Français](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_fr.md) | [Bahasa Indonesia](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_id.md) | [日本語](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_ja.md) | [한국어](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_ko.md) | [Русский](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_ru.md) | [Tiếng Việt](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_vi.md)
 
-The inherited version remains **1.0.1**, Android versionCode **44**. Build configuration is synchronized across platforms. Real-device installation and upgrade acceptance are pending; a Linux build cannot validate Xcode or native Windows/macOS packaging.
+</details>
 
-## Build and installation
+Nanodot is an open-source personal AI agent with **Dot** as its default assistant. It brings together conversation, tools, memory and scheduled work, with Android and iOS app source, a desktop shell, a Web console and a Python runtime in one repository. It is derived from [nanoMuse](https://github.com/nano-muse/nanoMuse); the phone apps are based on [OpenMinis 1.13](https://github.com/OpenMinis/OpenMinis).
 
-Build Android locally from this checkout. Debug and release packages are separate; release requires a dedicated signing key and never falls back to a debug key. The build wrapper does not publish, upload or tag releases.
+## What you can work on with Dot
+
+| Use case | What the project provides | Learn more |
+|---|---|---|
+| Research and everyday work | Chat with your chosen model; use search, files and shell tools to turn a request into an output. | [Tools and configuration](docs/configuration.md) |
+| Work that continues over time | Memory, goals, reminders and routines. Scheduled work requires a running agent. | [CLI](docs/cli.md) |
+| Your own workflows | Extend the agent with skills and MCP servers. | [Skills and MCP](docs/configuration.md#skills) |
+| Phone and computer tasks | Screen-operation implementations, with platform-specific permissions and limits. iOS cannot operate other apps. | [Phone](docs/android.md) · [Computer use](docs/gui.md) |
+| Access from more than one device | A local Web console, plus optional device and conversation integrations through a relay. | [Web](docs/web.md) · [Devices](docs/device.md) |
+
+These capabilities come from the inherited implementations. Nanodot packaging and device acceptance are tracked separately below; model support and platform permissions determine which tools are available.
+
+## Meet Dot
+
+Dot's five bundled faces work without downloading artwork. The theme follows your system; you can keep your own name, SOUL.md, avatar, animations and model choices.
+
+<table>
+  <tr>
+    <td align="center"><img src="assets/brand/nanodot-avatar/idle.png" width="88" alt="Dot idle"><br>Idle</td>
+    <td align="center"><img src="assets/brand/nanodot-avatar/working.png" width="88" alt="Dot working"><br>Working</td>
+    <td align="center"><img src="assets/brand/nanodot-avatar/waiting.png" width="88" alt="Dot waiting"><br>Waiting</td>
+    <td align="center"><img src="assets/brand/nanodot-avatar/happy.png" width="88" alt="Dot happy"><br>Happy</td>
+    <td align="center"><img src="assets/brand/nanodot-avatar/error.png" width="88" alt="Dot error"><br>Error</td>
+  </tr>
+</table>
+
+## Quick start
+
+### Try the Python runtime and Web console
+
+You need **Python 3.11+** and a configured model provider. Install from this repository so you get Nanodot's source; the package and CLI retain the internal name `nanomuse`.
+
+```sh
+git clone https://github.com/Mola-maker/nanodot.git
+cd nanodot
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -e .
+nanomuse config init
+```
+
+On Windows, use `py -m venv .venv` and activate with `.venv\Scripts\Activate.ps1` in PowerShell. Edit the `[llm]` section of `config/config.toml` with your provider, model, endpoint and API-key environment variable. The [example configuration](config/config.example.toml) and [provider guide](docs/own-key.md) explain the choices. Model API usage may incur provider charges; the default setup does not supply a key or allowance.
+
+```sh
+nanomuse doctor       # Check your configuration and available tools.
+nanomuse chat         # Start a conversation in the terminal.
+# Or start the local Web console:
+nanomuse serve
+```
+
+Open the local URL printed by `serve`, including its authentication details. It listens locally by default. See [Web setup](docs/web.md) before enabling remote access.
+
+Try a small first task: **“Create a checklist for my next trip and save it as trip.md.”** Review tool approval requests as they appear. Browser automation and desktop screen operation need [additional setup](docs/every-device.md).
+
+### Build the Android app
+
+The Android target is **Android 8+ on ARM64**. Follow the [build guide](docs/build.md) to prepare JDK 21, the Android SDK/NDK, Go and native dependencies, then run:
 
 ```sh
 bash scripts/build-nanodot-apk.sh debug
-# Dedicated local signing configuration is required for release.
-bash scripts/build-nanodot-apk.sh release
 ```
 
-Read the [build guide](docs/build.md), [brand contract](docs/brand.md) and [project documentation](docs/index.md). Nanodot packages, when published, belong on the [Nanodot releases page](https://github.com/Mola-maker/nanodot/releases). Upstream nanoMuse downloads and TestFlight builds are separate products.
+The wrapper writes the APK and verification records under `dist/nanodot/`. Debug packages use a debug signature; a release build requires a dedicated signing key. It does not publish a release. Configure your model under Settings → Models, then start with a text conversation.
 
-Android uses `io.github.nanodot.app` and the external `nanodot://` scheme. Internal `com.openminis.app` and `io.github.nanomuse.*` packages, `minis://` routes and sandbox paths remain stable. The new application ID has separate private storage: importing nanoMuse data requires an explicit export/import, not automatic access to its files.
+## Project status
 
-## Models and services
+**Nanodot is a source preview. There is currently no formal Nanodot GitHub Release.** The inherited version is **1.0.1**; Android versionCode is **44**.
 
-Use your own model provider or configure the existing relay integration. **nanoMuse Cloud** remains the upstream service’s name and endpoint; Nanodot does not claim to operate it or promise a free allowance. Its account, availability and data policies are the service provider’s.
+| Area | Current boundary |
+|---|---|
+| Nanodot identity | Shared branding, offline Dot faces and system-theme defaults are in the source. |
+| Android | Build from source. Real-device installation, native operation and signed-upgrade acceptance need their own checks. |
+| Desktop and iOS | Source and build configurations are present. Native packaging, signing and device acceptance require the corresponding platforms. |
+| Floating Dot and care interaction | Work beyond the initial branding scope; do not assume a downloaded branding build includes it. |
+| Downloads and updates | Check [Nanodot releases](https://github.com/Mola-maker/nanodot/releases) for future published packages. Automatic updates are disabled. |
 
-## Contributing and licence
+Continuous voice defaults to off. Enabling accessibility or other permissions is an explicit device action. Upstream nanoMuse APKs, desktop installers and TestFlight builds are separate products.
 
-Use [Nanodot issues](https://github.com/Mola-maker/nanodot/issues) for this fork. Read [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md); commits require DCO sign-off. The licence is [GPL-3.0-or-later](LICENSE), with upstream attribution in [NOTICE](NOTICE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Nanodot is independent of Meta and its Muse trademark.
+## Models, data and permissions
+
+- **Use your own model provider.** The inherited runtime and clients support provider configuration; available capabilities depend on the selected model. See [own-key setup](docs/own-key.md).
+- **Review actions.** The Python runtime's [Sentinel](docs/sentinel.md) handles tool approvals. Phone and desktop operation also require the relevant platform permissions.
+- **Understand data flow.** Local execution still sends prompts and selected content to the model provider when inference runs. Read [privacy](docs/privacy.md) and [data controls](docs/sync.md).
+- **Optional upstream services keep their identity.** nanoMuse Cloud is the upstream service. Nanodot does not operate it or promise its availability or free allowance; its provider controls accounts and policies.
+
+Android uses `io.github.nanodot.app` and the external `nanodot://` scheme. Existing internal packages, `minis://` routes and sandbox paths remain stable. Nanodot has separate private app storage: moving data from nanoMuse requires an explicit supported export/import.
+
+## Documentation
+
+[Start here](docs/index.md) · [Build](docs/build.md) · [Configuration](docs/configuration.md) · [Architecture](docs/architecture.md) · [Troubleshooting](docs/troubleshooting.md) · [Changelog](CHANGELOG.md)
+
+Platform and runtime pages include inherited nanoMuse implementation guidance. Read them alongside [Nanodot's build boundaries](docs/build.md#other-platforms-and-acceptance).
+
+## Contributing
+
+Both users and developers can help:
+
+- **Try a workflow** and [report the result](https://github.com/Mola-maker/nanodot/issues/new/choose), including your source revision, platform, model and reproducible steps. Keep credentials and private content out of reports.
+- **Improve onboarding** with clearer docs, translations or platform build notes. Read [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md); commits require DCO sign-off.
+- **Share a concrete example** with a link to this repository. If Nanodot is useful to you, a GitHub star helps other people discover it.
+
+Use [Nanodot issues](https://github.com/Mola-maker/nanodot/issues) for this project. The licence is [GPL-3.0-or-later](LICENSE); upstream attribution is retained in [NOTICE](NOTICE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Nanodot is independent of Meta and its Muse trademark.
 
 ## Upstream history and credits
 

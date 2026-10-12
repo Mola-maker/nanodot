@@ -4,18 +4,29 @@ title: Nanodot 文档
 hero:
   name: Nanodot
   text: Dot，开源个人智能体。
-  tagline: P0 建立 Nanodot 品牌、离线 Dot 头像与安全默认值，基于 nanoMuse 和 OpenMinis。从源码构建；设备验收与各平台原生打包需要独立验证。
+  tagline: 使用自己的模型，通过对话、工具、记忆和定时工作完成设备上的任务。Nanodot 基于 nanoMuse 与 OpenMinis，目前是源码预览。
   actions:
     - theme: brand
-      text: 构建 P0
+      text: 构建 Android
       link: /zh/build
     - theme: alt
-      text: 品牌契约
-      link: /zh/brand
+      text: 快速开始
+      link: https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_zh.md#快速开始
     - theme: alt
       text: GitHub 源码
       link: https://github.com/Mola-maker/nanodot
 ---
+
+## 从一个小任务开始 {#start-with-a-small-task}
+
+从本仓库安装 Python 运行时、配置模型后，可以体验文字对话或本地 Web 控制台。
+[README 快速开始](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_zh.md#快速开始)
+说明了安装步骤；你也可以为 Android 8+、ARM64 设备[构建 Android App](build.md)。
+
+例如，让 Dot 创建一份旅行清单并保存为文件。逐步添加工具时，请了解
+[配置](configuration.md)、[权限](sentinel.md)与[隐私](privacy.md)。如果愿意参与，
+可以[反馈可复现的结果](https://github.com/Mola-maker/nanodot/issues/new/choose)，或阅读
+[贡献指南](../../CONTRIBUTING.md)。
 
 ## 当前范围 {#current-scope}
 

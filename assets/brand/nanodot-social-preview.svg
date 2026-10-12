@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">Nanodot · Meet Dot</title>
+  <desc id="desc">An open-source personal AI agent for your devices. Bring your own model. Source preview.</desc>
+  <!-- Original Nanodot Dot artwork and cover layout; GPL-3.0-or-later. -->
+  <rect width="1280" height="640" fill="#F4F7F8"/>
+  <rect x="32" y="32" width="1216" height="576" rx="32" fill="#FFFFFF"/>
+  <rect x="80" y="84" width="198" height="40" rx="20" fill="#E7F4F0"/>
+  <text x="99" y="111" fill="#136F63" font-family="DejaVu Sans, sans-serif" font-size="17" font-weight="700" letter-spacing="1">OPEN SOURCE</text>
+  <text x="76" y="230" fill="#16252C" font-family="DejaVu Sans, sans-serif" font-size="92" font-weight="700" letter-spacing="-4">Nanodot</text>
+  <text x="80" y="306" fill="#16252C" font-family="DejaVu Sans, sans-serif" font-size="31">A personal AI agent</text>
+  <text x="80" y="350" fill="#16252C" font-family="DejaVu Sans, sans-serif" font-size="31">for your devices.</text>
+  <text x="80" y="407" fill="#687980" font-family="DejaVu Sans, sans-serif" font-size="24">Bring your own model. Meet Dot.</text>
+  <text x="80" y="505" fill="#136F63" font-family="DejaVu Sans, sans-serif" font-size="20" font-weight="700">PHONE  ·  DESKTOP  ·  WEB</text>
+  <text x="80" y="553" fill="#687980" font-family="DejaVu Sans, sans-serif" font-size="18">github.com/Mola-maker/nanodot</text>
+  <circle cx="959" cy="296" r="185" fill="#E7F4F0"/>
+  <g transform="translate(789 126) scale(3.4)">
+    <path d="M87 50C87 70.43453574259999 70.43453574259999 87 50 87C29.565464257400002 87 13 70.43453574259999 13 50C13 29.565464257400002 29.565464257400002 13 50 13C70.43453574259999 13 87 29.565464257400002 87 50Z" fill="#136F63"/>
+    <path d="M42 46C42 47.6568542494 40.6568542494 49 39 49C37.3431457506 49 36 47.6568542494 36 46C36 44.3431457506 37.3431457506 43 39 43C40.6568542494 43 42 44.3431457506 42 46Z" fill="#F4FFFC"/>
+    <path d="M64 46C64 47.6568542494 62.6568542494 49 61 49C59.3431457506 49 58 47.6568542494 58 46C58 44.3431457506 59.3431457506 43 61 43C62.6568542494 43 64 44.3431457506 64 46Z" fill="#F4FFFC"/>
+    <path d="M42 61C46 66 54 66 58 61" fill="none" stroke="#F4FFFC" stroke-width="2.7" stroke-linecap="round"/>
+  </g>
+  <rect x="853" y="499" width="212" height="40" rx="20" fill="#F1EDF8"/>
+  <text x="878" y="526" fill="#7057A3" font-family="DejaVu Sans, sans-serif" font-size="17" font-weight="600">SOURCE PREVIEW</text>
+</svg>
