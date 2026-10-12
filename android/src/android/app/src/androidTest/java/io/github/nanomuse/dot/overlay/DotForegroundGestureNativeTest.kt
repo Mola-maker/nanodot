@@ -182,7 +182,9 @@ class DotForegroundGestureNativeTest {
             automation.serviceInfo = automation.serviceInfo.apply {
                 flags = flags or AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
             }
-            if (MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected != true) {
+            // Service publishes its instance before onServiceConnected; initialize/read the
+            // synchronized overlay lazy only on Main to avoid contending with its Compose setup.
+            if (!onMain { MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true }) {
                 val others = services.filter { it != own }
                 restore("enabled_accessibility_services", others.joinToString(":").ifEmpty { null })
                 // Rebinding is framework-driven, and unrelated granted services are retained.
@@ -196,7 +198,7 @@ class DotForegroundGestureNativeTest {
                 restore("accessibility_enabled", "1")
             }
             await("Real accessibility service did not reconnect") {
-                MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true
+                onMain { MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true }
             }
             val connected = requireNotNull(MinisAccessibilityService.getInstance())
             assertInitialForegroundEmpty(connected)
