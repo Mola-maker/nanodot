@@ -115,6 +115,7 @@ class DotOverlayController(
     private var panelOwner: DotOverlayOwner? = null
     private var panelAdapter: DotChatAdapter? = null
     private var panelCollapse: (() -> Unit)? = null
+    private var panelStop: ((io.github.nanomuse.dot.chat.SessionBinding) -> Unit)? = null
     internal var panelHostWindowId: Int? = null
         private set
     private var panelParams: WindowManager.LayoutParams? = null
@@ -288,7 +289,7 @@ class DotOverlayController(
         }
     }
 
-    fun showPanel(adapter: DotChatAdapter, onCollapse: () -> Unit) {
+    fun showPanel(adapter: DotChatAdapter, onStop: ((io.github.nanomuse.dot.chat.SessionBinding) -> Unit)? = null, onCollapse: () -> Unit) {
         checkMainThread()
         if (!isConnected || locked || !enabled || hostViewport() == null) {
             adapter.binding.value?.let(adapter::cancel)
@@ -299,6 +300,7 @@ class DotOverlayController(
         if (panelHostWindowId == null) { adapter.binding.value?.let(adapter::cancel); return }
         panelAdapter = adapter
         panelCollapse = onCollapse
+        panelStop = onStop
         sync()
     }
 
@@ -369,7 +371,7 @@ class DotOverlayController(
         view.setViewTreeSavedStateRegistryOwner(owner)
         val composition = ComposeView(service).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent { MinisTheme { io.github.nanomuse.dot.ui.DotMotionHost { DotChatPanel(adapter, ::collapsePanel) } } }
+            setContent { MinisTheme { io.github.nanomuse.dot.ui.DotMotionHost { DotChatPanel(adapter, ::collapsePanel, panelStop ?: { binding -> adapter.cancel(binding); adapter.bind(binding.sessionId); Unit }) } } }
         }
         view.addView(composition, FrameLayout.LayoutParams(-1,-1))
         val host = hostViewport()
@@ -386,7 +388,7 @@ class DotOverlayController(
         catch (failure: RuntimeException) {
             owner.destroy(); composition.disposeComposition()
             panelAdapter = null
-            panelCollapse?.invoke(); panelCollapse = null
+            panelCollapse?.invoke(); panelCollapse = null; panelStop = null
             throw failure
         }
         panelView = view; panelOwner = owner; panelComposition = composition; panelParams = p
@@ -404,7 +406,7 @@ class DotOverlayController(
 
     private fun removePanel() {
         val onCollapse = panelCollapse
-        panelCollapse = null; panelAdapter = null
+        panelCollapse = null; panelAdapter = null; panelStop = null
         removeBackCallback?.invoke(); removeBackCallback = null
         panelView?.let { windows.removeViewImmediate(it) }
         panelComposition?.disposeComposition(); panelOwner?.destroy()

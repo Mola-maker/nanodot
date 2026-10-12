@@ -19,7 +19,10 @@ import io.github.nanomuse.home.MainChat
 import kotlinx.coroutines.*
 
 /** Service-scoped admission only. ChatViewModel remains the sole conversation/stream owner. */
-class DotInteractionCoordinator(private val service: MinisAccessibilityService) {
+class DotInteractionCoordinator internal constructor(
+    private val service: MinisAccessibilityService,
+    private val injectedAdapter: DotChatAdapter? = null,
+) {
     private val app get() = service.application as MinisApp
     private var scope = newScope()
     private fun newScope() = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -33,7 +36,7 @@ class DotInteractionCoordinator(private val service: MinisAccessibilityService) 
             scope.launch { if (foreground.state.value.connected) refreshAccount() }
         }
     }
-    private val adapter by lazy { DotChatAdapter.create(app).also { chat ->
+    private val adapter by lazy { injectedAdapter ?: DotChatAdapter.create(app).also { chat ->
         chat.voice = io.github.nanomuse.dot.voice.DotVoiceController(chat,
             io.github.nanomuse.dot.voice.DotVoiceRuntime.gate,
             {
@@ -208,8 +211,25 @@ class DotInteractionCoordinator(private val service: MinisAccessibilityService) 
                 }
             }
             if (!admitted(ticket, binding)) return@launch
-            service.dotOverlay.showPanel(adapter) { close() }
+            service.dotOverlay.showPanel(adapter, onStop = ::stopChatReply) { close() }
         }
+    }
+
+    /** Stop the owned stream, retaining the mounted panel and canonical history. */
+    fun stopChatReply(binding: SessionBinding) {
+        if (!foreground.state.value.connected) return
+        refreshAccount()
+        if (!adapter.accepts(binding)) return
+        val mode = foreground.state.value.mode
+        foreground.invalidate()
+        service.dotOverlay.cancelCaptureScan()
+        capturing.value = false
+        opening?.cancel()
+        projection?.cancel()
+        adapter.cancel(binding)
+        val fresh = adapter.bind(binding.sessionId)
+        foreground.update(mode, fresh, DotForegroundOperation.Idle)
+        project()
     }
 
     fun close() {

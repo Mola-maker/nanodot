@@ -33,7 +33,7 @@ class DotChatAdapterTest {
         override fun cancel() { stops++; isStreaming.value = false }
         override fun retry() = Unit
     }
-    @Test fun foregroundStopLeavesUnownedTasksAlone() {
+    @Test fun adapterCancelOnlyTouchesItsInjectedSession() {
         val owned = Session()
         val unrelated = Session().apply { isStreaming.value = true }
         val adapter = DotChatAdapter({ it }, { owned }, { error("No capture") })

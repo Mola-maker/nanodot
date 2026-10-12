@@ -153,6 +153,100 @@ class DotOverlayLifecycleTest {
         }
     }
 
+    @Test fun visibleStopRefreshesAdmissionAndContinuesProjection() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val service = connectedService()
+        val stream = kotlinx.coroutines.flow.MutableStateFlow(false)
+        var stops = 0
+        val session = object : io.github.nanomuse.dot.chat.DotChatSession {
+            override val messages = kotlinx.coroutines.flow.MutableStateFlow(emptyList<com.openminis.app.ui.chat.ChatMessage>())
+            override val inputText = kotlinx.coroutines.flow.MutableStateFlow("")
+            override val isStreaming = stream
+            override val error = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
+            override val configured = kotlinx.coroutines.flow.MutableStateFlow<String?>("local fixture")
+            override val deltas = kotlinx.coroutines.flow.MutableStateFlow(emptyMap<String, com.openminis.app.ui.chat.StreamingDelta>())
+            override val consumedAttachments = kotlinx.coroutines.flow.MutableStateFlow(emptyMap<String, String>())
+            override fun input(text: String) { inputText.value = text }
+            override fun stage(file: java.io.File): io.github.nanomuse.dot.chat.DotOwnedAttachment? = null
+            override fun remove(id: String) = Unit
+            override fun send(text: String) { stream.value = true }
+            override fun cancel() { stops++; stream.value = false }
+            override fun retry() = Unit
+        }
+        val adapter = io.github.nanomuse.dot.chat.DotChatAdapter({ it }, { session }, { error("No capture") })
+        val coordinator = io.github.nanomuse.dot.DotInteractionCoordinator(service, adapter)
+        fun awaitState(check: () -> Boolean) {
+            val until = SystemClock.uptimeMillis() + 5000
+            while (SystemClock.uptimeMillis() < until) {
+                var done = false
+                instrumentation.runOnMainSync { done = check() }
+                if (done) return
+                instrumentation.waitForIdleSync()
+            }
+            fail("Foreground transition did not settle")
+        }
+        val owner = coordinator.foreground
+        try {
+            instrumentation.runOnMainSync {
+                coordinator.connect()
+                service.dotOverlay.setEnabled(true)
+                coordinator.handle(io.github.nanomuse.dot.gesture.DotIntent.Single)
+            }
+            awaitState { service.dotOverlay.panelView != null && adapter.binding.value != null }
+            lateinit var before: io.github.nanomuse.dot.DotForegroundTicket
+            lateinit var oldBinding: io.github.nanomuse.dot.chat.SessionBinding
+            instrumentation.runOnMainSync {
+                oldBinding = requireNotNull(adapter.binding.value)
+                before = owner.ticket()
+                assertTrue(adapter.send(oldBinding, "first local reply"))
+            }
+            awaitState { owner.state.value.operation == io.github.nanomuse.dot.DotForegroundOperation.Replying }
+            val label = service.getString(com.openminis.app.R.string.nm_dot_chat_stop)
+            val automation = instrumentation.getUiAutomation(UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES)
+            var clicked = false
+            val until = SystemClock.uptimeMillis() + 5000
+            while (!clicked && SystemClock.uptimeMillis() < until) {
+                val windows = automation.windows
+                try { windows.filter { it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY }.forEach { window ->
+                    val root = window.root
+                    try {
+                        root?.findAccessibilityNodeInfosByText(label)?.forEach { node ->
+                            try {
+                                if (!clicked && node.isVisibleToUser) {
+                                    if (node.isClickable) clicked = node.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK)
+                                    else {
+                                        val parent = node.parent
+                                        try { if (parent?.isClickable == true) clicked = parent.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK) }
+                                        finally { parent?.recycle() }
+                                    }
+                                }
+                            }
+                            finally { node.recycle() }
+                        }
+                    } finally { root?.recycle() }
+                } } finally { windows.forEach { it.recycle() } }
+                instrumentation.waitForIdleSync()
+            }
+            assertTrue("Visible Stop must invoke the mounted control", clicked)
+            awaitState { owner.state.value.operation == io.github.nanomuse.dot.DotForegroundOperation.Idle && owner.state.value.binding != oldBinding }
+            instrumentation.runOnMainSync {
+                assertFalse(owner.accepts(before))
+                assertEquals(1, stops)
+                assertNotNull(service.dotOverlay.panelView)
+                val fresh = requireNotNull(adapter.binding.value)
+                assertEquals(fresh, owner.state.value.binding)
+                assertTrue(adapter.send(fresh, "next local reply"))
+            }
+            awaitState { owner.state.value.operation == io.github.nanomuse.dot.DotForegroundOperation.Replying }
+        } finally {
+            instrumentation.runOnMainSync {
+                coordinator.disconnect()
+                service.dotInteraction.disconnect()
+                service.dotInteraction.connect()
+            }
+        }
+    }
+
     @Test fun serviceForegroundReconnectRejectsOldCallbacksAndRebuildsCareOwner() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val service = connectedService()

@@ -20,7 +20,7 @@ import java.util.Date
 
 /** The service's focusable accessibility window renders the same VM state as the main chat. */
 @Composable
-fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit) {
+fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit, onStop: (SessionBinding) -> Unit) {
     val binding by adapter.binding.collectAsState()
     val preview by adapter.preview.collectAsState()
     val captureError by adapter.captureError.collectAsState()
@@ -96,7 +96,7 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit) {
             OutlinedTextField(text, adapter::editInput, Modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget).testTag("dot_composer"),
                 label = { Text(stringResource(R.string.nm_dot_chat_message), fontSize = DotTokens.Type.Body) },
                 textStyle = LocalTextStyle.current.copy(fontSize = DotTokens.Type.Body), maxLines = 4)
-            Button(onClick = { binding?.let { if (busy) { adapter.cancel(it); adapter.bind(it.sessionId) } else adapter.send(it,text) } },
+            Button(onClick = { binding?.let { if (busy) onStop(it) else adapter.send(it,text) } },
                 enabled = binding != null && (busy || !configured.isNullOrBlank() && (text.isNotBlank() || preview != null)),
                 modifier = Modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget)) {
                 Text(stringResource(if (busy) R.string.nm_dot_chat_stop else R.string.nm_dot_chat_send), fontSize = DotTokens.Type.Body)

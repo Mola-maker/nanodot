@@ -17,7 +17,7 @@ class DotChatPanelSourceTest {
         assertTrue("coordinator missing",file.exists())
         val source = file.readText()
         assertFalse("conversation cannot substitute an Activity",source.contains("startActivity"))
-        assertTrue(source.indexOf("capture(CapturePurpose.Chat") < source.indexOf("showPanel(adapter)"))
+        assertTrue(source.indexOf("capture(CapturePurpose.Chat") < source.indexOf("showPanel(adapter,"))
         assertTrue(source.contains("nm_dot_action_unavailable"))
     }
 }
