@@ -12,16 +12,15 @@ import pathlib
 import subprocess
 import tempfile
 
-
 STUBS = {
-    "content.kt": r'''
+    "content.kt": r"""
 package android.content
 class ClipData { companion object { fun newPlainText(label: String, text: String) = ClipData() } }
 class ClipboardManager { fun setPrimaryClip(data: ClipData) {} }
-''',
+""",
     "graphics.kt": "package android.graphics\nobject PixelFormat { const val TRANSLUCENT = -3 }\n",
     "build.kt": "package android.os\nobject Build { object VERSION { var SDK_INT = 35 } }\n",
-    "service.kt": r'''
+    "service.kt": r"""
 package android.accessibilityservice
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
@@ -37,8 +36,8 @@ open class AccessibilityService(val manager: WindowManager) {
     fun <T> getSystemService(type: Class<T>): T = type.cast(if(type == InputMethodManager::class.java) ime else manager)
     fun getString(id: Int) = "Copy"
 }
-''',
-    "view.kt": r'''
+""",
+    "view.kt": r"""
 package android.view
 import android.accessibilityservice.AccessibilityService
 import android.window.OnBackInvokedDispatcher
@@ -123,8 +122,8 @@ open class WindowManager {
         }
     }
 }
-''',
-    "frame.kt": r'''
+""",
+    "frame.kt": r"""
 package android.widget
 import android.accessibilityservice.AccessibilityService
 import android.view.View
@@ -139,8 +138,8 @@ open class FrameLayout(service: AccessibilityService): View(service) {
     override fun attach() { children.forEach { it.attach() }; super.attach() }
     override fun detach() { children.forEach { it.detach() }; super.detach() }
 }
-''',
-    "compose.kt": r'''
+""",
+    "compose.kt": r"""
 package androidx.compose.ui.platform
 import android.accessibilityservice.AccessibilityService
 import android.view.View
@@ -155,20 +154,20 @@ class ComposeView(service: AccessibilityService): View(service) {
     }
 }
 object ViewCompositionStrategy { val DisposeOnViewTreeLifecycleDestroyed = Any() }
-''',
-    "lifecycle.kt": r'''
+""",
+    "lifecycle.kt": r"""
 package androidx.lifecycle
 import android.view.View
 import io.github.nanomuse.dot.overlay.DotOverlayOwner
 fun View.setViewTreeLifecycleOwner(owner: DotOverlayOwner) {}
-''',
-    "saved.kt": r'''
+""",
+    "saved.kt": r"""
 package androidx.savedstate
 import android.view.View
 import io.github.nanomuse.dot.overlay.DotOverlayOwner
 fun View.setViewTreeSavedStateRegistryOwner(owner: DotOverlayOwner) {}
-''',
-    "back.kt": r'''
+""",
+    "back.kt": r"""
 package android.window
 fun interface OnBackInvokedCallback { fun onBackInvoked() }
 class OnBackInvokedDispatcher {
@@ -177,24 +176,24 @@ class OnBackInvokedDispatcher {
     fun unregisterOnBackInvokedCallback(callback: OnBackInvokedCallback) { check(registered === callback); registered = null }
     companion object { const val PRIORITY_DEFAULT = 0 }
 }
-''',
-    "ime.kt": r'''
+""",
+    "ime.kt": r"""
 package android.view.inputmethod
 class InputMethodManager(private val hidden: () -> Unit) {
     var hides = 0
     fun hideSoftInputFromWindow(token: Any?, flags: Int): Boolean { hides++; hidden(); return true }
 }
-''',
-    "ax-window.kt": r'''
+""",
+    "ax-window.kt": r"""
 package android.view.accessibility
 class AccessibilityWindowInfo(val type: Int) {
     var recycled = false
     fun recycle() { recycled = true }
     companion object { const val TYPE_INPUT_METHOD = 2 }
 }
-''',
+""",
     "r.kt": "package com.openminis.app\nobject R { object string { const val nm_care_copy = 1 } }\n",
-    "minis.kt": r'''
+    "minis.kt": r"""
 package com.openminis.app.accessibility
 import android.accessibilityservice.AccessibilityService
 import android.view.View
@@ -207,31 +206,31 @@ class Registry {
     fun setCareActive(value: Boolean) { active = value }
 }
 class MinisAccessibilityService(manager: WindowManager): AccessibilityService(manager) { val dotOverlay = Registry() }
-''',
-    "speech.kt": r'''
+""",
+    "speech.kt": r"""
 package com.openminis.app.speech
 import android.accessibilityservice.AccessibilityService
 class ReadAloudPlayer(service: AccessibilityService) {
     fun speak(instruction: String) {}; fun stop() {}; fun shutdown() {}
 }
-''',
+""",
     "theme.kt": "package com.openminis.app.ui.theme\nfun MinisTheme(content: () -> Unit) {}\n",
     "motion.kt": "package io.github.nanomuse.dot.ui\nfun DotMotionHost(content: () -> Unit) {}\n",
-    "owner.kt": r'''
+    "owner.kt": r"""
 package io.github.nanomuse.dot.overlay
 class DotOverlayOwner {
     var destroyed = false
     fun start() {}; fun destroy() { destroyed = true }
 }
-''',
-    "screen.kt": r'''
+""",
+    "screen.kt": r"""
 package io.github.nanomuse.dot.screen
 data class RectPx(val left: Float, val top: Float, val right: Float, val bottom: Float) {
     val width get() = right - left; val height get() = bottom - top
 }
 class SceneKey
-''',
-    "care.kt": r'''
+""",
+    "care.kt": r"""
 package io.github.nanomuse.dot.care
 import android.accessibilityservice.AccessibilityService
 import android.view.View
@@ -256,8 +255,8 @@ class CareFocusLayer(service: AccessibilityService, owner: (View?) -> Unit) {
 }
 fun CarePanel(session: CareSession, copy: () -> Unit, onRepeat: (String) -> Unit,
     onInstructionBounds: (String?, RectPx?) -> Unit = { _, _ -> }) {}
-''',
-    "harness.kt": r'''
+""",
+    "harness.kt": r"""
 import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
@@ -426,7 +425,7 @@ fun main() {
     println("RESULT passed=$passed failed=${failures.size}")
     check(failures.isEmpty()) { failures.joinToString() }
 }
-''',
+""",
 }
 
 
@@ -441,7 +440,9 @@ def main() -> int:
         default=pathlib.Path(__file__).resolve().parents[2],
     )
     args = parser.parse_args()
-    source_dir = args.source_root / "android/src/android/app/src/main/java/io/github/nanomuse/dot/care"
+    source_dir = (
+        args.source_root / "android/src/android/app/src/main/java/io/github/nanomuse/dot/care"
+    )
     with tempfile.TemporaryDirectory(prefix="care-card-attachment-") as temp:
         folder = pathlib.Path(temp)
         for name, content in STUBS.items():

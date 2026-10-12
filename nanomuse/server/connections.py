@@ -842,20 +842,20 @@ class Connections:
                 return {"models": [], "source": "catalogue", "error": "project_key_required"}
             try:
                 async with httpx.AsyncClient(trust_env=False, timeout=8) as client:
-                    rows = await GatewayProfiles._models(client, key)
+                    gateway_rows = await GatewayProfiles._models(client, key)
                 chat = [
                     m["id"]
-                    for m in rows
+                    for m in gateway_rows
                     if "text" in m["input_modalities"]
                     and "text" in m["output_modalities"]
                     and "audio" not in m["output_modalities"]
                 ]
                 return {
                     "models": chat,
-                    "vision": [m["id"] for m in rows if "image" in m["input_modalities"]],
+                    "vision": [m["id"] for m in gateway_rows if "image" in m["input_modalities"]],
                     "voice_models": [
                         m["id"]
-                        for m in rows
+                        for m in gateway_rows
                         if "audio" in m["input_modalities"] or "audio" in m["output_modalities"]
                     ],
                     "source": "live",
