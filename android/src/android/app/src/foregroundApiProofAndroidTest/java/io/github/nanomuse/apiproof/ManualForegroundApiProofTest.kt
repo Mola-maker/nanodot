@@ -770,9 +770,17 @@ class ManualForegroundApiProofTest {
                 android.util.Log.i("ForegroundCareLocalNext",ready.put("phase","one_click_ready").put("verifiedSteps",0).toString())
             }
             // Root CUA performs one real ONE touch. No test action, confirmation or synthetic evidence.
-            var next=JSONObject(); var waitFailed=false
+            var next=JSONObject(); var waitFailed=false; var manualObservableSeen=false
             try {
-                await("Public actual ONE touch did not produce Observable local TWO guide",20000) {
+                await("Public actual ONE touch did not produce actual Observable evidence",90000) {
+                    check(field(actual.dotInteraction,"careWindow")===ownedWindow)
+                    (field(controller,"work") as? Job)?.let(jobs::add)
+                    val verified=controller.verifiedSteps.value.singleOrNull(); val first=firstFocusProposal
+                    manualObservableSeen=verified!=null && first!=null && verified.origin==VerificationOrigin.Observable &&
+                        verified.proposal==first && verified.afterSnapshotId!=first.snapshotId && CareVerifier.sameHost(first.scene,verified.afterScene)
+                    manualObservableSeen
+                }
+                await("Actual Observable ONE evidence did not settle into strict local TWO guide",15000) {
                     check(field(actual.dotInteraction,"careWindow")===ownedWindow)
                     (field(controller,"work") as? Job)?.let(jobs::add)
                     next=careGuideConditions(actual,true,firstFocusProposal)
@@ -783,7 +791,7 @@ class ManualForegroundApiProofTest {
                     check(field(actual.dotInteraction,"careWindow")===ownedWindow)
                     (field(controller,"work") as? Job)?.let(jobs::add)
                     next=careGuideConditions(actual,true,firstFocusProposal)
-                    android.util.Log.i("ForegroundCareLocalNext",next.put("phase",if(next.getBoolean("guidePassed") && nextPlans==1) "local_next_settled" else "local_next_failed").put("nextPlans",nextPlans).toString())
+                    android.util.Log.i("ForegroundCareLocalNext",next.put("phase",if(next.getBoolean("guidePassed") && nextPlans==1) "local_next_settled" else "local_next_failed").put("nextPlans",nextPlans).put("manualObservableSeen",manualObservableSeen).toString())
                 } }
                 if(!waitFailed) observation.getOrThrow() // Never replace the original wait failure.
             }
@@ -793,36 +801,42 @@ class ManualForegroundApiProofTest {
             if(installed) {
                 var failures=0
                 var joinedJobs:List<Job> = emptyList()
-                fun restore(action:()->Unit) { try { action() } catch(_:Throwable) { failures++ } }
-                restore { inst.runOnMainSync { emit("before_cleanup") } }
-                restore { inst.runOnMainSync {
+                fun restore(step:String,action:()->Unit) {
+                    try { action() } catch(_:Throwable) {
+                        failures++
+                        runCatching { android.util.Log.i("ForegroundCareKeyless",JSONObject()
+                            .put("phase","cleanup_failed").put("step",step).toString()) } // Fixed literal step only; never exception text.
+                    }
+                }
+                restore("observe_before_cleanup") { inst.runOnMainSync { emit("before_cleanup") } }
+                restore("cancel_controller_work") { inst.runOnMainSync {
                     (field(controller,"work") as? Job)?.let { jobs.add(it); it.cancel() }
                 } }
-                restore { inst.runOnMainSync {
+                restore("cancel_window_job") { inst.runOnMainSync {
                     ownedWindow?.let { window ->
                         (field(window,"job") as? Job)?.let { jobs.add(it); it.cancel() }
                     }
                 } }
-                if(nextProbe) restore { inst.runOnMainSync {
-                    jobs.distinct().forEach { job -> restore { job.cancel() } }
+                if(nextProbe) restore("cancel_captured_jobs") { inst.runOnMainSync {
+                    jobs.distinct().forEach { job -> restore("cancel_captured_job") { job.cancel() } }
                 } } // Snapshot on the same Main owner that appends jobs; failure cannot skip later cleanup.
-                restore { inst.runOnMainSync { controller.cancel() } } // Invalidate even if disconnect's focus/speech callbacks throw.
-                restore { inst.runOnMainSync { session.disconnect() } }
-                restore { inst.runOnMainSync {
+                restore("invalidate_controller") { inst.runOnMainSync { controller.cancel() } } // Invalidate even if disconnect's focus/speech callbacks throw.
+                restore("disconnect_session") { inst.runOnMainSync { session.disconnect() } }
+                restore("close_owned_window") { inst.runOnMainSync {
                     check(field(actual.dotInteraction,"careWindow")===ownedWindow) // Never close another owner's window.
                     ownedWindow?.let { window ->
                         window.close()
                         set(actual.dotInteraction,"careWindow",null)
                     }
                 } }
-                restore { inst.runOnMainSync { joinedJobs=jobs.distinct() } }
-                restore { runBlocking { withTimeout(5000) { joinedJobs.forEach { it.join() } } } }
-                restore { inst.runOnMainSync {
+                restore("snapshot_owned_jobs") { inst.runOnMainSync { joinedJobs=jobs.distinct() } }
+                restore("join_owned_jobs") { runBlocking { withTimeout(5000) { joinedJobs.forEach { it.join() } } } }
+                restore("restore_callbacks") { inst.runOnMainSync {
                     check(field(controller,"active")==false && controller.state.value==CareUiState() &&
                         field(controller,"work")==null && jobs.all { it.isCompleted }) { "Keyless Care callbacks remain isolated" }
                     set(controller,"sample",originalSample); set(controller,"plan",originalPlan)
                 } }
-                restore { inst.runOnMainSync {
+                restore("restore_presentation") { inst.runOnMainSync {
                     bubbles.value=emptyList()
                     conversation.javaClass.getDeclaredField("userSequence").apply { isAccessible=true }.setLong(conversation,originalSequence)
                     check(controller.state.value==CareUiState() && !session.visible.value && !session.editingGoal.value && controller.verifiedSteps.value.isEmpty())
@@ -830,15 +844,29 @@ class ManualForegroundApiProofTest {
                     check(field(owners,"count")==originalOwners && field(controller,"automatic")==originalAutomatic)
                     emit("restored")
                 } }
-                if(nextProbe) restore {
-                    inst.runOnMainSync { check(field(controller,"active")==false && controller.state.value==CareUiState() && jobs.all { it.isCompleted } &&
-                        field(controller,"sample")===originalSample && field(controller,"plan")===originalPlan &&
-                        actual.dotScreen.hostWindowId()==publicHost && actual.dotScreen.currentSceneKey()?.windowId==publicHost && host(actual)) }
-                    startHost(actual) // Recreate only this admitted public host after the real touch, never inject focus.
+                if(nextProbe) {
+                    var hostResetPredicates=JSONObject()
+                    fun sameHostResetReady():Boolean {
+                        val inactive=field(controller,"active")==false; val idle=controller.state.value==CareUiState()
+                        val completed=jobs.all { it.isCompleted }; val callbacks=field(controller,"sample")===originalSample && field(controller,"plan")===originalPlan
+                        val sameHost=publicHost!=null && actual.dotScreen.hostWindowId()==publicHost && actual.dotScreen.currentSceneKey()?.windowId==publicHost
+                        val focused=sameHost && host(actual)
+                        hostResetPredicates=JSONObject().put("inactive",inactive).put("idle",idle).put("ownedJobsCompleted",completed)
+                            .put("callbacksRestored",callbacks).put("samePublicHost",sameHost).put("hostActiveFocused",focused)
+                        return inactive && idle && completed && callbacks && sameHost && focused
+                    }
+                    restore("reset_public_host") {
+                        await("Same owned public host did not regain focus before recreation",2000) { sameHostResetReady() }
+                        inst.runOnMainSync { check(sameHostResetReady()) }
+                        startHost(actual) // Recreate only this admitted public host after the real touch, never inject focus.
+                    }
+                    restore("observe_host_reset_predicates") { inst.runOnMainSync {
+                        android.util.Log.i("ForegroundCareKeyless",hostResetPredicates.put("phase","public_host_reset_predicates").toString())
+                    } }
                 }
-                restore { await("Public host focus did not return after diagnostic") { host(actual) } }
-                restore { inspectBothPublicFields(actual) } // Same strict public whitelist; both fields remain unfocused.
-                restore { android.util.Log.i("ForegroundCareKeyless",JSONObject().put("phase","cleanup_finished").put("cleanupFailures",failures).toString()) }
+                restore("wait_public_host_focus") { await("Public host focus did not return after diagnostic") { host(actual) } }
+                restore("inspect_public_fields") { inspectBothPublicFields(actual) } // Same strict public whitelist; both fields remain unfocused.
+                restore("observe_cleanup_finished") { android.util.Log.i("ForegroundCareKeyless",JSONObject().put("phase","cleanup_finished").put("cleanupFailures",failures).toString()) }
                 check(failures==0) { "Keyless Care cleanup incomplete" }
             }
         }
