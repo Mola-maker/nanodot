@@ -22,6 +22,10 @@ import kotlinx.coroutines.*
 class DotInteractionCoordinator internal constructor(
     private val service: MinisAccessibilityService,
     private val injectedAdapter: DotChatAdapter? = null,
+    private val screenCapture: suspend (CapturePurpose, Long) -> CaptureOutcome = { purpose, generation ->
+        service.dotScreen.capture(purpose, generation)
+    },
+    private val nodeCapture: suspend (Long) -> CaptureOutcome = { generation -> service.dotScreen.captureNodes(generation) },
 ) {
     private val app get() = service.application as MinisApp
     private var scope = newScope()
@@ -108,7 +112,8 @@ class DotInteractionCoordinator internal constructor(
                     voice.phase in setOf(DotVoiceController.Phase.PERMISSION, DotVoiceController.Phase.STARTING,
                         DotVoiceController.Phase.RECORDING, DotVoiceController.Phase.FINISHING) -> DotForegroundOperation.Listening
                     busy && binding != null -> DotForegroundOperation.Replying
-                    error || (mode == DotForegroundMode.Care && care.errorCode != null) -> DotForegroundOperation.Error
+                    (error && mode in setOf(DotForegroundMode.Chat, DotForegroundMode.Screen) && binding != null) ||
+                        (mode == DotForegroundMode.Care && care.errorCode != null) -> DotForegroundOperation.Error
                     mode == DotForegroundMode.Care && care.state !in setOf(CareState.Idle, CareState.Completed) -> DotForegroundOperation.CareWaiting
                     else -> DotForegroundOperation.Idle
                 }
@@ -135,7 +140,8 @@ class DotInteractionCoordinator internal constructor(
     private fun openCare() {
         close()
         if (careWindow == null) careWindow = CareOverlayWindow(service,scope,careSession,
-            { service.dotScreen.hostViewport() }, { service.dotScreen.currentSceneKey() })
+            { service.dotScreen.hostViewport() }, { service.dotScreen.currentSceneKey() },
+            foreground = foreground.state, onStop = { pauseCare(hide = true) })
         careSession.enter()
         foreground.update(DotForegroundMode.Care, null, DotForegroundOperation.Idle)
         project()
@@ -180,17 +186,24 @@ class DotInteractionCoordinator internal constructor(
             val binding = adapter.bind(id)
             foreground.update(if (intent == DotIntent.Double) DotForegroundMode.Screen else DotForegroundMode.Chat,
                 binding, DotForegroundOperation.Idle)
-            project()
             if (intent == DotIntent.Double) {
                 capturing.value = true
+                foreground.update(DotForegroundMode.Screen, binding, DotForegroundOperation.Capturing)
+            }
+            project()
+            // Keep the owned cancellation surface mounted throughout capture and fallback.
+            // The repository uses host-window pixels or fresh nodes while these controls are visible.
+            service.dotOverlay.showPanel(adapter, onStop = ::stopChatReply, foreground = foreground.state) { close() }
+            if (!admitted(ticket, binding)) return@launch
+            if (intent == DotIntent.Double) {
                 service.dotOverlay.beginCaptureScan(ticket.epoch)
                 try {
-                when (val result = service.dotScreen.capture(CapturePurpose.Chat,binding.generation)) {
+                when (val result = screenCapture(CapturePurpose.Chat,binding.generation)) {
                     is CaptureOutcome.Success -> if (admitted(ticket, binding)) adapter.attach(binding,result.snapshot) else result.snapshot.close()
                     is CaptureOutcome.Unavailable -> {
                         if (!admitted(ticket, binding)) return@launch
                         // A fresh read is required: failed screenshot nodes are never reused.
-                        when (val fallback = service.dotScreen.captureNodes(binding.generation)) {
+                        when (val fallback = nodeCapture(binding.generation)) {
                             is CaptureOutcome.Success -> if (admitted(ticket, binding)) adapter.attach(binding,fallback.snapshot) else fallback.snapshot.close()
                             is CaptureOutcome.Unavailable -> if (admitted(ticket, binding)) adapter.captureError.value = true
                         }
@@ -210,8 +223,6 @@ class DotInteractionCoordinator internal constructor(
                     if (foreground.accepts(ticket)) capturing.value = false
                 }
             }
-            if (!admitted(ticket, binding)) return@launch
-            service.dotOverlay.showPanel(adapter, onStop = ::stopChatReply) { close() }
         }
     }
 

@@ -14,6 +14,11 @@ import android.widget.FrameLayout
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import io.github.nanomuse.dot.overlay.ForegroundPlacement
+import io.github.nanomuse.dot.overlay.ForegroundFrame
+import io.github.nanomuse.dot.DotForegroundState
+import kotlinx.coroutines.flow.StateFlow
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
@@ -32,7 +37,8 @@ import kotlin.math.roundToInt
 
 /** Measured, bounded card window; only the card rectangle consumes touches. */
 class CareOverlayWindow(private val service: AccessibilityService, scope: CoroutineScope,
-    private val session: CareSession, private val viewport: () -> RectPx?, private val scene: () -> SceneKey?) {
+    private val session: CareSession, private val viewport: () -> RectPx?, private val scene: () -> SceneKey?,
+    private val foreground: StateFlow<DotForegroundState>? = null, private val onStop: (() -> Unit)? = null) {
     private val windows=service.getSystemService(WindowManager::class.java)
     private val registry get()=(service as? MinisAccessibilityService)?.dotOverlay
     private var focusView: View?=null
@@ -50,6 +56,44 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
     private var maxHeight=0
     private var instructionBounds: RectPx?=null
     private var instructionId: String?=null
+    private val placement = mutableStateOf(ForegroundPlacement.Bottom)
+    private var placementTarget: RectPx? = null
+    private var expanded = false
+    private var adjustment: Pair<Float, Float>? = null
+    private fun frame(host: RectPx, height: Float, density: Float, target: RectPx?): ForegroundFrame {
+        var fitted = foregroundFrame(host, height, density, if (expanded) null else target)
+        if (fitted.placement == ForegroundPlacement.Compact) {
+            // Keep the fallback small enough to expose more of the host and retain the existing
+            // 48dp reply/control budget. Expand is an explicit, reversible user choice.
+            fitted = foregroundFrame(host, minOf(height, 156f * density), density, target)
+            adjustment?.let { (x, y) ->
+                val b = fitted.bounds
+                val left = host.left + (host.width - b.width).coerceAtLeast(0f) * x.coerceIn(0f, 1f)
+                val top = host.top + (host.height - b.height).coerceAtLeast(0f) * y.coerceIn(0f, 1f)
+                fitted = fitted.copy(bounds = RectPx(left, top, left + b.width, top + b.height))
+            }
+        }
+        return fitted
+    }
+    private fun expandCard() { expanded = true; adjustment = null; refreshGeometry() }
+    private fun adjustCard() {
+        val host = viewport() ?: return
+        val p = params ?: return
+        moveCard(0f, if (p.y < host.top + host.height / 2f) host.height else -host.height)
+    }
+    private fun moveCard(dx: Float, dy: Float) {
+        if (!dx.isFinite() || !dy.isFinite()) return
+        val host = viewport() ?: return
+        val view = card ?: return
+        val p = params ?: return
+        if (!view.isAttachedToWindow) return
+        p.x = (p.x + dx).roundToInt().coerceIn(host.left.roundToInt(), (host.right - p.width).roundToInt().coerceAtLeast(host.left.roundToInt()))
+        p.y = (p.y + dy).roundToInt().coerceIn(host.top.roundToInt(), (host.bottom - p.height).roundToInt().coerceAtLeast(host.top.roundToInt()))
+        adjustment = (if (host.width > p.width) (p.x - host.left) / (host.width - p.width) else 0f) to
+            (if (host.height > p.height) (p.y - host.top) / (host.height - p.height) else 0f)
+        windows.updateViewLayout(view, p)
+        updateLeader()
+    }
     private fun updateLeader() {
         val view=card ?: return
         val r=instructionBounds
@@ -89,12 +133,15 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
         }
         registry?.setCareActive(true)
         val target=session.focusBounds(scene())
+        if (placementTarget != target) { placementTarget = target; expanded = false; adjustment = null }
         registry?.setForegroundTarget(target)
         val nextId=if(target==null) null else session.instructionKey()
         if(nextId!=instructionId) { instructionId=nextId; instructionBounds=null; focus.setInstructionBubble(null) }
         if(target==null) focus.clear() else focus.show(target, nextId.orEmpty())
         val density=service.resources.displayMetrics.density
-        val room=foregroundFrame(host,host.height*.55f,density,target).bounds
+        val initial = frame(host, host.height*.55f, density, target)
+        placement.value = initial.placement
+        val room=initial.bounds
         val width=room.width.roundToInt()
         maxHeight=room.height.roundToInt()
         if(card==null) addCard()
@@ -106,8 +153,9 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
             View.MeasureSpec.makeMeasureSpec(maxHeight,View.MeasureSpec.AT_MOST))
         params?.let { p ->
             p.width=width; p.height=minOf(view.measuredHeight,maxHeight).coerceAtLeast(1)
-            val frame=foregroundFrame(host,p.height.toFloat(),density,target).bounds
-            p.x=frame.left.roundToInt(); p.y=frame.top.roundToInt()
+            val fitted=frame(host,p.height.toFloat(),density,target)
+            placement.value = fitted.placement
+            p.x=fitted.bounds.left.roundToInt(); p.y=fitted.bounds.top.roundToInt()
             windows.updateViewLayout(view,p)
             updateLeader()
         }
@@ -135,10 +183,11 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
         val content=ComposeView(service).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent { MinisTheme { io.github.nanomuse.dot.ui.DotMotionHost {
-                val evidence by (registry?.foregroundState ?: kotlinx.coroutines.flow.MutableStateFlow(io.github.nanomuse.dot.DotForegroundState())).collectAsState()
-                CarePanel(session,::copy,capsule = {
+                val evidence by (this@CareOverlayWindow.foreground ?: registry?.foregroundState ?: kotlinx.coroutines.flow.MutableStateFlow(io.github.nanomuse.dot.DotForegroundState())).collectAsState()
+                CarePanel(session,::copy, placementCompact = placement.value == ForegroundPlacement.Compact,
+                    onExpand = ::expandCard, onAdjust = ::adjustCard, onDrag = ::moveCard, capsule = {
                     io.github.nanomuse.dot.ui.DotForegroundStatus(evidence, {
-                        (service as? MinisAccessibilityService)?.dotInteraction?.pauseCare(hide = true)
+                        onStop?.invoke() ?: session.pause(hide = true)
                     })
                 },onRepeat={ instruction ->
                 val speaker=player ?: ReadAloudPlayer(service).also { player=it }
@@ -200,6 +249,7 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
         composition?.disposeComposition(); owner?.destroy()
         card=null; composition=null; owner=null; params=null
         instructionBounds=null; instructionId=null
+        placementTarget = null; expanded = false; adjustment = null; placement.value = ForegroundPlacement.Bottom
         stopSpeech()
     }
     fun close() {

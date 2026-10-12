@@ -4,6 +4,10 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Kept screen-analysis Stop visible during sampling with overlay-free Android 14+ window captures and fresh foreground text snapshots on older Android versions; isolated prior capture errors from new Care status.
+- Connected compact placement, bounded click/drag adjustment and Expand to the actual Care card while preserving its conversation and unsent goal editor.
+- Added a light transparent blue glass base to foreground chat and Care, with edge highlights and local reading plates; retained current-target avoidance and movable compact controls.
+
 - Kept full Dot reply lines visible in short keyboard hosts at 200% text by sharing compact status/Stop with the scrolling controls viewport.
 
 - Preserved the mounted Dot chat, draft and transcript state during foreground target avoidance, keyboard and display changes; added owner-backed status and compact Expand/placement controls with localized labels.

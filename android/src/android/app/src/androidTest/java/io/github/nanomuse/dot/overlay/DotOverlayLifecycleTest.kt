@@ -29,7 +29,7 @@ class DotOverlayLifecycleTest {
         // the real framework rather than manually calling onServiceConnected in a test.
         shell("input keyevent 224")
         shell("input keyevent 82")
-        if (MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected != true) {
+        if (connectedServiceOrNull() == null) {
             shell("settings delete secure enabled_accessibility_services")
             shell("settings put secure enabled_accessibility_services io.github.nanodot.app/com.openminis.app.accessibility.MinisAccessibilityService")
             shell("settings put secure accessibility_enabled 1")
@@ -39,9 +39,19 @@ class DotOverlayLifecycleTest {
 
     private fun connectedService(): MinisAccessibilityService {
         val until = SystemClock.uptimeMillis() + 10000
-        while (MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected != true &&
-            SystemClock.uptimeMillis() < until) Thread.sleep(100)
-        return requireNotNull(MinisAccessibilityService.getInstance())
+        while (SystemClock.uptimeMillis() < until) {
+            connectedServiceOrNull()?.let { return it }
+            Thread.sleep(100)
+        }
+        error("Real accessibility service did not connect")
+    }
+
+    private fun connectedServiceOrNull(): MinisAccessibilityService? {
+        var connected: MinisAccessibilityService? = null
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            MinisAccessibilityService.getInstance()?.takeIf { it.dotOverlay.isConnected }?.let { connected = it }
+        }
+        return connected
     }
 
     private fun shell(command: String) {
@@ -58,7 +68,15 @@ class DotOverlayLifecycleTest {
         instrumentation.runOnMainSync { service.dotOverlay.setEnabled(true) }
         try {
             shell("input keyevent 223")
-            Thread.sleep(500)
+            val sleepDeadline = SystemClock.uptimeMillis() + 5000
+            var sleeping = false
+            while (!sleeping && SystemClock.uptimeMillis() < sleepDeadline) {
+                instrumentation.runOnMainSync {
+                    sleeping = !service.getSystemService(PowerManager::class.java).isInteractive && service.dotOverlay.windowCount == 0
+                }
+                if (!sleeping) Thread.sleep(32)
+            }
+            assertTrue("SCREEN_OFF must remove owned windows before checking late events", sleeping)
             instrumentation.runOnMainSync {
                 assertFalse(service.getSystemService(PowerManager::class.java).isInteractive)
                 assertEquals(0, service.dotOverlay.windowCount)
@@ -70,10 +88,18 @@ class DotOverlayLifecycleTest {
         } finally {
             shell("input keyevent 224")
             shell("input keyevent 82")
-            Thread.sleep(500)
+            val wakeDeadline = SystemClock.uptimeMillis() + 5000
+            var awake = false
+            while (!awake && SystemClock.uptimeMillis() < wakeDeadline) {
+                instrumentation.runOnMainSync {
+                    service.dotOverlay.refreshLockState()
+                    awake = service.getSystemService(PowerManager::class.java).isInteractive && service.dotOverlay.orbView?.isAttachedToWindow == true
+                }
+                if (!awake) Thread.sleep(32)
+            }
+            assertTrue("Waking must restore the real attached orb", awake)
         }
         instrumentation.runOnMainSync {
-            service.dotOverlay.refreshLockState()
             assertTrue(requireNotNull(service.dotOverlay.orbView).isAttachedToWindow)
         }
     }

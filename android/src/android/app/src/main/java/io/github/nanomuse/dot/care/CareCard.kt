@@ -49,7 +49,8 @@ private fun CareButton(label: Int, action: () -> Unit, enabled: Boolean = true) 
 @Composable
 internal fun CarePanel(session: CareSession, onCopy: () -> Unit, onRepeat: (String) -> Unit,
     onInstructionBounds: (String?, RectPx?) -> Unit = { _, _ -> },
-    capsule: (@Composable () -> Unit)? = null) {
+    capsule: (@Composable () -> Unit)? = null, placementCompact: Boolean = false,
+    onExpand: () -> Unit = {}, onAdjust: () -> Unit = {}, onDrag: (Float, Float) -> Unit = { _, _ -> }) {
     val state by session.controller.state.collectAsState()
     val editing by session.editingGoal.collectAsState()
     val history by session.conversation.state.collectAsState()
@@ -68,7 +69,8 @@ internal fun CarePanel(session: CareSession, onCopy: () -> Unit, onRepeat: (Stri
         if (current == null) onInstructionBounds(null, null)
     }
     DisposableEffect(Unit) { onDispose { onInstructionBounds(null, null) } }
-    DotForegroundChat(status, { session.pause(hide = true) }, capsule = capsule, history = {
+    DotForegroundChat(status, { session.pause(hide = true) }, capsule = capsule,
+        placementCompact = placementCompact, onExpand = onExpand, onAdjust = onAdjust, onDrag = onDrag, history = {
         LazyColumn(Modifier.fillMaxSize(), state = list,
             verticalArrangement = Arrangement.spacedBy(DotTokens.Space.S8)) {
             if (history.isEmpty()) item { DotMessageBubble(false) {

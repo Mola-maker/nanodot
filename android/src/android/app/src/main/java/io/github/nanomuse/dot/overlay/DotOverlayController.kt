@@ -130,6 +130,7 @@ class DotOverlayController(
     internal var panelTranscriptState: androidx.compose.foundation.lazy.LazyListState? = null
         private set
     private var panelCollapse: (() -> Unit)? = null
+    private var panelForeground: kotlinx.coroutines.flow.StateFlow<io.github.nanomuse.dot.DotForegroundState>? = null
     private var panelStop: ((io.github.nanomuse.dot.chat.SessionBinding) -> Unit)? = null
     internal var panelHostWindowId: Int? = null
         private set
@@ -300,8 +301,11 @@ class DotOverlayController(
     /** Hide alpha without removing/recreating owners or changing the user's preference.
      * OnDraw plus a following frame ensures traversal submits the hidden window before capture.
      */
-    suspend fun <T> withHiddenForCapture(block: suspend () -> T): T {
+    suspend fun <T> withHiddenForCapture(hide: Boolean = true, block: suspend () -> T): T {
         checkMainThread()
+        // Window screenshots exclude accessibility overlays at the platform boundary;
+        // nodes are read only from application windows. Their controls need no alpha hiding.
+        if (!hide) return block()
         cancelSnap()
         panelMotion?.cancel(); panelMotion = null; panelGeometry = null
         visualActive.value = false
@@ -343,7 +347,8 @@ class DotOverlayController(
         }
     }
 
-    fun showPanel(adapter: DotChatAdapter, onStop: ((io.github.nanomuse.dot.chat.SessionBinding) -> Unit)? = null, onCollapse: () -> Unit) {
+    fun showPanel(adapter: DotChatAdapter, onStop: ((io.github.nanomuse.dot.chat.SessionBinding) -> Unit)? = null,
+        foreground: kotlinx.coroutines.flow.StateFlow<io.github.nanomuse.dot.DotForegroundState>? = null, onCollapse: () -> Unit) {
         checkMainThread()
         if (!isConnected || locked || !enabled || hostViewport() == null) {
             adapter.binding.value?.let(adapter::cancel)
@@ -355,6 +360,7 @@ class DotOverlayController(
         panelAdapter = adapter
         panelCollapse = onCollapse
         panelStop = onStop
+        panelForeground = foreground ?: foregroundState
         sync()
     }
 
@@ -447,7 +453,7 @@ class DotOverlayController(
         val composition = ComposeView(service).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent { MinisTheme { io.github.nanomuse.dot.ui.DotMotionHost {
-                val evidence by (foregroundState ?: kotlinx.coroutines.flow.MutableStateFlow(io.github.nanomuse.dot.DotForegroundState())).collectAsState()
+                val evidence by (panelForeground ?: kotlinx.coroutines.flow.MutableStateFlow(io.github.nanomuse.dot.DotForegroundState())).collectAsState()
                 DotChatPanel(adapter, ::collapsePanel,
                     panelStop ?: { binding -> adapter.cancel(binding); adapter.bind(binding.sessionId); Unit },
                     evidence, panelPlacement.value, ::expandPanel, ::adjustPanel, ::movePanel,
@@ -471,7 +477,7 @@ class DotOverlayController(
         catch (failure: RuntimeException) {
             owner.destroy(); composition.disposeComposition()
             panelAdapter = null
-            panelCollapse?.invoke(); panelCollapse = null; panelStop = null
+            panelCollapse?.invoke(); panelCollapse = null; panelStop = null; panelForeground = null
             throw failure
         }
         panelView = view; panelOwner = owner; panelComposition = composition; panelParams = p
@@ -490,7 +496,7 @@ class DotOverlayController(
     private fun removePanel() {
         panelMotion?.cancel(); panelMotion = null; panelExpanded = false; panelTranscriptState = null; panelAdjustment = null; panelGeometry = null
         val onCollapse = panelCollapse
-        panelCollapse = null; panelAdapter = null; panelStop = null
+        panelCollapse = null; panelAdapter = null; panelStop = null; panelForeground = null
         removeBackCallback?.invoke(); removeBackCallback = null
         panelView?.let { windows.removeViewImmediate(it) }
         panelComposition?.disposeComposition(); panelOwner?.destroy()

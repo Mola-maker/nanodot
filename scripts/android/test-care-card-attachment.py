@@ -50,6 +50,8 @@ open class View(val service: AccessibilityService) {
     var isAttachedToWindow = false
     var measuredHeight = 0
     var measuredWidth = 0
+    val width get() = measuredWidth
+    val height get() = measuredHeight
     var measures = 0
     val windowToken = Any()
     val backDispatcher = OnBackInvokedDispatcher()
@@ -146,7 +148,9 @@ import android.view.View
 class ComposeView(service: AccessibilityService): View(service) {
     var disposed = false
     fun setViewCompositionStrategy(strategy: Any) {}
-    fun setContent(content: () -> Unit) {}
+    var body: (() -> Unit)? = null
+    fun setContent(content: () -> Unit) { this.body = content }
+    override fun attach() { super.attach(); body?.invoke() }
     fun disposeComposition() { disposed = true }
     override fun onMeasure(width: Int, height: Int) {
         check(isAttachedToWindow) { "Cannot locate windowRecomposer; ComposeView is not attached to a window" }
@@ -201,11 +205,15 @@ import android.view.WindowManager
 class Registry {
     val registered = mutableSetOf<View>()
     var active = false
+    var target: io.github.nanomuse.dot.screen.RectPx? = null
+    val foregroundState = kotlinx.coroutines.flow.MutableStateFlow(io.github.nanomuse.dot.DotForegroundState())
+    fun setForegroundTarget(value: io.github.nanomuse.dot.screen.RectPx?) { target = value }
     fun registerCareWindow(view: View) { registered.add(view) }
     fun unregisterCareWindow(view: View) { registered.remove(view) }
     fun setCareActive(value: Boolean) { active = value }
 }
-class MinisAccessibilityService(manager: WindowManager): AccessibilityService(manager) { val dotOverlay = Registry() }
+class Interaction { fun pauseCare(hide: Boolean) {} }
+class MinisAccessibilityService(manager: WindowManager): AccessibilityService(manager) { val dotOverlay = Registry(); val dotInteraction = Interaction() }
 """,
     "speech.kt": r"""
 package com.openminis.app.speech
@@ -214,8 +222,8 @@ class ReadAloudPlayer(service: AccessibilityService) {
     fun speak(instruction: String) {}; fun stop() {}; fun shutdown() {}
 }
 """,
-    "theme.kt": "package com.openminis.app.ui.theme\nfun MinisTheme(content: () -> Unit) {}\n",
-    "motion.kt": "package io.github.nanomuse.dot.ui\nfun DotMotionHost(content: () -> Unit) {}\n",
+    "theme.kt": "package com.openminis.app.ui.theme\nfun MinisTheme(content: () -> Unit) { content() }\n",
+    "motion.kt": "package io.github.nanomuse.dot.ui\nfun DotMotionHost(content: () -> Unit) { content() }\n",
     "owner.kt": r"""
 package io.github.nanomuse.dot.overlay
 class DotOverlayOwner {
@@ -251,10 +259,40 @@ class CareSession {
 }
 class CareFocusLayer(service: AccessibilityService, owner: (View?) -> Unit) {
     fun clear() {}; fun show(target: RectPx, key: String = "") {}
-    fun setInstructionBubble(target: RectPx?) {}
+    fun setInstructionBubble(target: RectPx?, card: RectPx? = null, host: RectPx? = null, key: String = "") {}
+}
+object CarePanelHarness {
+    var compact = false
+    var adjust: () -> Unit = {}
+    var expand: () -> Unit = {}
+    var drag: (Float, Float) -> Unit = { _, _ -> }
 }
 fun CarePanel(session: CareSession, copy: () -> Unit, onRepeat: (String) -> Unit,
-    onInstructionBounds: (String?, RectPx?) -> Unit = { _, _ -> }) {}
+    onInstructionBounds: (String?, RectPx?) -> Unit = { _, _ -> },
+    capsule: (() -> Unit)? = null, placementCompact: Boolean = false,
+    onExpand: () -> Unit = {}, onAdjust: () -> Unit = {},
+    onDrag: (Float, Float) -> Unit = { _, _ -> }) {
+    CarePanelHarness.compact = placementCompact
+    CarePanelHarness.adjust = onAdjust; CarePanelHarness.expand = onExpand; CarePanelHarness.drag = onDrag
+    capsule?.invoke()
+}
+""",
+    "compose-state.kt": r"""
+package androidx.compose.runtime
+import kotlin.reflect.KProperty
+import kotlinx.coroutines.flow.StateFlow
+class State<T>(var value: T)
+fun <T> StateFlow<T>.collectAsState() = State(value)
+fun <T> mutableStateOf(value: T) = State(value)
+operator fun <T> State<T>.getValue(owner: Any?, property: KProperty<*>) = value
+""",
+    "status.kt": r"""
+package io.github.nanomuse.dot
+class DotForegroundState
+""",
+    "status-ui.kt": r"""
+package io.github.nanomuse.dot.ui
+fun DotForegroundStatus(state: io.github.nanomuse.dot.DotForegroundState, stop: () -> Unit) {}
 """,
     "harness.kt": r"""
 import android.view.View
@@ -311,6 +349,29 @@ fun main() {
             r.session.target = RectPx(0f, 700f, 400f, 800f)
             r.window.refreshGeometry()
             check(r.manager.updates.last() == listOf(360, 160, 20, 532))
+        } finally { r.close() }
+    }
+    test("real Care target collision exposes bounded adjustment without replacing its owner") {
+        val r = Rig()
+        try {
+            r.session.target = RectPx(0f, 24f, 400f, 824f)
+            val view = r.open(); view.attach(); r.pump(view)
+            val compose = (view as FrameLayout).children.filterIsInstance<ComposeView>().single()
+            check(CarePanelHarness.compact) { "Compact placement did not reach the actual CarePanel" }
+            val before = r.manager.updates.last()
+            CarePanelHarness.adjust()
+            val adjusted = r.manager.updates.last()
+            check(adjusted[3] > before[3]) { "Care adjustment did not expose the covered region" }
+            r.window.refreshGeometry()
+            check(r.manager.updates.last() == adjusted) { "Unchanged target reset user placement" }
+            CarePanelHarness.drag(-10000f, 10000f)
+            val bounded = r.manager.updates.last()
+            check(bounded[2] >= 0 && bounded[2] + bounded[0] <= 400)
+            check(bounded[3] >= 24 && bounded[3] + bounded[1] <= 824)
+            CarePanelHarness.expand()
+            check(r.manager.updates.last()[1] > before[1]) { "Expand kept the compact cap" }
+            check(r.manager.added.single() === view && !compose.disposed)
+            check(r.session.visible.value && r.service.dotOverlay.target == r.session.target)
         } finally { r.close() }
     }
     test("closing before attach prevents queued layout from reviving the card") {

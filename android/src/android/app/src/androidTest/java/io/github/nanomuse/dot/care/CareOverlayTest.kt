@@ -94,6 +94,148 @@ class CareOverlayTest {
         }
         assertTrue(description,ready)
     }
+    @Test fun compactTargetCareRetainsTranscriptWhileAdjustedDraggedAndExpanded() {
+        val service = requireNotNull(MinisAccessibilityService.getInstance())
+        val flags = automation.serviceInfo.flags
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+        var viewport: RectPx? = null
+        fun card(): android.view.View = CareOverlayWindow::class.java.getDeclaredField("card").let {
+            it.isAccessible = true; it.get(window) as android.view.View
+        }
+        fun controlBounds(label: String): Rect? {
+            var result: Rect? = null
+            withNodes { all -> all.firstOrNull { it.text?.toString() == label && it.isVisibleToUser }?.let { node ->
+                var action = AccessibilityNodeInfo.obtain(node)
+                try {
+                    while (!action.isClickable) {
+                        val parent = action.parent ?: break
+                        action.recycle(); action = parent
+                    }
+                    val bounds = Rect(); action.getBoundsInScreen(bounds)
+                    var clipped = false
+                    instrumentation.runOnMainSync {
+                        val view = card()
+                        val location = IntArray(2); view.getLocationOnScreen(location)
+                        val cardBounds = Rect(location[0], location[1], location[0] + view.width, location[1] + view.height)
+                        val host = service.dotScreen.hostViewport()
+                        clipped = bounds.intersect(cardBounds) && host != null && bounds.intersect(
+                            Rect(host.left.toInt(), host.top.toInt(), host.right.toInt(), host.bottom.toInt()))
+                    }
+                    if (action.isClickable && action.isVisibleToUser && action.isEnabled && clipped &&
+                        bounds.height() >= (48 * service.resources.displayMetrics.density).toInt()) result = bounds
+                } finally { action.recycle() }
+            } }
+            return result
+        }
+        fun reach(label: String): Rect {
+            repeat(20) {
+                controlBounds(label)?.let { return it }
+                withNodes { all ->
+                    // Compact status and adjustment share the LOWER 48dp controls viewport;
+                    // scrolling the independent transcript cannot reveal these buttons.
+                    all.filter { it.isScrollable }.maxByOrNull { node ->
+                        Rect().also(node::getBoundsInScreen).top
+                    }?.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
+                }
+                automation.waitForIdle(100, 2000)
+            }
+            error("48dp Care control unreachable: $label")
+        }
+        try {
+            automation.serviceInfo = automation.serviceInfo.apply {
+                this.flags = flags or android.accessibilityservice.AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
+            }
+            instrumentation.context.startActivity(Intent(instrumentation.context, CareOverlayFixture::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            awaitMain("Actual external host must be current") { service.dotScreen.currentSceneKey()?.packageName == instrumentation.context.packageName }
+            instrumentation.runOnMainSync {
+                service.dotInteraction.close()
+                val controller = CareController(scope, { generation ->
+                    // Controlled wide target is delivered through the real Care controller,
+                    // validator and session, never through ordinary Chat's injected target hook.
+                    val scene = requireNotNull(service.dotScreen.currentSceneKey())
+                    val host = requireNotNull(service.dotScreen.hostViewport())
+                    val node = NodeDto("wide-target", host, "Wide fixture", null, null, "container", false, true, false, true, false)
+                    CaptureOutcome.Success(ScreenSnapshot("wide-fixture", generation, 1, scene, host, 0,
+                        RectPx(0f, 0f, 0f, 0f), null, listOf(node), null,
+                        ScreenTransform(host, host.width.toInt(), host.height.toInt())))
+                }, { service.dotScreen.currentSceneKey() }, { _, snapshot, _ ->
+                    CarePlanResult.Step(CareProposal(snapshot.id, snapshot.scene, "wide-target", CareAction.Focus,
+                        "Touch the fixture target", null, CareExpectation.Focused("wide-target"), .9f))
+                })
+                session = CareSession(controller, { if (::window.isInitialized) window.clearFocus() }, {})
+                window = CareOverlayWindow(service, scope, session, { viewport ?: service.dotScreen.hostViewport() }, { service.dotScreen.currentSceneKey() })
+                session.enter(); session.submitGoal("Keep this Care goal")
+            }
+            awaitMain("Real Care owner must reach compact target collision") {
+                session.controller.state.value.state == CareState.AwaitingUser && card().isAttachedToWindow && card().height > 1
+            }
+            automation.waitForIdle(300, 3000)
+            val retained = card()
+            val history = session.conversation.state.value
+            val generation = session.controller.generation
+            val before = (retained.layoutParams as WindowManager.LayoutParams).y
+            val adjust = reach(service.getString(com.openminis.app.R.string.nm_dot_foreground_adjust))
+            tap(adjust.exactCenterX(), adjust.exactCenterY())
+            awaitMain("Actual named Care adjustment moves its same window") { (card().layoutParams as WindowManager.LayoutParams).y > before }
+            val adjusted = (retained.layoutParams as WindowManager.LayoutParams).y
+            instrumentation.runOnMainSync { window.refreshGeometry(); assertEquals(adjusted, (retained.layoutParams as WindowManager.LayoutParams).y) }
+            val drag = reach(service.getString(com.openminis.app.R.string.nm_dot_foreground_adjust))
+            val down = SystemClock.uptimeMillis()
+            for ((action, y) in listOf(MotionEvent.ACTION_DOWN to drag.exactCenterY(),
+                MotionEvent.ACTION_MOVE to (drag.exactCenterY() - 80f),
+                MotionEvent.ACTION_MOVE to (drag.exactCenterY() - 220f), MotionEvent.ACTION_UP to (drag.exactCenterY() - 220f))) {
+                val event = MotionEvent.obtain(down, SystemClock.uptimeMillis(), action, drag.exactCenterX(), y, 0)
+                try { assertTrue(automation.injectInputEvent(event, true)) } finally { event.recycle() }
+            }
+            awaitMain("Actual drag changes Care placement") { (card().layoutParams as WindowManager.LayoutParams).y < adjusted }
+            instrumentation.runOnMainSync {
+                val host = requireNotNull(service.dotScreen.hostViewport())
+                val p = retained.layoutParams as WindowManager.LayoutParams
+                assertTrue(p.x >= host.left && p.y >= host.top && p.x + p.width <= host.right + 1 && p.y + p.height <= host.bottom + 1)
+                assertSame(retained, card()); assertEquals(history, session.conversation.state.value)
+                assertEquals(generation, session.controller.generation); assertEquals("Keep this Care goal", session.controller.state.value.goal)
+                window.refreshGeometry()
+            }
+            val height = retained.height
+            val expand = reach(service.getString(com.openminis.app.R.string.nm_dot_foreground_expand))
+            tap(expand.exactCenterX(), expand.exactCenterY())
+            awaitMain("Expand lifts compact cap without replacing Care") { card().height > height }
+            instrumentation.runOnMainSync {
+                assertSame(retained, card()); assertEquals(history, session.conversation.state.value)
+                assertEquals(generation, session.controller.generation)
+                session.changeGoal()
+            }
+            awaitMain("Same Care composition must show the goal editor") { session.editingGoal.value }
+            var typed = false
+            repeat(20) {
+                if (!typed) withNodes { all ->
+                    all.firstOrNull { it.isEditable && it.isVisibleToUser }?.let { editor ->
+                        typed = editor.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, android.os.Bundle().apply {
+                            putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "retained Care draft")
+                        })
+                    }
+                    if (!typed) all.filter { it.isScrollable }.maxByOrNull { Rect().also(it::getBoundsInScreen).top }
+                        ?.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
+                }
+                automation.waitForIdle(100, 2000)
+            }
+            assertTrue("Actual editable goal accepts an unsent draft", typed)
+            instrumentation.runOnMainSync {
+                val host = requireNotNull(service.dotScreen.hostViewport())
+                viewport = host.copy(bottom = minOf(host.bottom, host.top + 200f * service.resources.displayMetrics.density))
+                window.refreshGeometry()
+                assertSame(retained, card())
+            }
+            automation.waitForIdle(300, 3000)
+            withNodes { all -> assertTrue("Relayout must retain the unsent goal in the same editor", all.any {
+                it.isEditable && it.text?.toString() == "retained Care draft"
+            }) }
+        } finally {
+            instrumentation.runOnMainSync { if (::window.isInitialized) window.close(); if (::session.isInitialized) session.disconnect(); scope.cancel() }
+            closeOwnedFixture(service)
+            automation.serviceInfo = automation.serviceInfo.apply { this.flags = flags }
+        }
+    }
     @Test fun fontScaleTwoKeepsAllControlsReachable() {
         val service=requireNotNull(MinisAccessibilityService.getInstance())
         val previous=android.provider.Settings.System.getString(service.contentResolver,"font_scale")

@@ -61,6 +61,7 @@ class ScreenRepository(private val service: AccessibilityService, private val ov
     suspend fun captureNodes(generation: Long): CaptureOutcome = sample(CapturePurpose.Care,generation,false)
 
     private suspend fun sample(purpose: CapturePurpose, generation: Long, pixelsRequested: Boolean): CaptureOutcome = coordinator.serial {
+        val mode = screenCaptureMode(Build.VERSION.SDK_INT, purpose, pixelsRequested)
         var handoff: ScreenSnapshot? = null
         try {
             withContext(Dispatchers.Main.immediate) {
@@ -68,7 +69,7 @@ class ScreenRepository(private val service: AccessibilityService, private val ov
                 if (locked()) return@withContext CaptureOutcome.Unavailable("locked")
                 try {
                     withTimeout(4000) {
-                        overlays.withHiddenForCapture {
+                        overlays.withHiddenForCapture(hide = mode == ScreenCaptureMode.Display) {
                             val before = readScene() ?: return@withHiddenForCapture CaptureOutcome.Unavailable("host_unavailable")
                             before.use {
                             val key = tracker.observe(before.frame)
@@ -84,16 +85,16 @@ class ScreenRepository(private val service: AccessibilityService, private val ov
                             }
                             var pixels: Bitmap? = null
                             try {
-                                val windowCapture = pixelsRequested && Build.VERSION.SDK_INT >= 34 && purpose == CapturePurpose.Care
+                                val windowCapture = mode == ScreenCaptureMode.Window
                                 val captureBounds = if (windowCapture) before.frame.bounds else before.displayBounds
-                                if (pixelsRequested && Build.VERSION.SDK_INT >= 30) {
+                                if (mode != ScreenCaptureMode.Nodes && Build.VERSION.SDK_INT >= 30) {
                                     val raw = accessibilityCapture(before.frame, windowCapture)
                                     raw.use {
                                         if (it.error != null) return@withHiddenForCapture CaptureOutcome.Unavailable(it.error)
                                         pixels = it.copyBitmap()
                                     }
                                     if (pixels == null) return@withHiddenForCapture CaptureOutcome.Unavailable("pixels_unavailable")
-                                } else if (pixelsRequested) {
+                                } else if (mode == ScreenCaptureMode.Display) {
                                     val projection = LegacyProjectionService.capture
                                     if (projection != null) pixels = projection.capture(before.displayBounds)
                                 }
