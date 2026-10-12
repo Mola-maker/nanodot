@@ -79,3 +79,11 @@ Root reported627tests/89suites with0failures/errors/skips; worker independently 
 - `android/src/android/app/src/main/java/io/github/nanomuse/dot/care/CareOverlayWindow.kt:84` — bounded retained Care adjustment.
 - `android/src/android/app/src/main/java/io/github/nanomuse/dot/care/CareOverlayWindow.kt:187` — actual owner composition wiring.
 - `android/src/android/app/src/main/java/io/github/nanomuse/dot/care/CareCard.kt:73` — shared controls forwarding.
+
+## Native setup follow-up after first Root execution
+
+Root executed `heldScreenCaptureKeepsActualStopReachableAndClosesLateSuccess` from glass-integrated-r1: immediate failure at withHost101 (`getInstance` null, 0.005s), before capture or Stop assertions. Evidence: `work/android-v2-fresh/logs/glass-r1-held-stop/instrumentation.log`. Instrumentation restarted the target process; an external accessibility grant did not establish the in-process service singleton before the fixture read it. This is NOT a passing behavior result or a demonstrated production Stop failure.
+
+Added shared test-only `DotNativeServiceFixture`, used from @Before/@After by DotForegroundReviewTest and CareOverlayTest. It reads and validates raw original accessibility settings before UiAutomation, requires an already-granted unlocked isolated scene, preserves other granted services, removes/regrants only this service through the framework when needed, waits boundedly for connected state using Main-only lazy probes, and rejects a nonempty foreground owner. @After closes only fixture foreground work, restores overlay preference-derived enablement/lock state, observation flags and exact raw settings using the same validated argv restoration as the existing gesture fixture. No manual onServiceConnected, app-data clear, credential or production change. Setup failures retain @After restoration authority.
+
+This worker ran only source/diff checks; no Gradle/device command. Root must compile the helper and rerun native held capture/status/Care cases. Existing 627/89 unit/main/test build evidence precedes this test-only setup follow-up and is not presented as fresh compile evidence for it.

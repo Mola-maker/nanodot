@@ -18,12 +18,18 @@ import com.openminis.app.data.model.*
 import com.openminis.app.provider.LLMProvider
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.Before
+import org.junit.After
+import io.github.nanomuse.dot.overlay.DotNativeServiceFixture
 import org.junit.runner.RunWith
 
 /** Root-only native gate. Production controller, Compose card, window owner and focus layer;
  * injected inert planner; actual host nodes and touches. No network or persistent data. */
 @RunWith(AndroidJUnit4::class)
 class CareOverlayTest {
+    private val nativeService = DotNativeServiceFixture()
+    @Before fun connectFrameworkServiceBeforeCareTests() { nativeService.connect() }
+    @After fun restoreExactNativeServiceSettings() { nativeService.close() }
     private lateinit var session: CareSession
     private lateinit var window: CareOverlayWindow
     private val instrumentation=InstrumentationRegistry.getInstrumentation()
@@ -95,7 +101,7 @@ class CareOverlayTest {
         assertTrue(description,ready)
     }
     @Test fun compactTargetCareRetainsTranscriptWhileAdjustedDraggedAndExpanded() {
-        val service = requireNotNull(MinisAccessibilityService.getInstance())
+        val service = nativeService.service()
         val flags = automation.serviceInfo.flags
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         var viewport: RectPx? = null
@@ -237,7 +243,7 @@ class CareOverlayTest {
         }
     }
     @Test fun fontScaleTwoKeepsAllControlsReachable() {
-        val service=requireNotNull(MinisAccessibilityService.getInstance())
+        val service=nativeService.service()
         val previous=android.provider.Settings.System.getString(service.contentResolver,"font_scale")
         require(previous==null || previous.matches(Regex("[0-9]+(?:\\.[0-9]+)?")))
         fun shell(command: String) {
@@ -252,7 +258,7 @@ class CareOverlayTest {
         }
     }
     @Test fun animatorScaleZeroKeepsOneStaticNonfocusedOutline() {
-        val service=requireNotNull(MinisAccessibilityService.getInstance())
+        val service=nativeService.service()
         val previous=android.provider.Settings.Global.getString(service.contentResolver,"animator_duration_scale")
         require(previous==null || previous.matches(Regex("[0-9]+(?:\\.[0-9]+)?")))
         fun shell(command: String) {
@@ -309,7 +315,7 @@ class CareOverlayTest {
         }
     }
     @Test fun oneTouchThroughTargetUserCopyBackPauseAndAccessibleControls() {
-        val service=requireNotNull(MinisAccessibilityService.getInstance()) { "Root must enable the real accessibility service first" }
+        val service=nativeService.service() { "Root must enable the real accessibility service first" }
         val originalFlags=automation.serviceInfo.flags
         var originalClip: android.content.ClipData?=null
         var clipboardSaved=false

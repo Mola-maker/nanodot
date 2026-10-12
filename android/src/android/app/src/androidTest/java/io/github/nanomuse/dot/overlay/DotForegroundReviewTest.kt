@@ -22,6 +22,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.Before
+import org.junit.After
 import org.junit.runner.RunWith
 
 /** Root executes against real accessibility windows. Only the asynchronous sampler is held;
@@ -29,6 +31,9 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class DotForegroundReviewTest {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
+    private val nativeService = DotNativeServiceFixture()
+    @Before fun connectFrameworkServiceBeforeOwnerTests() { nativeService.connect() }
+    @After fun restoreExactNativeServiceSettings() { nativeService.close() }
     private val automation get() = instrumentation.getUiAutomation(UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES)
     private class LocalSession : DotChatSession {
         override val messages = MutableStateFlow<List<ChatMessage>>(emptyList())
@@ -98,7 +103,7 @@ class DotForegroundReviewTest {
             finally { windows.forEach { it.recycle() } }
     }
     private fun withHost(block: (MinisAccessibilityService) -> Unit) {
-        val service = requireNotNull(MinisAccessibilityService.getInstance())
+        val service = nativeService.service()
         val flags = automation.serviceInfo.flags
         try {
             automation.serviceInfo = automation.serviceInfo.apply {
