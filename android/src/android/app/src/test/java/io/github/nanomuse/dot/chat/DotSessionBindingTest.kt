@@ -31,6 +31,16 @@ class DotSessionBindingTest {
         gate.cancel(SessionBinding("A", draft.generation))
         assertFalse(gate.accepts(draft))
     }
+    @Test fun aliasPromotionStillAcceptsOriginalCaptureTicket() {
+        val aliases = mutableMapOf<String, String>()
+        val gate = DotSessionBinding { aliases[it] ?: it }
+        val original = gate.bind("draft")
+        aliases["draft"] = "saved"
+        gate.bind("saved")
+        assertTrue(gate.accepts(original))
+        gate.cancel(original)
+        assertFalse(gate.accepts(original))
+    }
     @Test fun staleCancellationCannotCancelNewSession() {
         val gate = DotSessionBinding { it }
         val a = gate.bind("A")

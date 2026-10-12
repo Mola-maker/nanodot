@@ -1,6 +1,12 @@
 package io.github.nanomuse.dot
 
 import android.widget.Toast
+import android.content.Context
+import android.content.SharedPreferences
+import io.github.nanomuse.cloud.NanoMuseCloud
+import io.github.nanomuse.dot.chat.SessionBinding
+import io.github.nanomuse.dot.voice.DotVoiceController
+import kotlinx.coroutines.flow.*
 import com.openminis.app.MinisApp
 import com.openminis.app.R
 import com.openminis.app.accessibility.MinisAccessibilityService
@@ -15,7 +21,18 @@ import kotlinx.coroutines.*
 /** Service-scoped admission only. ChatViewModel remains the sole conversation/stream owner. */
 class DotInteractionCoordinator(private val service: MinisAccessibilityService) {
     private val app get() = service.application as MinisApp
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private var scope = newScope()
+    private fun newScope() = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    val foreground = DotForegroundSession()
+    private var projection: Job? = null
+    private val capturing = MutableStateFlow(false)
+    private var accountIdentity: Pair<Boolean?, String?>? = null
+    private val metadata by lazy { service.getSharedPreferences("nanomuse", Context.MODE_PRIVATE) }
+    private val accountListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key in setOf("cloud.account_id", "cloud.hint", "cloud.instance_id")) {
+            scope.launch { if (foreground.state.value.connected) refreshAccount() }
+        }
+    }
     private val adapter by lazy { DotChatAdapter.create(app).also { chat ->
         chat.voice = io.github.nanomuse.dot.voice.DotVoiceController(chat,
             io.github.nanomuse.dot.voice.DotVoiceRuntime.gate,
@@ -29,16 +46,74 @@ class DotInteractionCoordinator(private val service: MinisAccessibilityService) 
             io.github.nanomuse.dot.voice.DotVoiceRuntime::release)
     } }
     private var opening: Job? = null
-    private var request = 0L
     private var careWindow: CareOverlayWindow? = null
     private val carePlanner by lazy { ConfiguredCarePlanner(app) }
-    val careSession by lazy {
-        CareSession(CareController(scope,
-            { generation -> service.dotScreen.capture(CapturePurpose.Care,generation) },
-            { service.dotScreen.currentSceneKey() }, carePlanner::next),
-            { careWindow?.clearFocus() }, { careWindow?.stopSpeech() })
+    private var careOwner: CareSession? = null
+    val careSession: CareSession get() = careOwner ?: CareSession(CareController(scope,
+        { generation ->
+            refreshAccount()
+            val ticket = foreground.ticket()
+            val outcome = service.dotScreen.capture(CapturePurpose.Care, generation)
+            if (!admitted(ticket)) {
+                (outcome as? CaptureOutcome.Success)?.snapshot?.close()
+                throw CancellationException("Foreground admission ended")
+            }
+            outcome
+        }, { service.dotScreen.currentSceneKey() }, { goal, snapshot, history ->
+            val ticket = foreground.ticket()
+            val result = carePlanner.next(goal, snapshot, history)
+            if (!admitted(ticket)) throw CancellationException("Foreground admission ended")
+            result
+        }),
+        { careWindow?.clearFocus() }, { careWindow?.stopSpeech() }).also { careOwner = it }
+
+    fun connect() {
+        if (foreground.state.value.connected) return
+        if (!scope.isActive) scope = newScope()
+        foreground.connect()
+        accountIdentity = identity()
+        metadata.registerOnSharedPreferenceChangeListener(accountListener)
+        scope.launch { NanoMuseCloud.signedIn(service).collect { refreshAccount() } }
+        CareOperationGate.observe(careSession::automatic)
     }
-    fun connect() { CareOperationGate.observe(careSession::automatic) }
+    private fun identity() = NanoMuseCloud.signedIn(service).value to NanoMuseCloud.account(service)?.accountId
+    private fun refreshAccount() {
+        val next = identity()
+        if (accountIdentity != null && next != accountIdentity) {
+            accountIdentity = next
+            foreground.accountChanged()
+            close()
+            careOwner?.disconnect()
+        } else accountIdentity = next
+    }
+    private fun admitted(ticket: DotForegroundTicket, binding: SessionBinding? = null): Boolean {
+        refreshAccount()
+        return foreground.accepts(ticket) && (binding == null || adapter.accepts(binding))
+    }
+    /** Display priority only; every independent producer retains its own lifecycle. */
+    private fun project() {
+        projection?.cancel()
+        val ticket = foreground.ticket()
+        val binding = adapter.binding.value
+        val mode = foreground.state.value.mode
+        projection = scope.launch {
+            combine(capturing, adapter.session?.isStreaming ?: flowOf(false),
+                adapter.voice?.ui ?: flowOf(DotVoiceController.Ui()), careSession.controller.state,
+                adapter.captureError) { capture, busy, voice, care, error ->
+                when {
+                    capture -> DotForegroundOperation.Capturing
+                    voice.phase in setOf(DotVoiceController.Phase.PERMISSION, DotVoiceController.Phase.STARTING,
+                        DotVoiceController.Phase.RECORDING, DotVoiceController.Phase.FINISHING) -> DotForegroundOperation.Listening
+                    busy && binding != null -> DotForegroundOperation.Replying
+                    error || (mode == DotForegroundMode.Care && care.errorCode != null) -> DotForegroundOperation.Error
+                    mode == DotForegroundMode.Care && care.state !in setOf(CareState.Idle, CareState.Completed) -> DotForegroundOperation.CareWaiting
+                    else -> DotForegroundOperation.Idle
+                }
+            }.collect { operation ->
+                if (admitted(ticket, binding)) foreground.update(mode, binding, operation)
+            }
+        }
+    }
     fun pauseCare(hide: Boolean = false) {
         adapter.voice?.cancel(); adapter.stopReply()
         careSession.pause(hide)
@@ -50,6 +125,7 @@ class DotInteractionCoordinator(private val service: MinisAccessibilityService) 
         careWindow?.refreshGeometry()
     }
     fun onSceneChanged(changed: Boolean) {
+        if (!foreground.state.value.connected) return
         if (changed) onHostGeometryChanged()
         else careWindow?.refreshGeometry()
     }
@@ -58,18 +134,30 @@ class DotInteractionCoordinator(private val service: MinisAccessibilityService) 
         if (careWindow == null) careWindow = CareOverlayWindow(service,scope,careSession,
             { service.dotScreen.hostViewport() }, { service.dotScreen.currentSceneKey() })
         careSession.enter()
+        foreground.update(DotForegroundMode.Care, null, DotForegroundOperation.Idle)
+        project()
     }
 
     /** Explicit main-app session entry switches admission; opening our panel alone never does. */
     fun onChatEntered(sessionId: String) {
+        if (!foreground.state.value.connected) return
         service.dotOverlay.cancelCaptureScan()
         pauseCare(hide=true)
-        ++request
+        refreshAccount()
+        foreground.invalidate()
+        capturing.value = false
+        projection?.cancel()
         opening?.cancel()
-        if (service.dotOverlay.panelView != null) adapter.bind(sessionId)
+        if (service.dotOverlay.panelView != null) {
+            val binding = adapter.bind(sessionId)
+            foreground.update(DotForegroundMode.Chat, binding, DotForegroundOperation.Idle)
+            project()
+        }
     }
 
     fun handle(intent: DotIntent) {
+        if (!foreground.state.value.connected) return
+        refreshAccount()
         service.dotOverlay.cancelCaptureScan()
         if (intent == DotIntent.Triple) { openCare(); return }
         if (intent != DotIntent.Single && intent != DotIntent.Double) {
@@ -80,52 +168,71 @@ class DotInteractionCoordinator(private val service: MinisAccessibilityService) 
         opening?.cancel()
         // The old panel's collapse callback invalidates its admission before the new ticket exists.
         service.dotOverlay.collapsePanel()
-        val ticket = ++request
+        foreground.invalidate()
+        capturing.value = false
+        val ticket = foreground.ticket()
         opening = scope.launch {
             val id = com.openminis.app.ui.chat.ChatViewModelStore.activeSessionId ?: MainChat.sessionId.value ?: MainChat.resolve(app,app.chatRepository)
-            if (ticket != request || !service.dotOverlay.isConnected) return@launch
+            if (!admitted(ticket) || !service.dotOverlay.isConnected) return@launch
             val binding = adapter.bind(id)
+            foreground.update(if (intent == DotIntent.Double) DotForegroundMode.Screen else DotForegroundMode.Chat,
+                binding, DotForegroundOperation.Idle)
+            project()
             if (intent == DotIntent.Double) {
-                service.dotOverlay.beginCaptureScan(ticket)
+                capturing.value = true
+                service.dotOverlay.beginCaptureScan(ticket.epoch)
                 try {
                 when (val result = service.dotScreen.capture(CapturePurpose.Chat,binding.generation)) {
-                    is CaptureOutcome.Success -> adapter.attach(binding,result.snapshot)
+                    is CaptureOutcome.Success -> if (admitted(ticket, binding)) adapter.attach(binding,result.snapshot) else result.snapshot.close()
                     is CaptureOutcome.Unavailable -> {
+                        if (!admitted(ticket, binding)) return@launch
                         // A fresh read is required: failed screenshot nodes are never reused.
                         when (val fallback = service.dotScreen.captureNodes(binding.generation)) {
-                            is CaptureOutcome.Success -> adapter.attach(binding,fallback.snapshot)
-                            is CaptureOutcome.Unavailable -> adapter.captureError.value = true
+                            is CaptureOutcome.Success -> if (admitted(ticket, binding)) adapter.attach(binding,fallback.snapshot) else fallback.snapshot.close()
+                            is CaptureOutcome.Unavailable -> if (admitted(ticket, binding)) adapter.captureError.value = true
                         }
                     }
                 }
-                if(ticket==request && adapter.accepts(binding)) service.dotOverlay.finishCaptureScan(ticket,adapter.preview.value!=null)
-                else service.dotOverlay.cancelCaptureScan(ticket)
+                if(admitted(ticket, binding)) service.dotOverlay.finishCaptureScan(ticket.epoch,adapter.preview.value!=null)
+                else service.dotOverlay.cancelCaptureScan(ticket.epoch)
                 } catch(cancelled: CancellationException) {
-                    service.dotOverlay.cancelCaptureScan(ticket)
+                    service.dotOverlay.cancelCaptureScan(ticket.epoch)
                     throw cancelled
                 } catch(failure: Exception) {
-                    if(ticket==request && adapter.accepts(binding)) {
+                    if(admitted(ticket, binding)) {
                         adapter.captureError.value=true
-                        service.dotOverlay.finishCaptureScan(ticket,false)
-                    } else service.dotOverlay.cancelCaptureScan(ticket)
+                        service.dotOverlay.finishCaptureScan(ticket.epoch,false)
+                    } else service.dotOverlay.cancelCaptureScan(ticket.epoch)
+                } finally {
+                    if (foreground.accepts(ticket)) capturing.value = false
                 }
             }
-            if (ticket != request || !adapter.accepts(binding)) return@launch
+            if (!admitted(ticket, binding)) return@launch
             service.dotOverlay.showPanel(adapter) { close() }
         }
     }
 
     fun close() {
         service.dotOverlay.cancelCaptureScan()
-        ++request
+        foreground.invalidate()
+        capturing.value = false
+        projection?.cancel()
         opening?.cancel()
+        adapter.voice?.cancel(); adapter.closeSpeech()
+        careOwner?.pause(hide = true)
+        careWindow?.hide()
         adapter.binding.value?.let(adapter::cancel)
         service.dotOverlay.collapsePanel()
     }
 
     fun disconnect() {
+        if (!foreground.state.value.connected) return
+        foreground.disconnect()
+        metadata.unregisterOnSharedPreferenceChangeListener(accountListener)
         CareOperationGate.observe(null)
-        careSession.disconnect(); careWindow?.close(); careWindow=null
         close()
+        careOwner?.disconnect(); careWindow?.close(); careWindow=null
+        careOwner = null
+        scope.cancel()
     }
 }

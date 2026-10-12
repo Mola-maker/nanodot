@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Scoped Android Dot foreground admission to the accessibility connection, rejected late capture/status results after Stop or account replacement, and recreated transient Care owners on reconnect while preserving canonical history.
+
 - Routed Android Care instruction leaders outside the measured chat card and into the current bubble's side, preserving chat and target outlines when no safe side route fit; native visual acceptance remained pending.
 
 - Added opt-in Android diagnostic voice observation bound to the actual Dot session and resource generations, with bounded request-owned synthesis PCM and separate platform/application recognition provenance; ordinary debug and every release retained stateless producers, while actual audio acceptance remained pending.

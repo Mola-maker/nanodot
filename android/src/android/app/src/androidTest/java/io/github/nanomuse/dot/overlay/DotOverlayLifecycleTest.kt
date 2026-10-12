@@ -153,6 +153,26 @@ class DotOverlayLifecycleTest {
         }
     }
 
+    @Test fun serviceForegroundReconnectRejectsOldCallbacksAndRebuildsCareOwner() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val service = connectedService()
+        instrumentation.runOnMainSync {
+            val coordinator = service.dotInteraction
+            val before = coordinator.foreground.ticket()
+            val care = coordinator.careSession
+            coordinator.disconnect()
+            coordinator.disconnect()
+            assertFalse(coordinator.foreground.accepts(before))
+            assertFalse(coordinator.foreground.state.value.connected)
+            assertNull(coordinator.foreground.state.value.binding)
+            coordinator.connect()
+            assertTrue(coordinator.foreground.accepts(coordinator.foreground.ticket()))
+            assertFalse(coordinator.foreground.accepts(before))
+            assertNotSame("Care must not retain the cancelled coroutine scope", care, coordinator.careSession)
+            assertSame(coordinator.foreground.state, service.dotOverlay.foregroundState)
+        }
+    }
+
     private fun awaitAttached(controller: DotOverlayController) {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val until = SystemClock.uptimeMillis() + 5000

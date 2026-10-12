@@ -89,3 +89,5 @@ Shared interactive controls retain native 48dp bounds and selected semantics. Bo
 Shared status text uses the active scheme’s onSurface foreground and status-role icon colors, including on pages without an enclosing Material surface. The gallery supplies a Material surface; native pixel contrast is checked separately from semantic label presence.
 
 Send/Stop keeps the primary/onPrimary pair through focus and press, using native ripple and a 100/200 ms focus/press cue (static with reduced motion). Goals completion and Feed Like use native checked controls backed by their existing stores; Add and post-information actions have localized names. Cloud mode/usage tabs expose actual selected state with native tab roles and 48 dp targets.
+
+The immutable Dot foreground snapshot carries connection and account epochs, mode, canonical binding and a display operation. Its operation is a presentation priority over independent capture, reply, voice and Care owners; it never replaces their lifecycles.

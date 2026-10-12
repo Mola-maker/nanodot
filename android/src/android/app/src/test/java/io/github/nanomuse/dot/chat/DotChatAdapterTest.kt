@@ -33,6 +33,31 @@ class DotChatAdapterTest {
         override fun cancel() { stops++; isStreaming.value = false }
         override fun retry() = Unit
     }
+    @Test fun foregroundStopLeavesUnownedTasksAlone() {
+        val owned = Session()
+        val unrelated = Session().apply { isStreaming.value = true }
+        val adapter = DotChatAdapter({ it }, { owned }, { error("No capture") })
+        val binding = adapter.bind("owned")
+        adapter.send(binding, "reply")
+        adapter.cancel(binding)
+        assertEquals(1, owned.stops)
+        assertFalse(owned.isStreaming.value)
+        assertEquals(0, unrelated.stops)
+        assertTrue(unrelated.isStreaming.value)
+    }
+    @Test fun aliasPromotionKeepsCanonicalReply() {
+        val aliases = mutableMapOf<String, String>()
+        val session = Session()
+        val adapter = DotChatAdapter({ aliases[it] ?: it }, { session }, { error("No capture") })
+        val binding = adapter.bind("draft")
+        adapter.send(binding, "continue")
+        aliases["draft"] = "canonical"
+        assertEquals(binding, adapter.bind("canonical"))
+        assertTrue(session.isStreaming.value)
+        assertEquals(0, session.stops)
+        adapter.cancel(binding)
+        assertEquals(1, session.stops)
+    }
     private fun shot(generation: Long, at: Long = 1234) = ScreenSnapshot("fixture", generation, at,
         SceneKey("fixture.host", 7, 0, 1), RectPx(0f,0f,48f,48f),0,RectPx(0f,0f,0f,0f),null,
         emptyList(),null,ScreenTransform(RectPx(0f,0f,48f,48f),48,48))

@@ -152,6 +152,9 @@ class DotOverlayController(
         override fun onDisplayChanged(displayId: Int) { onDisplayChanged() }
     }
 
+    /** Shared immutable presentation; the coordinator retains effect ownership. */
+    val foregroundState get() = (service as? MinisAccessibilityService)?.dotInteraction?.foreground?.state
+
     fun connect() {
         checkMainThread()
         if (!isConnected) {
