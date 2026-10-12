@@ -42,11 +42,39 @@ class DotPlacementExactOwnedRecoveryTest {
         val prefs = app.getSharedPreferences("nanomuse", android.content.Context.MODE_PRIVATE)
         val originalFirst = prefs.getString("first_conversation.session", null) to
             prefs.getString("first_conversation.phase", null)
+        val badgePrefs = app.getSharedPreferences("session_badge_store", android.content.Context.MODE_PRIVATE)
+        val badgeKey = "badge_state_by_session_v2"
+        fun badgeEntries(raw: String?): Map<String, String> {
+            if (raw.isNullOrBlank()) return emptyMap()
+            val entries = raw.split(';').map { entry ->
+                val separator = entry.indexOf('=')
+                check(separator > 0 && separator < entry.lastIndex)
+                entry.substring(0, separator) to entry.substring(separator + 1)
+            }
+            check(entries.map { it.first }.distinct().size == entries.size)
+            return entries.toMap()
+        }
+        lateinit var originalBadges: Map<String, List<SessionBadgeStore.SessionBadgeState>>
+        lateinit var originalBadgePrefs: Map<String, *>
+        lateinit var originalBadgeEntries: Map<String, String>
         instrumentation.runOnMainSync {
             check(id !in SessionActivityTracker.activeSessions.value)
             check(id !in SessionActivityTracker.presentSessions.value)
             check(ChatViewModelStore.activeSessionId != id)
-            check(SessionBadgeStore.byId.value[id].orEmpty().all { it == SessionBadgeStore.SessionBadgeState.PAUSED })
+            originalBadges = SessionBadgeStore.byId.value.mapValues { it.value.toList() }
+            check(originalBadges[id] == null || originalBadges[id] == listOf(SessionBadgeStore.SessionBadgeState.PAUSED))
+            originalBadgePrefs = badgePrefs.all.toMap()
+            originalBadgeEntries = badgeEntries(badgePrefs.getString(badgeKey, null))
+            if (id in originalBadges) {
+                // Refuse migration/unknown entries: removal may write only this known v2
+                // PAUSED entry. Exact raw tokens preserve unrelated queues and timestamps.
+                val persistedQueues = originalBadgeEntries.mapValues { (_, raw) -> raw.split(',').map { token ->
+                    val pieces = token.split(':')
+                    check(pieces.size == 2 && pieces[1].toLongOrNull()?.let { it >= 0 } == true)
+                    SessionBadgeStore.SessionBadgeState.valueOf(pieces[0])
+                } }
+                check(persistedQueues == originalBadges)
+            } else check(id !in originalBadgeEntries)
         }
         val media = com.openminis.app.data.storage.MediaStore(app)
         val mediaDirectories = media.mediaBaseDir.walkTopDown().filter { it.isDirectory && it.name == id }.toList()
@@ -84,13 +112,19 @@ class DotPlacementExactOwnedRecoveryTest {
         if (sessionDirectory.exists()) check(sessionDirectory.delete())
         instrumentation.runOnMainSync {
             ChatViewModelStore.release(id)
+            check(SessionBadgeStore.byId.value == originalBadges)
+            check(badgePrefs.all == originalBadgePrefs)
             SessionBadgeStore.remove(id, SessionBadgeStore.SessionBadgeState.PAUSED)
+            check(SessionBadgeStore.byId.value == originalBadges - id)
+            check(badgeEntries(badgePrefs.getString(badgeKey, null)) == originalBadgeEntries - id)
+            check(badgePrefs.all - badgeKey == originalBadgePrefs - badgeKey)
+            if (id !in originalBadges) check(badgePrefs.all == originalBadgePrefs)
         }
         check(app.chatRepository.getSession(id) == null && app.chatRepository.dao.loadMessages(id).isEmpty())
         check(sync.conversation(id) == null && sync.messages(id).isEmpty() && sync.owners().none { it.sessionId == id })
         check(media.mediaBaseDir.walkTopDown().none { it.isDirectory && it.name == id })
         check(!sessionDirectory.exists())
         check(originalFirst == (prefs.getString("first_conversation.session", null) to prefs.getString("first_conversation.phase", null)))
-        println("T4_EXACT_RECOVERY id=$id knownRows=3 exactEntitySnapshot=true ownedOnly=true firstPrefsUnchanged=true")
+        println("T4_EXACT_RECOVERY id=$id knownRows=3 exactEntitySnapshot=true ownedOnly=true firstPrefsUnchanged=true unrelatedBadgesAndStampsUnchanged=true")
     }
 }
