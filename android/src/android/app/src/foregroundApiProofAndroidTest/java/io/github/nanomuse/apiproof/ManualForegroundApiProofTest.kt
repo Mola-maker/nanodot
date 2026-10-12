@@ -141,13 +141,39 @@ class ManualForegroundApiProofTest {
         check(android.os.Looper.myLooper()!=android.os.Looper.getMainLooper())
         val pipes=automation.executeShellCommandRw("sh")
         val quote=value?.let { "'"+it.replace("'","'\"'\"'")+"'" }
+        val command=if(value==null) "settings delete secure $key" else "settings put secure $key $quote"
         ParcelFileDescriptor.AutoCloseOutputStream(pipes[1]).use {
-            it.write(((if(value==null) "settings delete secure $key" else "settings put secure $key $quote")+"\nexit\n").toByteArray())
+            it.write((command+" >/dev/null 2>&1\nif [ \"${'$'}?\" -eq 0 ]; then printf 'FOREGROUND_SETTINGS_OK\\n'; else printf 'FOREGROUND_SETTINGS_FAIL\\n'; fi\nexit\n").toByteArray())
         }
-        ParcelFileDescriptor.AutoCloseInputStream(pipes[0]).use { it.readBytes() }
+        val shellReply=ParcelFileDescriptor.AutoCloseInputStream(pipes[0]).use { it.readNBytes(64) }
+        val shellCode=when {
+            shellReply.contentEquals("FOREGROUND_SETTINGS_OK\n".toByteArray()) -> "success"
+            shellReply.contentEquals("FOREGROUND_SETTINGS_FAIL\n".toByteArray()) -> "failure"
+            else -> "invalid_sentinel"
+        }
         val until=SystemClock.uptimeMillis()+3000
         while(secure(key)!=value && SystemClock.uptimeMillis()<until) SystemClock.sleep(25)
-        check(secure(key)==value)
+        val cached=secure(key); val exact=cached==value
+        var direct:String?=null; var rowPresent=false; var readCode="ok"
+        try {
+            val cursor=inst.targetContext.contentResolver.query(Settings.Secure.getUriFor(key),arrayOf(Settings.NameValueTable.VALUE),null,null,null)
+            if(cursor==null) readCode="null_cursor" else cursor.use {
+                if(it.count !in 0..1) readCode="row_count_rejected" else if(it.moveToFirst()) {
+                    rowPresent=true; direct=it.getString(0)
+                }
+            }
+        } catch(_:Exception) { readCode="query_failed" }
+        val directRead=readCode=="ok"
+        runCatching { android.util.Log.i("ForegroundSettingsRestore",JSONObject().put("phase","secure_write_ack")
+            .put("keyCode",if(key=="accessibility_enabled") "enabled" else "services").put("shellCode",shellCode)
+            .put("expectedNull",value==null).put("expectedEmpty",value=="")
+            .put("cachedNull",cached==null).put("cachedEmpty",cached=="").put("cachedEqualsExpected",exact)
+            .put("directRowPresent",rowPresent).put("directReadCode",readCode)
+            .put("directNull",directRead && direct==null).put("directEmpty",directRead && direct=="")
+            .put("directEqualsExpected",directRead && direct==value).put("cachedEqualsDirect",directRead && cached==direct)
+            .put("enabledExpectedZero",key=="accessibility_enabled" && value=="0")
+            .put("enabledDirectOne",key=="accessibility_enabled" && directRead && direct=="1").toString()) }
+        check(exact)
     }
     private fun connect(previous: Map<String,String?>): Int {
         automation=inst.getUiAutomation(UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES)
@@ -870,6 +896,38 @@ class ManualForegroundApiProofTest {
                 check(failures==0) { "Keyless Care cleanup incomplete" }
             }
         }
+    }
+
+    @Test fun publicSettingsRestoreDiagnostic() {
+        val args=InstrumentationRegistry.getArguments()
+        val suppliedOwner=args.getString("foregroundOwner")
+        assumeTrue("Fresh reviewed owner input required",suppliedOwner!=null)
+        owner=requireNotNull(suppliedOwner); check(UUID.fromString(owner).toString()==owner)
+        source=requireNotNull(args.getString("foregroundSource")); check(source.matches(Regex("[0-9a-f]{40}")))
+        val ownerRoot=File(app.cacheDir,"foreground-api-proof-$owner")
+        check(ownerRoot.canonicalFile.parentFile==app.cacheDir.canonicalFile && ownerRoot.isDirectory && !java.nio.file.Files.isSymbolicLink(ownerRoot.toPath()))
+        ownerDirectory=ownerRoot
+        check(inst.targetContext.packageName=="io.github.nanodot.app")
+        val update=inst.targetContext.packageManager.getPackageInfo(inst.targetContext.packageName,0).lastUpdateTime
+        check(update>0 && Process.myUid()>0 && Process.myPid()>0)
+        val witness=JSONObject().put("schema",1).put("phase","settings_only_target_witness").put("owner",owner).put("source",source)
+            .put("targetPackage",inst.targetContext.packageName).put("targetUid",Process.myUid()).put("targetPid",Process.myPid()).put("targetLastUpdateTime",update)
+        inst.sendStatus(0,Bundle().apply { putString("foregroundSettingsWitness",witness.toString()) })
+        val previous=listOf("enabled_accessibility_services","accessibility_enabled").associateWith(::secure)
+        var flags:Int?=null; var failure:Throwable?=null
+        fun attempt(operation:()->Unit) { try { operation() } catch(problem:Throwable) { if(failure==null) failure=problem } }
+        try {
+            automation=inst.getUiAutomation(UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES)
+            flags=automation.serviceInfo.flags
+            connect(previous)
+            inst.runOnMainSync { check(MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected==true) }
+        } catch(problem:Throwable) { failure=problem } finally {
+            if(::automation.isInitialized) {
+                flags?.let { saved -> attempt { automation.serviceInfo=automation.serviceInfo.apply { this.flags=saved } } }
+                previous.forEach { (key,value) -> attempt { putSecure(key,value) } }
+            }
+        }
+        failure?.let { throw it }
     }
 
     @Test fun canonicalChatThenObservableCareNext() {
