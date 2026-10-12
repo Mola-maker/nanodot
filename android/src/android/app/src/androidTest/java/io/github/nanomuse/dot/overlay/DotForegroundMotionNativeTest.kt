@@ -135,7 +135,10 @@ class DotForegroundMotionNativeTest {
             automation.serviceInfo = automation.serviceInfo.apply {
                 flags = flags or AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
             }
-            if (MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected != true) {
+            // onCreate publishes the instance before onServiceConnected initializes this
+            // synchronized lazy. Its Compose dispatcher constructor needs Main: never
+            // acquire the controller lazy lock from the instrumentation thread.
+            if (!onMain { MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true }) {
                 val others = services.filter { it != own }
                 restore("enabled_accessibility_services", others.joinToString(":").ifEmpty { null })
                 // Rebinding is framework-driven, and unrelated granted services are retained.
@@ -149,7 +152,7 @@ class DotForegroundMotionNativeTest {
                 restore("accessibility_enabled", "1")
             }
             await("Real accessibility service did not reconnect") {
-                MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true
+                onMain { MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true }
             }
             val connected = requireNotNull(MinisAccessibilityService.getInstance())
             assertInitialForegroundEmpty(connected)
