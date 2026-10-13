@@ -329,7 +329,7 @@
     <string name="nm_avatar_retry">再試行</string>
     <string name="nm_avatar_describe_title">新しい顔を描写する</string>
     <string name="nm_avatar_describe_body">一文で十分です: 何なのか、何を着ているか、どんな雰囲気か。スタイルを選ぶと、画像モデルが候補を 4 枚描きます。</string>
-    <string name="nm_avatar_default_description">小さなオレンジ色の角と小さく畳んだ翼を持つ、ぽっちゃりした薄黄色の赤ちゃんドラゴン</string>
+    <string name="nm_avatar_default_description">淡い青色の透明な水晶玉。柔らかなハイライトと、呼吸するような穏やかな光</string>
     <string name="nm_avatar_style_flat">フラット</string>
     <string name="nm_avatar_style_clay">3D クレイ</string>
     <string name="nm_avatar_style_watercolor">水彩</string>
@@ -376,7 +376,7 @@
     <string name="nm_version_failed">確認できませんでした。タップして再試行</string>
     <string name="nm_appearance_section_home">ホーム</string>
     <string name="nm_appearance_header_model_title">名前の下にモデルを表示</string>
-    <string name="nm_appearance_header_model_footer">Muse は名前だけを表示します。これをオンにすると、その下にモデルグループと「プロバイダ · モデル」が表示され、タップして切り替えられます。オフのときは、モデルは ••• → モデルと設定にあります。</string>
+    <string name="nm_appearance_header_model_footer">Dot は名前だけを表示します。これをオンにすると、その下にモデルグループと「プロバイダ · モデル」が表示され、タップして切り替えられます。オフのときは、モデルは ••• → モデルと設定にあります。</string>
     <string name="nm_appearance_section_chat">会話</string>
     <string name="nm_appearance_steps_title">エージェントのステップを表示</string>
     <string name="nm_appearance_steps_footer">オフのときは、チャットには返信だけが残り、顔の下の一行がエージェントの今の作業を示します。オンのときは、すべてのステップがチャットに表示されます：使った各ツール、推論、そして入力欄の上にステップの詳細を開くバーが出ます。</string>
@@ -396,7 +396,7 @@
     <string name="nm_avatar_size_large">大</string>
     <string name="nm_avatar_size_extra_large">特大</string>
     <string name="nm_avatar_size_hidden">非表示</string>
-    <string name="nm_avatar_style_muse">3D トイ（Muse）</string>
+    <string name="nm_avatar_style_muse">3D トイ</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">オンライン</string>
@@ -1076,9 +1076,9 @@
     <string name="nm_models_hands_title">画面の操作</string>
     <string name="nm_models_hands_sub">画面を見てあなたの代わりに操作します。画像を見られるモデルが必要です。</string>
     <string name="nm_models_image_title">画像の生成</string>
-    <string name="nm_models_image_sub">ミューズの肖像と、あなたが頼んだ画像。</string>
+    <string name="nm_models_image_sub">Dotの肖像と、あなたが頼んだ画像。</string>
     <string name="nm_models_video_title">動画の生成</string>
-    <string name="nm_models_video_sub">ミューズの短い動画。</string>
+    <string name="nm_models_video_sub">Dotの短い動画。</string>
     <string name="nm_models_chat_applies">メインチャットと新しいチャットに適用されます。サイドチャットは各自のモデルを保ちます。</string>
     <string name="nm_models_media_more">画像と動画のその他のオプション</string>
     <string name="nm_models_media_more_sub">モデル名を入力する、各モデルがないと何が止まるかを見る、キーで使える動画モデルを再確認する。</string>

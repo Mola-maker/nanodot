@@ -89,6 +89,13 @@ The three protocols are documented and versioned; change the doc in the same cha
 - **Desktop** is a dsh plugin: profile overlays in `cordis.patch.yml`, the relay URL in the plugin's `config.baseURL`; [docs/desktop.md](docs/desktop.md). The Electron shell and the plugin carry the same version.
 - **CI** uses Node 22 for every JavaScript job; keep `engines` and lock files compatible with it even when you develop on a newer Node.
 
+## Android verification and task loops
+
+- For Android acceptance, UI regressions, or APK delivery, read [verify-nanodot-android](skills/verify-nanodot-android/SKILL.md). This repository-local skill is loaded through this link; it is not installed globally. [Android verification](docs/android-verification.md) owns the commands and evidence contract.
+- Resume from the original goal, reviewed plan, current diff and artifact receipts. Reuse unchanged evidence; label source review, fixture, real user flow and real-provider proof separately. A build or a subagent report is not a runtime pass.
+- Give each writer a disjoint scope and one coordinator ownership of Gradle and the target device. Record hypothesis, change and observed result per repair; repeated failure of the same premise requires new evidence before another patch. Preserve Stop, deadlines and explicit retry budgets in product loops.
+- These are selected adaptations of poteto's MIT-licensed pstack, with [pinned sources](skills/verify-nanodot-android/references/pstack-source-lock.json). They do not import Cursor tools, model names, infinite retries or permission to publish, message, merge or change login/gateway configuration.
+
 ## Writing a release
 
 One branch and one pull request per version; `scripts/release-bump.sh` moves the version files, `scripts/rebrand.py` writes the phones' versions, `scripts/release-docs.py` opens the `CHANGELOG.md` block and moves the READMEs' download links (the *News* lists are milestones and stay as written; a major version gets a hand-written line), and `scripts/release-apk.sh <version>` builds and publishes (the tag `v*` starts the desktop, harness and Docker workflows). The notes are `docs/releases/v<version>.md` in the shape of [docs/release-notes-template.md](docs/release-notes-template.md): a short story, *Highlights*, *Upgrade Notes*, *Community*, English first and the same in Chinese in a collapsed block. Move the *Unreleased* bullets of `CHANGELOG.md` under the new version in the same commit as the version bump. The maintainers' recipe is in [CONTRIBUTING.md](CONTRIBUTING.md#releasing-maintainers).

@@ -52,6 +52,9 @@ class DotInteractionCoordinator internal constructor(
             service.dotOverlay::setVoicePermissionWindow,
             io.github.nanomuse.dot.voice.DotVoiceRuntime::release)
     } }
+    private val idleVoiceUi = MutableStateFlow(DotVoiceController.Ui())
+    /** Projection of the existing microphone owner, never a second recording state machine. */
+    val voiceUi: StateFlow<DotVoiceController.Ui> get() = adapter.voice?.ui ?: idleVoiceUi
     private var opening: Job? = null
     private var careWindow: CareOverlayWindow? = null
     private val carePlanner by lazy { ConfiguredCarePlanner(app) }
@@ -123,6 +126,7 @@ class DotInteractionCoordinator internal constructor(
         }
     }
     fun pauseCare(hide: Boolean = false) {
+        service.dotOverlay.dismissOrbMenu()
         adapter.voice?.cancel(); adapter.stopReply()
         careSession.pause(hide)
         if (hide) careWindow?.hide()
@@ -150,6 +154,7 @@ class DotInteractionCoordinator internal constructor(
     /** Explicit main-app session entry switches admission; opening our panel alone never does. */
     fun onChatEntered(sessionId: String) {
         if (!foreground.state.value.connected) return
+        service.dotOverlay.dismissOrbMenu()
         service.dotOverlay.cancelCaptureScan()
         pauseCare(hide=true)
         refreshAccount()
@@ -166,13 +171,37 @@ class DotInteractionCoordinator internal constructor(
 
     fun handle(intent: DotIntent) {
         if (!foreground.state.value.connected) return
+        if (intent == DotIntent.LongPress) return // The overlay owns this presentation-only action.
+        service.dotOverlay.dismissOrbMenu()
         refreshAccount()
+        if (intent == DotIntent.Voice) { handleVoiceAction(); return }
         service.dotOverlay.cancelCaptureScan()
         if (intent == DotIntent.Triple) { openCare(); return }
         if (intent != DotIntent.Single && intent != DotIntent.Double) {
             Toast.makeText(service,R.string.nm_dot_action_unavailable,Toast.LENGTH_SHORT).show()
             return
         }
+        openConversation(intent)
+    }
+
+    private fun handleVoiceAction() {
+        val voice = adapter.voice
+        if (voice == null) {
+            Toast.makeText(service, R.string.nm_dot_action_unavailable, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val binding = adapter.binding.value
+        val state = foreground.state.value
+        if (!capturing.value && binding != null && adapter.accepts(binding) && state.binding == binding &&
+            state.mode in setOf(DotForegroundMode.Chat, DotForegroundMode.Screen) && service.dotOverlay.panelView != null) {
+            voice.primaryAction() // Finish/Cancel retains the current permission request and draft.
+        } else {
+            service.dotOverlay.cancelCaptureScan()
+            openConversation(DotIntent.Single, startVoice = true)
+        }
+    }
+
+    private fun openConversation(intent: DotIntent, startVoice: Boolean = false) {
         pauseCare(hide=true)
         opening?.cancel()
         // The old panel's collapse callback invalidates its admission before the new ticket exists.
@@ -195,6 +224,7 @@ class DotInteractionCoordinator internal constructor(
             // The repository uses host-window pixels or fresh nodes while these controls are visible.
             service.dotOverlay.showPanel(adapter, onStop = ::stopChatReply, foreground = foreground.state) { close() }
             if (!admitted(ticket, binding)) return@launch
+            if (startVoice && service.dotOverlay.panelView != null) adapter.voice?.primaryAction()
             if (intent == DotIntent.Double) {
                 service.dotOverlay.beginCaptureScan(ticket.epoch)
                 try {
@@ -231,6 +261,7 @@ class DotInteractionCoordinator internal constructor(
         if (!foreground.state.value.connected) return
         refreshAccount()
         if (!adapter.accepts(binding)) return
+        service.dotOverlay.dismissOrbMenu()
         val mode = foreground.state.value.mode
         foreground.invalidate()
         service.dotOverlay.cancelCaptureScan()
@@ -244,6 +275,7 @@ class DotInteractionCoordinator internal constructor(
     }
 
     fun close() {
+        service.dotOverlay.dismissOrbMenu()
         service.dotOverlay.cancelCaptureScan()
         foreground.invalidate()
         capturing.value = false

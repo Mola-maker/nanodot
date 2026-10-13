@@ -44,7 +44,7 @@ import com.openminis.app.service.ToolOutcome
 import io.github.nanomuse.avatar.AvatarStore
 import kotlinx.coroutines.delay
 
-/** Dot has five offline stills. Custom avatar motion stays available when the user adds it. */
+/** Dot has five offline crystal stills. User-selected avatar images and motion take priority. */
 enum class AgentMood(@DrawableRes val drawable: Int, @RawRes val motion: Int?) {
     IDLE(R.drawable.nm_avatar_idle, null),
     WORKING(R.drawable.nm_avatar_working, null),
@@ -115,7 +115,7 @@ fun rememberAgentMood(isStreaming: Boolean, error: String?): AgentMood {
 }
 
 /**
- * The face at [size]: the built-in dragon, or the user's own picture set from Settings →
+ * The face at [size]: the built-in blue crystal, or the user's own picture set from Settings →
  * Appearance. It cross-fades between moods and moves the way Muse's does — a slow breath at
  * rest, a busy bob while working, a curious tilt while waiting, a pop when it is pleased and a
  * quick shake when something failed. Tapping it opens the appearance page.
@@ -234,7 +234,7 @@ fun AgentAvatar(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.size(size),
             )
-            // The built-in character ships with its clips, so it moves without a video model.
+            // Optional built-in clips. The crystal uses offline stills and the motion above.
             val res = current.motion
             if (res != null && motionEnabled) {
                 val context = androidx.compose.ui.platform.LocalContext.current
@@ -249,8 +249,8 @@ fun AgentAvatar(
 }
 
 /**
- * The face on its pale disc, the way both headers show it. Every face — the built-in dragon
- * too — brings its own white background and fills the disc.
+ * The face on its pale disc, the way both headers show it. The crystal keeps its transparent
+ * edge; user images retain their existing crop and pale backing.
  */
 @Composable
 fun AgentAvatarDisc(

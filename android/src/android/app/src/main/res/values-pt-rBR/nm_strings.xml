@@ -332,7 +332,7 @@
     <string name="nm_avatar_retry">Tentar de novo</string>
     <string name="nm_avatar_describe_title">Descreva um rosto novo</string>
     <string name="nm_avatar_describe_body">Uma frase basta: o que é, o que veste, que sensação passa. Escolha um estilo, e seu modelo de imagem desenha quatro opções.</string>
-    <string name="nm_avatar_default_description">Um dragãozinho bebê rechonchudo, amarelo-claro, com chifrinhos laranja e asas pequenas dobradas</string>
+    <string name="nm_avatar_default_description">Uma esfera de cristal transparente azul-clara, com reflexos suaves e um brilho que pulsa como uma respiração tranquila</string>
     <string name="nm_avatar_style_flat">Flat</string>
     <string name="nm_avatar_style_clay">Argila 3D</string>
     <string name="nm_avatar_style_watercolor">Aquarela</string>
@@ -379,7 +379,7 @@
     <string name="nm_version_failed">Não foi possível verificar, toque para tentar de novo</string>
     <string name="nm_appearance_section_home">Início</string>
     <string name="nm_appearance_header_model_title">Mostrar o modelo sob o nome</string>
-    <string name="nm_appearance_header_model_footer">O Muse mostra só o nome. Ligue isto para ver o grupo de modelos e provedor · modelo embaixo; toque neles para trocar. Desligado, o modelo fica em ••• → Modelo e em Configurações.</string>
+    <string name="nm_appearance_header_model_footer">O Dot mostra só o nome. Ligue isto para ver o grupo de modelos e provedor · modelo embaixo; toque neles para trocar. Desligado, o modelo fica em ••• → Modelo e em Configurações.</string>
     <string name="nm_appearance_section_chat">Conversa</string>
     <string name="nm_appearance_steps_title">Mostrar os passos do agente</string>
     <string name="nm_appearance_steps_footer">Desligado, a conversa mostra só as respostas, e a linha sob o rosto diz o que o agente está fazendo agora. Ligado, cada passo aparece na conversa: cada ferramenta usada, o raciocínio e uma barra sobre o campo de mensagem que abre os detalhes do passo.</string>
@@ -399,7 +399,7 @@
     <string name="nm_avatar_size_large">Grande</string>
     <string name="nm_avatar_size_extra_large">Extragrande</string>
     <string name="nm_avatar_size_hidden">Oculto</string>
-    <string name="nm_avatar_style_muse">Brinquedo 3D (Muse)</string>
+    <string name="nm_avatar_style_muse">Brinquedo 3D</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">online</string>
@@ -1080,9 +1080,9 @@
     <string name="nm_models_hands_title">Operar a tela</string>
     <string name="nm_models_hands_sub">Olha a tela e age por você. Precisa de um modelo que veja imagens.</string>
     <string name="nm_models_image_title">Criar imagens</string>
-    <string name="nm_models_image_sub">Retratos da sua Musa e as imagens que você pedir.</string>
+    <string name="nm_models_image_sub">Retratos de Dot e as imagens que você pedir.</string>
     <string name="nm_models_video_title">Criar clipes</string>
-    <string name="nm_models_video_sub">Clipes curtos da sua Musa.</string>
+    <string name="nm_models_video_sub">Clipes curtos de Dot.</string>
     <string name="nm_models_chat_applies">Vale para o chat principal e para novos chats; um chat paralelo mantém o próprio modelo.</string>
     <string name="nm_models_media_more">Mais opções de imagens e clipes</string>
     <string name="nm_models_media_more_sub">Digite o nome de um modelo, veja o que para sem cada modelo ou confira de novo quais modelos de vídeo uma chave pode usar.</string>

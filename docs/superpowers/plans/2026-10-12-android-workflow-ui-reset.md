@@ -48,3 +48,44 @@
 - [ ] Leave a real normalproductscene in live8768sidebar andreturnmanualcontrol; notfixture-onlypreview.
 - [ ] Buildarm64candidatewithsameentry/CI, verifyactualsignature/package/ABI/hash; nofakefullnativearm64claimfromx86UI.
 - [ ] Commit/pushauthorizedexistingPRafterreview, outputAPK+receiptandoriginalgoalcoverage. Originalgoal remainsincompleteuntilvoice/lasso/Careandmultiplatformpendingitemsactuallyverified.
+
+## 2026-10-13 user-approved interaction addendum
+
+This addendum follows the user's explicit implementation request and supersedes the old “connected instruction bubble” in the external reset README. The original Ultra scope, Android-first delivery, login/gateway freeze, canonical owners, bottom glass conversation, automatic avoidance and real-sidebar evidence remain binding.
+
+### Task 4: Reference motion and evidence workflow
+- Reuse the three retained interaction reference images and existing imagegen crystal atlas; implement restrained blue crystal afterimages on the existing bounded trail clock.
+- Adapt selected pinned MIT pstack verification practices into this repository's AGENTS entry, verification skill, feature/run evidence templates and read-only checker. Do not import Cursor tools, model selection or unbounded product retries.
+- Independently review source and run the same feature on the actual owned candidate. Reference concepts, native fixtures and real product/provider evidence remain separate.
+
+### Task 5: Long-press crystal actions and home identity
+- Emit one long-press menu event from the existing gesture reducer; retain single/double/triple taps, drag and cancellation arbitration.
+- Show four glass child orb actions: Chat, Screen, Care and Voice. Reuse existing admission/voice permission/lease flows; voice only writes a draft. No fake action or new model request.
+- Use bounded owned windows, at least 48dp targets, finite smooth motion, reduced-motion support and safe alternatives near edges/IME/target/chat. Dismiss on selection, outside input, new orb gesture, Stop/lock/disconnect and existing panel Back where applicable.
+- Generate default main-chat/avatar mood resources from the same blue crystal atlas. Preserve user-selected/hidden avatars, internal identifiers and genuine upstream attribution/service identity. Repair exact display-brand misses via the generator and retain all 17 locales.
+
+### Task 6: Target outline and ephemeral instructions
+- Remove target-to-chat leader lines. Keep a target-border trace and add touch-through foreground instruction text: appear, reveal by Unicode grapheme, hold, disappear. The full instruction remains in the bottom chat for reading and accessibility.
+- Place text away from the target and chat within the current host/IME viewport. If no safe region exists, retain the full chat instruction without obstructing the target. Disappearance never means task completion.
+- Bind all animation to current session/scene/step. Stop, stale scene, new step and teardown cancel it immediately. Reduced motion shows complete text without stagger and retains usable time to read. Repeat replays the visual instruction without a model request.
+- Use the researched mainstream/FOSS scenario catalogue (search, commerce, forms, reading, media, settings and chat) to require fresh observable evidence before each next step; never hard-code third-party coordinates or infer completion from an animation.
+
+### Shared interface and ownership checks
+
+| Tasks | Shared interface | Ruling |
+|---|---|---|
+| 2, 5 | DotOverlayController / canonical chat admission | Menu implementation extends current presentation without replacing Chat owner; coordinator alone runs builds/device. |
+| 2, 6 | CareOverlayWindow / placement / conversation | Cue implementer owns Care presentation; existing transcript/Stop/placement invariants remain. |
+| 5, 6 | Back dismissal | Menu exposes one dismissal method; Care author integrates it after interface handoff. |
+| 4, 5, 6 | Motion/accessibility/owned capture windows | Finite motion, reduced motion, 48dp and capture exclusion apply to every new surface. |
+| 5, 5 | Brand vs menu locale resources | Brand repair owns only the three existing keys; menu author adds new keys without regenerating unrelated files. |
+| 3, 4–6 | Artifact and evidence | Rebuild the main/test pair after source freezes; old candidate native results are inherited evidence, not proof of new code. |
+
+Acceptance adds native long-press/tap/drag arbitration, actual child actions and dismiss lifecycle, no rendered leader, Unicode/RTL cue timing and placement, Chinese/English main avatar and live overlay, and new exact paired APK receipts. The existing broader native matrix is reused only where source and candidate limitations are explicit.
+
+
+## 2026-10-13 conversation readability follow-up
+
+- The user narrowed cobalt-blue transparency to the text-bearing conversation bubbles. Other glass chrome and the crystal/menu palette keep their approved appearance.
+- Increase message padding, inter-message spacing and line height; reserve bounded history space for actually displayed empty/error/preview states as well as persisted replies. Preserve the 180dp history budget cap, automatic avoidance, compact controls and 48dp actions.
+- The user explicitly authorized real DeepSeek calls from the existing private `.env` for Android acceptance. The earlier no-provider limitation is lifted for this verification route; login/gateway deployment remains frozen. Keep credentials out of source, screenshots, logs and commits. Use the canonical Android chat path and existing bounded request accounting; do not call a mock or direct CLI response an app-flow pass.

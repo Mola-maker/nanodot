@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""Generate Dot vectors and platform assets deterministically with Pillow.
+"""Generate Dot icons and packaged crystal avatars deterministically with Pillow.
 
-Artwork is original GPL-3.0-or-later artwork for Nanodot. SVGs are the source;
-rasters use a small renderer for their absolute M/L/C/Z path vocabulary.
+Icons retain the original GPL-3.0-or-later vector mark. Avatar stills are cropped
+from the reviewed imagegen atlas already used by the Android orb, without a new
+model call. Existing custom avatar files are never migration inputs or outputs.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import io
 import json
 import re
@@ -20,7 +22,12 @@ ROOT = Path(__file__).resolve().parents[1]
 BRAND = ROOT / "assets/brand"
 RES = ROOT / "android/src/android/app/src/main/res"
 IOS = ROOT / "android/src/ios"
+CRYSTAL_ATLAS = RES / "drawable-nodpi/nm_crystal_orb_atlas.png"
+CRYSTAL_MANIFEST = BRAND / "crystal-orb/manifest.json"
 STATES = ("idle", "working", "waiting", "happy", "error")
+# Still illumination states; Compose supplies the existing breathing/mood motion.
+# All remain blue. These are not additional animations or performance evidence.
+CRYSTAL_FRAMES = {"idle": 0, "working": 6, "waiting": 10, "happy": 7, "error": 14}
 PRIMARY = "#136F63"
 DARK_PRIMARY = "#7DD6C5"
 CARE = "#7057A3"
@@ -186,21 +193,45 @@ def arguments() -> argparse.Namespace:
         "--brand-config", type=Path, default=default_config if default_config.exists() else None
     )
     parser.add_argument("--primary", default=PRIMARY)
+    parser.add_argument(
+        "--android-avatars-only",
+        action="store_true",
+        help="Regenerate only Android's five default avatar resources; preserve other platforms.",
+    )
     return parser.parse_args()
 
 
-def avatars(primary: str) -> None:
+def avatars(primary: str, *, android_only: bool = False) -> None:
+    """Replace only bundled defaults; a user's base.png continues to take precedence."""
+    manifest = json.loads(CRYSTAL_MANIFEST.read_text(encoding="utf-8"))
+    atlas_bytes = CRYSTAL_ATLAS.read_bytes()
+    if hashlib.sha256(atlas_bytes).hexdigest() != manifest["sha256"]:
+        raise ValueError("Crystal atlas does not match its reviewed source hash")
+    with Image.open(io.BytesIO(atlas_bytes)) as source_image:
+        atlas = source_image.convert("RGBA")
+    if list(atlas.size) != manifest["size"] or manifest["grid"] != [4, 4]:
+        raise ValueError("Crystal atlas size/grid differs from its reviewed source")
     for state in STATES:
-        source = svg(state, primary)
-        write(BRAND / f"nanodot-avatar/{state}.svg", source)
-        image = render(source, 1024)
+        frame = CRYSTAL_FRAMES[state]
+        column, row = frame % 4, frame // 4
+        left, top = column * atlas.width // 4, row * atlas.height // 4
+        right, bottom = (column + 1) * atlas.width // 4, (row + 1) * atlas.height // 4
+        inset_x, inset_y = (right - left) // 10, (bottom - top) // 10
+        image = atlas.crop((left + inset_x, top + inset_y, right - inset_x, bottom - inset_y))
+        image = image.resize((1024, 1024), Image.Resampling.LANCZOS)
+        android_avatar = RES / f"drawable-nodpi/nm_avatar_{state}.webp"
+        save(image, android_avatar)
+        if android_only:
+            continue
+        # Keep legacy vector marks for the site's separate icon route. All platform
+        # avatar rasters below share the crystal; launcher/tray icons remain vector.
+        write(BRAND / f"nanodot-avatar/{state}.svg", svg(state, primary))
         for folder in (
             ROOT / "web/public/avatars",
             ROOT / "harness/dsh-nanomuse/assets",
             IOS / "NanoMuse/Resources",
         ):
-            save(image, folder / f"dragon-{state}.webp")
-        save(image, RES / f"drawable-nodpi/nm_avatar_{state}.webp")
+            write(folder / f"dragon-{state}.webp", android_avatar.read_bytes())
         save(image, BRAND / f"nanodot-avatar/{state}.png")
 
 
@@ -240,7 +271,12 @@ def contact_sheet(primary: str) -> None:
 
 
 def main() -> None:
-    primary = profile(arguments())
+    args = arguments()
+    primary = profile(args)
+    if args.android_avatars_only:
+        avatars(primary, android_only=True)
+        print("Android's five default crystal avatars are current; custom avatars are unchanged.")
+        return
     avatars(primary)
     desktop(primary)
     contact_sheet(primary)

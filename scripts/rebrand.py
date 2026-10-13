@@ -61,6 +61,33 @@ def _display(text: str, brand: BrandProfile) -> str:
     )
 
 
+def _assistant_resource_copy(text: str, locale: str, brand: BrandProfile) -> str:
+    """Three reviewed display keys only; Muse elsewhere can be a style or trademark."""
+    name = html.escape(brand.agentName, quote=False).replace("'", "\\'")
+    # Some translations inflect Muse as a common noun. Replace the full possessive
+    # phrase where needed so a fixed assistant name does not retain that inflection.
+    phrases = {
+        "values": (("your Muse", name),),
+        "values-de": (("deiner Muse", "von " + name),),
+        "values-es": (("tu Musa", name),),
+        "values-fil": (("ng iyong Muse", "ni " + name),),
+        "values-fr": (("votre Muse", name),),
+        "values-in": (("Muse-mu", name),),
+        "values-ja": (("ミューズ", name),),
+        "values-ko": (("뮤즈", name),),
+        "values-ms": (("Muse anda", name),),
+        "values-pl": (("twojej Muzy", name),),
+        "values-pt-rBR": (("da sua Musa", "de " + name),),
+        "values-ro": (("Muzei tale", "lui " + name), ("Muza ta", name)),
+        "values-ru": (("вашей Музы", name), ("вашей Музой", name)),
+        "values-th": (("มิวส์ของคุณ", name),),
+        "values-tr": (("Muse’unun", name + "’un"),),
+    }
+    for old, new in phrases.get(locale, ()):
+        text = text.replace(old, new)
+    return re.sub(r"(?<![A-Za-z0-9_])Muse(?![A-Za-z0-9_])", lambda _: name, text)
+
+
 def apply_brand(root: Path, brand: BrandProfile) -> list[Path]:
     """Write only known product fields and return paths actually changed (empty on rerun)."""
     root = root.resolve()
@@ -187,7 +214,43 @@ def apply_brand(root: Path, brand: BrandProfile) -> list[Path]:
             lambda m: m[1] + _display(m[2], brand) + m[3],
             text,
         )
+        # Known Android prose misses: a German possessive is not a word boundary,
+        # and the MCP footer mixes a product label with deliberately stable paths.
+        # Limit these repairs to display-resource keys; do not relax _display's
+        # service, attribution, URL, namespace or sandbox protections globally.
+        if path.parent.name == "values-de":
+            text = re.sub(
+                r'(<string name="nm_reach_unreachable_body">)([\s\S]*?)(</string>)',
+                lambda m: m[1] + m[2].replace("nanoMuses", brand.displayName + "s") + m[3],
+                text,
+            )
+        if path.parent.name in {"values-es", "values-ru"}:
+            text = re.sub(
+                r'(<string name="mcp_section_footer">)([\s\S]*?)(</string>)',
+                lambda m: m[1]
+                + re.sub(r"\b(?:nanoMuse|Minis) Agent\b", brand.displayName + " Agent", m[2])
+                + m[3],
+                text,
+            )
         if path.name == "nm_strings.xml":
+            text = re.sub(
+                r'(<string name="(?:nm_appearance_header_model_footer|'
+                r'nm_models_image_sub|nm_models_video_sub)">)([\s\S]*?)(</string>)',
+                lambda m: m[1] + _assistant_resource_copy(m[2], path.parent.name, brand) + m[3],
+                text,
+            )
+            avatar_copy = json.loads(
+                (ROOT / "config/brand.avatar-copy.json").read_text(encoding="utf-8")
+            )
+            if path.parent.name in avatar_copy:
+                for key in ("nm_avatar_default_description", "nm_avatar_style_muse"):
+                    value = avatar_copy[path.parent.name][key]
+                    escaped = html.escape(value, quote=False).replace("'", "\\'")
+                    text = re.sub(
+                        rf'(<string name="{key}">)([\s\S]*?)(</string>)',
+                        lambda m, value=escaped: m[1] + value + m[3],
+                        text,
+                    )
             notices = json.loads(
                 (ROOT / "config/brand.android-copy.json").read_text(encoding="utf-8")
             )

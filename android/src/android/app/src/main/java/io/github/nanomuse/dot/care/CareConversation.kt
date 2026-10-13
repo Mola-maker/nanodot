@@ -19,8 +19,3 @@ class CareConversation {
         mutable.value = rows + CareBubble(id, text, verified = verified)
     }
 }
-
-internal data class CareCueProgress(val outline: Float, val leader: Float, val bubble: Float)
-internal fun careCueProgress(elapsedMs: Long, motion: Boolean): CareCueProgress = if (!motion) CareCueProgress(1f,1f,1f)
-    else CareCueProgress((elapsedMs/600f).coerceIn(0f,1f),((elapsedMs-600)/200f).coerceIn(0f,1f),
-        ((elapsedMs-800)/180f).coerceIn(0f,1f))

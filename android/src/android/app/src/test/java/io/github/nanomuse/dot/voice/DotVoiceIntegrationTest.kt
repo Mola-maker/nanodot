@@ -71,6 +71,39 @@ class DotVoiceIntegrationTest {
             check(gate.admit(r.id,true) === r); voice.foreground(r) { foregroundEnds++ }; return r
         }
     }
+    @Test fun primaryActionFinishesCurrentRecordingWithoutNewPermissionOrSend() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val f = Fixture(backgroundScope)
+        try {
+            f.adapter.editInput("retained draft")
+            val binding = f.adapter.binding.value
+            val request = f.admit(); runCurrent()
+            f.voice.primaryAction(); runCurrent()
+            assertEquals(1, f.engine.stops)
+            assertEquals(1, f.engine.starts)
+            assertSame(request, f.pending)
+            assertEquals(binding, f.adapter.binding.value)
+            f.engine.listener.onFinal("dictation"); runCurrent()
+            assertEquals("retained draft dictation", f.sessions.getValue("A").inputText.value)
+            assertEquals(0, f.sessions.getValue("A").sends)
+        } finally { f.voice.cancel(); SpeechRecognitionManager.ownedState.value.ticket?.let(SpeechRecognitionManager::cancelOwned); runCurrent(); Dispatchers.resetMain() }
+    }
+    @Test fun primaryActionCancelsPendingPermissionAndCannotArmWithoutBinding() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val f = Fixture(backgroundScope)
+        try {
+            f.voice.primaryAction(); val request = f.pending
+            assertEquals(DotVoiceController.Phase.PERMISSION, f.voice.ui.value.phase)
+            f.voice.primaryAction()
+            assertNull(f.gate.find(request.id))
+            assertSame(request, f.pending)
+            assertEquals(0, f.engine.starts)
+            f.adapter.cancel(requireNotNull(f.adapter.binding.value))
+            f.voice.primaryAction()
+            assertSame(request, f.pending)
+            assertEquals(0, f.sessions.getValue("A").sends)
+        } finally { f.voice.cancel(); runCurrent(); Dispatchers.resetMain() }
+    }
     @Test fun pendingCancellationAndPermissionDenialLeaveKeyboardUsable() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         try {

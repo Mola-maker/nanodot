@@ -21,6 +21,9 @@ sealed interface DotIntent {
     data object Single : DotIntent
     data object Double : DotIntent
     data object Triple : DotIntent
+    data object LongPress : DotIntent
+    /** Explicit menu command, never emitted by touch-count arbitration. */
+    data object Voice : DotIntent
     data class Drag(val points: List<PointPx>) : DotIntent
 }
 
@@ -48,6 +51,8 @@ class DotGestureReducer(private val limits: GestureLimits) {
     private val pointers = mutableSetOf<Int>()
     private var press: Press? = null
     private var blocked = false
+    /** Presentation must follow actual arbitration, not independently compare elapsed time. */
+    internal val longPressCommitted get() = press?.suppressed == true
 
     fun accept(event: GestureEvent): GestureResult {
         if (event == GestureEvent.Cancel) {
@@ -89,9 +94,17 @@ class DotGestureReducer(private val limits: GestureLimits) {
         }
         val intents = mutableListOf<DotIntent>()
         expireCompletedTaps(atMs, intents)
+        // A fresh position wins over an overdue timer that has not committed a hold yet.
+        // updatePoint ignores an already committed hold, so later movement cannot reopen drag.
+        when (event) {
+            is GestureEvent.Move -> updatePoint(event.point, event.pointerId)
+            is GestureEvent.Up -> updatePoint(event.point, event.pointerId)
+            else -> Unit
+        }
         press?.let {
-            if (!it.dragging && atMs - it.down.atMs >= limits.longPressMs) {
+            if (!it.dragging && !it.suppressed && atMs - it.down.atMs >= limits.longPressMs) {
                 it.suppressed = true
+                intents.add(DotIntent.LongPress)
             }
         }
 
@@ -105,9 +118,8 @@ class DotGestureReducer(private val limits: GestureLimits) {
                 press = Press(event, previous?.count ?: 0)
                 pointers.add(event.pointerId)
             }
-            is GestureEvent.Move -> updatePoint(event.point, event.pointerId)
+            is GestureEvent.Move -> Unit
             is GestureEvent.Up -> {
-                updatePoint(event.point, event.pointerId)
                 val current = press
                 if (current != null && event.pointerId == current.down.pointerId) {
                     when {

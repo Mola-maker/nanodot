@@ -329,7 +329,7 @@
     <string name="nm_avatar_retry">Cuba lagi</string>
     <string name="nm_avatar_describe_title">Gambarkan wajah baharu</string>
     <string name="nm_avatar_describe_body">Satu ayat sudah memadai: apa benda itu, apa yang dipakainya, bagaimana rasanya. Pilih gaya, dan model imej anda melukis empat untuk dipilih.</string>
-    <string name="nm_avatar_default_description">Anak naga gempal berwarna kuning pucat dengan tanduk oren kecil dan sayap kecil yang terlipat</string>
+    <string name="nm_avatar_default_description">Bola kristal lutsinar berwarna biru muda, dengan kilauan lembut dan cahaya yang berdenyut perlahan</string>
     <string name="nm_avatar_style_flat">Rata</string>
     <string name="nm_avatar_style_clay">Tanah liat 3D</string>
     <string name="nm_avatar_style_watercolor">Cat air</string>
@@ -376,7 +376,7 @@
     <string name="nm_version_failed">Tidak dapat menyemak, ketik untuk cuba lagi</string>
     <string name="nm_appearance_section_home">Laman utama</string>
     <string name="nm_appearance_header_model_title">Tunjukkan model di bawah nama</string>
-    <string name="nm_appearance_header_model_footer">Muse hanya menunjukkan nama. Hidupkan ini untuk melihat kumpulan model dan penyedia · model di bawahnya; ketik untuk bertukar. Jika mati, model ada di bawah ••• → Model dan dalam Tetapan.</string>
+    <string name="nm_appearance_header_model_footer">Dot hanya menunjukkan nama. Hidupkan ini untuk melihat kumpulan model dan penyedia · model di bawahnya; ketik untuk bertukar. Jika mati, model ada di bawah ••• → Model dan dalam Tetapan.</string>
     <string name="nm_appearance_section_chat">Perbualan</string>
     <string name="nm_appearance_steps_title">Tunjukkan langkah ejen</string>
     <string name="nm_appearance_steps_footer">Jika mati, sembang hanya menyimpan balasan, dan baris di bawah wajah menyatakan apa yang ejen sedang lakukan. Jika hidup, setiap langkah dipaparkan dalam sembang: setiap alat yang digunakannya, penaakulannya, dan satu bar di atas ruang mesej yang membuka butiran langkah itu.</string>
@@ -396,7 +396,7 @@
     <string name="nm_avatar_size_large">Besar</string>
     <string name="nm_avatar_size_extra_large">Sangat besar</string>
     <string name="nm_avatar_size_hidden">Tersembunyi</string>
-    <string name="nm_avatar_style_muse">Mainan 3D (Muse)</string>
+    <string name="nm_avatar_style_muse">Mainan 3D</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">dalam talian</string>
@@ -1076,9 +1076,9 @@
     <string name="nm_models_hands_title">Mengendalikan skrin</string>
     <string name="nm_models_hands_sub">Melihat skrin dan bertindak bagi pihak anda. Perlukan model yang boleh melihat imej.</string>
     <string name="nm_models_image_title">Membuat gambar</string>
-    <string name="nm_models_image_sub">Potret Muse anda dan gambar yang anda minta.</string>
+    <string name="nm_models_image_sub">Potret Dot dan gambar yang anda minta.</string>
     <string name="nm_models_video_title">Membuat klip</string>
-    <string name="nm_models_video_sub">Klip pendek Muse anda.</string>
+    <string name="nm_models_video_sub">Klip pendek Dot.</string>
     <string name="nm_models_chat_applies">Terpakai untuk sembang utama dan sembang baharu; sembang sampingan mengekalkan modelnya sendiri.</string>
     <string name="nm_models_media_more">Pilihan gambar dan klip lain</string>
     <string name="nm_models_media_more_sub">Taip nama model, lihat apa yang terhenti tanpa setiap model, atau semak semula model video yang boleh digunakan oleh satu kunci.</string>

@@ -338,7 +338,7 @@
     <string name="nm_avatar_retry">Повторить</string>
     <string name="nm_avatar_describe_title">Опишите новый образ</string>
     <string name="nm_avatar_describe_body">Достаточно одной фразы: кто это, во что одет, какое настроение. Выберите стиль, и ваша модель изображений нарисует четыре варианта на выбор.</string>
-    <string name="nm_avatar_default_description">Пухлый бледно-жёлтый дракончик с крошечными оранжевыми рожками и маленькими сложенными крыльями</string>
+    <string name="nm_avatar_default_description">Прозрачный нежно-голубой хрустальный шар с мягкими бликами и свечением в ритме спокойного дыхания</string>
     <string name="nm_avatar_style_flat">Плоский</string>
     <string name="nm_avatar_style_clay">3D-пластилин</string>
     <string name="nm_avatar_style_watercolor">Акварель</string>
@@ -385,7 +385,7 @@
     <string name="nm_version_failed">Не удалось проверить, нажмите, чтобы повторить</string>
     <string name="nm_appearance_section_home">Главная</string>
     <string name="nm_appearance_header_model_title">Показывать модель под именем</string>
-    <string name="nm_appearance_header_model_footer">Muse показывает только имя. Включите, чтобы видеть под ним группу моделей и провайдера · модель; нажмите на них, чтобы переключить. Выкл.: модель находится в ••• → Модель и в Настройках.</string>
+    <string name="nm_appearance_header_model_footer">Dot показывает только имя. Включите, чтобы видеть под ним группу моделей и провайдера · модель; нажмите на них, чтобы переключить. Выкл.: модель находится в ••• → Модель и в Настройках.</string>
     <string name="nm_appearance_section_chat">Разговор</string>
     <string name="nm_appearance_steps_title">Показывать шаги агента</string>
     <string name="nm_appearance_steps_footer">Выкл.: в чате остаются только ответы, а строка под лицом говорит, что агент делает сейчас. Вкл.: каждый шаг виден в чате, то есть каждый инструмент, его рассуждения и полоска над полем ввода, открывающая детали шага.</string>
@@ -405,7 +405,7 @@
     <string name="nm_avatar_size_large">Большой</string>
     <string name="nm_avatar_size_extra_large">Очень большой</string>
     <string name="nm_avatar_size_hidden">Скрыт</string>
-    <string name="nm_avatar_style_muse">3D-игрушка (Muse)</string>
+    <string name="nm_avatar_style_muse">3D-игрушка</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">в сети</string>
@@ -1088,9 +1088,9 @@
     <string name="nm_models_hands_title">Управление экраном</string>
     <string name="nm_models_hands_sub">Смотрит на экран и действует за вас. Нужна модель, которая видит изображения.</string>
     <string name="nm_models_image_title">Создание изображений</string>
-    <string name="nm_models_image_sub">Портреты вашей Музы и изображения, которые вы просите.</string>
+    <string name="nm_models_image_sub">Портреты Dot и изображения, которые вы просите.</string>
     <string name="nm_models_video_title">Создание клипов</string>
-    <string name="nm_models_video_sub">Короткие клипы с вашей Музой.</string>
+    <string name="nm_models_video_sub">Короткие клипы с Dot.</string>
     <string name="nm_models_chat_applies">Действует для основного чата и новых чатов; побочный чат сохраняет свою модель.</string>
     <string name="nm_models_media_more">Другие параметры изображений и клипов</string>
     <string name="nm_models_media_more_sub">Ввести имя модели, посмотреть, что остановится без какой модели, или заново проверить, какие видеомодели доступны ключу.</string>

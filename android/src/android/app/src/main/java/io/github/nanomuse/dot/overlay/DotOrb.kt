@@ -58,15 +58,18 @@ fun DotOrb(
     val open = stringResource(R.string.nm_dot_open_conversation)
     val screen = stringResource(R.string.nm_dot_view_screen)
     val care = stringResource(R.string.nm_dot_start_care)
+    val more = stringResource(R.string.nm_more)
     val description = stringResource(if (careActive) R.string.nm_care_awaiting else R.string.nm_dot_orb_description)
     Canvas(Modifier.size(48.dp).semantics {
         role = Role.Button
         contentDescription = description
         onClick(open) { onIntent(DotIntent.Single); true }
+        onLongClick(more) { onIntent(DotIntent.LongPress); true }
         customActions = listOf(
             CustomAccessibilityAction(open) { onIntent(DotIntent.Single); true },
             CustomAccessibilityAction(screen) { onIntent(DotIntent.Double); true },
             CustomAccessibilityAction(care) { onIntent(DotIntent.Triple); true },
+            CustomAccessibilityAction(more) { onIntent(DotIntent.LongPress); true },
         )
     }) {
         fun drawFrame(index: Int, alpha: Float, mode: BlendMode = BlendMode.SrcOver) {

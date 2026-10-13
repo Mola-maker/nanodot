@@ -188,22 +188,100 @@ class GatewayProtocolTest {
             assertTrue(runCatching { stream(body) }.isFailure)
         }
     }
+    /** Loopback response headers reach the real provider; its body remains explicitly held. */
+    private class HeldStream : AutoCloseable {
+        private val listener = java.net.ServerSocket(0, 1, java.net.InetAddress.getByName("127.0.0.1"))
+        val port = listener.localPort
+        val headersSent = java.util.concurrent.CountDownLatch(1)
+        private val release = java.util.concurrent.CountDownLatch(1)
+        @Volatile private var connection: java.net.Socket? = null
+        @Volatile private var closing = false
+        @Volatile private var failure: Throwable? = null
+        private val worker = kotlin.concurrent.thread(name = "gateway-held-stream", isDaemon = true) {
+            try {
+                listener.accept().use { socket ->
+                    connection = socket
+                    socket.soTimeout = 10_000
+                    val input = socket.getInputStream()
+                    val headers = java.io.ByteArrayOutputStream()
+                    var tail = ""
+                    while (!tail.endsWith("\r\n\r\n")) {
+                        val next = input.read()
+                        check(next >= 0 && headers.size() < 64_000)
+                        headers.write(next)
+                        tail = (tail + next.toChar()).takeLast(4)
+                    }
+                    val text = headers.toString("UTF-8")
+                    check(text.lineSequence().first().startsWith("POST /v1/chat/completions "))
+                    var remaining = Regex("(?im)^Content-Length: (\\d+)").find(text)
+                        ?.groupValues?.get(1)?.toInt() ?: 0
+                    val buffer = ByteArray(8192)
+                    while (remaining > 0) {
+                        val count = input.read(buffer, 0, minOf(remaining, buffer.size))
+                        check(count > 0)
+                        remaining -= count
+                    }
+                    socket.getOutputStream().apply {
+                        write(("HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\n" +
+                            "Content-Length: 1\r\nConnection: close\r\n\r\n").toByteArray())
+                        flush()
+                    }
+                    headersSent.countDown()
+                    check(release.await(10, TimeUnit.SECONDS))
+                }
+            } catch (error: Throwable) {
+                val expectedClose = error is java.net.SocketException && closing &&
+                    (listener.isClosed || connection?.isClosed == true)
+                if (!expectedClose) failure = error
+            }
+        }
+        override fun close() {
+            closing = true
+            release.countDown()
+            val errors = mutableListOf<Throwable>()
+            fun attempt(action: () -> Unit) {
+                try { action() } catch (error: Throwable) { errors.add(error) }
+            }
+            // Aggregate errors so one failed close cannot skip the other close or bounded join.
+            attempt { connection?.close() }
+            attempt { listener.close() }
+            attempt { worker.join(1000) }
+            if (worker.isAlive) errors.add(AssertionError("Held response worker must exit within bounded cleanup"))
+            failure?.let { errors.add(it) }
+            if (errors.isNotEmpty()) {
+                val first = errors.first()
+                errors.drop(1).forEach { if (it !== first) first.addSuppressed(it) }
+                throw first
+            }
+        }
+    }
+
     @Test(timeout = 15000) fun cancellingFactoryStreamDoesNotEmitFinished() = runBlocking {
-        server.enqueue(MockResponse().setHeader("Content-Type", "text/event-stream")
-            .setBody("data: {\"choices\":[{\"delta\":{\"content\":\"hello\"},\"index\":0}]}\n\n".repeat(100))
-            .setBodyDelay(5, TimeUnit.SECONDS))
+        val held = HeldStream()
+        val actualProvider = ProviderFactory.create(
+            ProviderInstance("gateway-protocol", "Gateway", ProviderType.openAI, ProviderCredential.apiKey,
+                customBaseURL = "http://127.0.0.1:${held.port}/v1"),
+            "local-protocol-fixture", LLMModel(qwen, "Qwen", "Custom"),
+        )
         val chunks = mutableListOf<LLMStreamChunk>()
         val started = CompletableDeferred<Unit>()
         val job = launch(Dispatchers.IO) {
-            provider().streamMessage(listOf(LLMMessage(LLMMessage.Role.USER, "hi")), null, 64).collect {
+            actualProvider.streamMessage(listOf(LLMMessage(LLMMessage.Role.USER, "hi")), null, 64).collect {
                 chunks.add(it)
                 if (it is LLMStreamChunk.Started) started.complete(Unit)
             }
         }
-        withTimeout(10000) { started.await() }
-        assertNotNull(server.takeRequest(1, TimeUnit.SECONDS))
-        withTimeout(3000) { job.cancelAndJoin() }
-        assertTrue(job.isCancelled)
-        assertTrue(chunks.none { it is LLMStreamChunk.Finished })
+        try {
+            withTimeout(10000) { started.await() }
+            assertTrue("Provider received the actual held response headers", held.headersSent.await(1, TimeUnit.SECONDS))
+            withTimeout(3000) { job.cancelAndJoin() }
+            assertTrue(job.isCancelled)
+            assertTrue(chunks.none { it is LLMStreamChunk.Finished })
+        } finally {
+            // Release the held body even if cancellation assertions fail, then close/join the fixture.
+            try { held.close() } finally {
+                withContext(NonCancellable) { withTimeout(3000) { job.cancelAndJoin() } }
+            }
+        }
     }
 }

@@ -101,7 +101,8 @@ class DotChatPanelTest {
             val view = service.dotOverlay.panelView ?: return@runOnMainSync
             val host = service.dotScreen.hostViewport(service.dotOverlay.panelHostWindowId) ?: return@runOnMainSync
             val point = IntArray(2); view.getLocationOnScreen(point)
-            val expected = io.github.nanomuse.dot.overlay.foregroundFrame(host, host.height * .55f, service.resources.displayMetrics.density).bounds
+            // Adaptive content height is independent of the settled host's IME bounds.
+            val expected = io.github.nanomuse.dot.overlay.foregroundFrame(host, view.height.toFloat(), service.resources.displayMetrics.density).bounds
             matches = point[0] == Math.round(expected.left) && point[1] == Math.round(expected.top) &&
                 view.width == Math.round(expected.width) && view.height == Math.round(expected.height)
             // Preserve the exact acceptance predicate. On failure, distinguish a stale host/root
@@ -189,10 +190,98 @@ class DotChatPanelTest {
         return nativeHidden && automation.windows.none { it.type == AccessibilityWindowInfo.TYPE_INPUT_METHOD } &&
             (Build.VERSION.SDK_INT < 30 || service.dotOverlay.panelView?.rootWindowInsets?.isVisible(android.view.WindowInsets.Type.ime()) == false)
     }
+    private data class NativeEditorTarget(val windowId: Int, val window: android.graphics.Rect,
+        val panel: android.graphics.Rect, val editor: android.graphics.Rect, val host: RectPx)
+    private fun settledNativeEditor(service: MinisAccessibilityService): android.graphics.Rect {
+        var previous: NativeEditorTarget? = null
+        var unchangedSince = SystemClock.uptimeMillis()
+        var settled: NativeEditorTarget? = null
+        var diagnostic = "not sampled"
+        try { waitFor {
+            var windowId = -1
+            var panelBounds: android.graphics.Rect? = null
+            var host: RectPx? = null
+            var mounted = false
+            instrumentation.runOnMainSync {
+                val panel = service.dotOverlay.panelView
+                mounted = panel?.isAttachedToWindow == true && panel.isShown
+                if (mounted && panel != null) {
+                    val location = IntArray(2); panel.getLocationOnScreen(location)
+                    panelBounds = android.graphics.Rect(location[0], location[1], location[0] + panel.width, location[1] + panel.height)
+                    val node = panel.createAccessibilityNodeInfo()
+                    try { windowId = node?.windowId ?: -1 } finally { node?.recycle() }
+                    host = service.dotScreen.hostViewport(service.dotOverlay.panelHostWindowId)
+                }
+            }
+            if (Build.VERSION.SDK_INT >= 33) automation.clearCache()
+            var current: NativeEditorTarget? = null
+            var observedWindow: android.graphics.Rect? = null
+            var observedEditor: android.graphics.Rect? = null
+            fun visibleEditor(node: android.view.accessibility.AccessibilityNodeInfo, bounds: android.graphics.Rect): Boolean {
+                if (node.isEditable && node.isEnabled && node.isVisibleToUser) {
+                    node.getBoundsInScreen(bounds)
+                    if (bounds.width() > 0 && bounds.height() > 0) return true
+                }
+                for (i in 0 until node.childCount) {
+                    val child = node.getChild(i) ?: continue
+                    try { if (visibleEditor(child, bounds)) return true } finally { child.recycle() }
+                }
+                return false
+            }
+            val windows = automation.windows
+            try { windows.firstOrNull { it.id == windowId && it.type == AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY }?.let { window ->
+                val frame = android.graphics.Rect(); window.getBoundsInScreen(frame)
+                observedWindow = frame
+                window.root?.let { root ->
+                    val editor = android.graphics.Rect()
+                    try {
+                        if (visibleEditor(root, editor)) {
+                            observedEditor = editor
+                            val panel = panelBounds
+                            val viewport = host
+                            if (mounted && panel != null && viewport != null && frame.contains(editor) && panel.contains(editor) &&
+                                editor.left >= viewport.left && editor.top >= viewport.top && editor.right <= viewport.right && editor.bottom <= viewport.bottom) {
+                                current = NativeEditorTarget(windowId, frame, panel, editor, viewport)
+                            }
+                        }
+                    } finally { root.recycle() }
+                }
+            } } finally { windows.forEach { it.recycle() } }
+            val now = SystemClock.uptimeMillis()
+            if (current == null || current != previous) {
+                previous = current
+                unchangedSince = now
+            }
+            diagnostic = "windowId=$windowId mounted=$mounted window=$observedWindow panel=$panelBounds " +
+                "editor=$observedEditor host=$host unchangedMs=${now - unchangedSince}"
+            // Two or more identical native observations spanning the shared 240 ms placement
+            // response prevent tapping the old editor position during content-height changes.
+            val ready = current != null && now - unchangedSince >= 240L
+            if (ready) settled = current
+            ready
+        } } catch (failure: AssertionError) {
+            println("T4_NATIVE_EDITOR_TIMEOUT $diagnostic")
+            throw AssertionError("Native editor and owning window did not settle: $diagnostic", failure)
+        }
+        println("T4_NATIVE_EDITOR_SETTLED $diagnostic")
+        return android.graphics.Rect(requireNotNull(settled).editor)
+    }
+    private fun saveImeFlags(service: MinisAccessibilityService, stage: String) {
+        var diagnostic = ""
+        instrumentation.runOnMainSync {
+            val panel = service.dotOverlay.panelView
+            diagnostic = "panelAttached=${panel?.isAttachedToWindow} panelFocused=${panel?.hasFocus()} " +
+                "imeVisible=${if (Build.VERSION.SDK_INT >= 30) panel?.rootWindowInsets?.isVisible(android.view.WindowInsets.Type.ime()) else null} " +
+                "host=${service.dotScreen.hostViewport(service.dotOverlay.panelHostWindowId)}"
+        }
+        println("T4_NATIVE_IME_FLAGS stage=$stage $diagnostic animationRunning=$imeAnimationRunning " +
+            "animationEnded=$imeAnimationEnded serviceIme=${imeBounds(service.windows)} " +
+            "automationIme=${imeBounds(automation.windows)} serverIme=${serverImeBounds()}")
+    }
     // Compose virtual nodes are read through actual native child traversal; provider text-search
     // support is optional. This asserts the same visible text, without a Compose semantic action.
     private fun containsNativeText(node: android.view.accessibility.AccessibilityNodeInfo, text: String): Boolean {
-        if (node.text?.toString() == text) return true
+        if (node.text?.toString() == text || node.contentDescription?.toString() == text) return true
         for (index in 0 until node.childCount) {
             val child = node.getChild(index) ?: continue
             try { if (containsNativeText(child,text)) return true } finally { child.recycle() }
@@ -487,13 +576,15 @@ class DotChatPanelTest {
         shell("input tap ${bounds.centerX()} ${bounds.centerY()}")
     }
     @Test fun freshActiveSetupStopRevokesHeldRoomWork() {
+        val service=requireNotNull(MinisAccessibilityService.getInstance())
         val app=instrumentation.targetContext.applicationContext as MinisApp
         val adapter=DotChatAdapter.create(app)
+        val foregroundOwner=io.github.nanomuse.dot.DotInteractionCoordinator(service,adapter)
         val draft="__new__${java.util.UUID.randomUUID()}"
         val marker="DOT_T4_FRESH_$draft"
-        val vm=openCanonical(adapter,draft)
-        val provider=configureInert(vm,marker)
         try {
+            val vm=openCanonical(adapter,draft,foregroundOwner)
+            val provider=configureInert(vm,marker)
             HeldRoom(app).use {
                 instrumentation.runOnMainSync { assertTrue(adapter.send(requireNotNull(adapter.binding.value),marker)) }
                 assertTrue(vm.isStreaming.value)
@@ -511,16 +602,24 @@ class DotChatPanelTest {
             assertTrue(vm.messages.value.none { it.role=="user" && it.content==marker })
             assertEquals(0,provider.streamCalls.get()); assertEquals("",field(vm,"realSessionId"))
             println("T4_FRESH_ACTIVE cancelledSetup=true persistedRows=0 lateRequests=0 zeroSockets=true introNativeFirstInstall=false")
-        } finally { instrumentation.runOnMainSync { adapter.binding.value?.let(adapter::cancel);MinisAccessibilityService.getInstance()?.dotOverlay?.collapsePanel();ChatViewModelStore.release(draft) } }
+        } finally { instrumentation.runOnMainSync {
+            foregroundOwner.disconnect()
+            service.dotInteraction.disconnect(); service.dotInteraction.connect()
+            ChatViewModelStore.release(draft)
+        } }
     }
     @Test fun nativeCompactionStopRevokesQueuedContinuation() {
+        val service=requireNotNull(MinisAccessibilityService.getInstance())
         val app=instrumentation.targetContext.applicationContext as MinisApp
         val adapter=DotChatAdapter.create(app)
-        val vm=openCanonical(adapter,fixtureId)
-        waitFor { vm.messages.value.any { it.content==fixtureTitle } }
-        val provider=configureInert(vm,"DOT_T4_COMPACT_$fixtureId")
-        val before=runBlocking { app.chatRepository.dao.loadMessages(fixtureId) }
+        val foregroundOwner=io.github.nanomuse.dot.DotInteractionCoordinator(service,adapter)
+        var releaseCompact: CompletableDeferred<Unit>? = null
         try {
+            val vm=openCanonical(adapter,fixtureId,foregroundOwner)
+            waitFor { vm.messages.value.any { it.content==fixtureTitle } }
+            val provider=configureInert(vm,"DOT_T4_COMPACT_$fixtureId")
+            releaseCompact=provider.releaseCompact
+            val before=runBlocking { app.chatRepository.dao.loadMessages(fixtureId) }
             instrumentation.runOnMainSync { setField(vm,"pendingSendText",fixtureTitle+" cancelled continuation"); vm.compactAndSendPending() }
             waitFor { provider.compactEntered.isCompleted && vm.isCompacting.value && vm.pendingCompactSend.value }
             assertFalse(vm.isStreaming.value)
@@ -531,7 +630,12 @@ class DotChatPanelTest {
             assertEquals(before,runBlocking { app.chatRepository.dao.loadMessages(fixtureId) })
             assertEquals(1,provider.compactCalls.get());assertEquals(0,provider.streamCalls.get())
             println("T4_COMPACT nativeStopReachable=true queuedContinuationRevoked=true lateRequests=0 zeroSockets=true")
-        } finally { instrumentation.runOnMainSync { adapter.binding.value?.let(adapter::cancel);MinisAccessibilityService.getInstance()?.dotOverlay?.collapsePanel() };provider.releaseCompact.complete(Unit) }
+        } finally {
+            try { instrumentation.runOnMainSync {
+                foregroundOwner.disconnect()
+                service.dotInteraction.disconnect(); service.dotInteraction.connect()
+            } } finally { releaseCompact?.complete(Unit) }
+        }
     }
     @Test fun queuedCanonicalPromptKeepsOwnedScreenshotUntilPersistedMediaReceipt() {
         val app=instrumentation.targetContext.applicationContext as MinisApp
@@ -635,7 +739,39 @@ class DotChatPanelTest {
                 }
                 adapter.editInput("Retained placement draft")
             }
-            waitFor { service.dotOverlay.panelTranscriptState?.layoutInfo?.totalItemsCount == 40 }
+            // The transcript has 40 canonical rows plus its retained voice-evidence slot,
+            // even while that slot has no content. No preview/error/setup row is expected.
+            val expectedTranscriptItems = 41
+            fun transcriptObservation(): Pair<Boolean, String> {
+                var observation = false to "not sampled"
+                instrumentation.runOnMainSync {
+                    val messages = vm.messages.value
+                    val visibleMessages = messages.count { !it.isInternalBridge }
+                    val configured = !adapter.session?.configured?.value.isNullOrBlank()
+                    val preview = adapter.preview.value != null
+                    val captureError = adapter.captureError.value
+                    val error = adapter.session?.error?.value != null
+                    val compact = vm.showCompactBeforeSendPrompt.value
+                    val extraStatusRow = preview || captureError || !configured || error || compact
+                    val items = service.dotOverlay.panelTranscriptState?.layoutInfo?.totalItemsCount
+                    val panel = service.dotOverlay.panelView
+                    observation = (messages.size == 40 && visibleMessages == 40 && !extraStatusRow &&
+                        items == expectedTranscriptItems) to
+                        "items=$items expected=$expectedTranscriptItems messages=${messages.size} visibleMessages=$visibleMessages " +
+                        "configured=$configured preview=$preview captureError=$captureError error=$error compact=$compact " +
+                        "bindingMatches=${adapter.binding.value == binding} attached=${panel?.isAttachedToWindow} " +
+                        "panel=${panel?.width}x${panel?.height} fontScale=${service.resources.configuration.fontScale}"
+                }
+                return observation
+            }
+            try {
+                waitFor { transcriptObservation().first }
+            } catch (failure: AssertionError) {
+                // Counts and flags only: never print model names, error text or message contents.
+                val diagnostic = transcriptObservation().second
+                println("T3_PLACEMENT_TRANSCRIPT_TIMEOUT $diagnostic")
+                throw AssertionError("Placement transcript did not settle: $diagnostic", failure)
+            }
             val view = requireNotNull(service.dotOverlay.panelView)
             val list = requireNotNull(service.dotOverlay.panelTranscriptState)
             runBlocking(Dispatchers.Main) { list.scrollToItem(8, 17) }
@@ -681,38 +817,23 @@ class DotChatPanelTest {
                     try { if (reachable(child,text,input)) return true } finally { child.recycle() } }
                 return false
             }
-            fun scrollControls(root: android.view.accessibility.AccessibilityNodeInfo): Boolean {
-                var selected: android.view.accessibility.AccessibilityNodeInfo? = null
-                var selectedTop = Int.MIN_VALUE
-                fun visit(node: android.view.accessibility.AccessibilityNodeInfo) {
-                    val bounds = android.graphics.Rect(); node.getBoundsInScreen(bounds)
-                    // Offscreen labels are absent from native AX. Locate the actual LOWER
-                    // ScrollView instead of requiring the inaccessible Expand descendant.
-                    if (node.isScrollable && node.isVisibleToUser && node.className?.toString() == "android.widget.ScrollView" &&
-                        bounds.height() >= 48 * service.resources.displayMetrics.density - 1 && bounds.top > selectedTop) {
-                        selected?.recycle(); selected = android.view.accessibility.AccessibilityNodeInfo.obtain(node); selectedTop = bounds.top
-                    }
-                    for (i in 0 until node.childCount) node.getChild(i)?.let { try { visit(it) } finally { it.recycle() } }
+            fun clickNamed(root: android.view.accessibility.AccessibilityNodeInfo, label: String): Boolean {
+                if (root.isClickable && root.isVisibleToUser && containsNativeText(root, label))
+                    return root.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK)
+                for (i in 0 until root.childCount) root.getChild(i)?.let { child ->
+                    try { if (clickNamed(child, label)) return true } finally { child.recycle() }
                 }
-                visit(root)
-                return try {
-                    selected?.let { node ->
-                        val bounds = android.graphics.Rect(); node.getBoundsInScreen(bounds)
-                        val accepted = node.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
-                        println("T3_PLACEMENT_SCROLL lowerViewport=$bounds accepted=$accepted")
-                        accepted
-                    } ?: false
-                } finally { selected?.recycle() }
+                return false
             }
             savePanelNative("placement-controls-before")
-            for ((text,input) in listOf(expand to false, null to true, stop to false)) {
+            for ((text,input) in listOf(null to true, stop to false)) {
                 val control = if (input) "input" else if (text == expand) "expand" else "stop"
                 println("T3_PLACEMENT_CONTROL seeking=$control minimumVisibleDp=48")
                 try { waitFor {
                     val windows = service.windows
                     try { windows.filter { it.type == AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY }.any { window ->
                         window.root?.let { root -> try {
-                            if (reachable(root,text,input)) true else { scrollControls(root); false }
+                            reachable(root,text,input)
                         } finally { root.recycle() } } == true }
                     } finally { windows.forEach { it.recycle() } }
                 } } catch (failure: AssertionError) {
@@ -721,6 +842,108 @@ class DotChatPanelTest {
                     throw AssertionError("Native placement control $control did not reach visible48dp", failure)
                 }
                 println("T3_PLACEMENT_CONTROL reachable=$control minimumVisibleDp=48")
+            }
+            fun ownedWindowIds(): Set<Int> {
+                var ids = emptySet<Int>()
+                instrumentation.runOnMainSync {
+                    val windows = service.windows
+                    try { ids = windows.filter(service.dotOverlay::ownsWindow).map { it.id }.toSet() }
+                    finally { windows.forEach { it.recycle() } }
+                }
+                return ids
+            }
+            fun scrollMenu(root: android.view.accessibility.AccessibilityNodeInfo): Boolean {
+                if (root.isVisibleToUser && root.isScrollable && root.className?.toString() == "android.widget.ScrollView")
+                    return root.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
+                for (i in 0 until root.childCount) root.getChild(i)?.let { child ->
+                    try { if (scrollMenu(child)) return true } finally { child.recycle() }
+                }
+                return false
+            }
+            val ownedBeforeMenu = ownedWindowIds()
+            val hostBeforeMenu = service.dotOverlay.panelHostWindowId
+            val more = app.getString(com.openminis.app.R.string.nm_more)
+            fun saveMenuTimeout(clicked: Boolean) {
+                val diagnostic = StringBuilder("T3_PLACEMENT_MENU moreClicked=$clicked ownedBefore=$ownedBeforeMenu\n")
+                instrumentation.runOnMainSync {
+                    val panel = service.dotOverlay.panelView
+                    val location = IntArray(2); panel?.getLocationOnScreen(location)
+                    diagnostic.append("hostBefore=$hostBeforeMenu hostNow=${service.dotOverlay.panelHostWindowId} ")
+                        .append("host=${service.dotScreen.hostViewport(service.dotOverlay.panelHostWindowId)} ")
+                        .append("panel=${location[0]},${location[1]},${panel?.width},${panel?.height} ")
+                        .append("attached=${panel?.isAttachedToWindow} fontScale=${service.resources.configuration.fontScale}\n")
+                }
+                fun visit(node: android.view.accessibility.AccessibilityNodeInfo, depth: Int) {
+                    val bounds = android.graphics.Rect(); node.getBoundsInScreen(bounds)
+                    // The native tree records flags and known control matches, never transcript,
+                    // draft, provider/error text or other applications' accessibility contents.
+                    diagnostic.append(" ".repeat(depth)).append("class=${node.className} bounds=$bounds ")
+                        .append("visible=${node.isVisibleToUser} clickable=${node.isClickable} enabled=${node.isEnabled} ")
+                        .append("scrollable=${node.isScrollable} editable=${node.isEditable} ")
+                        .append("isMore=${node.text?.toString() == more || node.contentDescription?.toString() == more} ")
+                        .append("isExpand=${node.text?.toString() == expand || node.contentDescription?.toString() == expand}\n")
+                    for (i in 0 until node.childCount) node.getChild(i)?.let { child ->
+                        try { visit(child, depth + 1) } finally { child.recycle() }
+                    }
+                }
+                val ownedNow = ownedWindowIds()
+                val windows = automation.windows
+                try { windows.filter { it.id in ownedBeforeMenu || it.id in ownedNow }.forEach { window ->
+                    val bounds = android.graphics.Rect(); window.getBoundsInScreen(bounds)
+                    diagnostic.append("window=${window.id} type=${window.type} bounds=$bounds\n")
+                    window.root?.let { root -> try { visit(root, 0) } finally { root.recycle() } }
+                } } finally { windows.forEach { it.recycle() } }
+                java.io.File(service.cacheDir, "t4-placement-menu-timeout-native-tree.txt").writeText(diagnostic.toString())
+                println(diagnostic.toString())
+            }
+            var moreClicked = false
+            try {
+                val clickDeadline = SystemClock.uptimeMillis() + 10000
+                // More toggles its state. Do not use waitFor: it evaluates a successful
+                // predicate twice, which would immediately close the menu again.
+                while (!moreClicked && SystemClock.uptimeMillis() < clickDeadline) {
+                    val windows = automation.windows
+                    try { moreClicked = windows.filter { it.id in ownedBeforeMenu }.any { w ->
+                        w.root?.let { r -> try { clickNamed(r, more) } finally { r.recycle() } } == true
+                    } } finally { windows.forEach { it.recycle() } }
+                    if (!moreClicked) Thread.sleep(100)
+                }
+                assertTrue("Native More must accept exactly one click", moreClicked)
+                waitFor {
+                    val windows = automation.windows
+                    try { windows.filter { it.id in ownedBeforeMenu }.any { w -> w.root?.let { r -> try {
+                        if (reachable(r, expand, false)) true else { scrollMenu(r); false }
+                    } finally { r.recycle() } } == true } }
+                    finally { windows.forEach { it.recycle() } }
+                }
+            } catch (failure: AssertionError) {
+                try { saveMenuTimeout(moreClicked); saveHostState("placement-menu-timeout") }
+                catch (diagnosticFailure: Throwable) { failure.addSuppressed(diagnosticFailure) }
+                throw failure
+            }
+            assertEquals("Overflow must remain in the same owned native windows", ownedBeforeMenu, ownedWindowIds())
+            assertEquals("Overflow cannot replace the observed host", hostBeforeMenu, service.dotOverlay.panelHostWindowId)
+            runBlocking { withContext(Dispatchers.Main.immediate) {
+                service.dotOverlay.withHiddenForCapture {
+                    assertEquals("Menu is hidden with its existing panel for capture", 0f, view.alpha, 0f)
+                    assertEquals(hostBeforeMenu, service.dotOverlay.panelHostWindowId)
+                    automation.takeScreenshot()?.let { bitmap ->
+                        try { java.io.File(service.cacheDir, "t3-menu-hidden-capture.png").outputStream().use {
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+                        } } finally { bitmap.recycle() }
+                    }
+                }
+            } }
+            // First Back dismisses only the in-panel menu, retaining draft/owner/window.
+            automation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK)
+            waitFor {
+                val windows = automation.windows
+                try { windows.none { w -> w.root?.let { r -> try { containsNativeText(r, expand) } finally { r.recycle() } } == true } }
+                finally { windows.forEach { it.recycle() } }
+            }
+            instrumentation.runOnMainSync {
+                assertSame(view, service.dotOverlay.panelView); assertSame(list, service.dotOverlay.panelTranscriptState)
+                assertEquals(binding, adapter.binding.value); assertEquals("Retained placement draft", vm.inputText.value)
             }
             println("T3_PLACEMENT sameWindow=true sameList=true sameBinding=true draftAndPositionRetained=true inertStreamCalls=1 fontScale=2 controlsReachable=true")
         } finally {
@@ -812,17 +1035,18 @@ class DotChatPanelTest {
             service.dotOverlay.showPanel(adapter) { adapter.binding.value?.let(adapter::cancel) }
         }
         try {
-            waitFor { automation.windows.any { window -> window.root?.let { root ->
-                try { root.findAccessibilityNodeInfosByViewId("dot_composer").isNotEmpty() || findEditable(root) } finally { root.recycle() }
-            } == true } }
             // Tap the actual native editable bounds, never a semantic click behind the IME.
-            val nodes = automation.windows.filter { it.type == AccessibilityWindowInfo.TYPE_ACCESSIBILITY_OVERLAY }.mapNotNull { it.root }
-            val bounds = android.graphics.Rect()
-            try { assertTrue(nodes.any { editableBounds(it,bounds) }) } finally { nodes.forEach { it.recycle() } }
+            val bounds = settledNativeEditor(service)
             val originalHostHeight = requireNotNull(service.dotScreen.hostViewport(service.dotOverlay.panelHostWindowId)).height
             observeImeAnimation(service)
             shell("input tap ${bounds.centerX()} ${bounds.centerY()}")
-            waitFor { keyboardShown(service,originalHostHeight) }; saveNative("ime")
+            try { waitFor { keyboardShown(service,originalHostHeight) } }
+            catch (failure: AssertionError) {
+                try { saveImeFlags(service, "show-timeout") }
+                catch (diagnosticFailure: Throwable) { failure.addSuppressed(diagnosticFailure) }
+                throw failure
+            }
+            saveNative("ime")
             shell("input keyevent ${KeyEvent.KEYCODE_BACK}")
             waitFor { keyboardHidden(service) }; saveNative("after-first-back")
             instrumentation.runOnMainSync { assertNotNull(service.dotOverlay.panelView) }
@@ -913,21 +1137,127 @@ class DotChatPanelTest {
         val service = requireNotNull(MinisAccessibilityService.getInstance())
         val adapter = DotChatAdapter.create(service.application as MinisApp)
         val id = fixtureId
+        val launcher = "com.google.android.apps.nexuslauncher"
+        var entryState = "not observed"
+        var launcherWindow: Pair<Int,android.graphics.Rect>? = null
+        var launcherTree = emptyList<NodeDto>()
+        var cachedBeforeRefresh = "not refreshed"
+        fun configured(): Boolean {
+            var ready = false
+            instrumentation.runOnMainSync {
+                val display = service.getSystemService(android.hardware.display.DisplayManager::class.java).getDisplay(0)
+                val size = android.graphics.Point(); display.getRealSize(size)
+                val metrics = service.resources.displayMetrics
+                val bounds = service.getSystemService(WindowManager::class.java).currentWindowMetrics.bounds
+                entryState = "display=$size rotation=${display.rotation} metrics=${metrics.widthPixels}x${metrics.heightPixels} " +
+                    "densityDpi=${metrics.densityDpi} windowMetrics=$bounds flags=${automation.serviceInfo.flags}"
+                // Resource pixel metrics may exclude system decor; use the real display/window
+                // for pixel dimensions and the service configuration for the density transition.
+                ready = size.x == 1200 && size.y == 800 && metrics.densityDpi == 160 &&
+                    service.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE &&
+                    bounds.width() == 1200 && bounds.height() == 800
+            }
+            return ready
+        }
+        fun launcherNodes(): List<NodeDto> {
+            launcherWindow = null; launcherTree = emptyList()
+            val windows = automation.windows
+            val summary = StringBuilder()
+            try {
+                for (window in windows.sortedByDescending { it.layer }) {
+                    val bounds = android.graphics.Rect(); window.getBoundsInScreen(bounds)
+                    val root = window.root ?: continue
+                    val ownsEntry = root.packageName?.toString() == launcher && root.isVisibleToUser &&
+                        window.type == AccessibilityWindowInfo.TYPE_APPLICATION && (window.isFocused || window.isActive)
+                    summary.append("window=${window.id} package=${root.packageName} type=${window.type} active=${window.isActive} focused=${window.isFocused} bounds=$bounds\n")
+                    if (!ownsEntry) { root.recycle(); continue }
+                    launcherWindow = window.id to bounds
+                    // NodeReader owns and recycles this root and all returned native children.
+                    launcherTree = NodeReader.read(root,"t4-split-entry")
+                    break
+                }
+            } finally { windows.forEach { it.recycle() } }
+            entryState += "\n$summary"
+            return launcherTree
+        }
+        fun retainEntryFailure(stage: String) {
+            val directory = java.io.File(service.cacheDir,"t4-split-entry-${SystemClock.uptimeMillis()}").apply { mkdirs() }
+            val active = automation.rootInActiveWindow
+            val activeOwner = try { "activeId=${active?.windowId} activePackage=${active?.packageName}" } finally { active?.recycle() }
+            java.io.File(directory,"entry.txt").writeText("stage=$stage $activeOwner\n$entryState\nwindow=$launcherWindow\n" +
+                "cachedBeforeRefresh=$cachedBeforeRefresh\nlastTree=${launcherTree.joinToString("\n")}\n")
+            if (Build.VERSION.SDK_INT >= 33) {
+                automation.clearCache(); configured(); launcherNodes()
+                java.io.File(directory,"fresh-tree.txt").writeText("$entryState\nwindow=$launcherWindow\n${launcherTree.joinToString("\n")}\n")
+            }
+            automation.takeScreenshot()?.let { frame ->
+                try { java.io.File(directory,"entry.png").outputStream().use { frame.compress(Bitmap.CompressFormat.PNG,100,it) } }
+                finally { frame.recycle() }
+            }
+            println("T4_SPLIT_ENTRY_FAILURE stage=$stage directory=$directory")
+        }
+        fun awaitEntry(stage: String, condition: () -> Boolean) {
+            val deadline = SystemClock.uptimeMillis()+10000
+            while (SystemClock.uptimeMillis()<deadline) {
+                if (condition()) return
+                SystemClock.sleep(100)
+            }
+            runCatching { retainEntryFailure(stage) }.onFailure { println("T4_SPLIT_ENTRY_DIAGNOSTIC_FAILED ${it.javaClass.simpleName}: ${it.message}") }
+            fail("Split fixture entry did not settle: $stage; $entryState")
+        }
+        fun entryNode(stage: String, predicate: (NodeDto) -> Boolean): NodeDto {
+            var previous: Pair<Int,RectPx>? = null
+            var since = SystemClock.uptimeMillis()
+            val started = since
+            var refreshed = false
+            var accepted: NodeDto? = null
+            awaitEntry(stage) {
+                val ready = configured()
+                val found = launcherNodes().firstOrNull { node ->
+                    val frame = launcherWindow?.second
+                    ready && predicate(node) && node.enabled && node.bounds.width > 0 && node.bounds.height > 0 && frame != null &&
+                        node.bounds.left >= frame.left && node.bounds.top >= frame.top &&
+                        node.bounds.right <= frame.right && node.bounds.bottom <= frame.bottom
+                }
+                val current = found?.let { launcherWindow!!.first to it.bounds }
+                val now = SystemClock.uptimeMillis()
+                if (current == null || current != previous) { previous = current; since = now }
+                if (current != null && now-since >= 200) accepted = found
+                if (accepted == null && !refreshed && now-started >= 300 && Build.VERSION.SDK_INT >= 33) {
+                    cachedBeforeRefresh = "$entryState\nwindow=$launcherWindow\n${launcherTree.joinToString("\n")}"
+                    automation.clearCache(); refreshed = true; previous = null; since = now
+                    println("T4_SPLIT_ENTRY_REFRESH stage=$stage flags=${automation.serviceInfo.flags}")
+                }
+                accepted != null
+            }
+            return requireNotNull(accepted)
+        }
         try {
             shell("wm size 1200x800"); shell("wm density 160")
+            var previousConfig = ""
+            awaitEntry("display-configuration") {
+                val ready = configured(); val stable = ready && entryState == previousConfig
+                previousConfig = entryState; stable
+            }
             shell("am start -W -a android.settings.SETTINGS")
             shell("am start -W -n io.github.nanodot.app.test/io.github.nanomuse.dot.screen.ScreenHostFixture --es marker HOST_DOT_SPLIT_T4_3E18 -f 0x10008000")
-            shell("input keyevent 187")
-            fun nodes(): List<NodeDto> {
-                val root = automation.rootInActiveWindow ?: return emptyList()
-                return NodeReader.read(root,"t4-split")
+            var previousEntry: Pair<Int,RectPx>? = null
+            awaitEntry("marker-host-before-overview") {
+                val ready = configured()
+                val hostId = service.dotScreen.hostWindowId()
+                val viewport = hostId?.let { service.dotScreen.hostViewport(it) }
+                val root = service.rootInActiveWindow
+                val intended = root?.let { try { it.windowId == hostId && it.packageName == "io.github.nanodot.app.test" &&
+                    containsNativeText(it,"HOST_DOT_SPLIT_T4_3E18") } finally { it.recycle() } } == true
+                val current = if (ready && hostId != null && viewport != null && intended) hostId to viewport else null
+                entryState += "\nhost=$current intended=$intended"
+                val stable = current != null && current == previousEntry; previousEntry = current; stable
             }
+            shell("input keyevent 187")
             fun tap(node: NodeDto) { shell("input tap ${((node.bounds.left+node.bounds.right)/2).toInt()} ${((node.bounds.top+node.bounds.bottom)/2).toInt()}") }
-            waitFor { nodes().any { it.viewId == "com.google.android.apps.nexuslauncher:id/action_split" && it.clickable } }
-            tap(nodes().first { it.viewId == "com.google.android.apps.nexuslauncher:id/action_split" && it.clickable })
-            waitFor { nodes().any { it.viewId == "com.google.android.apps.nexuslauncher:id/split_instructions_text" } }
-            waitFor { nodes().any { it.viewId == "com.google.android.apps.nexuslauncher:id/task" && it.description == "Settings" } }
-            tap(nodes().first { it.viewId == "com.google.android.apps.nexuslauncher:id/task" && it.description == "Settings" })
+            tap(entryNode("overview-split-action") { it.viewId == "$launcher:id/action_split" && it.clickable })
+            entryNode("split-instructions") { it.viewId == "$launcher:id/split_instructions_text" }
+            tap(entryNode("settings-second-task") { it.viewId == "$launcher:id/task" && it.description == "Settings" })
             val hostBounds = android.graphics.Rect()
             waitFor {
                 val windows = service.windows

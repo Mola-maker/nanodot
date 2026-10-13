@@ -30,11 +30,11 @@ fun DotGlassSurface(modifier: Modifier = Modifier, content: @Composable BoxScope
     val colors = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(24.dp)
     val rim = Brush.linearGradient(listOf(
-        Color.White.copy(alpha = .86f), colors.primary.copy(alpha = .34f),
+        Color.White.copy(alpha = .62f), colors.primary.copy(alpha = .34f),
         Color.White.copy(alpha = .48f), colors.primary.copy(alpha = .52f)
     ))
     CompositionLocalProvider(LocalContentColor provides colors.onSurface) {
-        Box(modifier.shadow(6.dp, shape, clip = false).clip(shape)
+        Box(modifier.shadow(3.dp, shape, clip = false).clip(shape)
             .background(lerp(colors.surface, colors.primary, .08f).copy(alpha = .10f))
             .drawWithCache {
                 val wash = Brush.linearGradient(listOf(
@@ -56,17 +56,28 @@ fun DotGlassSurface(modifier: Modifier = Modifier, content: @Composable BoxScope
 /** A local reading substrate, restricted to actual text/controls rather than empty history. */
 @Composable
 fun DotGlassPlate(modifier: Modifier = Modifier, shape: Shape = RoundedCornerShape(16.dp),
-    user: Boolean = false, content: @Composable () -> Unit) {
+    user: Boolean = false, message: Boolean = false, content: @Composable () -> Unit) {
     val colors = MaterialTheme.colorScheme
-    Surface(modifier, shape = shape, color = dotGlassPlateColor(user),
-        contentColor = colors.onSurface,
+    val plateColor = if (message) Color(0xFF0047AB).copy(alpha = if (user) .86f else .80f)
+        else dotGlassPlateColor(user)
+    Surface(modifier, shape = shape, color = plateColor,
+        contentColor = if (message) Color.White else colors.onSurface,
         border = BorderStroke(.75.dp, Brush.linearGradient(listOf(
             Color.White.copy(alpha = .62f), colors.primary.copy(alpha = .20f),
             Color.White.copy(alpha = .16f)
         )))) {
         // A bare empty-state line can inherit a substrate from history; a bubble already has one.
-        CompositionLocalProvider(LocalTextStyle provides LocalTextStyle.current.copy(background = Color.Unspecified)) {
-            content()
+        val plateContent: @Composable () -> Unit = {
+            CompositionLocalProvider(LocalTextStyle provides LocalTextStyle.current.copy(background = Color.Unspecified)) {
+                content()
+            }
+        }
+        if (message) {
+            MaterialTheme(colorScheme = colors.copy(primary = Color.White, onSurface = Color.White)) {
+                plateContent()
+            }
+        } else {
+            plateContent()
         }
     }
 }
@@ -74,5 +85,5 @@ fun DotGlassPlate(modifier: Modifier = Modifier, shape: Shape = RoundedCornerSha
 @Composable
 fun dotGlassPlateColor(user: Boolean = false): Color {
     val colors = MaterialTheme.colorScheme
-    return lerp(colors.surface, colors.primary, if (user) .08f else .025f).copy(alpha = .96f)
+    return lerp(colors.surface, colors.primary, if (user) .08f else .025f).copy(alpha = .88f)
 }

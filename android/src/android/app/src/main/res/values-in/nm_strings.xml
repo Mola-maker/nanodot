@@ -329,7 +329,7 @@
     <string name="nm_avatar_retry">Coba lagi</string>
     <string name="nm_avatar_describe_title">Gambarkan wajah baru</string>
     <string name="nm_avatar_describe_body">Satu kalimat sudah cukup: apa wujudnya, apa yang dipakainya, bagaimana kesannya. Pilih gaya, dan model gambarmu menggambar empat pilihan.</string>
-    <string name="nm_avatar_default_description">Bayi naga gempal berwarna kuning pucat dengan tanduk oranye kecil dan sayap kecil terlipat</string>
+    <string name="nm_avatar_default_description">Bola kristal transparan berwarna biru muda, dengan kilau lembut dan cahaya yang berdenyut perlahan</string>
     <string name="nm_avatar_style_flat">Datar</string>
     <string name="nm_avatar_style_clay">Tanah liat 3D</string>
     <string name="nm_avatar_style_watercolor">Cat air</string>
@@ -376,7 +376,7 @@
     <string name="nm_version_failed">Tidak bisa memeriksa, ketuk untuk mencoba lagi</string>
     <string name="nm_appearance_section_home">Beranda</string>
     <string name="nm_appearance_header_model_title">Tampilkan model di bawah nama</string>
-    <string name="nm_appearance_header_model_footer">Muse hanya menampilkan nama. Nyalakan untuk melihat grup model dan penyedia · model di bawahnya; ketuk untuk berpindah. Saat mati, model ada di ••• → Model dan di Pengaturan.</string>
+    <string name="nm_appearance_header_model_footer">Dot hanya menampilkan nama. Nyalakan untuk melihat grup model dan penyedia · model di bawahnya; ketuk untuk berpindah. Saat mati, model ada di ••• → Model dan di Pengaturan.</string>
     <string name="nm_appearance_section_chat">Percakapan</string>
     <string name="nm_appearance_steps_title">Tampilkan langkah-langkah agen</string>
     <string name="nm_appearance_steps_footer">Saat mati, chat hanya menyimpan balasan, dan baris di bawah wajah menyebutkan apa yang sedang dilakukan agen. Saat nyala, setiap langkah tampil di chat: setiap alat yang dipakainya, penalarannya, dan bilah di atas kotak tulis yang membuka detail langkah itu.</string>
@@ -396,7 +396,7 @@
     <string name="nm_avatar_size_large">Besar</string>
     <string name="nm_avatar_size_extra_large">Sangat besar</string>
     <string name="nm_avatar_size_hidden">Tersembunyi</string>
-    <string name="nm_avatar_style_muse">Mainan 3D (Muse)</string>
+    <string name="nm_avatar_style_muse">Mainan 3D</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">online</string>
@@ -1076,9 +1076,9 @@
     <string name="nm_models_hands_title">Mengoperasikan layar</string>
     <string name="nm_models_hands_sub">Melihat layar dan bertindak untukmu. Perlu model yang bisa melihat gambar.</string>
     <string name="nm_models_image_title">Membuat gambar</string>
-    <string name="nm_models_image_sub">Potret Muse-mu dan gambar yang kamu minta.</string>
+    <string name="nm_models_image_sub">Potret Dot dan gambar yang kamu minta.</string>
     <string name="nm_models_video_title">Membuat klip</string>
-    <string name="nm_models_video_sub">Klip pendek Muse-mu.</string>
+    <string name="nm_models_video_sub">Klip pendek Dot.</string>
     <string name="nm_models_chat_applies">Berlaku untuk chat utama dan chat baru; chat sampingan tetap memakai modelnya sendiri.</string>
     <string name="nm_models_media_more">Opsi gambar dan klip lainnya</string>
     <string name="nm_models_media_more_sub">Ketik nama model, lihat apa yang berhenti tanpa tiap model, atau periksa lagi model video mana yang bisa dipakai sebuah kunci.</string>

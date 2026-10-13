@@ -8,6 +8,22 @@ class DotGestureReducerTest {
     private val limits = GestureLimits(300L, 500L, 8f, 100f)
     private val origin = PointPx(10f, 20f)
 
+    @Test fun holdingOrbEmitsOneMenuIntentWithoutTapOrDragOnRelease() {
+        val reducer = DotGestureReducer(limits)
+        reducer.accept(GestureEvent.Down(origin, 0L, 0))
+        assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Tick(499L)).intents)
+        val held = reducer.accept(GestureEvent.Tick(500L))
+        // This assertion runs against the old sealed interface too: before implementation it
+        // fails because holding the orb suppresses every action rather than opening a menu.
+        assertEquals("A stationary hold must expose exactly one menu action", 1, held.intents.size)
+        assertEquals("LongPress", held.intents.single().javaClass.simpleName)
+        assertNull(held.deadlineMs)
+        assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Tick(900L)).intents)
+        assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Move(PointPx(50f, 20f), 910L, 0)).intents)
+        assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Up(origin, 920L, 0)).intents)
+        assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Tick(1500L)).intents)
+    }
+
     private fun tap(reducer: DotGestureReducer, downMs: Long, upMs: Long): GestureResult {
         assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Down(origin, downMs, 0)).intents)
         return reducer.accept(GestureEvent.Up(origin, upMs, 0))
@@ -96,7 +112,7 @@ class DotGestureReducerTest {
         tap(reducer, 0L, 120L)
         reducer.accept(GestureEvent.Down(origin, 200L, 0))
         assertEquals(GestureResult(emptyList(), 700L), reducer.accept(GestureEvent.Tick(699L)))
-        assertEquals(GestureResult(emptyList(), null), reducer.accept(GestureEvent.Tick(700L)))
+        assertEquals(GestureResult(listOf(DotIntent.LongPress), null), reducer.accept(GestureEvent.Tick(700L)))
         assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Move(PointPx(50f, 20f), 710L, 0)).intents)
         assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Up(origin, 750L, 0)).intents)
         assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Tick(1100L)).intents)
@@ -105,8 +121,68 @@ class DotGestureReducerTest {
     @Test fun longPressIsDetectedByUpWhenTimerWasDelayed() {
         val reducer = DotGestureReducer(limits)
         assertEquals(GestureResult(emptyList(), 500L), reducer.accept(GestureEvent.Down(origin, 0L, 0)))
-        assertEquals(GestureResult(emptyList(), null), reducer.accept(GestureEvent.Up(origin, 500L, 0)))
+        assertEquals(GestureResult(listOf(DotIntent.LongPress), null), reducer.accept(GestureEvent.Up(origin, 500L, 0)))
         assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Tick(900L)).intents)
+    }
+
+    @Test fun freshMovementAtOrAfterDeadlineWinsBeforeLongPressWasCommitted() {
+        for (time in listOf(500L, 501L)) {
+            val reducer = DotGestureReducer(limits)
+            val moved = PointPx(19f, 20f)
+            val end = PointPx(35f, 31f)
+            reducer.accept(GestureEvent.Down(origin, 0L, 0))
+            assertEquals("Observed movement must win over a delayed timer at $time",
+                GestureResult(emptyList(), null), reducer.accept(GestureEvent.Move(moved, time, 0)))
+            assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Tick(time + 1)).intents)
+            assertEquals(listOf(DotIntent.Drag(listOf(origin, moved, end))),
+                reducer.accept(GestureEvent.Up(end, time + 2, 0)).intents)
+            assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Tick(time + 500)).intents)
+        }
+    }
+
+    @Test fun firstMovementOnUpAtOrAfterDeadlineRemainsACompleteDrag() {
+        for (time in listOf(500L, 501L)) {
+            val reducer = DotGestureReducer(limits)
+            val end = PointPx(19f, 20f)
+            reducer.accept(GestureEvent.Down(origin, 0L, 0))
+            assertEquals("UP must include its fresh position before overdue hold arbitration",
+                GestureResult(listOf(DotIntent.Drag(listOf(origin, end))), null),
+                reducer.accept(GestureEvent.Up(end, time, 0)))
+            assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Tick(time + 500)).intents)
+        }
+    }
+
+    @Test fun movementCannotReopenDragAfterLongPressWasCommittedAtDeadline() {
+        for (time in listOf(500L, 501L)) {
+            val reducer = DotGestureReducer(limits)
+            val end = PointPx(19f, 20f)
+            reducer.accept(GestureEvent.Down(origin, 0L, 0))
+            assertEquals(listOf(DotIntent.LongPress), reducer.accept(GestureEvent.Tick(500L)).intents)
+            assertEquals(GestureResult(emptyList(), null), reducer.accept(GestureEvent.Move(end, time, 0)))
+            assertEquals(GestureResult(emptyList(), null), reducer.accept(GestureEvent.Up(end, time + 1, 0)))
+            assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Tick(time + 500)).intents)
+        }
+    }
+
+    @Test fun holdingThirdPressOpensMenuWithoutLeakingTripleOrEarlierDouble() {
+        val reducer = DotGestureReducer(limits)
+        tap(reducer, 0L, 100L)
+        tap(reducer, 150L, 200L)
+        reducer.accept(GestureEvent.Down(origin, 250L, 0))
+        assertEquals(listOf(DotIntent.LongPress), reducer.accept(GestureEvent.Tick(750L)).intents)
+        assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Up(origin, 900L, 0)).intents)
+        assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Tick(1500L)).intents)
+    }
+
+    @Test fun cancellationAndSecondPointerWinAtLongPressDeadline() {
+        for (cancel in listOf(true, false)) {
+            val reducer = DotGestureReducer(limits)
+            reducer.accept(GestureEvent.Down(origin, 0L, 0))
+            val interruption = if (cancel) GestureEvent.Cancel else GestureEvent.Down(origin, 500L, 1)
+            assertEquals(emptyList<DotIntent>(), reducer.accept(interruption).intents)
+            assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Tick(500L)).intents)
+            assertEquals(emptyList<DotIntent>(), reducer.accept(GestureEvent.Up(origin, 510L, 0)).intents)
+        }
     }
 
     @Test fun longDragRetainsTrajectoryPastLongPressThreshold() {
@@ -175,7 +251,7 @@ class DotGestureReducerTest {
         tap(reducer, 0L, 120L)
         assertEquals(GestureResult(emptyList(), 420L), reducer.accept(GestureEvent.Down(far, 200L, 0)))
         assertEquals(GestureResult(listOf(DotIntent.Single), 700L), reducer.accept(GestureEvent.Tick(420L)))
-        assertEquals(GestureResult(emptyList(), null), reducer.accept(GestureEvent.Tick(700L)))
+        assertEquals(GestureResult(listOf(DotIntent.LongPress), null), reducer.accept(GestureEvent.Tick(700L)))
         assertEquals(GestureResult(emptyList(), null), reducer.accept(GestureEvent.Up(far, 800L, 0)))
     }
 

@@ -329,7 +329,7 @@
     <string name="nm_avatar_retry">ลองใหม่</string>
     <string name="nm_avatar_describe_title">บรรยายใบหน้าใหม่</string>
     <string name="nm_avatar_describe_body">ประโยคเดียวก็พอ: มันคืออะไร สวมอะไร ให้ความรู้สึกแบบไหน เลือกสไตล์ แล้วโมเดลภาพของคุณจะวาดสี่แบบให้เลือก</string>
-    <string name="nm_avatar_default_description">ลูกมังกรอ้วนกลมสีเหลืองอ่อน มีเขาสีส้มเล็ก ๆ และปีกเล็กที่พับอยู่</string>
+    <string name="nm_avatar_default_description">ลูกแก้วคริสตัลโปร่งใสสีฟ้าอ่อน มีแสงสะท้อนนุ่มนวลและแสงเรืองที่ค่อย ๆ เต้นเหมือนลมหายใจ</string>
     <string name="nm_avatar_style_flat">แฟลต</string>
     <string name="nm_avatar_style_clay">ดินปั้น 3D</string>
     <string name="nm_avatar_style_watercolor">สีน้ำ</string>
@@ -376,7 +376,7 @@
     <string name="nm_version_failed">ตรวจสอบไม่ได้ แตะเพื่อลองอีกครั้ง</string>
     <string name="nm_appearance_section_home">หน้าหลัก</string>
     <string name="nm_appearance_header_model_title">แสดงโมเดลใต้ชื่อ</string>
-    <string name="nm_appearance_header_model_footer">Muse แสดงเฉพาะชื่อ เปิดตัวเลือกนี้เพื่อดูกลุ่มโมเดลและ ผู้ให้บริการ · โมเดล ใต้ชื่อ แตะเพื่อสลับได้ เมื่อปิด โมเดลจะอยู่ใต้ ••• → โมเดล และในการตั้งค่า</string>
+    <string name="nm_appearance_header_model_footer">Dot แสดงเฉพาะชื่อ เปิดตัวเลือกนี้เพื่อดูกลุ่มโมเดลและ ผู้ให้บริการ · โมเดล ใต้ชื่อ แตะเพื่อสลับได้ เมื่อปิด โมเดลจะอยู่ใต้ ••• → โมเดล และในการตั้งค่า</string>
     <string name="nm_appearance_section_chat">บทสนทนา</string>
     <string name="nm_appearance_steps_title">แสดงขั้นตอนของเอเจนต์</string>
     <string name="nm_appearance_steps_footer">เมื่อปิด แชทจะแสดงเฉพาะคำตอบ และบรรทัดใต้ใบหน้าจะบอกว่าเอเจนต์กำลังทำอะไรอยู่ เมื่อเปิด ทุกขั้นตอนจะแสดงในแชท เครื่องมือแต่ละตัวที่ใช้ การให้เหตุผล และแถบเหนือช่องพิมพ์ที่เปิดดูรายละเอียดของขั้นตอนได้</string>
@@ -396,7 +396,7 @@
     <string name="nm_avatar_size_large">ใหญ่</string>
     <string name="nm_avatar_size_extra_large">ใหญ่พิเศษ</string>
     <string name="nm_avatar_size_hidden">ซ่อน</string>
-    <string name="nm_avatar_style_muse">ของเล่น 3D (Muse)</string>
+    <string name="nm_avatar_style_muse">ของเล่น 3D</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">ออนไลน์</string>
@@ -1076,9 +1076,9 @@
     <string name="nm_models_hands_title">ควบคุมหน้าจอ</string>
     <string name="nm_models_hands_sub">ดูหน้าจอและทำแทนคุณ ต้องใช้โมเดลที่มองเห็นภาพได้</string>
     <string name="nm_models_image_title">สร้างภาพ</string>
-    <string name="nm_models_image_sub">ภาพบุคคลของมิวส์ของคุณ และภาพที่คุณขอ</string>
+    <string name="nm_models_image_sub">ภาพบุคคลของDot และภาพที่คุณขอ</string>
     <string name="nm_models_video_title">สร้างคลิป</string>
-    <string name="nm_models_video_sub">คลิปสั้นของมิวส์ของคุณ</string>
+    <string name="nm_models_video_sub">คลิปสั้นของDot</string>
     <string name="nm_models_chat_applies">มีผลกับแชทหลักและแชทใหม่ ส่วนแชทย่อยยังใช้โมเดลเดิมของตัวเอง</string>
     <string name="nm_models_media_more">ตัวเลือกภาพและคลิปเพิ่มเติม</string>
     <string name="nm_models_media_more_sub">พิมพ์ชื่อโมเดล ดูว่าหากไม่มีโมเดลใดสิ่งใดจะหยุด หรือตรวจอีกครั้งว่าคีย์ใช้โมเดลวิดีโอใดได้บ้าง</string>

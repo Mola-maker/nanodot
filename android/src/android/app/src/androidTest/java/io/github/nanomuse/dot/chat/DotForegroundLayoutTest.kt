@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.SystemClock
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
@@ -60,22 +61,23 @@ class DotForegroundLayoutTest {
                                                     measured["text_full"] = Rect(origin.x, origin.y, origin.x + it.size.width, origin.y + it.size.height)
                                                 })
                                             } }
-                                            item { DotMessageBubble(false) { Text("Actual instruction",fontSize=DotTokens.Type.Care) } }
+
                                         }
                                     }, controls = {
-                                        Column(Modifier.fillMaxWidth()) {
-                                            Button({},Modifier.fillMaxWidth().heightIn(min=48.dp)) { Text("Start") }
-                                            OutlinedTextField("Retained draft",{},Modifier.fillMaxWidth())
-                                            Button({},Modifier.fillMaxWidth().heightIn(min=48.dp)) { Text("End") }
+                                        Row(Modifier.fillMaxWidth()) {
+                                            DotDraftField("Retained first line\nRetained second line", {}, "Message",
+                                                Modifier.weight(1f).onGloballyPositioned { measured["composer"] = it.boundsInWindow() })
+                                            IconButton({}, Modifier.size(48.dp)) { Text("↑",fontSize=16.sp) }
                                         }
                                     })
                                 }
                             } }
                         }
                         val deadline = SystemClock.uptimeMillis()+5000
-                        while(measured.size<4 && SystemClock.uptimeMillis()<deadline) Thread.sleep(20)
+                        while(measured.size<5 && SystemClock.uptimeMillis()<deadline) Thread.sleep(20)
                         val label="$case user=$user font=$scale measured=$measured"
-                        assertEquals(label,4,measured.size)
+                        assertEquals(label,5,measured.size)
+                        assertTrue("Real production composer remains48dp $label", requireNotNull(measured["composer"]).height >= 48*density-.5f)
                         assertTrue("Visible transcript $label",requireNotNull(measured["history"]).height >= 48*density-.5f)
                         assertTrue("Visible 48dp status/Stop viewport $label",requireNotNull(measured["control"]).height >= 48*density-.5f)
                         val visibleText = requireNotNull(measured["text"])

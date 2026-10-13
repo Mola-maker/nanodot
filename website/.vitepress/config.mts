@@ -76,6 +76,8 @@ function placeholderOrHtml(raw: string): string {
 const getStarted: DefaultTheme.SidebarItem[] = [
   { text: 'Build Nanodot P0', link: '/build' },
   { text: 'Android', link: '/android' },
+  { text: 'Android verification', link: '/android-verification' },
+  { text: 'Foreground interactions', link: '/android-interactions' },
   { text: 'iPhone and iPad', link: '/ios' },
   { text: 'The desktop app', link: '/desktop' },
   { text: 'The web console', link: '/web' },
@@ -137,6 +139,8 @@ const contribute: DefaultTheme.SidebarItem[] = [
 const zhGetStarted: DefaultTheme.SidebarItem[] = [
   { text: '构建 Nanodot P0', link: '/zh/build' },
   { text: 'Android', link: '/zh/android' },
+  { text: 'Android 验收', link: '/zh/android-verification' },
+  { text: '前台交互', link: '/zh/android-interactions' },
   { text: 'iPhone 和 iPad', link: '/zh/ios' },
   { text: '桌面版', link: '/zh/desktop' },
   { text: '网页控制台', link: '/zh/web' },

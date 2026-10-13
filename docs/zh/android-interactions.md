@@ -1,0 +1,48 @@
+# Android 前台交互
+
+Nanodot 沿用现有 Android Chat/Care 会话。水晶球、功能泡泡、底部聊天和目标提示共享这些会话，不另建代理循环。本轮界面改造保持登录与网关配置冻结。
+
+## 水晶球与聊天 {#crystal-and-conversation}
+
+单击聊天、双击观察屏幕、三击进入用户操作的关怀模式；长按展开聊天、识屏、关怀、语音四颗玻璃子泡泡。手势由同一状态机仲裁，长按松手不自动选择功能。按钮至少48dp，带本地化说明；有界菜单向可用空间展开，避开当前目标和聊天。没有合法空间时保留原入口。
+
+菜单不抢输入焦点。选择、点外部、新球手势、停止、锁屏或断开会关闭菜单；聊天返回先处理临时菜单，再处理键盘与面板。透明不等于触控穿透：外部触控和实际窗口位置必须在模拟器检查。
+
+语音复用真实聊天绑定、授权流程与录音所有者，根据当前状态开始、结束或取消。识别结果只进入草稿，发送仍由用户决定。打开菜单本身不识屏、不录音、不调用模型。
+
+主页默认头像从同一蓝色水晶图集生成，仍尊重用户自选头像及隐藏设置。17种语言的默认身份与示例由品牌生成器统一为Dot和蓝色水晶；上游署名、内部兼容名称以及实际nanoMuse Cloud服务名称保留。
+
+## 关怀提示 {#care-instruction-presentation}
+
+当前有效目标只有蓝色轮廓描边，不再连接聊天框。独立的非触摸提示按“出现→完整字素逐字显现→停留→消失”呈现；底部聊天立即显示完整指令并长期保留。浮层按实际字体测量，避开整个聊天卡及目标，限定在当前宿主和键盘可用区；放不下时只保留底部完整消息。
+
+提示消失不表示任务完成。会话、步骤和场景共同决定提示身份；目标过期、停止或窗口关闭立即取消装饰。重复仅重播当前视觉提示，不请求模型、语音服务或重新识屏。减少动态直接展示完整提示文字，不逐字、不渐隐，有限停留后撤去提示；底部全文持续可读。原生双向文字排版支持RTL；不按固定字符宽度估算位置。
+
+## 按页面类型引导 {#scenario-contract}
+
+规划器只对当前可用节点提出一个用户动作和可检验结果；每一步都必须等待新证据。下表是交互设计及规划提示规则，不代表这些第三方应用已完成真实模型验收。
+
+| 场景 | 本步引导 | 下一步证据与恢复 |
+|---|---|---|
+| 搜索 | 区分输入、建议、显式提交和即时结果。 | 核对查询与结果状态；空结果保留查询并改词，不虚构搜索按钮。 |
+| 电商 | 商品、规格和数量分步核对。 | 价格、库存、配送变化需重看；购买和支付由用户确认，不预设应用坐标。 |
+| 表单 | 一次聚焦一个有标签字段，保护草稿及错误提示。 | 检查值、校验信息和保存后的状态；星号或点击保存不证明保存成功。 |
+| 阅读 | 用当前标题或可见段落指示。 | 滚动后重新观察，撤销旧位置；聊天保持可移动。 |
+| 媒体 | 控件隐藏时先提示用户显现控件。 | 要求可见状态或标签变化；缓冲、控件消失和画中画需要重看。 |
+| 设置 | 明确说明要开启或关闭的状态。 | 以实际可见结果为证据；禁用控件或无法验证时澄清。 |
+| 聊天 | 区分草稿、已发送消息与等待回复。 | 保留同一输入所有者，发送动画不证明送达。 |
+
+指令使用用户语言，目标名称保留原屏幕标签。既有严格动作/结果结构、校验器、30秒模型期限和请求预算不变。现有结构无法证明结果时应澄清，不能补造成功；开关、媒体等状态的完整核验仍以当前快照实际提供的内容为限。
+
+## 成熟项目参考 {#reuse-and-provenance}
+
+2026-10-13研究了固定提交下的官方源码与许可证。采用适合当前Compose工具链的小块规则，不整体引入账号服务或新依赖。
+
+- [Jetchat](https://github.com/android/compose-samples/blob/5a390e4a9d3c4e5b30e942041bde93582c4d9492/Jetchat/app/src/main/java/com/example/compose/jetchat/conversation/UserInput.kt)：输入、草稿、IME与附属面板互斥（Apache-2.0）。
+- [Telegram](https://github.com/DrKLO/Telegram/blob/f2908b14133bbffbf7ab04f641ecb5bfaf533242/TMessagesProj/src/main/java/org/telegram/ui/ActionBar/ActionBarPopupWindow.java)：动画中断与关闭（GPL-2.0）。
+- [Wikipedia](https://github.com/wikimedia/apps-android-wikipedia/blob/1cc9ac0dfdaf8f353a83b39d426f3d1a15a4f199/app/src/main/java/org/wikipedia/search/SearchFragment.kt)：查询与结果分态（Apache-2.0）。
+- [Fossify Contacts](https://github.com/FossifyOrg/Contacts/blob/ad5831b21546204f412c9f77e413186c5c078166/app/src/main/kotlin/org/fossify/contacts/activities/EditContactActivity.kt)：草稿、校验、保存/放弃边界（GPL-3.0）。
+- [VLC](https://github.com/videolan/vlc-android/blob/91c78014517bfbc769df4634d06cbd40ebce77ec/application/vlc-android/src/org/videolan/vlc/gui/video/VideoPlayerOverlayDelegate.kt)：无障碍交互时保护控制可达（GPL-2.0）。
+- [Jetsnack](https://github.com/android/compose-samples/tree/5a390e4a9d3c4e5b30e942041bde93582c4d9492/Jetsnack)：搜索/购物车状态模型（Apache-2.0），结算占位不是支付能力。
+
+按[Android验收](android-verification.md)绑定候选APK、截图和日志；单元测试、原生夹具、实际用户路径与真实模型请求分别报告。[构建说明](build.md)仍是唯一构建入口。

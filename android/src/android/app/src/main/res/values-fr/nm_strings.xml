@@ -332,7 +332,7 @@
     <string name="nm_avatar_retry">Réessayer</string>
     <string name="nm_avatar_describe_title">Décrivez un nouveau visage</string>
     <string name="nm_avatar_describe_body">Une phrase suffit : ce que c’est, ce que ça porte, ce que ça dégage. Choisissez un style, et votre modèle d’image en dessine quatre au choix.</string>
-    <string name="nm_avatar_default_description">Un bébé dragon joufflu jaune pâle, avec de minuscules cornes orange et de petites ailes repliées</string>
+    <string name="nm_avatar_default_description">Une sphère de cristal transparente bleu pâle, aux reflets doux et à la lueur qui pulse doucement</string>
     <string name="nm_avatar_style_flat">Plat</string>
     <string name="nm_avatar_style_clay">Pâte à modeler 3D</string>
     <string name="nm_avatar_style_watercolor">Aquarelle</string>
@@ -379,7 +379,7 @@
     <string name="nm_version_failed">Vérification impossible, touchez pour réessayer</string>
     <string name="nm_appearance_section_home">Accueil</string>
     <string name="nm_appearance_header_model_title">Afficher le modèle sous le nom</string>
-    <string name="nm_appearance_header_model_footer">Muse n’affiche que le nom. Activez ceci pour voir dessous le groupe de modèles et fournisseur · modèle ; touchez-les pour changer. Désactivé, le modèle se trouve sous ••• → Modèle et dans les Réglages.</string>
+    <string name="nm_appearance_header_model_footer">Dot n’affiche que le nom. Activez ceci pour voir dessous le groupe de modèles et fournisseur · modèle ; touchez-les pour changer. Désactivé, le modèle se trouve sous ••• → Modèle et dans les Réglages.</string>
     <string name="nm_appearance_section_chat">Conversation</string>
     <string name="nm_appearance_steps_title">Afficher les étapes de l’agent</string>
     <string name="nm_appearance_steps_footer">Désactivé, la discussion ne garde que les réponses, et la ligne sous le visage dit ce que l’agent fait en ce moment. Activé, chaque étape s’affiche dans la discussion : chaque outil utilisé, son raisonnement, et une barre au-dessus du champ de saisie qui ouvre le détail de l’étape.</string>
@@ -399,7 +399,7 @@
     <string name="nm_avatar_size_large">Grand</string>
     <string name="nm_avatar_size_extra_large">Très grand</string>
     <string name="nm_avatar_size_hidden">Masqué</string>
-    <string name="nm_avatar_style_muse">Jouet 3D (Muse)</string>
+    <string name="nm_avatar_style_muse">Jouet 3D</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">en ligne</string>
@@ -1080,9 +1080,9 @@
     <string name="nm_models_hands_title">Manipuler l’écran</string>
     <string name="nm_models_hands_sub">Regarde l’écran et agit pour vous. Il faut un modèle qui voit les images.</string>
     <string name="nm_models_image_title">Créer des images</string>
-    <string name="nm_models_image_sub">Des portraits de votre Muse et les images que vous demandez.</string>
+    <string name="nm_models_image_sub">Des portraits de Dot et les images que vous demandez.</string>
     <string name="nm_models_video_title">Créer des clips</string>
-    <string name="nm_models_video_sub">De courts clips de votre Muse.</string>
+    <string name="nm_models_video_sub">De courts clips de Dot.</string>
     <string name="nm_models_chat_applies">S’applique à la discussion principale et aux nouvelles discussions ; une discussion secondaire garde son modèle.</string>
     <string name="nm_models_media_more">Plus d’options pour les images et les clips</string>
     <string name="nm_models_media_more_sub">Saisir un nom de modèle, voir ce qui s’arrête sans chaque modèle, ou revérifier quels modèles vidéo une clé peut utiliser.</string>

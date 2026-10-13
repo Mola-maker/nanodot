@@ -55,9 +55,38 @@ internal fun foregroundFrame(
         if (aboveHeight >= minimumUsefulHeight) ForegroundPlacement.AboveTarget else ForegroundPlacement.Compact)
 }
 
-private fun RectPx.isUsable(): Boolean =
+internal fun RectPx.isUsable(): Boolean =
     left.isFinite() && top.isFinite() && right.isFinite() && bottom.isFinite() &&
         width.isFinite() && height.isFinite() && width > 0f && height > 0f
 
 private fun RectPx.overlaps(other: RectPx): Boolean =
     left < other.right && right > other.left && top < other.bottom && bottom > other.top
+
+/** User placement remains subordinate to a target that can actually be avoided. */
+internal fun adjustedForegroundFrame(
+    host: RectPx, fitted: ForegroundFrame, target: RectPx?, adjustment: Pair<Float, Float>?,
+): ForegroundFrame {
+    if (adjustment == null || !host.isUsable()) return fitted
+    val (x, y) = adjustment
+    if (!x.isFinite() || !y.isFinite()) return fitted
+    val b = fitted.bounds
+    val left = host.left + (host.width - b.width).coerceAtLeast(0f) * x.coerceIn(0f, 1f)
+    val top = host.top + (host.height - b.height).coerceAtLeast(0f) * y.coerceIn(0f, 1f)
+    val moved = RectPx(left, top, left + b.width, top + b.height)
+    val validTarget = target?.takeIf { it.isUsable() }
+    if (validTarget != null && !b.overlaps(validTarget) && moved.overlaps(validTarget)) return fitted
+    return fitted.copy(bounds = moved)
+}
+
+/** Content requests are bounded; expansion changes compact size, never target authority. */
+internal fun requestedForegroundFrame(
+    host: RectPx, requestedHeight: Float, density: Float, target: RectPx?,
+    expanded: Boolean, adjustment: Pair<Float, Float>? = null,
+    compactHeight: Float = 156f * density,
+): ForegroundFrame {
+    var fitted = foregroundFrame(host, requestedHeight, density, target)
+    if (!expanded && fitted.placement == ForegroundPlacement.Compact) {
+        fitted = foregroundFrame(host, minOf(requestedHeight, compactHeight), density, target)
+    }
+    return adjustedForegroundFrame(host, fitted, target, adjustment)
+}

@@ -61,10 +61,68 @@ class DotOverlayController(
     fun registerCareWindow(view: View) { careWindows.add(view) }
     fun unregisterCareWindow(view: View) { careWindows.remove(view) }
     fun setCareActive(active: Boolean) { careActive.value = active }
-    private fun ownedViews() = listOfNotNull(orbView, panelView, trailView, captureScanner.view) + careWindows.toList()
+    private val orbMenu = DotOrbMenuWindow(service, ::onIntent)
+    private data class OrbMenuPlacement(val hostId: Int, val safe: RectPx, val orb: RectPx, val protectedBounds: List<RectPx>)
+    private var orbMenuPlacement: OrbMenuPlacement? = null
+    private var captureDepth = 0
+    internal val orbMenuView get() = orbMenu.view
+    internal val orbMenuBounds get() = orbMenu.bounds
+    private val idleVoiceUi = kotlinx.coroutines.flow.MutableStateFlow(io.github.nanomuse.dot.voice.DotVoiceController.Ui())
+    private fun ownedViews() = listOfNotNull(orbView, panelView, trailView, captureScanner.view, orbMenu.view) + careWindows.toList()
+
+    /** Only presentation is dismissed. Chat/Care/voice retain their existing admission. */
+    fun dismissOrbMenu(): Boolean {
+        checkMainThread()
+        orbMenuPlacement = null
+        return orbMenu.dismiss()
+    }
+
+    private fun viewBounds(view: View): RectPx? {
+        if (!view.isAttachedToWindow || !view.isShown || view.width <= 0 || view.height <= 0) return null
+        val position = IntArray(2); view.getLocationOnScreen(position)
+        return RectPx(position[0].toFloat(), position[1].toFloat(),
+            (position[0] + view.width).toFloat(), (position[1] + view.height).toFloat())
+    }
+
+    private fun currentOrbMenuPlacement(): OrbMenuPlacement? {
+        val repository = (service as? MinisAccessibilityService)?.dotScreen ?: return null
+        val hostId = repository.hostWindowId() ?: return null
+        val host = repository.hostViewport(hostId) ?: return null
+        val display = availableBounds() ?: return null
+        val safe = RectPx(maxOf(host.left, display.left.toFloat()), maxOf(host.top, display.top.toFloat()),
+            minOf(host.right, display.right.toFloat()), minOf(host.bottom, display.bottom.toFloat()))
+        if (!safe.isUsable()) return null
+        val orb = orbView?.let(::viewBounds) ?: return null
+        val protectedBounds = (listOfNotNull(panelView) + careWindows).filter {
+            val flags = (it.layoutParams as? WindowManager.LayoutParams)?.flags ?: return@filter false
+            flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE == 0
+        }.mapNotNull(::viewBounds) + listOfNotNull(foregroundTarget?.takeIf { it.isUsable() })
+        return OrbMenuPlacement(hostId, safe, orb, protectedBounds)
+    }
+
+    private fun showOrbMenu() {
+        if (voicePermissionWindow || captureDepth > 0 || !visualActive.value ||
+            foregroundState?.value?.operation == io.github.nanomuse.dot.DotForegroundOperation.Capturing) return
+        cancelSnap()
+        val placement = currentOrbMenuPlacement()
+        val frame = placement?.let { orbMenuFrame(it.safe, it.orb, service.resources.displayMetrics.density, it.protectedBounds) }
+        if (frame == null) {
+            dismissOrbMenu()
+            Toast.makeText(service, R.string.nm_dot_action_unavailable, Toast.LENGTH_SHORT).show()
+            return
+        }
+        orbMenuPlacement = placement
+        val voice = (service as? MinisAccessibilityService)?.dotInteraction?.voiceUi ?: idleVoiceUi
+        if (!orbMenu.show(frame, voice)) orbMenuPlacement = null
+    }
+
+    private fun refreshOrbMenuGeometry() {
+        if (orbMenu.view != null && orbMenuPlacement != currentOrbMenuPlacement()) dismissOrbMenu()
+    }
     private val captureScanner = DotCaptureScanWindow(service)
     fun beginCaptureScan(generation: Long) {
         checkMainThread()
+        dismissOrbMenu()
         if (isConnected && !locked && enabled) captureScanner.begin(generation)
     }
     fun finishCaptureScan(generation: Long, success: Boolean) {
@@ -120,7 +178,7 @@ class DotOverlayController(
         private set
     internal var orbOwner: DotOverlayOwner? = null
         private set
-    internal val windowCount get() = registry.size + if (trailView != null) 1 else 0
+    internal val windowCount get() = registry.size + (if (trailView != null) 1 else 0) + (if (orbMenu.view != null) 1 else 0)
     private var orbComposition: ComposeView? = null
     internal var panelView: View? = null
         private set
@@ -135,6 +193,8 @@ class DotOverlayController(
     internal var panelHostWindowId: Int? = null
         private set
     private var panelParams: WindowManager.LayoutParams? = null
+    private var panelMenuDismiss: (() -> Boolean)? = null
+    private var panelRequestedHeight = 0
     private var geometryPending = false
     private var foregroundTarget: RectPx? = null
     private val panelPlacement = androidx.compose.runtime.mutableStateOf(ForegroundPlacement.Bottom)
@@ -146,6 +206,7 @@ class DotOverlayController(
     fun setForegroundTarget(target: RectPx?) {
         checkMainThread()
         if (foregroundTarget == target) return
+        dismissOrbMenu()
         foregroundTarget = target
         panelExpanded = false; panelAdjustment = null; panelGeometry = null
         panelMotion?.cancel(); panelMotion = null
@@ -165,15 +226,21 @@ class DotOverlayController(
         val view = panelView ?: return
         val p = panelParams ?: return
         val host = hostViewport() ?: return
-        p.x = (p.x + dx).roundToInt().coerceIn(host.left.roundToInt(), (host.right - p.width).roundToInt().coerceAtLeast(host.left.roundToInt()))
-        p.y = (p.y + dy).roundToInt().coerceIn(host.top.roundToInt(), (host.bottom - p.height).roundToInt().coerceAtLeast(host.top.roundToInt()))
+        if (!dx.isFinite() || !dy.isFinite() || !host.isUsable()) return
+        val proposedX = (p.x + dx - host.left) / (host.width - p.width).coerceAtLeast(1f)
+        val proposedY = (p.y + dy - host.top) / (host.height - p.height).coerceAtLeast(1f)
+        val base = foregroundFrame(host, p.height.toFloat(), service.resources.displayMetrics.density, foregroundTarget)
+        val fitted = adjustedForegroundFrame(host, base, foregroundTarget, proposedX to proposedY)
+        p.x = fitted.bounds.left.roundToInt(); p.y = fitted.bounds.top.roundToInt()
         panelAdjustment = (if (host.width > p.width) (p.x - host.left) / (host.width - p.width) else 0f) to
             (if (host.height > p.height) (p.y - host.top) / (host.height - p.height) else 0f)
+        panelGeometry = null
         windows.updateViewLayout(view, p)
     }
     private var voicePermissionWindow = false
     /** Keep the binding/window owners while allowing the real permission Activity to be visible. */
     fun setVoicePermissionWindow(visible: Boolean) {
+        if (visible) dismissOrbMenu()
         voicePermissionWindow = visible
         if (visible) { panelMotion?.cancel(); panelMotion = null; panelGeometry = null }
         ownedViews().forEach { it.visibility = if (visible) View.INVISIBLE else View.VISIBLE }
@@ -181,7 +248,6 @@ class DotOverlayController(
     }
     private var removeBackCallback: (() -> Unit)? = null
     private var dragStarted = false
-    private var downAtMs = 0L
     private var params: WindowManager.LayoutParams? = null
     private var legacyGeometry: DotWindowGeometry? = null
     private var firstLayout: ViewTreeObserver.OnPreDrawListener? = null
@@ -274,6 +340,8 @@ class DotOverlayController(
     fun onIntent(intent: DotIntent) {
         checkMainThread()
         if (!isConnected || locked || !enabled) return
+        if (intent == DotIntent.LongPress) { showOrbMenu(); return }
+        dismissOrbMenu()
         if (intent is DotIntent.Drag) {
             // Unclassified movement fallback. Task6 replaces this with full selection geometry;
             // downPosition remains available throughout this synchronous disposition.
@@ -303,6 +371,13 @@ class DotOverlayController(
      */
     suspend fun <T> withHiddenForCapture(hide: Boolean = true, block: suspend () -> T): T {
         checkMainThread()
+        dismissOrbMenu()
+        captureDepth++
+        try { return hideOwnedForCapture(hide, block) }
+        finally { captureDepth-- }
+    }
+
+    private suspend fun <T> hideOwnedForCapture(hide: Boolean, block: suspend () -> T): T {
         // Window screenshots exclude accessibility overlays at the platform boundary;
         // nodes are read only from application windows. Their controls need no alpha hiding.
         if (!hide) return block()
@@ -371,10 +446,11 @@ class DotOverlayController(
         sync()
     }
 
-    private fun hostViewport(): RectPx? = (service as? MinisAccessibilityService)?.dotScreen?.hostViewport(panelHostWindowId)
+    private fun hostViewport(): RectPx? = (service as? MinisAccessibilityService)?.dotScreen?.hostViewport(panelHostWindowId)?.takeIf { it.isUsable() }
 
     /** Two traversals must agree before adopting host/IME bounds, including split-screen hosts. */
     fun refreshPanelGeometry() {
+        refreshOrbMenuGeometry()
         if (panelGeometry?.first != hostViewport()) { panelMotion?.cancel(); panelMotion = null }
         if (voicePermissionWindow) return
         val view = panelView ?: return
@@ -387,21 +463,18 @@ class DotOverlayController(
                 if (voicePermissionWindow) return@postOnAnimation
                 if (panelView === view && first != null && first == hostViewport()) {
                     panelParams?.let { p ->
-                        var next = foregroundFrame(first, first.height * .55f, service.resources.displayMetrics.density,
-                            if (panelExpanded) null else foregroundTarget)
-                        panelAdjustment?.takeIf { next.placement == ForegroundPlacement.Compact }?.let { (x, y) ->
-                            val bounds = next.bounds
-                            val left = first.left + (first.width - bounds.width).coerceAtLeast(0f) * x.coerceIn(0f, 1f)
-                            val top = first.top + (first.height - bounds.height).coerceAtLeast(0f) * y.coerceIn(0f, 1f)
-                            next = next.copy(bounds = RectPx(left, top, left + bounds.width, top + bounds.height))
-                        }
+                        val density = service.resources.displayMetrics.density
+                        val requested = panelRequestedHeight.takeIf { it > 0 }?.toFloat() ?: (240f * density)
+                        val next = requestedForegroundFrame(first, requested, density,
+                            foregroundTarget, panelExpanded, panelAdjustment,
+                            (156f + 48f * (service.resources.configuration.fontScale - 1f).coerceAtLeast(0f)) * density)
                         if (panelGeometry == (first to next)) return@let
                         panelGeometry = first to next
                         panelPlacement.value = next.placement
                         val frame = next.bounds
                         panelMotion?.cancel(); panelMotion = null
                         val fromX = p.x; val fromY = p.y
-                        val animate = motionEnabled && visualActive.value && (p.x != frame.left.roundToInt() || p.y != frame.top.roundToInt()) && p.width == frame.width.roundToInt() && p.height == frame.height.roundToInt()
+                        val animate = foregroundTarget == null && motionEnabled && visualActive.value && (p.x != frame.left.roundToInt() || p.y != frame.top.roundToInt()) && p.width == frame.width.roundToInt() && p.height == frame.height.roundToInt()
                         p.width = frame.width.roundToInt(); p.height = frame.height.roundToInt()
                         fun apply(progress: Float) {
                             if (panelView !== view || panelParams !== p || hostViewport() != first) return
@@ -422,6 +495,8 @@ class DotOverlayController(
 
     @Suppress("DEPRECATION") // Required native keyboard/back support on API26–32.
     private fun hideImeOrCollapse(view: View) {
+        if (dismissOrbMenu()) return
+        if (panelMenuDismiss?.invoke() == true) return
         val nativeWindows = service.windows
         val keyboard = try { nativeWindows.any { it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_INPUT_METHOD } }
             finally { nativeWindows.forEach { it.recycle() } }
@@ -457,12 +532,19 @@ class DotOverlayController(
                 DotChatPanel(adapter, ::collapsePanel,
                     panelStop ?: { binding -> adapter.cancel(binding); adapter.bind(binding.sessionId); Unit },
                     evidence, panelPlacement.value, ::expandPanel, ::adjustPanel, ::movePanel,
-                    onTranscriptState = { panelTranscriptState = it })
+                    onTranscriptState = { panelTranscriptState = it },
+                    onMenuDismissHandler = { panelMenuDismiss = it },
+                    onContentHeightChanged = { height ->
+                        if (height > 0 && panelRequestedHeight != height) {
+                            panelRequestedHeight = height; panelGeometry = null; refreshPanelGeometry()
+                        }
+                    })
             } } }
         }
         view.addView(composition, FrameLayout.LayoutParams(-1,-1))
         val host = hostViewport()
-        val initial = host?.let { foregroundFrame(it,it.height*.55f,service.resources.displayMetrics.density, foregroundTarget) }
+        val initial = host?.let { requestedForegroundFrame(it,240f * service.resources.displayMetrics.density,service.resources.displayMetrics.density, foregroundTarget, panelExpanded,
+            compactHeight = (156f + 48f * (service.resources.configuration.fontScale - 1f).coerceAtLeast(0f)) * service.resources.displayMetrics.density) }
         panelPlacement.value = initial?.placement ?: ForegroundPlacement.Bottom
         val frame = initial?.bounds
         val p = WindowManager.LayoutParams(frame?.width?.roundToInt() ?: 1, frame?.height?.roundToInt() ?: 1,
@@ -501,7 +583,7 @@ class DotOverlayController(
         panelView?.let { windows.removeViewImmediate(it) }
         panelComposition?.disposeComposition(); panelOwner?.destroy()
         panelView = null; panelComposition = null; panelOwner = null; panelParams = null; panelHostWindowId = null
-        geometryPending = false
+        geometryPending = false; panelRequestedHeight = 0; panelMenuDismiss = null
         onCollapse?.invoke()
     }
 
@@ -612,13 +694,14 @@ class DotOverlayController(
         val id = event.getPointerId(event.actionIndex)
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
+                dismissOrbMenu()
                 cancelSnap()
                 velocityTracker?.recycle()
                 velocityTracker = VelocityTracker.obtain()
                 trackVelocity(event)
                 downPoint = point; downPosition = params?.let { it.x to it.y }; blockedTouch = false
                 clearTrail(); pressed.value = true; dragging.value = false
-                dragStarted = false; downAtMs = event.eventTime
+                dragStarted = false
                 accept(GestureEvent.Down(point, event.eventTime, id))
             }
             MotionEvent.ACTION_POINTER_DOWN -> {
@@ -632,7 +715,7 @@ class DotOverlayController(
                     val start = downPoint
                     val position = downPosition
                     if (start != null && !dragStarted &&
-                        event.eventTime - downAtMs < ViewConfiguration.getLongPressTimeout() &&
+                        !reducer.longPressCommitted &&
                         kotlin.math.hypot(point.x - start.x, point.y - start.y) > config.scaledTouchSlop) {
                         dragStarted = true
                         dragging.value = true
@@ -723,6 +806,7 @@ class DotOverlayController(
     }
 
     private fun cancelGesture() {
+        dismissOrbMenu()
         cancelSnap()
         velocityTracker?.recycle(); velocityTracker = null
         releaseVelocityX = 0f

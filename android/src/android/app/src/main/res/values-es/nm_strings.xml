@@ -332,7 +332,7 @@
     <string name="nm_avatar_retry">Reintentar</string>
     <string name="nm_avatar_describe_title">Describe una cara nueva</string>
     <string name="nm_avatar_describe_body">Con una frase basta: qué es, qué lleva puesto, qué transmite. Elige un estilo y tu modelo de imagen dibuja cuatro para que elijas.</string>
-    <string name="nm_avatar_default_description">Un dragoncito regordete de color amarillo pálido con cuernitos naranjas y alas pequeñas plegadas</string>
+    <string name="nm_avatar_default_description">Una esfera de cristal transparente de color azul claro, con reflejos suaves y un brillo que respira lentamente</string>
     <string name="nm_avatar_style_flat">Plano</string>
     <string name="nm_avatar_style_clay">Arcilla 3D</string>
     <string name="nm_avatar_style_watercolor">Acuarela</string>
@@ -379,7 +379,7 @@
     <string name="nm_version_failed">No se pudo comprobar · toca para reintentar</string>
     <string name="nm_appearance_section_home">Inicio</string>
     <string name="nm_appearance_header_model_title">Mostrar el modelo bajo el nombre</string>
-    <string name="nm_appearance_header_model_footer">Muse muestra solo el nombre. Actívalo para ver debajo el grupo de modelos y proveedor · modelo; tócalos para cambiar. Desactivado, el modelo está en ••• → Modelo y en Ajustes.</string>
+    <string name="nm_appearance_header_model_footer">Dot muestra solo el nombre. Actívalo para ver debajo el grupo de modelos y proveedor · modelo; tócalos para cambiar. Desactivado, el modelo está en ••• → Modelo y en Ajustes.</string>
     <string name="nm_appearance_section_chat">Conversación</string>
     <string name="nm_appearance_steps_title">Mostrar los pasos del agente</string>
     <string name="nm_appearance_steps_footer">Desactivado, el chat conserva solo las respuestas y la línea bajo la cara dice qué está haciendo el agente ahora. Activado, cada paso se muestra en el chat: cada herramienta que usa, su razonamiento y una barra sobre el cuadro de mensaje que abre los detalles del paso.</string>
@@ -399,7 +399,7 @@
     <string name="nm_avatar_size_large">Grande</string>
     <string name="nm_avatar_size_extra_large">Muy grande</string>
     <string name="nm_avatar_size_hidden">Oculto</string>
-    <string name="nm_avatar_style_muse">Juguete 3D (Muse)</string>
+    <string name="nm_avatar_style_muse">Juguete 3D</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">en línea</string>
@@ -1080,9 +1080,9 @@
     <string name="nm_models_hands_title">Manejar la pantalla</string>
     <string name="nm_models_hands_sub">Mira la pantalla y actúa por ti. Necesita un modelo que vea imágenes.</string>
     <string name="nm_models_image_title">Crear imágenes</string>
-    <string name="nm_models_image_sub">Retratos de tu Musa y las imágenes que pidas.</string>
+    <string name="nm_models_image_sub">Retratos de Dot y las imágenes que pidas.</string>
     <string name="nm_models_video_title">Crear clips</string>
-    <string name="nm_models_video_sub">Clips cortos de tu Musa.</string>
+    <string name="nm_models_video_sub">Clips cortos de Dot.</string>
     <string name="nm_models_chat_applies">Se aplica al chat principal y a los chats nuevos; un chat secundario conserva su modelo.</string>
     <string name="nm_models_media_more">Más opciones de imágenes y clips</string>
     <string name="nm_models_media_more_sub">Escribe el nombre de un modelo, mira qué se detiene sin cada modelo o vuelve a comprobar qué modelos de vídeo puede usar una clave.</string>

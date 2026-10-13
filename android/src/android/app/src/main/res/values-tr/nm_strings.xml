@@ -332,7 +332,7 @@
     <string name="nm_avatar_retry">Yeniden dene</string>
     <string name="nm_avatar_describe_title">Yeni bir yüz tarif et</string>
     <string name="nm_avatar_describe_body">Tek cümle yeter: ne olduğu, ne giydiği, nasıl hissettirdiği. Bir tarz seç; görsel modelin seçmen için dört tane çizer.</string>
-    <string name="nm_avatar_default_description">Küçük turuncu boynuzları ve küçük katlı kanatları olan tombul, açık sarı bir bebek ejderha</string>
+    <string name="nm_avatar_default_description">Yumuşak yansımaları ve nefes alır gibi hafifçe değişen parıltısıyla, saydam açık mavi bir kristal küre</string>
     <string name="nm_avatar_style_flat">Düz</string>
     <string name="nm_avatar_style_clay">3D kil</string>
     <string name="nm_avatar_style_watercolor">Suluboya</string>
@@ -379,7 +379,7 @@
     <string name="nm_version_failed">Denetlenemedi, yeniden denemek için dokun</string>
     <string name="nm_appearance_section_home">Ana ekran</string>
     <string name="nm_appearance_header_model_title">Modeli adın altında göster</string>
-    <string name="nm_appearance_header_model_footer">Muse yalnızca adı gösterir. Model grubunu ve sağlayıcı · model bilgisini adın altında görmek için bunu aç; değiştirmek için üzerine dokun. Kapalıyken model ••• → Model altında ve Ayarlar’dadır.</string>
+    <string name="nm_appearance_header_model_footer">Dot yalnızca adı gösterir. Model grubunu ve sağlayıcı · model bilgisini adın altında görmek için bunu aç; değiştirmek için üzerine dokun. Kapalıyken model ••• → Model altında ve Ayarlar’dadır.</string>
     <string name="nm_appearance_section_chat">Konuşma</string>
     <string name="nm_appearance_steps_title">Ajanın adımlarını göster</string>
     <string name="nm_appearance_steps_footer">Kapalıyken sohbette yalnızca yanıtlar kalır ve yüzün altındaki satır ajanın şu anda ne yaptığını söyler. Açıkken her adım sohbette görünür: kullandığı her araç, akıl yürütmesi ve adımın ayrıntılarını açan, yazma alanının üstündeki bir çubuk.</string>
@@ -399,7 +399,7 @@
     <string name="nm_avatar_size_large">Büyük</string>
     <string name="nm_avatar_size_extra_large">Çok büyük</string>
     <string name="nm_avatar_size_hidden">Gizli</string>
-    <string name="nm_avatar_style_muse">3D oyuncak (Muse)</string>
+    <string name="nm_avatar_style_muse">3D oyuncak</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">çevrimiçi</string>
@@ -1080,9 +1080,9 @@
     <string name="nm_models_hands_title">Ekranı kullanma</string>
     <string name="nm_models_hands_sub">Ekrana bakar ve senin yerine işlem yapar. Görsel görebilen bir model gerekir.</string>
     <string name="nm_models_image_title">Görsel oluşturma</string>
-    <string name="nm_models_image_sub">Muse’unun portreleri ve istediğin görseller.</string>
+    <string name="nm_models_image_sub">Dot’un portreleri ve istediğin görseller.</string>
     <string name="nm_models_video_title">Klip oluşturma</string>
-    <string name="nm_models_video_sub">Muse’unun kısa klipleri.</string>
+    <string name="nm_models_video_sub">Dot’un kısa klipleri.</string>
     <string name="nm_models_chat_applies">Ana sohbet ve yeni sohbetler için geçerlidir; yan sohbet kendi modelini korur.</string>
     <string name="nm_models_media_more">Daha fazla görsel ve klip seçeneği</string>
     <string name="nm_models_media_more_sub">Bir model adı yaz, hangi model olmadan neyin durduğunu gör ya da bir anahtarın hangi video modellerini kullanabildiğini yeniden denetle.</string>

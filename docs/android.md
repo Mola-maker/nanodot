@@ -31,6 +31,11 @@ update*) and offers the download.
 
 ## App navigation
 
+Nanodot's default assistant is **Dot**, with blue crystal avatar moods derived from the same
+atlas as the floating orb. Personal avatars and the Hidden choice remain respected; internal
+nanoMuse identifiers and actual nanoMuse Cloud service names are retained. See
+[foreground interactions](android-interactions.md) for the current crystal and Care design.
+
 The Android home has four labeled destinations: **Chat**, **Tasks**, **Devices** and
 **Settings**. Tasks contains the existing Feed, Ideas, Goals and Library pages. Returning
 from another destination keeps the selected task page and conversation draft. An active reply
@@ -272,15 +277,15 @@ Single, double and triple tap stay in a foreground sidebar over the current app.
 and Care use the same bottom bubble presentation: your messages and goals on the right,
 actual replies, questions, instructions and confirmed steps on the left. The native window
 is bounded to the host and keyboard area; touches outside its rectangle reach the host.
-History and controls scroll within it, including with enlarged text.
-Care's instruction leader routes around the measured card and enters the current instruction
-bubble from its side, leaving chat controls and text clear. The route stays inside the observed
-host after keyboard clipping. If neither exterior side has room, the target outline and chat
-remain visible without a leader until valid layout geometry is available.
+History and controls scroll within it, including with enlarged text. The complete instruction
+is visible in bottom chat immediately. A separate, non-touchable instruction cue avoids the
+validated target and the whole measured chat card inside the observed, keyboard-clipped host.
+It reveals whole Unicode graphemes, holds briefly and disappears; when the complete text cannot
+fit safely, only bottom chat carries the instruction. The target outline has no connector.
 Short keyboard-clipped hosts use a compact collapse control beside the transcript, with a
 full 48dp scrolling control viewport; they use the available host height instead of leaving
 the chat at the ordinary proportional height cap. Enlarged text uses the same compact budget,
-with tighter gaps to retain at least 48dp of visible history after native pixel rounding.
+with tighter outer spacing to retain at least 48dp of visible history after native pixel rounding.
 Double tap keeps the existing capture-before-panel order and adds a blue display-perimeter scan owned by that
 capture request. Scanner, Dot and panel windows are hidden before pixels are captured,
 including windows still awaiting attachment. Cancellation, mode changes, lock, disable and
@@ -304,26 +309,31 @@ The Care transcript retains submitted goals and actual controller output. Only t
 recorded steps receive a confirmed-step label. The panel normally sits at the bottom; when
 it overlaps the valid target, it temporarily moves upward while keeping the transcript
 visible, and returns to the bottom after the step loses its active target. Its buttons
-copy the proposed text to the clipboard, repeat the instruction using the existing reader,
-pause, look again, change the goal, or end guidance. Copying only happens when you press
+copy the proposed text to the clipboard, replay the current visual instruction,
+pause, look again, change the goal, or end guidance. **Repeat** makes no model or speech-provider
+request and does not reobserve or advance the step. Copying only happens when you press
 **Copy text**; Care never types or pastes into the host. Uncertain steps show the pending
 instruction and **I completed this step**. That explicit confirmation samples again before
 recording user-confirmed evidence. It does not count a generic touch as completion.
 
 The card waits for its native window to attach before measuring Compose content. Closing
 or detaching the card cancels pending geometry callbacks; a reopened card uses its current
-host and keyboard bounds.
+host and keyboard bounds. Updates to an unchanged card size and position reuse the existing
+window placement, avoiding a repeated layout loop.
 
-A single blue path waits for the current instruction bubble's measured anchor, traces the validated current target's accessible rounded bounds, then
-draws a leader to its measured instruction bubble before revealing that bubble. It does
-not infer an irregular button contour or perform the requested touch. The drawing takes no touches or
-accessibility focus. Host content, keyboard or display changes clear it before fresh
-observation. Dot and Care windows are excluded from host events and hidden during capture.
-The short focus transition follows Android's animator duration setting; scale zero uses
-a static outline, leader and immediately visible bubble with no animation loop. Animation
-cannot confirm a step. Back hides a shown keyboard before pausing and closing the panel; reopening offers
-explicit resume with fresh observation. Single/double tap or entering the main chat pauses
-competing Care. Locking, hiding Dot or losing the service clears its windows and speech.
+A finite blue trace follows the validated target's accessible rounded bounds. It does not
+infer an irregular button contour or perform the requested touch. Its separate instruction cue
+uses native measured text and bidi layout; neither drawing takes touches or accessibility focus.
+Cue identity includes session, step and scene. Expiry never confirms a step; layout refresh does
+not restart it. Losing safe placement retires the cue until an explicit current-step Repeat.
+Host content, keyboard or display changes clear stale targets before fresh observation. Dot and
+Care windows are excluded from host events and hidden during capture. Android's reduced-motion
+setting shows a static outline and the complete cue text without typing or fading; the cue still
+has a finite hold, while the complete bottom message remains readable.
+Back dismisses transient orb/Care menus first, then hides a shown keyboard before pausing and
+closing the panel; reopening offers explicit resume with fresh observation. Single/double tap
+or entering the main chat pauses competing Care. Locking, hiding Dot or losing the service
+clears the windows and cancels their pending visual work.
 
 Real Hands runs, permitted remote shell/open/task calls, and accessibility action commands
 pause Care before acting. Overlapping operation owners keep it paused until every owner
@@ -626,12 +636,18 @@ Dot foreground admission belongs to the accessibility connection. Stop, account 
 
 The orb follows the pointer directly. Its decorative trail is delayed by 80 ms within the 240 ms sample lifetime. Release snaps toward the existing safe edge using the native Compose spring and measured release velocity; a new touch, geometry change, lock, disconnect or disabled motion cancels the snap. Press feedback scales the artwork to 0.96 over 100 ms without shrinking the 48 dp touch target.
 
-Dot keeps the same chat window, canonical draft, transcript state and binding when the keyboard, display or current Care target changes its placement. It stays at the bottom when clear, moves above a valid target when useful space fits, and offers a compact panel with Expand and Drag to adjust otherwise. These controls and the composer scroll within the bounded panel at large text sizes; Back hides the keyboard before closing. The status capsule describes current foreground owner evidence with a named Stop, never readiness inferred from animation. Chat Stop cancels its owned reply; Care Stop pauses its current guidance. The existing owned windows remain excluded from captures and leave the host outside their bounded rectangles touchable.
+Dot keeps the same chat window, canonical draft, transcript state and binding when the keyboard, display or current Care target changes its placement. Short conversations request less height; only the transcript scrolls when the host limits available space. One header chooses the current owner operation before the Care task status. Stop remains in that header, alongside Collapse and More. Chat uses one row for the editable draft, dictation and explicit Send; finishing dictation never sends automatically. Read reply, permission settings and secondary Care actions live in More, inside the existing bounded window over the transcript. Back first dismisses More, then hides the keyboard before closing.
 
-In compact or short keyboard layouts, the status/Stop capsule shares the scrolling controls viewport so a complete reply line remains visible. Scroll that viewport to reach status, placement controls and input.
+Care shows one current action: submit a goal, confirm an admitted user-completion claim, resume paused guidance, or look again. Copy stays beside its text and is also available in More. Confirm keeps the existing fresh-observation verification; an old proposal never becomes completion evidence. Placement controls are in More, and the visible header can be dragged. Expanding or adjusting continues protecting a known target whenever a non-overlapping placement exists. Compact windows increase their budget for large text; a physically insufficient host remains bounded and may require repositioning or collapse. Chat Stop cancels its owned reply; Care Stop pauses its current guidance. The existing owned windows remain excluded from captures and the host outside their bounded rectangles stays touchable.
 
 Screen analysis mounts its owned status and Stop before sampling begins. Android 14 and later capture the current application window, which excludes accessibility overlays without hiding the cancellation controls. On Android 8–13 this foreground flow reads a fresh host text snapshot so Stop stays visible and Dot is excluded; it does not attach display pixels. Existing explicit Care/selection pixel capture and screen-recording permission flows retain their capabilities. A previous screen-capture failure does not become a new Care error.
 
-Care's actual target-owning card also receives compact placement. If the valid current target leaves no useful free region, the fallback keeps a small bounded reply/control panel with Expand and a named click/drag adjustment entry. User adjustments persist while that target remains unchanged; moving or expanding retains the Care conversation, goal editor and instruction owner. Changing a target recomputes placement. A target covering the whole host can still overlap the card, so adjust the card to expose the part you need to touch.
+Care's actual target-owning card also receives compact placement. If the valid current target leaves no useful free region, the fallback keeps a small bounded reply/control panel with placement actions in More and a named draggable header. User adjustments persist while that target remains unchanged; moving or expanding retains the Care conversation, goal editor and instruction owner. Changing a target recomputes placement. A target covering the whole host can still overlap the card, so adjust the card to expose the part you need to touch.
 
-Foreground chat and Care use a light transparent blue glass surface with an edge highlight. Empty history regions keep the underlying application's words visible; message bubbles, captions and controls use local reading plates. Placement avoids the currently validated Care target, with a movable compact fallback. This does not infer every reading target or promise that a local text/control plate can never cover host text.
+Foreground chat and Care use a light transparent blue glass surface with an edge highlight. Message bubbles have a translucent cobalt-blue background with white text and text actions; this tint is confined to the bubbles. Empty history regions keep the underlying application's words visible, while captions and controls use local reading plates.
+
+Messages have more padding and separation, with line height set to 1.45 times the text size. Body and Care text follow the system text size. The panel reserves height for displayed conversation text, previews and recovery actions, including empty-state and missing-model messages. Longer content scrolls within the bounded panel. Placement avoids the currently validated Care target, with a movable compact fallback. This does not infer every reading target or promise that a local text/control plate can never cover host text.
+
+The default soft-blue drag trail reuses the crystal atlas for up to three sparse translucent afterimages, with a narrow blue-white glow. Samples keep the existing 80 ms delay and 240 ms lifetime; small loops do not pile crystals onto the same location. These are visual decorations, not screen-selection evidence. Freehand region selection and its content handoff remain a separate unfinished feature. The approved reference images are retained unchanged under `docs/superpowers/assets/2026-10-13-android-reference/`; their desktop workspace is a design reference, not a shipped Android screen. See [Android verification](android-verification.md) for native evidence and the adapted pstack workflow.
+
+[Foreground interaction design](android-interactions.md) describes long-press actions, the crystal default, no-leader instruction cues and scenario-specific evidence.

@@ -329,7 +329,7 @@
     <string name="nm_avatar_retry">다시 시도</string>
     <string name="nm_avatar_describe_title">새 얼굴 설명하기</string>
     <string name="nm_avatar_describe_body">한 문장이면 충분해요. 무엇인지, 무엇을 입었는지, 어떤 느낌인지. 스타일을 고르면 이미지 모델이 고를 수 있게 네 장을 그립니다.</string>
-    <string name="nm_avatar_default_description">작은 주황색 뿔과 접힌 작은 날개가 있는 통통한 연노랑 아기 용</string>
+    <string name="nm_avatar_default_description">은은한 하이라이트와 숨 쉬듯 부드러운 빛을 띤 연한 파란색 투명 수정 구슬</string>
     <string name="nm_avatar_style_flat">플랫</string>
     <string name="nm_avatar_style_clay">3D 클레이</string>
     <string name="nm_avatar_style_watercolor">수채화</string>
@@ -376,7 +376,7 @@
     <string name="nm_version_failed">확인하지 못했습니다. 탭해서 다시 시도</string>
     <string name="nm_appearance_section_home">홈</string>
     <string name="nm_appearance_header_model_title">이름 아래에 모델 표시</string>
-    <string name="nm_appearance_header_model_footer">Muse는 이름만 표시합니다. 켜면 그 아래에 모델 그룹과 제공자 · 모델이 보이고, 탭해서 바꿀 수 있습니다. 끄면 모델은 ••• → 모델과 설정에 있습니다.</string>
+    <string name="nm_appearance_header_model_footer">Dot는 이름만 표시합니다. 켜면 그 아래에 모델 그룹과 제공자 · 모델이 보이고, 탭해서 바꿀 수 있습니다. 끄면 모델은 ••• → 모델과 설정에 있습니다.</string>
     <string name="nm_appearance_section_chat">대화</string>
     <string name="nm_appearance_steps_title">에이전트의 단계 표시</string>
     <string name="nm_appearance_steps_footer">끄면 채팅에는 답장만 남고, 얼굴 아래 줄이 에이전트가 지금 하는 일을 알려 줍니다. 켜면 모든 단계가 채팅에 보입니다. 사용하는 각 도구, 추론, 그리고 단계 세부 정보를 여는 입력창 위의 막대.</string>
@@ -396,7 +396,7 @@
     <string name="nm_avatar_size_large">크게</string>
     <string name="nm_avatar_size_extra_large">아주 크게</string>
     <string name="nm_avatar_size_hidden">숨김</string>
-    <string name="nm_avatar_style_muse">3D 장난감(Muse)</string>
+    <string name="nm_avatar_style_muse">3D 장난감</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">온라인</string>
@@ -1076,9 +1076,9 @@
     <string name="nm_models_hands_title">화면 조작</string>
     <string name="nm_models_hands_sub">화면을 보고 나 대신 조작합니다. 이미지를 볼 수 있는 모델이 필요합니다.</string>
     <string name="nm_models_image_title">이미지 만들기</string>
-    <string name="nm_models_image_sub">뮤즈의 초상과 내가 요청한 이미지.</string>
+    <string name="nm_models_image_sub">Dot의 초상과 내가 요청한 이미지.</string>
     <string name="nm_models_video_title">영상 만들기</string>
-    <string name="nm_models_video_sub">뮤즈의 짧은 영상.</string>
+    <string name="nm_models_video_sub">Dot의 짧은 영상.</string>
     <string name="nm_models_chat_applies">메인 채팅과 새 채팅에 적용됩니다. 사이드 채팅은 각자의 모델을 유지합니다.</string>
     <string name="nm_models_media_more">이미지와 영상 옵션 더 보기</string>
     <string name="nm_models_media_more_sub">모델 이름을 직접 입력하거나, 각 모델이 없으면 무엇이 멈추는지 보거나, 키로 쓸 수 있는 영상 모델을 다시 확인합니다.</string>

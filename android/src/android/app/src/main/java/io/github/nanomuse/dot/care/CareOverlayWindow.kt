@@ -8,6 +8,7 @@ import android.os.Build
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
+import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
@@ -24,10 +25,9 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.openminis.app.R
 import com.openminis.app.accessibility.MinisAccessibilityService
-import com.openminis.app.speech.ReadAloudPlayer
 import com.openminis.app.ui.theme.MinisTheme
 import io.github.nanomuse.dot.overlay.DotOverlayOwner
-import io.github.nanomuse.dot.overlay.foregroundFrame
+import io.github.nanomuse.dot.overlay.isUsable
 import io.github.nanomuse.dot.screen.RectPx
 import io.github.nanomuse.dot.screen.SceneKey
 import kotlinx.coroutines.CoroutineScope
@@ -49,76 +49,78 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
     private var card: FrameLayout?=null
     private var composition: ComposeView?=null
     private var owner: DotOverlayOwner?=null
+    private var menuDismiss: (() -> Boolean)? = null
     private var params: WindowManager.LayoutParams?=null
     private var removeBack: (() -> Unit)?=null
     private var removeGeometry: (() -> Unit)?=null
-    private var player: ReadAloudPlayer?=null
+    private var requestedHeight=0
     private var maxHeight=0
-    private var instructionBounds: RectPx?=null
     private var instructionId: String?=null
     private val placement = mutableStateOf(ForegroundPlacement.Bottom)
     private var placementTarget: RectPx? = null
     private var expanded = false
     private var adjustment: Pair<Float, Float>? = null
-    private fun frame(host: RectPx, height: Float, density: Float, target: RectPx?): ForegroundFrame {
-        var fitted = foregroundFrame(host, height, density, if (expanded) null else target)
-        if (fitted.placement == ForegroundPlacement.Compact) {
-            // Keep the fallback small enough to expose more of the host and retain the existing
-            // 48dp reply/control budget. Expand is an explicit, reversible user choice.
-            fitted = foregroundFrame(host, minOf(height, 156f * density), density, target)
-            adjustment?.let { (x, y) ->
-                val b = fitted.bounds
-                val left = host.left + (host.width - b.width).coerceAtLeast(0f) * x.coerceIn(0f, 1f)
-                val top = host.top + (host.height - b.height).coerceAtLeast(0f) * y.coerceIn(0f, 1f)
-                fitted = fitted.copy(bounds = RectPx(left, top, left + b.width, top + b.height))
-            }
-        }
-        return fitted
+    private fun layoutViewport(): RectPx? {
+        val host = viewport()?.takeIf { it.isUsable() } ?: return null
+        if (Build.VERSION.SDK_INT < 30) return host
+        val metrics = windows.currentWindowMetrics
+        val insets = metrics.windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
+        val display = metrics.bounds
+        return careSafeViewport(host, RectPx((display.left+insets.left).toFloat(),(display.top+insets.top).toFloat(),
+            (display.right-insets.right).toFloat(),(display.bottom-insets.bottom).toFloat()))
     }
+    private fun frame(host: RectPx, height: Float, density: Float, target: RectPx?,
+        position: Pair<Float, Float>? = adjustment, width: Int? = null, pixels: Int? = null): ForegroundFrame =
+        careWindowFrame(host, height, density, target, expanded, position,
+            (156f + 48f * (service.resources.configuration.fontScale - 1f).coerceAtLeast(0f)) * density, width, pixels)
     private fun expandCard() { expanded = true; adjustment = null; refreshGeometry() }
     private fun adjustCard() {
-        val host = viewport() ?: return
+        val host = layoutViewport() ?: return
         val p = params ?: return
         moveCard(0f, if (p.y < host.top + host.height / 2f) host.height else -host.height)
     }
     private fun moveCard(dx: Float, dy: Float) {
         if (!dx.isFinite() || !dy.isFinite()) return
-        val host = viewport() ?: return
+        val host = layoutViewport() ?: return
         val view = card ?: return
         val p = params ?: return
         if (!view.isAttachedToWindow) return
-        p.x = (p.x + dx).roundToInt().coerceIn(host.left.roundToInt(), (host.right - p.width).roundToInt().coerceAtLeast(host.left.roundToInt()))
-        p.y = (p.y + dy).roundToInt().coerceIn(host.top.roundToInt(), (host.bottom - p.height).roundToInt().coerceAtLeast(host.top.roundToInt()))
+        if (!host.isUsable()) return
+        val proposedX = (p.x + dx - host.left) / (host.width - p.width).coerceAtLeast(1f)
+        val proposedY = (p.y + dy - host.top) / (host.height - p.height).coerceAtLeast(1f)
+        val fitted = frame(host, p.height.toFloat(), service.resources.displayMetrics.density, placementTarget,
+            proposedX to proposedY, p.width, p.height)
+        p.x = fitted.bounds.left.roundToInt(); p.y = fitted.bounds.top.roundToInt()
         adjustment = (if (host.width > p.width) (p.x - host.left) / (host.width - p.width) else 0f) to
             (if (host.height > p.height) (p.y - host.top) / (host.height - p.height) else 0f)
         windows.updateViewLayout(view, p)
-        updateLeader()
+        updateInstruction()
     }
-    private fun updateLeader() {
-        val view=card ?: return
-        val r=instructionBounds
-        val key=instructionId
-        val host=viewport()
-        if(r==null || key==null || key!=session.instructionKey() || host==null ||
-            !view.isAttachedToWindow || view.width<=0 || view.height<=0 || session.focusBounds(scene())==null) {
-            focus.setInstructionBubble(null); return
-        }
-        val location=IntArray(2); view.getLocationOnScreen(location)
-        val measuredCard=RectPx(location[0].toFloat(),location[1].toFloat(),
+    private fun updateInstruction() {
+        val view = card ?: return
+        val key = instructionId ?: return
+        val currentScene = scene()
+        val host = layoutViewport() ?: return
+        val proposal = session.controller.state.value.proposal ?: return
+        if (key != session.instructionKey() || !view.isAttachedToWindow || view.width <= 0 || view.height <= 0 ||
+            session.focusBounds(currentScene) == null) return
+        val location = IntArray(2); view.getLocationOnScreen(location)
+        val measuredCard = RectPx(location[0].toFloat(),location[1].toFloat(),
             (location[0]+view.width).toFloat(),(location[1]+view.height).toFloat())
-        focus.setInstructionBubble(RectPx(r.left+location[0],r.top+location[1],r.right+location[0],r.bottom+location[1]),
-            measuredCard,host,key)
+        focus.setInstruction(proposal.instruction, measuredCard, host, key, currentScene)
     }
     private val job=scope.launch {
         combine(session.controller.state,session.visible,session.editingGoal) { _,_,_ -> Unit }.collect { render() }
     }
     fun clearFocus() { focus.clear(); registry?.setForegroundTarget(null) }
     fun hide() { clearFocus(); removeCard(); registry?.setCareActive(false) }
-    fun stopSpeech() { player?.stop() }
+    fun stopSpeech() = Unit // Repeat is local visual playback; no speech provider is allocated.
     fun refreshGeometry() { if(session.visible.value) render() }
     @Suppress("DEPRECATION") // Direct Back support on API26–32 also needs keyboard-first behavior.
     private fun hideImeOrClose(view: View) {
         if (card !== view) return
+        if (registry?.dismissOrbMenu() == true) return
+        if (menuDismiss?.invoke() == true) return
         val observed = service.windows
         val keyboard = try { observed.any { it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_INPUT_METHOD } }
             finally { observed.forEach { it.recycle() } }
@@ -127,8 +129,8 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
     }
     private fun render() {
         session.observeConversation()
-        val host=viewport()
-        if(!session.visible.value || host==null || host.width<=0 || host.height<=0) {
+        val host=layoutViewport()
+        if(!session.visible.value || host==null || !host.isUsable()) {
             clearFocus(); removeCard(); registry?.setCareActive(false); return
         }
         registry?.setCareActive(true)
@@ -136,10 +138,10 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
         if (placementTarget != target) { placementTarget = target; expanded = false; adjustment = null }
         registry?.setForegroundTarget(target)
         val nextId=if(target==null) null else session.instructionKey()
-        if(nextId!=instructionId) { instructionId=nextId; instructionBounds=null; focus.setInstructionBubble(null) }
-        if(target==null) focus.clear() else focus.show(target, nextId.orEmpty())
+        instructionId = nextId
+        if(target==null) focus.clear() else focus.show(target, nextId.orEmpty(), scene())
         val density=service.resources.displayMetrics.density
-        val initial = frame(host, host.height*.55f, density, target)
+        val initial = frame(host, requestedHeight.takeIf { it > 0 }?.toFloat() ?: (220f * density), density, target)
         placement.value = initial.placement
         val room=initial.bounds
         val width=room.width.roundToInt()
@@ -152,12 +154,17 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
         view.measure(View.MeasureSpec.makeMeasureSpec(width,View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec(maxHeight,View.MeasureSpec.AT_MOST))
         params?.let { p ->
-            p.width=width; p.height=minOf(view.measuredHeight,maxHeight).coerceAtLeast(1)
-            val fitted=frame(host,p.height.toFloat(),density,target)
+            val nextHeight=minOf(view.measuredHeight,maxHeight).coerceAtLeast(1)
+            val fitted=frame(host,nextHeight.toFloat(),density,target, width=width, pixels=nextHeight)
             placement.value = fitted.placement
-            p.x=fitted.bounds.left.roundToInt(); p.y=fitted.bounds.top.roundToInt()
-            windows.updateViewLayout(view,p)
-            updateLeader()
+            val nextX=fitted.bounds.left.roundToInt(); val nextY=fitted.bounds.top.roundToInt()
+            // Layout callbacks also refresh content/instruction geometry. Reapplying the
+            // same native frame would request another layout and feed that callback forever.
+            if (p.width != width || p.height != nextHeight || p.x != nextX || p.y != nextY) {
+                p.width=width; p.height=nextHeight; p.x=nextX; p.y=nextY
+                windows.updateViewLayout(view,p)
+            }
+            updateInstruction()
         }
     }
     @Suppress("DEPRECATION")
@@ -184,18 +191,17 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent { MinisTheme { io.github.nanomuse.dot.ui.DotMotionHost {
                 val evidence by (this@CareOverlayWindow.foreground ?: registry?.foregroundState ?: kotlinx.coroutines.flow.MutableStateFlow(io.github.nanomuse.dot.DotForegroundState())).collectAsState()
-                CarePanel(session,::copy, placementCompact = placement.value == ForegroundPlacement.Compact,
-                    onExpand = ::expandCard, onAdjust = ::adjustCard, onDrag = ::moveCard, capsule = {
+                CarePanel(session,::copy, onMenuDismissHandler = { menuDismiss = it }, placementCompact = placement.value == ForegroundPlacement.Compact,
+                    onExpand = ::expandCard, onAdjust = ::adjustCard, onDrag = ::moveCard, capsule = { careStatus ->
                     io.github.nanomuse.dot.ui.DotForegroundStatus(evidence, {
                         onStop?.invoke() ?: session.pause(hide = true)
-                    })
-                },onRepeat={ instruction ->
-                val speaker=player ?: ReadAloudPlayer(service).also { player=it }
-                speaker.speak(instruction)
-            },onInstructionBounds={ id,bounds ->
-                if(card===view && id==instructionId) {
-                    instructionBounds=bounds
-                    if(bounds==null) focus.setInstructionBubble(null) else updateLeader()
+                    }, fallbackDescription = careStatus)
+                },onRepeat={
+                if (session.focusBounds(scene()) != null) focus.replayInstruction(session.instructionKey(), scene())
+            }, onContentHeightChanged = { height ->
+                if (height > 0 && requestedHeight != height) {
+                    requestedHeight = height
+                    view.post { if (card === view) refreshGeometry() }
                 }
             }) } } }
         }
@@ -205,6 +211,12 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
             PixelFormat.TRANSLUCENT).apply {
             gravity=Gravity.TOP or Gravity.LEFT; title="Nanodot Care card"
             softInputMode=WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+            if (Build.VERSION.SDK_INT >= 30) {
+                // layoutViewport already clips bars/cutouts/IME in screen coordinates.
+                // Native fitting must not translate or clamp the same rectangle again.
+                setFitInsetsTypes(0)
+                layoutInDisplayCutoutMode=WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+            }
         }
         card=view; composition=content; owner=lifecycle; params=p
         val refresh=Runnable { if(card===view && view.isAttachedToWindow) refreshGeometry() }
@@ -248,12 +260,12 @@ class CareOverlayWindow(private val service: AccessibilityService, scope: Corout
         card?.let { registry?.unregisterCareWindow(it); windows.removeViewImmediate(it) }
         composition?.disposeComposition(); owner?.destroy()
         card=null; composition=null; owner=null; params=null
-        instructionBounds=null; instructionId=null
+        instructionId=null; requestedHeight=0
         placementTarget = null; expanded = false; adjustment = null; placement.value = ForegroundPlacement.Bottom
         stopSpeech()
     }
     fun close() {
-        job.cancel(); clearFocus(); removeCard(); player?.shutdown(); player=null
+        job.cancel(); clearFocus(); removeCard()
         registry?.setCareActive(false)
     }
 }

@@ -4,6 +4,20 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Gave Android foreground chat and Care message bubbles translucent cobalt-blue backgrounds with white text and actions, more padding and separation, and 1.45-times line height; reserved panel space for visible text, previews and recovery actions within the existing height bounds.
+- Stopped unchanged Care card geometry from repeatedly requesting native window layout.
+
+- Added a long-press crystal action menu for Chat, Screen, Care and existing dictation, with bounded placement and shared cancellation ownership.
+- Replaced Care leaders with a target contour and finite, grapheme-aware foreground text cues while keeping the complete instruction in bottom chat.
+- Unified Android default avatar moods and multilingual identity/examples around the blue crystal, preserving personal avatars and actual upstream service attribution.
+- Reused reviewed upstream fixes for Anthropic API-key request construction and ANSI/carriage-return text sanitation, with corrected provider fixtures.
+
+- Simplified foreground chat and Care into one status header, bottom bubble conversation and in-panel secondary controls while retaining draft, history, Stop and target-aware placement.
+- Added sparse translucent crystal afterimages to the soft-blue drag trail using the existing atlas and motion lifetime; preserved the approved visual references with checksums.
+- Added a project-local Android verification skill adapted from pinned pstack sources, candidate-linked evidence checks and explicit current-screen verification guidance for Care.
+
+- Unified Android toolchain checks, scoped/full unit checks and paired emulator APK builds through one entry point; recorded source fingerprints, actual package metadata, signatures and hashes in unique candidate receipts while preserving CI artifact paths.
+
 - Kept screen-analysis Stop visible during sampling with overlay-free Android 14+ window captures and fresh foreground text snapshots on older Android versions; isolated prior capture errors from new Care status.
 - Connected compact placement, bounded click/drag adjustment and Expand to the actual Care card while preserving its conversation and unsent goal editor.
 - Added a light transparent blue glass base to foreground chat and Care, with edge highlights and local reading plates; retained current-target avoidance and movable compact controls.
@@ -15,17 +29,15 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 - Unified Dot breathing, press, trail and edge-snap motion durations across generated platform tokens; Android uses measured release velocity and interruptible native springs, with immediate reduced-motion cleanup.
 - Scoped Android Dot foreground admission to the accessibility connection, rejected late capture/status results after Stop or account replacement, and recreated transient Care owners on reconnect while preserving canonical history.
 
-- Routed Android Care instruction leaders outside the measured chat card and into the current bubble's side, preserving chat and target outlines when no safe side route fit; native visual acceptance remained pending.
-
 - Added opt-in Android diagnostic voice observation bound to the actual Dot session and resource generations, with bounded request-owned synthesis PCM and separate platform/application recognition provenance; ordinary debug and every release retained stateless producers, while actual audio acceptance remained pending.
 
 - Fixed the Android capture scanner's effective motion detection, visible drawing lifetime and full-display perimeter around system bars.
 
 - Preserved at least 48dp of foreground chat history in short keyboard hosts at 200% text size after native pixel rounding.
 
-- Fixed fresh Care instruction reveal state, compact foreground chat height with short keyboard hosts and enlarged text, and keyboard-first Care Back handling across direct supported paths.
+- Kept the complete current Care instruction available in chat, fixed compact foreground chat height with short keyboard hosts and enlarged text, and preserved keyboard-first Care Back handling across direct supported paths.
 
-- Kept Dot conversations and Care goals, instructions and confirmed steps in bounded foreground bubble panels; added a capture-owned blue screen-edge scan and touch-through target tracing with instruction leaders, while moving visible Care chat upward around targets and retaining keyboard, voice and cancellation ownership.
+- Kept Dot conversations and Care goals, instructions and confirmed steps in bounded foreground bubble panels; added a capture-owned blue screen-edge scan and touch-through target tracing, while moving visible Care chat upward around targets and retaining keyboard, voice and cancellation ownership.
 
 - Preserved desktop navigation and saved profile accents while integrating the shared blue palette; branding regenerated token defaults without corrupting the TypeScript stylesheet.
 

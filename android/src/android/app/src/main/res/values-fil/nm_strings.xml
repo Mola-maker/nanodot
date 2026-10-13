@@ -332,7 +332,7 @@
     <string name="nm_avatar_retry">Subukan ulit</string>
     <string name="nm_avatar_describe_title">Ilarawan ang bagong mukha</string>
     <string name="nm_avatar_describe_body">Sapat na ang isang pangungusap: kung ano ito, ano ang suot nito, ano ang dating nito. Pumili ng istilo, at gumuguhit ang image model mo ng apat na mapagpipilian.</string>
-    <string name="nm_avatar_default_description">Isang mataba at maputlang-dilaw na baby dragon na may maliliit na kahel na sungay at maliliit na nakatuping pakpak</string>
+    <string name="nm_avatar_default_description">Isang malinaw na bolang kristal na mapusyaw na asul, may banayad na kislap at liwanag na tila humihinga</string>
     <string name="nm_avatar_style_flat">Flat</string>
     <string name="nm_avatar_style_clay">3D clay</string>
     <string name="nm_avatar_style_watercolor">Watercolor</string>
@@ -379,7 +379,7 @@
     <string name="nm_version_failed">Hindi masuri, i-tap para subukan ulit</string>
     <string name="nm_appearance_section_home">Home</string>
     <string name="nm_appearance_header_model_title">Ipakita ang modelo sa ilalim ng pangalan</string>
-    <string name="nm_appearance_header_model_footer">Pangalan lang ang ipinapakita ng Muse. I-on ito para makita ang grupo ng modelo at provider · modelo sa ilalim nito; i-tap ang mga ito para lumipat. Kapag naka-off, nasa ••• → Modelo at sa Mga setting ang modelo.</string>
+    <string name="nm_appearance_header_model_footer">Pangalan lang ang ipinapakita ng Dot. I-on ito para makita ang grupo ng modelo at provider · modelo sa ilalim nito; i-tap ang mga ito para lumipat. Kapag naka-off, nasa ••• → Modelo at sa Mga setting ang modelo.</string>
     <string name="nm_appearance_section_chat">Usapan</string>
     <string name="nm_appearance_steps_title">Ipakita ang mga hakbang ng agent</string>
     <string name="nm_appearance_steps_footer">Kapag naka-off, mga sagot lang ang pinapanatili ng chat, at sinasabi ng linya sa ilalim ng mukha kung ano ang ginagawa ng agent ngayon. Kapag naka-on, lumalabas sa chat ang bawat hakbang: bawat tool na ginagamit nito, ang pangangatwiran nito, at isang bar sa ibabaw ng composer na nagbubukas ng mga detalye ng hakbang.</string>
@@ -399,7 +399,7 @@
     <string name="nm_avatar_size_large">Malaki</string>
     <string name="nm_avatar_size_extra_large">Napakalaki</string>
     <string name="nm_avatar_size_hidden">Nakatago</string>
-    <string name="nm_avatar_style_muse">3D na laruan (Muse)</string>
+    <string name="nm_avatar_style_muse">3D na laruan</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">online</string>
@@ -1080,9 +1080,9 @@
     <string name="nm_models_hands_title">Paggamit ng screen</string>
     <string name="nm_models_hands_sub">Tumitingin sa screen at kumikilos para sa iyo. Kailangan ng modelong nakakakita ng larawan.</string>
     <string name="nm_models_image_title">Paggawa ng larawan</string>
-    <string name="nm_models_image_sub">Mga larawan ng iyong Muse at ang mga larawang hinihingi mo.</string>
+    <string name="nm_models_image_sub">Mga larawan ni Dot at ang mga larawang hinihingi mo.</string>
     <string name="nm_models_video_title">Paggawa ng clip</string>
-    <string name="nm_models_video_sub">Maiikling clip ng iyong Muse.</string>
+    <string name="nm_models_video_sub">Maiikling clip ni Dot.</string>
     <string name="nm_models_chat_applies">Para sa pangunahing chat at sa mga bagong chat; pinapanatili ng side chat ang sarili nitong model.</string>
     <string name="nm_models_media_more">Higit pang opsyon sa larawan at clip</string>
     <string name="nm_models_media_more_sub">Mag-type ng pangalan ng modelo, tingnan kung ano ang hihinto kung wala ang bawat modelo, o suriin muli kung aling mga video model ang magagamit ng isang key.</string>

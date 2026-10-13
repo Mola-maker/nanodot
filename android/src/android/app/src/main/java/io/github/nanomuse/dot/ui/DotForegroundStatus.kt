@@ -18,8 +18,10 @@ import io.github.nanomuse.dot.DotForegroundState
 
 /** Presentation of current owner evidence; no animation or color implies completion/readiness. */
 @Composable
-fun DotForegroundStatus(state: DotForegroundState, onStop: () -> Unit, modifier: Modifier = Modifier) {
-    val description = stringResource(foregroundStatusResource(state))
+fun DotForegroundStatus(state: DotForegroundState, onStop: () -> Unit, modifier: Modifier = Modifier,
+    fallbackDescription: String? = null) {
+    val description = if (foregroundUsesFallback(state) && fallbackDescription != null) fallbackDescription
+        else stringResource(foregroundStatusResource(state))
     Row(modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget).testTag("dot_foreground_status"),
         verticalAlignment = Alignment.CenterVertically) {
         Text(description, modifier = Modifier.weight(1f).semantics {
@@ -45,3 +47,7 @@ internal fun foregroundStatusResource(state: DotForegroundState): Int = when {
 
 internal fun canStopForeground(state: DotForegroundState): Boolean =
     state.connected && state.mode != DotForegroundMode.Idle
+
+/** Task status is used only when no higher-priority owner operation is present. */
+internal fun foregroundUsesFallback(state: DotForegroundState): Boolean =
+    state.connected && state.operation in setOf(DotForegroundOperation.Idle, DotForegroundOperation.CareWaiting)

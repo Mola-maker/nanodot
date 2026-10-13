@@ -335,7 +335,7 @@
     <string name="nm_avatar_retry">Reîncearcă</string>
     <string name="nm_avatar_describe_title">Descrie o față nouă</string>
     <string name="nm_avatar_describe_body">O propoziție e de ajuns: ce este, ce poartă, ce stare transmite. Alege un stil, iar modelul tău de imagine desenează patru variante din care să alegi.</string>
-    <string name="nm_avatar_default_description">Un pui de dragon dolofan, galben-pal, cu coarne mici portocalii și aripi mici strânse</string>
+    <string name="nm_avatar_default_description">O sferă de cristal transparentă, albastru-deschis, cu reflexii delicate și o lumină care pulsează ca o respirație liniștită</string>
     <string name="nm_avatar_style_flat">Plat</string>
     <string name="nm_avatar_style_clay">Lut 3D</string>
     <string name="nm_avatar_style_watercolor">Acuarelă</string>
@@ -382,7 +382,7 @@
     <string name="nm_version_failed">Nu s-a putut verifica, atinge pentru a reîncerca</string>
     <string name="nm_appearance_section_home">Acasă</string>
     <string name="nm_appearance_header_model_title">Arată modelul sub nume</string>
-    <string name="nm_appearance_header_model_footer">Muse arată doar numele. Pornește asta ca să vezi grupul de modele și furnizor · model dedesubt; atinge-le pentru a comuta. Oprit, modelul e sub ••• → Model și în Setări.</string>
+    <string name="nm_appearance_header_model_footer">Dot arată doar numele. Pornește asta ca să vezi grupul de modele și furnizor · model dedesubt; atinge-le pentru a comuta. Oprit, modelul e sub ••• → Model și în Setări.</string>
     <string name="nm_appearance_section_chat">Conversație</string>
     <string name="nm_appearance_steps_title">Arată pașii agentului</string>
     <string name="nm_appearance_steps_footer">Oprit, chatul păstrează doar răspunsurile, iar rândul de sub față spune ce face agentul chiar acum. Pornit, fiecare pas apare în chat: fiecare unealtă folosită, raționamentul lui și o bară deasupra câmpului de scris care deschide detaliile pasului.</string>
@@ -402,7 +402,7 @@
     <string name="nm_avatar_size_large">Mare</string>
     <string name="nm_avatar_size_extra_large">Foarte mare</string>
     <string name="nm_avatar_size_hidden">Ascuns</string>
-    <string name="nm_avatar_style_muse">Jucărie 3D (Muse)</string>
+    <string name="nm_avatar_style_muse">Jucărie 3D</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">online</string>
@@ -1084,9 +1084,9 @@
     <string name="nm_models_hands_title">Operarea ecranului</string>
     <string name="nm_models_hands_sub">Se uită la ecran și acționează în locul tău. Are nevoie de un model care vede imagini.</string>
     <string name="nm_models_image_title">Crearea de imagini</string>
-    <string name="nm_models_image_sub">Portrete ale Muzei tale și imaginile pe care le ceri.</string>
+    <string name="nm_models_image_sub">Portrete ale lui Dot și imaginile pe care le ceri.</string>
     <string name="nm_models_video_title">Crearea de clipuri</string>
-    <string name="nm_models_video_sub">Clipuri scurte cu Muza ta.</string>
+    <string name="nm_models_video_sub">Clipuri scurte cu Dot.</string>
     <string name="nm_models_chat_applies">Se aplică la chatul principal și la chaturile noi; un chat secundar își păstrează modelul.</string>
     <string name="nm_models_media_more">Mai multe opțiuni pentru imagini și clipuri</string>
     <string name="nm_models_media_more_sub">Scrie numele unui model, vezi ce se oprește fără fiecare model sau verifică din nou ce modele video poate folosi o cheie.</string>

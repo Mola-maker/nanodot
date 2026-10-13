@@ -4,16 +4,6 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class CareConversationTest {
-    @Test fun leaderAndBubbleWaitForContourAndReducedMotionHasNoTimingGate() {
-        val start=careCueProgress(0,true)
-        assertEquals(0f,start.outline,0f); assertEquals(0f,start.leader,0f); assertEquals(0f,start.bubble,0f)
-        val edge=careCueProgress(600,true)
-        assertEquals(1f,edge.outline,0f); assertEquals(0f,edge.leader,0f); assertEquals(0f,edge.bubble,0f)
-        val line=careCueProgress(800,true)
-        assertEquals(1f,line.outline,0f); assertEquals(1f,line.leader,0f); assertEquals(0f,line.bubble,0f)
-        assertEquals(CareCueProgress(1f,1f,1f),careCueProgress(980,true))
-        assertEquals(CareCueProgress(1f,1f,1f),careCueProgress(0,false))
-    }
     @Test fun onlyObservedTextEntersHistoryAndRepeatedRenderDoesNotDuplicateIt() {
         val history = CareConversation()
         history.userGoal("Find search")

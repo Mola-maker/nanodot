@@ -1,6 +1,8 @@
 """Run the real generator on isolated upstream and already-branded trees."""
 
 import tempfile
+import xml.etree.ElementTree as ET
+from dataclasses import replace
 import unittest
 from pathlib import Path
 
@@ -14,6 +16,165 @@ JAVA = MAIN / "java/com/openminis/app"
 
 
 class NanodotRebrandTest(unittest.TestCase):
+    def test_assistant_identity_copy_is_scoped_to_three_keys_in_all_locales(self):
+        # Literal upstream copy exercises Latin, translated and inflected identity names.
+        cases = {
+            "values": ("Portraits of your Muse.", "Portraits of Echo."),
+            "values-de": ("Porträts deiner Muse.", "Porträts von Echo."),
+            "values-es": ("Retratos de tu Musa.", "Retratos de Echo."),
+            "values-fil": ("Mga larawan ng iyong Muse.", "Mga larawan ni Echo."),
+            "values-fr": ("Des portraits de votre Muse.", "Des portraits de Echo."),
+            "values-in": ("Potret Muse-mu.", "Potret Echo."),
+            "values-ja": ("ミューズの肖像。", "Echoの肖像。"),
+            "values-ko": ("뮤즈의 초상.", "Echo의 초상."),
+            "values-ms": ("Potret Muse anda.", "Potret Echo."),
+            "values-pl": ("Portrety twojej Muzy.", "Portrety Echo."),
+            "values-pt-rBR": ("Retratos da sua Musa.", "Retratos de Echo."),
+            "values-ro": ("Portrete ale Muzei tale.", "Portrete ale lui Echo."),
+            "values-ru": ("Портреты вашей Музы.", "Портреты Echo."),
+            "values-th": ("ภาพบุคคลของมิวส์ของคุณ", "ภาพบุคคลของEcho"),
+            "values-tr": ("Muse’unun portreleri.", "Echo’un portreleri."),
+            "values-zh": ("形象的肖像。", "形象的肖像。"),
+            "values-zh-rTW": ("形象的肖像。", "形象的肖像。"),
+        }
+        video_variants = {
+            "values-ro": ("Clipuri scurte cu Muza ta.", "Clipuri scurte cu Echo."),
+            "values-ru": ("Короткие клипы с вашей Музой.", "Короткие клипы с Echo."),
+        }
+        locale_names = {
+            p.parent.name for p in (ROOT / MAIN / "res").glob("values*/nm_strings.xml")
+        }
+        self.assertEqual(locale_names, set(cases))
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for locale, (before, _) in cases.items():
+                path = root / MAIN / "res" / locale / "nm_strings.xml"
+                path.parent.mkdir(parents=True)
+                video_before = video_variants.get(locale, (before, ""))[0]
+                path.write_text(
+                    '<resources><string name="nm_appearance_header_model_footer">'
+                    'Muse shows only the name.</string>'
+                    f'<string name="nm_models_image_sub">{before}</string>'
+                    f'<string name="nm_models_video_sub">{video_before}</string>'
+                    '<string name="nm_avatar_style_muse">3D toy (Muse)</string>'
+                    '<string name="nm_about_trademark_detail">Muse is a trademark of Meta.</string>'
+                    '<string name="nm_custom_identity">My Muse is custom</string>'
+                    '<string name="nm_cloud">nanoMuse Cloud</string>'
+                    '<string name="nm_upstream">Based on nanoMuse and OpenMinis</string>'
+                    '<string name="nm_menu_parallel_addition">Parallel menu entry</string>'
+                    '</resources>', encoding="utf-8",
+                )
+            brand = replace(load_brand(ROOT / "config/brand.nanodot.json"), agentName="Echo")
+            rebrand.apply_brand(root, brand)
+            for locale, (_, expected) in cases.items():
+                values = {
+                    n.attrib["name"]: n.text
+                    for n in ET.parse(
+                        root / MAIN / "res" / locale / "nm_strings.xml"
+                    ).getroot().findall("string")
+                }
+                self.assertEqual(
+                    "Echo shows only the name.", values["nm_appearance_header_model_footer"]
+                )
+                self.assertEqual(expected, values["nm_models_image_sub"])
+                self.assertEqual(
+                    video_variants.get(locale, ("", expected))[1], values["nm_models_video_sub"]
+                )
+                self.assertNotIn("Muse", values["nm_avatar_style_muse"])
+                self.assertIn("3D", values["nm_avatar_style_muse"])
+                self.assertEqual(
+                    "Muse is a trademark of Meta.", values["nm_about_trademark_detail"]
+                )
+                self.assertEqual("My Muse is custom", values["nm_custom_identity"])
+                self.assertEqual("nanoMuse Cloud", values["nm_cloud"])
+                self.assertEqual("Based on nanoMuse and OpenMinis", values["nm_upstream"])
+                self.assertEqual("Parallel menu entry", values["nm_menu_parallel_addition"])
+            self.assertEqual([], rebrand.apply_brand(root, brand))
+
+    def test_avatar_studio_uses_crystal_example_without_renaming_style_ids(self):
+        expected = {
+            "values": (
+                "A transparent pale-blue crystal orb with soft highlights and a gentle breathing glow",
+                "3D toy",
+            ),
+            "values-zh": ("淡蓝色透明水晶球，柔和高光，带有轻柔的呼吸感", "3D 玩偶"),
+            "values-zh-rTW": ("淡藍色透明水晶球，柔和高光，帶有輕柔的呼吸感", "3D 玩偶"),
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for locale in expected:
+                path = root / MAIN / "res" / locale / "nm_strings.xml"
+                path.parent.mkdir(parents=True)
+                path.write_text(
+                    '<resources><string name="nm_avatar_default_description">'
+                    'A pale-yellow dragon with orange horns</string>'
+                    '<string name="nm_avatar_style_muse">3D toy (Muse)</string>'
+                    '<string name="nm_about_trademark_detail">Muse is a trademark of Meta.</string>'
+                    '<string name="nm_custom_avatar">My dragon and orange horns</string>'
+                    '<string name="nm_menu_parallel_addition">New menu text</string></resources>',
+                    encoding="utf-8",
+                )
+            style = root / MAIN / "java/io/github/nanomuse/avatar/AvatarStyle.kt"
+            style.parent.mkdir(parents=True)
+            style.write_text('val styleId = "muse"', encoding="utf-8")
+            brand = load_brand(ROOT / "config/brand.nanodot.json")
+            rebrand.apply_brand(root, brand)
+            for locale, (description, title) in expected.items():
+                values = {
+                    n.attrib["name"]: n.text for n in ET.parse(
+                        root / MAIN / "res" / locale / "nm_strings.xml"
+                    ).getroot().findall("string")
+                }
+                self.assertEqual(description, values["nm_avatar_default_description"])
+                self.assertEqual(title, values["nm_avatar_style_muse"])
+                self.assertEqual(
+                    "Muse is a trademark of Meta.", values["nm_about_trademark_detail"]
+                )
+                self.assertEqual("My dragon and orange horns", values["nm_custom_avatar"])
+                self.assertEqual("New menu text", values["nm_menu_parallel_addition"])
+            self.assertEqual('val styleId = "muse"', style.read_text(encoding="utf-8"))
+            self.assertEqual([], rebrand.apply_brand(root, brand))
+
+    def test_known_android_display_misses_keep_service_and_sandbox_names(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fixtures = {
+                "values-de/nm_strings.xml": (
+                    "nm_reach_unreachable_body",
+                    "Von %1$s kam keine Antwort; nanoMuses eigene Server sind nicht beteiligt.",
+                    "Von %1$s kam keine Antwort; Nanodots eigene Server sind nicht beteiligt.",
+                ),
+                "values-es/strings.xml": (
+                    "mcp_section_footer",
+                    "nanoMuse Agent: minis-mcp-cli /var/minis/mcp-servers/servers.json",
+                    "Nanodot Agent: minis-mcp-cli /var/minis/mcp-servers/servers.json",
+                ),
+                "values-ru/strings.xml": (
+                    "mcp_section_footer",
+                    "nanoMuse Agent: minis-mcp-cli /var/minis/mcp-servers/servers.json",
+                    "Nanodot Agent: minis-mcp-cli /var/minis/mcp-servers/servers.json",
+                ),
+            }
+            for relative, (key, before, _) in fixtures.items():
+                path = root / MAIN / "res" / relative
+                path.parent.mkdir(parents=True)
+                path.write_text(
+                    f'<resources><string name="{key}">{before}</string>'
+                    '<string name="nm_cloud">nanoMuse Cloud</string>'
+                    '<string name="nm_upstream">Based on nanoMuse and OpenMinis</string>'
+                    '<string name="nm_protocol">nanoMuse.Session</string></resources>',
+                    encoding="utf-8",
+                )
+            brand = load_brand(ROOT / "config/brand.nanodot.json")
+            rebrand.apply_brand(root, brand)
+            for relative, (_, _, expected) in fixtures.items():
+                after = (root / MAIN / "res" / relative).read_text(encoding="utf-8")
+                self.assertIn(expected, after)
+                self.assertIn("nanoMuse Cloud", after)
+                self.assertIn("Based on nanoMuse and OpenMinis", after)
+                self.assertIn("nanoMuse.Session", after)
+            self.assertEqual([], rebrand.apply_brand(root, brand))
+
     def test_service_notices_use_provider_terms_in_all_existing_locales(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

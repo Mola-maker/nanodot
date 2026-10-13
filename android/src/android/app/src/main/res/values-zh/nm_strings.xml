@@ -322,7 +322,7 @@
     <string name="nm_avatar_retry">重试</string>
     <string name="nm_avatar_describe_title">描述一个新形象</string>
     <string name="nm_avatar_describe_body">一句话就够：它是什么、穿什么、什么气质。选一种风格，你的图像模型会画四张让你挑。</string>
-    <string name="nm_avatar_default_description">一只圆滚滚的奶黄色小龙，橙色小角，折着小翅膀</string>
+    <string name="nm_avatar_default_description">淡蓝色透明水晶球，柔和高光，带有轻柔的呼吸感</string>
     <string name="nm_avatar_style_flat">扁平插画</string>
     <string name="nm_avatar_style_clay">3D 黏土</string>
     <string name="nm_avatar_style_watercolor">水彩</string>
@@ -369,7 +369,7 @@
     <string name="nm_version_failed">没查到，点一下再试</string>
     <string name="nm_appearance_section_home">首页</string>
     <string name="nm_appearance_header_model_title">在名字下方显示模型</string>
-    <string name="nm_appearance_header_model_footer">Muse 只显示名字。打开后名字下方会显示模型组和服务商 · 模型，点它可以切换。关闭时模型在 ••• → 模型和设置里。</string>
+    <string name="nm_appearance_header_model_footer">Dot 只显示名字。打开后名字下方会显示模型组和服务商 · 模型，点它可以切换。关闭时模型在 ••• → 模型和设置里。</string>
     <string name="nm_appearance_section_chat">对话</string>
     <string name="nm_appearance_steps_title">显示执行步骤</string>
     <string name="nm_appearance_steps_footer">关闭时，聊天里只保留回复，头像下面那一行说明它正在做什么。打开后每一步都会出现在聊天里：用到的每个工具、它的推理，以及输入框上方一条可以打开步骤详情的状态条。</string>
@@ -389,7 +389,7 @@
     <string name="nm_avatar_size_large">大</string>
     <string name="nm_avatar_size_extra_large">超大型</string>
     <string name="nm_avatar_size_hidden">已隐藏</string>
-    <string name="nm_avatar_style_muse">3D 玩偶（Muse）</string>
+    <string name="nm_avatar_style_muse">3D 玩偶</string>
     <!-- 智能体主页 -->
     <string name="nm_profile_online">online</string>
     <string name="nm_profile_edit">编辑</string>

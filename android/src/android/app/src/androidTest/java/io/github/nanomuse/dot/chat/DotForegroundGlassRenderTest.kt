@@ -52,18 +52,28 @@ class DotForegroundGlassRenderTest {
                                     measured["host"] = Rect(origin.x, origin.y, origin.x + it.size.width, origin.y + it.size.height)
                                 }) {
                                     Canvas(Modifier.fillMaxSize()) {
-                                        drawRect(Color.White)
+                                        drawRect(if (dark) Color.White else Color.Black)
+                                        drawRect(Color.White, Offset(0f, 232.dp.toPx()), Size(size.width, 16.dp.toPx()))
                                         var x = 0f
                                         while (x < size.width) {
                                             drawRect(Color.Black, Offset(x, 232.dp.toPx()), Size(24.dp.toPx(), 16.dp.toPx()))
                                             x += 48.dp.toPx()
                                         }
                                     }
-                                    Text("Host reading stays readable", color = Color.Black,
+                                    Text("Host reading stays readable", color = if (dark) Color.Black else Color.White,
                                         modifier = Modifier.padding(top = 128.dp, start = 12.dp))
                                     if (visible.value) {
                                     DotForegroundChat(
-                                        status = "Current instruction", onCollapse = {}, history = {
+                                        status = "Current instruction", onCollapse = {}, capsule = {
+                                            io.github.nanomuse.dot.ui.DotForegroundStatus(
+                                                io.github.nanomuse.dot.DotForegroundState(connected = true,
+                                                    mode = io.github.nanomuse.dot.DotForegroundMode.Chat,
+                                                    operation = io.github.nanomuse.dot.DotForegroundOperation.Replying), {},
+                                                Modifier.onGloballyPositioned {
+                                                    val origin = it.localToScreen(Offset.Zero)
+                                                    measured["header"] = Rect(origin.x, origin.y, origin.x + it.size.width, origin.y + it.size.height)
+                                                })
+                                        }, history = {
                                             DotMessageBubble(false) {
                                                 Text("Touch Search", modifier = Modifier.onGloballyPositioned {
                                                     val origin = it.localToScreen(Offset.Zero)
@@ -129,6 +139,15 @@ class DotForegroundGlassRenderTest {
                     save(rendered, "rendered")
                     try {
                         assertTrue("Fixture submitted the visible subtree to the actual compositor dark=$dark scale=$scale bounds=$measured", submitted(rendered))
+                        val header = requireNotNull(measured["header"])
+                        var lowest = 1.0; var highest = 0.0
+                        // Status text area only: exclude rim, Stop, Collapse and More.
+                        for (y in (header.top + 8*density).toInt() until (header.bottom - 8*density).toInt() step 2) {
+                            for (x in (header.left + 8*density).toInt() until minOf(header.right - 80*density, header.left + 100*density).toInt() step 2) {
+                                val value = luminance(rendered.getPixel(x, y)); lowest = minOf(lowest, value); highest = maxOf(highest, value)
+                            }
+                        }
+                        assertTrue("Status has actual inverse-host contrast dark=$dark scale=$scale", (highest + .05)/(lowest + .05) >= 4.5)
                         val glyph = requireNotNull(measured["glyph"])
                         val background = luminance(rendered.getPixel(glyph.left.toInt(), glyph.top.toInt()))
                         var readable = 0

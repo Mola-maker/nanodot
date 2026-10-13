@@ -5,6 +5,62 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class DotForegroundGeometryTest {
+    @Test fun compactLargeFontBudgetFitsControlsAndTextWithinActualHost() {
+        val host = RectPx(0f, 24f, 400f, 824f)
+        val compact = requestedForegroundFrame(host, 300f, 1f, host, false, compactHeight = 204f)
+        assertEquals(204f, compact.bounds.height, 0f)
+        assertTrue(compact.bounds.height >= 48f + 64f + 44f + 12f)
+        val imeHost = RectPx(0f, 24f, 400f, 184f)
+        val clipped = requestedForegroundFrame(imeHost, 300f, 1f, imeHost, false, compactHeight = 204f)
+        assertEquals(144f, clipped.bounds.height, 0f)
+        assertTrue(clipped.bounds.top >= imeHost.top && clipped.bounds.bottom <= imeHost.bottom)
+    }
+
+    @Test fun compactExpansionAddsRoomWithoutDiscardingKnownTarget() {
+        val host = RectPx(0f, 24f, 400f, 824f)
+        val compact = requestedForegroundFrame(host, 300f, 1f, host, false)
+        val expanded = requestedForegroundFrame(host, 300f, 1f, host, true)
+        assertEquals(156f, compact.bounds.height, 0f)
+        assertEquals(300f, expanded.bounds.height, 0f)
+        assertEquals(ForegroundPlacement.Compact, expanded.placement)
+        assertEquals(32f, expanded.bounds.top, 0f)
+    }
+
+    @Test fun expansionAndAdjustmentKeepAvoidableTargetExposed() {
+        val host = RectPx(0f, 24f, 400f, 824f)
+        val target = RectPx(0f, 650f, 400f, 780f)
+        for (expanded in listOf(false, true)) {
+            val fitted = requestedForegroundFrame(host, 420f, 1f, target, expanded, 0.5f to 1f)
+            assertEquals(ForegroundPlacement.AboveTarget, fitted.placement)
+            assertTrue(fitted.bounds.bottom < target.top)
+        }
+    }
+
+    @Test fun estimatedShortContentDoesNotReserveMaximumHostBudget() {
+        val host = RectPx(120f, 70f, 720f, 870f)
+        val short = foregroundFrame(host, 200f, 1f)
+        val long = foregroundFrame(host, 900f, 1f)
+        assertEquals(200f, short.bounds.height, 0f)
+        assertEquals(440f, long.bounds.height, 0f)
+    }
+
+    @Test fun adjustmentCannotCoverTargetWhenAutomaticPlacementAvoidsIt() {
+        val host = RectPx(0f, 24f, 400f, 824f)
+        val target = RectPx(0f, 650f, 400f, 780f)
+        val fitted = foregroundFrame(host, 240f, 1f, target)
+        assertEquals(fitted, adjustedForegroundFrame(host, fitted, target, 0.5f to 1f))
+        val moved = adjustedForegroundFrame(host, fitted, target, 0.5f to 0f)
+        assertTrue(moved.bounds.bottom <= target.top)
+    }
+
+    @Test fun containerTargetStillAllowsBoundedManualAdjustment() {
+        val host = RectPx(0f, 24f, 400f, 824f)
+        val fitted = foregroundFrame(host, 156f, 1f, host)
+        val moved = adjustedForegroundFrame(host, fitted, host, 0.5f to 1f)
+        assertEquals(host.bottom, moved.bounds.bottom, 0f)
+        assertEquals(ForegroundPlacement.Compact, moved.placement)
+    }
+
     @Test fun shortImeHostBudgetsVisibleTranscriptAndOneFullTouchControl() {
         val frame = foregroundFrame(RectPx(0f,0f,360f,160f),88f,1f)
         assertEquals("Short hosts use available height instead of the 55 percent cap",144f,frame.bounds.height,0f)

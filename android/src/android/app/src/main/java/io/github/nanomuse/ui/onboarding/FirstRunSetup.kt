@@ -252,14 +252,14 @@ fun FirstRunSetupScreen(
 // ── the pages ──────────────────────────────────────────────────────────────
 
 /**
- * The first page: the app's icon, one line on what it is, the notice, and two doors: the
+ * The first page: the default crystal avatar, one line on what it is, the notice, and two doors: the
  * account, or a key of one's own (the provider screen; the sign-in can come later).
  */
 @Composable
 private fun WelcomePage(onSignIn: () -> Unit, onOwnKey: () -> Unit) {
     val context = LocalContext.current
     Page(
-        hero = { io.github.nanomuse.ui.muse.NmBrandMark(size = 104.dp) }, // the face comes with the conversation, on the last page
+        hero = { AgentAvatarDisc(mood = AgentMood.IDLE, discSize = 104.dp) },
         title = stringResource(R.string.nm_setup_title),
         subtitle = stringResource(R.string.nm_welcome_tagline),
         primaryLabel = stringResource(R.string.nm_welcome_email),

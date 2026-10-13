@@ -32,7 +32,16 @@ class DotVoiceController(
     private var endForeground: (() -> Unit)? = null
     private var finish: Ui = Ui()
 
-    /** Called only by the microphone button; permission return cannot create a new request. */
+    /** Shared by the composer and explicit orb microphone action; never by permission return. */
+    fun primaryAction() {
+        when (ui.value.phase) {
+            Phase.RECORDING -> stop()
+            Phase.PERMISSION, Phase.STARTING, Phase.FINISHING -> cancel()
+            else -> { adapter.stopReply(); start() }
+        }
+    }
+
+    /** Called only by an explicit microphone action; permission return cannot create a request. */
     fun start() {
         if (request != null) return
         if (SpeechRecognitionManager.occupied()) { ui.value = Ui(Phase.BUSY); return }

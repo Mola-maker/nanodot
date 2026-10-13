@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/cursor/plugins",
+  "commit": "fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08",
+  "plugin_version": "0.15.21",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2026 Lauren Tan",
+  "adaptation": "Nanodot development and native verification guidance; upstream documents are linked, not installed. Cursor tools, model routing and publishing permissions are not imported. Android Care only borrows evidence-based single-step guidance.",
+  "sources": [
+    {
+      "path": "pstack/LICENSE",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/LICENSE",
+      "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e",
+      "bytes": 1067
+    },
+    {
+      "path": "pstack/skills/poteto-mode/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/poteto-mode/SKILL.md",
+      "sha256": "f6d1edf26119cb9251e3db499c79c689599fdf706c268b61051d05c8b953b43a",
+      "bytes": 19581
+    },
+    {
+      "path": "pstack/skills/create-verification-skill/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/create-verification-skill/SKILL.md",
+      "sha256": "d353973547bf8ad8977eca645f4cd4feaed0d32f4b43d1448f906b0a76c4d694",
+      "bytes": 6533
+    },
+    {
+      "path": "pstack/skills/maintain-verification-skill/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/maintain-verification-skill/SKILL.md",
+      "sha256": "515c0eaa054b3f6be1b1fb06f2c2f173c80fddb58bbcac57576f89c479bc68e8",
+      "bytes": 4922
+    },
+    {
+      "path": "pstack/skills/principle-prove-it-works/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/principle-prove-it-works/SKILL.md",
+      "sha256": "ec79a15025bac8d33d62011c54f3b612733fd2a024e623b531b3637aa75070e2",
+      "bytes": 1371
+    },
+    {
+      "path": "pstack/skills/principle-test-behavior-not-implementation/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/principle-test-behavior-not-implementation/SKILL.md",
+      "sha256": "b2b73ba42920f9c3174ecdf808ec6e4591b3a9266ada9a05814f386004266d3a",
+      "bytes": 1386
+    },
+    {
+      "path": "pstack/skills/principle-explain-the-number/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/principle-explain-the-number/SKILL.md",
+      "sha256": "cd5a25f9e7cf023627ccb470dc5faa97542f29b4319496a32b839a8e1e988047",
+      "bytes": 1663
+    },
+    {
+      "path": "pstack/skills/principle-fix-root-causes/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/principle-fix-root-causes/SKILL.md",
+      "sha256": "ba4cd38da1dcc8fe5432feb64457cba95594736a9b21b2ebf8f8c52aee068707",
+      "bytes": 1246
+    },
+    {
+      "path": "pstack/skills/principle-sequence-verifiable-units/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/principle-sequence-verifiable-units/SKILL.md",
+      "sha256": "2ccbbacc56ace5afdfb8670cef19d7bd009fb2a0033b9a741cbdf2b6baf72187",
+      "bytes": 1705
+    },
+    {
+      "path": "pstack/skills/principle-encode-lessons-in-structure/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/principle-encode-lessons-in-structure/SKILL.md",
+      "sha256": "228963799189f481827d6f28065f278bc2008ffa37030b1234cbd5814d36b9e9",
+      "bytes": 558
+    },
+    {
+      "path": "pstack/skills/poteto-mode/playbooks/bug-fix.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/poteto-mode/playbooks/bug-fix.md",
+      "sha256": "018bbc146ae19145caa6c7e70591fee081b64447dda1c1c4b681c9974d928b13",
+      "bytes": 2255
+    },
+    {
+      "path": "pstack/skills/poteto-mode/playbooks/visual-parity.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/poteto-mode/playbooks/visual-parity.md",
+      "sha256": "950ca51999a6454c98eee6bcbc3d1bbe501a4e3a5d5439b6f6ddc378991b256c",
+      "bytes": 1197
+    },
+    {
+      "path": "pstack/skills/poteto-mode/playbooks/runtime-forensics.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/poteto-mode/playbooks/runtime-forensics.md",
+      "sha256": "594f02c40c243a346e1f57b688ecf2ed5e882f21b3d24ed2204d1ac6f1c24a8a",
+      "bytes": 1210
+    },
+    {
+      "path": "pstack/skills/poteto-mode/playbooks/autonomous-run.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/poteto-mode/playbooks/autonomous-run.md",
+      "sha256": "15e54ad3ac92565613980772d8708de6e19cc4690bfd4bb3fb8836522407377b",
+      "bytes": 1878
+    },
+    {
+      "path": "pstack/skills/poteto-mode/playbooks/session-pickup.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/poteto-mode/playbooks/session-pickup.md",
+      "sha256": "1604fb463f7c7410d43fa024ca76c1c1824c166a01fd69d61f073d06fdca2a47",
+      "bytes": 1678
+    },
+    {
+      "path": "pstack/skills/poteto-mode/playbooks/eval.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/poteto-mode/playbooks/eval.md",
+      "sha256": "b862bfa2fae2399abf047a8e80d3e3dddb64003af96fb1cebb625216131e36bb",
+      "bytes": 2524
+    },
+    {
+      "path": "pstack/skills/tdd/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/tdd/SKILL.md",
+      "sha256": "eeb868e2dfebee528d730a67d7b17498fac4bb85dec2e38bc5c5176aca4d5d2f",
+      "bytes": 3143
+    },
+    {
+      "path": "pstack/skills/interrogate/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/interrogate/SKILL.md",
+      "sha256": "25341c393f515c1e1fa9bce668b7551e9f98c195113a460ff524d3c1f7f50cd9",
+      "bytes": 4317
+    },
+    {
+      "path": "pstack/skills/blast-radius/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/blast-radius/SKILL.md",
+      "sha256": "2e10745b97f5862323dcda3b29ca60d56b5c3c98e37020085d26b48efbe0a436",
+      "bytes": 3856
+    },
+    {
+      "path": "pstack/skills/principle-attack-the-premise/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/principle-attack-the-premise/SKILL.md",
+      "sha256": "c87bd7536f772f8a403ad8155535ee17a1bbec9a353156693eb3bb1520c87ae3",
+      "bytes": 1941
+    },
+    {
+      "path": "pstack/skills/principle-make-operations-idempotent/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/principle-make-operations-idempotent/SKILL.md",
+      "sha256": "540738217c3da7bf513b9886924ad6a2bc77e58be867f5bd2e1831c74bf2ce70",
+      "bytes": 1390
+    },
+    {
+      "path": "pstack/skills/principle-boundary-discipline/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/principle-boundary-discipline/SKILL.md",
+      "sha256": "62ac2862c2caa22dd14531f51c9c6bb445ceb198ca98a687e25b4d47c1f10a28",
+      "bytes": 1883
+    },
+    {
+      "path": "pstack/skills/principle-model-the-domain/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/principle-model-the-domain/SKILL.md",
+      "sha256": "52c0d85e0c3827c41c18299b642657d7b47eaf77b7b31609e42e0df42b84c75f",
+      "bytes": 1858
+    },
+    {
+      "path": "pstack/skills/principle-separate-before-serializing-shared-state/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/principle-separate-before-serializing-shared-state/SKILL.md",
+      "sha256": "05294b40448e927c5da1c7b6f5c6b9fed3744637e3833d2d948b9154a9dd00bb",
+      "bytes": 1565
+    },
+    {
+      "path": "pstack/skills/principle-guard-the-context-window/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/principle-guard-the-context-window/SKILL.md",
+      "sha256": "af0b9dd70b43628ce4a59a4d332e9d9ad055084e460f430e7a757495c627e81a",
+      "bytes": 519
+    },
+    {
+      "path": "pstack/skills/interrogate/references/reviewer-prompt.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/interrogate/references/reviewer-prompt.md",
+      "sha256": "f6005cc2b535006fca97a96c5bfda49df57312eedf1ffd8d1aaaf3eb33817c25",
+      "bytes": 2275
+    },
+    {
+      "path": "pstack/skills/interrogate/references/rubric.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/interrogate/references/rubric.md",
+      "sha256": "0f9c6bdb0b96e26dbde5f6407f417e0c02f54080e7a1268d8994f3c3ec6c5ac0",
+      "bytes": 4772
+    },
+    {
+      "path": "pstack/skills/interrogate/references/code-quality-review.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/interrogate/references/code-quality-review.md",
+      "sha256": "79162fda183eafd40d51661fbb5e151c7ba250f89e506ba17f5bd135dcbd50a8",
+      "bytes": 5217
+    },
+    {
+      "path": "pstack/skills/interrogate/references/lead-judgment.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/interrogate/references/lead-judgment.md",
+      "sha256": "6e5bdf5670eb34017692e9b6c546f36ac7552e6bb9f3f2f3429164fcc46a9361",
+      "bytes": 3465
+    },
+    {
+      "path": "pstack/skills/show-me-your-work/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/show-me-your-work/SKILL.md",
+      "sha256": "bcff5f7f9fd23f92c12b251f9cd6b947e9485e1055cfacb6fdd9cae0789d7550",
+      "bytes": 6418
+    },
+    {
+      "path": "pstack/skills/benchmark-checklist/SKILL.md",
+      "url": "https://raw.githubusercontent.com/cursor/plugins/fe53d9e9093dbb9ae298563b1a9d702dd6e2ca08/pstack/skills/benchmark-checklist/SKILL.md",
+      "sha256": "ba109e96c8f6c1c391baccf19e5d11e14370df7b3f2605e1572cd565a6c0fca0",
+      "bytes": 5002
+    }
+  ]
+}

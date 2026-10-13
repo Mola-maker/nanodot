@@ -326,7 +326,7 @@
     <string name="nm_avatar_retry">Retry</string>
     <string name="nm_avatar_describe_title">Describe a new face</string>
     <string name="nm_avatar_describe_body">One sentence is enough: what it is, what it wears, what it feels like. Pick a style, and your image model draws four to choose from.</string>
-    <string name="nm_avatar_default_description">A chubby pale-yellow baby dragon with tiny orange horns and small folded wings</string>
+    <string name="nm_avatar_default_description">A transparent pale-blue crystal orb with soft highlights and a gentle breathing glow</string>
     <string name="nm_avatar_style_flat">Flat</string>
     <string name="nm_avatar_style_clay">3D clay</string>
     <string name="nm_avatar_style_watercolor">Watercolour</string>
@@ -373,7 +373,7 @@
     <string name="nm_version_failed">Could not check, tap to try again</string>
     <string name="nm_appearance_section_home">Home</string>
     <string name="nm_appearance_header_model_title">Show the model under the name</string>
-    <string name="nm_appearance_header_model_footer">Muse shows only the name. Turn this on to see the model group and provider · model under it; tap them to switch. Off, the model is under ••• → Model and in Settings.</string>
+    <string name="nm_appearance_header_model_footer">Dot shows only the name. Turn this on to see the model group and provider · model under it; tap them to switch. Off, the model is under ••• → Model and in Settings.</string>
     <string name="nm_appearance_section_chat">Conversation</string>
     <string name="nm_appearance_steps_title">Show the agent\'s steps</string>
     <string name="nm_appearance_steps_footer">Off, the chat keeps only the replies, and the line under the face says what the agent is doing right now. On, every step shows in the chat: each tool it uses, its reasoning, and a bar over the composer that opens the step\'s details.</string>
@@ -393,7 +393,7 @@
     <string name="nm_avatar_size_large">Large</string>
     <string name="nm_avatar_size_extra_large">Extra large</string>
     <string name="nm_avatar_size_hidden">Hidden</string>
-    <string name="nm_avatar_style_muse">3D toy (Muse)</string>
+    <string name="nm_avatar_style_muse">3D toy</string>
     <!-- The agent's page -->
     <string name="nm_profile_online">online</string>
     <string name="nm_profile_edit">Edit</string>
@@ -1057,9 +1057,9 @@
     <string name="nm_models_hands_title">Operating the screen</string>
     <string name="nm_models_hands_sub">Looks at the screen and acts for you. Needs a model that can see images.</string>
     <string name="nm_models_image_title">Making pictures</string>
-    <string name="nm_models_image_sub">Portraits of your Muse and the pictures you ask for.</string>
+    <string name="nm_models_image_sub">Portraits of Dot and the pictures you ask for.</string>
     <string name="nm_models_video_title">Making clips</string>
-    <string name="nm_models_video_sub">Short clips of your Muse.</string>
+    <string name="nm_models_video_sub">Short clips of Dot.</string>
     <string name="nm_models_chat_applies">Applies to the main chat and to new chats; a side chat keeps its model.</string>
     <string name="nm_models_media_more">More picture and clip options</string>
     <string name="nm_models_media_more_sub">Type a model name, see what stops without each model, or check again which video models a key can use.</string>

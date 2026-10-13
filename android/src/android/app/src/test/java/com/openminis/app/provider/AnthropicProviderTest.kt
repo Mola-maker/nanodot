@@ -602,6 +602,12 @@ class AnthropicProviderTest {
         // mimicry beta set must NOT carry `redact-thinking-2026-02-12`; with it,
         // the server blanks thinking text (signature only) even though the model
         // reasons. Omitting it == showThinkingSummaries:true.
+        // nanoMuse: the OAuth path needs the Claude Code identifier, which the public build leaves
+        // empty; skip rather than fail where provider-customization.properties is absent (#333)
+        org.junit.Assume.assumeTrue(
+            "ANTHROPIC_OAUTH_IDENTIFIER_PROMPT is empty in this build",
+            com.openminis.app.BuildConfig.ANTHROPIC_OAUTH_IDENTIFIER_PROMPT.isNotEmpty(),
+        )
         val oauthProvider = AnthropicProvider(
             apiKey = "test-oauth-token",
             model = LLMModel.claudeSonnet5,

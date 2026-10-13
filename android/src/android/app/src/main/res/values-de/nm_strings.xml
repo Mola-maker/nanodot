@@ -332,7 +332,7 @@
     <string name="nm_avatar_retry">Erneut versuchen</string>
     <string name="nm_avatar_describe_title">Ein neues Gesicht beschreiben</string>
     <string name="nm_avatar_describe_body">Ein Satz genügt: was es ist, was es trägt, wie es sich anfühlt. Wähle einen Stil, und dein Bildmodell zeichnet vier zur Auswahl.</string>
-    <string name="nm_avatar_default_description">Ein pummeliger blassgelber Babydrache mit winzigen orangefarbenen Hörnern und kleinen gefalteten Flügeln</string>
+    <string name="nm_avatar_default_description">Eine transparente, hellblaue Kristallkugel mit sanften Lichtreflexen und ruhig pulsierendem Schimmer</string>
     <string name="nm_avatar_style_flat">Flach</string>
     <string name="nm_avatar_style_clay">3D-Knete</string>
     <string name="nm_avatar_style_watercolor">Aquarell</string>
@@ -379,7 +379,7 @@
     <string name="nm_version_failed">Prüfung fehlgeschlagen, tippen zum Wiederholen</string>
     <string name="nm_appearance_section_home">Start</string>
     <string name="nm_appearance_header_model_title">Modell unter dem Namen zeigen</string>
-    <string name="nm_appearance_header_model_footer">Muse zeigt nur den Namen. Schalte das ein, um darunter Modellgruppe und Anbieter · Modell zu sehen; tippe darauf, um zu wechseln. Aus: Das Modell steht unter ••• → Modell und in den Einstellungen.</string>
+    <string name="nm_appearance_header_model_footer">Dot zeigt nur den Namen. Schalte das ein, um darunter Modellgruppe und Anbieter · Modell zu sehen; tippe darauf, um zu wechseln. Aus: Das Modell steht unter ••• → Modell und in den Einstellungen.</string>
     <string name="nm_appearance_section_chat">Gespräch</string>
     <string name="nm_appearance_steps_title">Schritte des Agenten zeigen</string>
     <string name="nm_appearance_steps_footer">Aus: Der Chat behält nur die Antworten, und die Zeile unter dem Gesicht sagt, was der Agent gerade tut. An: Jeder Schritt erscheint im Chat: jedes Werkzeug, seine Überlegungen und eine Leiste über dem Eingabefeld, die die Details des Schritts öffnet.</string>
@@ -399,7 +399,7 @@
     <string name="nm_avatar_size_large">Groß</string>
     <string name="nm_avatar_size_extra_large">Sehr groß</string>
     <string name="nm_avatar_size_hidden">Ausgeblendet</string>
-    <string name="nm_avatar_style_muse">3D-Spielzeug (Muse)</string>
+    <string name="nm_avatar_style_muse">3D-Spielzeug</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">online</string>
@@ -1020,7 +1020,7 @@
     <string name="nm_devices_ask_hint">Tippe auf ein Gerät, das online ist, um es aus dem Chat anzuschreiben: Die Nachricht beginnt mit @ und seinem Namen, und dieses Gerät erledigt die Arbeit.</string>
     <string name="nm_reach_the_provider">der Anbieter</string>
     <string name="nm_reach_unreachable_title">%1$s ist aus diesem Netz nicht erreichbar</string>
-    <string name="nm_reach_unreachable_body">Von %1$s kam keine Antwort. Es geht um den Weg von diesem Telefon zum Anbieter; nanoMuses eigene Server sind nicht beteiligt.</string>
+    <string name="nm_reach_unreachable_body">Von %1$s kam keine Antwort. Es geht um den Weg von diesem Telefon zum Anbieter; Nanodots eigene Server sind nicht beteiligt.</string>
     <string name="nm_reach_region_title">OpenAI bedient diese Region nicht</string>
     <string name="nm_reach_region_body">Die Anfrage hat OpenAI erreicht; die Antwort war, dass der Dienst dort, woher diese Verbindung kommt, nicht angeboten wird.</string>
     <string name="nm_reach_signed_out_title">Die ChatGPT-Anmeldung gilt nicht mehr</string>
@@ -1080,9 +1080,9 @@
     <string name="nm_models_hands_title">Den Bildschirm bedienen</string>
     <string name="nm_models_hands_sub">Sieht sich den Bildschirm an und handelt für dich. Braucht ein Modell, das Bilder sehen kann.</string>
     <string name="nm_models_image_title">Bilder erzeugen</string>
-    <string name="nm_models_image_sub">Porträts deiner Muse und die Bilder, um die du bittest.</string>
+    <string name="nm_models_image_sub">Porträts von Dot und die Bilder, um die du bittest.</string>
     <string name="nm_models_video_title">Clips erzeugen</string>
-    <string name="nm_models_video_sub">Kurze Clips deiner Muse.</string>
+    <string name="nm_models_video_sub">Kurze Clips von Dot.</string>
     <string name="nm_models_chat_applies">Gilt für den Hauptchat und für neue Chats; ein Nebenchat behält sein Modell.</string>
     <string name="nm_models_media_more">Weitere Optionen für Bilder und Clips</string>
     <string name="nm_models_media_more_sub">Einen Modellnamen eingeben, sehen, was ohne welches Modell nicht geht, oder erneut prüfen, welche Videomodelle ein Schlüssel nutzen kann.</string>
