@@ -79,12 +79,33 @@ display clears pending gestures and removes the old window; unlock and rotation 
 it only if the switch is on. Drag the orb to move it to an edge; its position is saved
 relative to the usable display area, excluding system bars and display cutouts. On Android
 8–10, Dot waits for its native content frame before restoring its position. Screen-region
-selection is not available yet; drags currently move the orb. Other apps receive touches outside the orb.
+selection uses a closed drag from the orb; open paths still move it to an edge. Other apps receive touches outside the orb. On Android 10+, only the orb's measured 48dp touch area
+is excluded from system edge-Back gestures, so an inward drag does not dismiss the host page.
+
+To select a region, drag the orb around it and return near the starting point. The path must be at least
+160dp long, enclose at least 48×48dp of actual even-odd area, and close within the larger of 24dp or
+15% of its diagonal. The orb returns to its starting position and a blue, touch-through contour marks
+the selection. The bottom conversation shows a cropped preview and its capture time. **Select again**
+closes the preview so you can draw another path; Remove, Stop, collapse, locking or disconnecting
+clear the owned outline and temporary files. A host scene change during acquisition rejects that
+selection rather than applying its coordinates to the next page.
+
+The crop and accessible text come from the same captured snapshot. Pixels outside the actual polygon
+and password rectangles are masked, and text nodes must fit fully inside the selection. Aggregating
+parents with an excluded or password descendant are omitted. On Android 14+, host-window capture
+keeps Stop visible; older devices use fresh selected nodes. Nothing is uploaded until Send. A model
+with explicit image-input modalities receives the masked image and selected accessible text; other models
+receive only that text in the canonical user message, while the image remains a local preview. This is text
+understanding, not proof of vision. Canvas content without accessible text requires a vision-capable
+model; the current DeepSeek text-only test does not establish image understanding. Native gesture,
+encoded-crop and real-provider evidence are separate acceptance gates.
+
+On the API 35 emulator, the closed orb gesture, masked preview, selected accessible text, native keyboard entry, physical Send and genuine DeepSeek reply have passed a controlled-host run. Select again, rectangle selection and Stop passed separately. See the [bound evidence and limits](android-verification.md#region-physical-send-2026-10-13).
 
 TalkBack exposes Open conversation, View screen, and Start care actions. A single tap
 opens a foreground Compose conversation in a real accessibility overlay. A double tap
-captures the host before opening that panel and shows a removable preview with its capture
-time. The preview is a historical attachment to the named conversation, even after the
+opens that panel with Stop available, then captures the host window or fresh accessible nodes
+and shows a removable preview with its capture time. The preview is a historical attachment to the named conversation, even after the
 panel opens. It stays in private cache until you press Send; removing it, collapsing the
 panel, changing conversations or cancelling deletes owned temporary copies. Confirmed
 message media remains in conversation history. The overlay and the main app share the
@@ -92,10 +113,10 @@ same ChatViewModel and draft-to-persisted session identity.
 
 Back first hides the keyboard, then collapses the panel to the orb. Send, Stop and Retry
 use the existing chat pipeline. An empty conversation and an unconfigured model have
-explicit states. Older devices show a clearly labelled fresh text-only preview unless
-separate screen-capture permission is active; pixel errors may also fall back to newly
-sampled accessible text. Voice controls are integrated as described below; native voice acceptance
-and screen-region selection remain pending.
+explicit states. Android 8–13 foreground Chat and Selection always use clearly labelled fresh
+accessible-node text, even when separate screen-projection permission exists. Android 14+ uses
+host-window pixels; pixel errors may fall back to newly sampled accessible text. Voice controls are integrated as described below; native voice acceptance
+remains pending; region gestures, encoded crops and real-provider understanding have separate acceptance gates.
 Showing the orb or opening conversation alone never captures, records audio or calls a
 model. Live gateway text/SSE and unique-host vision acceptance remain pending deployment.
 
@@ -640,7 +661,7 @@ Dot keeps the same chat window, canonical draft, transcript state and binding wh
 
 Care shows one current action: submit a goal, confirm an admitted user-completion claim, resume paused guidance, or look again. Copy stays beside its text and is also available in More. Confirm keeps the existing fresh-observation verification; an old proposal never becomes completion evidence. Placement controls are in More, and the visible header can be dragged. Expanding or adjusting continues protecting a known target whenever a non-overlapping placement exists. Compact windows increase their budget for large text; a physically insufficient host remains bounded and may require repositioning or collapse. Chat Stop cancels its owned reply; Care Stop pauses its current guidance. The existing owned windows remain excluded from captures and the host outside their bounded rectangles stays touchable.
 
-Screen analysis mounts its owned status and Stop before sampling begins. Android 14 and later capture the current application window, which excludes accessibility overlays without hiding the cancellation controls. On Android 8–13 this foreground flow reads a fresh host text snapshot so Stop stays visible and Dot is excluded; it does not attach display pixels. Existing explicit Care/selection pixel capture and screen-recording permission flows retain their capabilities. A previous screen-capture failure does not become a new Care error.
+Screen analysis mounts its owned status and Stop before sampling begins. Android 14 and later capture the current application window, which excludes accessibility overlays without hiding the cancellation controls. On Android 8–13 this foreground flow reads a fresh host text snapshot so Stop stays visible and Dot is excluded; it does not attach display pixels. Explicit Care pixel capture and screen-recording permission flows retain their capabilities; region selection uses the same visible-Stop window/text rule as foreground chat. A previous screen-capture failure does not become a new Care error.
 
 Care's actual target-owning card also receives compact placement. If the valid current target leaves no useful free region, the fallback keeps a small bounded reply/control panel with placement actions in More and a named draggable header. User adjustments persist while that target remains unchanged; moving or expanding retains the Care conversation, goal editor and instruction owner. Changing a target recomputes placement. A target covering the whole host can still overlap the card, so adjust the card to expose the part you need to touch.
 
@@ -648,6 +669,6 @@ Foreground chat and Care use a light transparent blue glass surface with an edge
 
 Messages have more padding and separation, with line height set to 1.45 times the text size. Body and Care text follow the system text size. The panel reserves height for displayed conversation text, previews and recovery actions, including empty-state and missing-model messages. Longer content scrolls within the bounded panel. Placement avoids the currently validated Care target, with a movable compact fallback. This does not infer every reading target or promise that a local text/control plate can never cover host text.
 
-The default soft-blue drag trail reuses the crystal atlas for up to three sparse translucent afterimages, with a narrow blue-white glow. Samples keep the existing 80 ms delay and 240 ms lifetime; small loops do not pile crystals onto the same location. These are visual decorations, not screen-selection evidence. Freehand region selection and its content handoff remain a separate unfinished feature. The approved reference images are retained unchanged under `docs/superpowers/assets/2026-10-13-android-reference/`; their desktop workspace is a design reference, not a shipped Android screen. See [Android verification](android-verification.md) for native evidence and the adapted pstack workflow.
+The default soft-blue drag trail reuses the crystal atlas for up to three sparse translucent afterimages, with a narrow blue-white glow. Samples keep the existing 80 ms delay and 240 ms lifetime; small loops do not pile crystals onto the same location. These afterimages remain visual decorations. Region selection separately classifies the original touch path and derives a masked crop and selected text; its correctness is verified independently from trail appearance. The approved reference images are retained unchanged under `docs/superpowers/assets/2026-10-13-android-reference/`; their desktop workspace is a design reference, not a shipped Android screen. See [Android verification](android-verification.md) for native evidence and the adapted pstack workflow.
 
 [Foreground interaction design](android-interactions.md) describes long-press actions, the crystal default, no-leader instruction cues and scenario-specific evidence.

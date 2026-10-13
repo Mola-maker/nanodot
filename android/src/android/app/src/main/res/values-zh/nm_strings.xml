@@ -1179,4 +1179,8 @@
     <string name="nm_dot_foreground_disconnected">Dot 已断开连接</string>
     <string name="nm_dot_foreground_expand">展开</string>
     <string name="nm_dot_foreground_adjust">拖动调整位置</string>
+    <string name="nm_dot_region_selected">已选择区域</string>
+    <string name="nm_dot_region_text_mode">此模型仅接收选区内可读取的文字，图片仅在此预览。</string>
+    <string name="nm_dot_region_reselect">重新圈选</string>
+    <string name="nm_dot_region_reselect_hint">拖动水晶球，围住所需区域。</string>
 </resources>

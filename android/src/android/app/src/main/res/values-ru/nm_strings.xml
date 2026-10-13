@@ -1214,4 +1214,8 @@
     <string name="nm_dot_foreground_disconnected">Dot отключён</string>
     <string name="nm_dot_foreground_expand">Развернуть</string>
     <string name="nm_dot_foreground_adjust">Перетащите для настройки</string>
+    <string name="nm_dot_region_selected">Выбранная область</string>
+    <string name="nm_dot_region_text_mode">Эта модель получает только доступный текст выбранной области. Изображение остаётся в этом предпросмотре.</string>
+    <string name="nm_dot_region_reselect">Выбрать заново</string>
+    <string name="nm_dot_region_reselect_hint">Обведите нужную область, перетаскивая хрустальный шар.</string>
 </resources>

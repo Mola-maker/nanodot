@@ -1206,4 +1206,8 @@
     <string name="nm_dot_foreground_disconnected">Hindi nakakonekta ang Dot</string>
     <string name="nm_dot_foreground_expand">Palawakin</string>
     <string name="nm_dot_foreground_adjust">I-drag para ayusin</string>
+    <string name="nm_dot_region_selected">Napiling bahagi</string>
+    <string name="nm_dot_region_text_mode">Natatanggap lang ng modelong ito ang naa-access na teksto sa napiling bahagi. Nananatili ang larawan sa preview na ito.</string>
+    <string name="nm_dot_region_reselect">Pumili muli</string>
+    <string name="nm_dot_region_reselect_hint">I-drag ang bolang kristal paikot sa bahaging nais mong piliin.</string>
 </resources>

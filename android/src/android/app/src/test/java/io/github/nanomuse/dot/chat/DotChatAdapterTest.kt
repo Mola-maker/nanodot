@@ -17,6 +17,9 @@ class DotChatAdapterTest {
         override val configured = MutableStateFlow<String?>("local fixture")
         override val deltas = MutableStateFlow<Map<String,StreamingDelta>>(emptyMap())
         var stages = 0; var sends = 0; var stops = 0
+        var sentText: String? = null
+        var images = false
+        override fun supportsImages() = images
         var durable: File? = null
         var hasComposerAttachment = true
         val consumed = MutableStateFlow<Map<String,String>>(emptyMap())
@@ -29,7 +32,7 @@ class DotChatAdapterTest {
             return DotOwnedAttachment("owned", copy)
         }
         override fun remove(id: String) { assertEquals("owned", id) }
-        override fun send(text: String) { sends++; isStreaming.value = true }
+        override fun send(text: String) { sentText = text; sends++; isStreaming.value = true }
         override fun cancel() { stops++; isStreaming.value = false }
         override fun retry() = Unit
     }
@@ -61,6 +64,58 @@ class DotChatAdapterTest {
     private fun shot(generation: Long, at: Long = 1234) = ScreenSnapshot("fixture", generation, at,
         SceneKey("fixture.host", 7, 0, 1), RectPx(0f,0f,48f,48f),0,RectPx(0f,0f,0f,0f),null,
         emptyList(),null,ScreenTransform(RectPx(0f,0f,48f,48f),48,48))
+    @Test fun textModelSendsSelectedNodesWhileKeepingTheLocalCropAsPreview() {
+        val session=Session()
+        val crop=File.createTempFile("region-crop", ".png").apply { writeText("cropped image fixture") }
+        val selected=File.createTempFile("region-nodes", ".txt").apply { writeText("inside marker") }
+        val adapter=DotChatAdapter({it},{session},{crop})
+        val binding=adapter.bind("A")
+        try {
+            assertTrue(adapter.attachRegion(binding,shot(binding.generation),selected))
+            assertSame(crop,adapter.preview.value!!.file)
+            assertEquals(0,session.sends)
+            assertTrue(adapter.send(binding,"Read the selection"))
+            assertTrue("Canonical user message must include selected text without a shell/tool read",
+                session.sentText!!.contains("inside marker"))
+            assertTrue(session.sentText!!.startsWith("Read the selection"))
+            assertEquals("Text model receives no document/image attachment",0,session.stages)
+            assertFalse(crop.exists()); assertFalse(selected.exists())
+            assertEquals(1,session.sends)
+        } finally { adapter.cancel(binding); crop.delete(); selected.delete() }
+    }
+    @Test fun pixelPreviewRechecksModelCapabilityAtSendAndIncludesSelectedText() {
+        // This adapter boundary owns staged files, not Android Bitmap creation; native crop tests
+        // establish pixels separately. A PNG preview with textOnly=false exercises capability routing.
+        for ((before, atSend) in listOf(false to false, true to true, true to false, false to true)) {
+            val session = Session().apply { images = before }
+            val adapter = DotChatAdapter({ it }, { session }, { error("Use the admitted preview") })
+            val binding = adapter.bind("pixel")
+            val crop = File.createTempFile("region-pixels", ".png").apply { writeText("masked pixel fixture") }
+            val selected = File.createTempFile("region-selected", ".txt").apply { writeText("INSIDE_NODE") }
+            try {
+                adapter.preview.value = DotPreview(crop, 1234, false, selected)
+                session.images = atSend
+                assertTrue(adapter.send(binding, "Describe"))
+                assertTrue("Canonical message must contain admitted text", session.sentText!!.contains("INSIDE_NODE"))
+                assertEquals("Send uses current explicit image capability", if (atSend) 1 else 0, session.stages)
+                if (atSend) assertEquals("masked pixel fixture", session.durable!!.readText())
+                assertFalse(crop.exists()); assertFalse(selected.exists())
+            } finally { adapter.cancel(binding); crop.delete(); selected.delete() }
+        }
+    }
+    @Test fun regionCancelDeletesBothLocalFilesAndCannotSendInTheNextSession() {
+        val crop=File.createTempFile("region-crop", ".png")
+        val selected=File.createTempFile("region-nodes", ".txt").apply { writeText("private selected fixture") }
+        val session=Session()
+        val adapter=DotChatAdapter({it},{session},{crop})
+        val a=adapter.bind("A")
+        try {
+            assertTrue(adapter.attachRegion(a,shot(a.generation),selected))
+            adapter.bind("B")
+            assertFalse(crop.exists()); assertFalse(selected.exists())
+            assertFalse(adapter.send(a,"late")); assertEquals(0,session.sends)
+        } finally { crop.delete(); selected.delete() }
+    }
     @Test fun switchingWithoutScreenshotCancelsOldOwnerButAliasRebindDoesNot() {
         val aliases = mutableMapOf<String,String>()
         val sessions = mutableMapOf<String,Session>()

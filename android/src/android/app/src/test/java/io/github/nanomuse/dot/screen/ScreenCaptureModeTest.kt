@@ -16,9 +16,16 @@ class ScreenCaptureModeTest {
         assertEquals(ScreenCaptureMode.Window, screenCaptureMode(34, CapturePurpose.Care, true))
         assertEquals(ScreenCaptureMode.Display, screenCaptureMode(33, CapturePurpose.Care, true))
         assertEquals(ScreenCaptureMode.Display, screenCaptureMode(26, CapturePurpose.Care, true))
-        assertEquals(ScreenCaptureMode.Display, screenCaptureMode(35, CapturePurpose.Selection, true))
         for (purpose in CapturePurpose.entries) {
             assertEquals(ScreenCaptureMode.Nodes, screenCaptureMode(35, purpose, false))
+        }
+    }
+    @Test fun selectionKeepsStopVisibleDuringAcquisition() {
+        for (sdk in listOf(34, 35)) {
+            assertEquals(ScreenCaptureMode.Window, screenCaptureMode(sdk, CapturePurpose.Selection, true))
+        }
+        for (sdk in listOf(26, 29, 30, 33)) {
+            assertEquals(ScreenCaptureMode.Nodes, screenCaptureMode(sdk, CapturePurpose.Selection, true))
         }
     }
 }

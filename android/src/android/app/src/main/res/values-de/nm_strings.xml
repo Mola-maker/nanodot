@@ -1206,4 +1206,8 @@
     <string name="nm_dot_foreground_disconnected">Dot ist getrennt</string>
     <string name="nm_dot_foreground_expand">Erweitern</string>
     <string name="nm_dot_foreground_adjust">Zum Anpassen ziehen</string>
+    <string name="nm_dot_region_selected">Ausgewählter Bereich</string>
+    <string name="nm_dot_region_text_mode">Dieses Modell erhält nur den zugänglichen Text im ausgewählten Bereich. Das Bild bleibt in dieser Vorschau.</string>
+    <string name="nm_dot_region_reselect">Erneut auswählen</string>
+    <string name="nm_dot_region_reselect_hint">Ziehe die Kristallkugel um den gewünschten Bereich.</string>
 </resources>

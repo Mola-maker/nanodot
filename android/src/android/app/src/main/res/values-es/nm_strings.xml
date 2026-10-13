@@ -1206,4 +1206,8 @@
     <string name="nm_dot_foreground_disconnected">Dot está desconectado</string>
     <string name="nm_dot_foreground_expand">Ampliar</string>
     <string name="nm_dot_foreground_adjust">Arrastra para ajustar</string>
+    <string name="nm_dot_region_selected">Región seleccionada</string>
+    <string name="nm_dot_region_text_mode">Este modelo recibe solo el texto accesible de la región seleccionada. La imagen permanece en esta vista previa.</string>
+    <string name="nm_dot_region_reselect">Seleccionar de nuevo</string>
+    <string name="nm_dot_region_reselect_hint">Arrastra la esfera de cristal alrededor de la región que deseas seleccionar.</string>
 </resources>

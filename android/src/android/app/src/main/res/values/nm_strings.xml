@@ -1183,4 +1183,8 @@
     <string name="nm_dot_foreground_disconnected">Dot is disconnected</string>
     <string name="nm_dot_foreground_expand">Expand</string>
     <string name="nm_dot_foreground_adjust">Drag to adjust</string>
+    <string name="nm_dot_region_selected">Selected region</string>
+    <string name="nm_dot_region_text_mode">This model receives only the selected accessible text. The image stays in this preview.</string>
+    <string name="nm_dot_region_reselect">Select again</string>
+    <string name="nm_dot_region_reselect_hint">Drag the crystal orb around the region you want to select.</string>
 </resources>

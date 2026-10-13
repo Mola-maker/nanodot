@@ -8,6 +8,8 @@ import android.graphics.Color
 import android.graphics.Paint
 import androidx.lifecycle.ViewModelProvider
 import com.openminis.app.MinisApp
+import com.openminis.app.data.model.declaresImageInput
+import com.openminis.app.data.repository.ProviderRepository
 import com.openminis.app.ui.chat.ChatMessage
 import com.openminis.app.ui.chat.ChatViewModel
 import com.openminis.app.ui.chat.ChatViewModelStore
@@ -20,7 +22,8 @@ import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 
 /** Local preview ownership ends on Send; historical message media belongs to ChatViewModel. */
-data class DotPreview(val file: File, val capturedAtMs: Long, val textOnly: Boolean)
+data class DotPreview(val file: File, val capturedAtMs: Long, val textOnly: Boolean,
+    val regionText: File? = null)
 data class DotOwnedAttachment(val id: String, val file: File)
 interface DotChatSession {
     val messages: StateFlow<List<ChatMessage>>
@@ -37,6 +40,7 @@ interface DotChatSession {
     fun send(text: String)
     fun cancel()
     fun retry()
+    fun supportsImages(): Boolean = false
 }
 
 /** Only admits local attachments and delegates business operations to the canonical VM. */
@@ -101,6 +105,27 @@ class DotChatAdapter(
 
     fun accepts(binding: SessionBinding) = gate.accepts(binding)
 
+    fun attachRegion(binding: SessionBinding, snapshot: ScreenSnapshot, selectedText: File): Boolean {
+        var staged: File? = null
+        var transferred = false
+        try {
+            if (!gate.accepts(binding) || snapshot.generation != binding.generation || !selectedText.isFile) return false
+            staged = stageSnapshot(snapshot)
+            if (!gate.accepts(binding)) return false
+            removePreview()
+            preview.value = DotPreview(staged, snapshot.capturedAtMs, snapshot.image == null, selectedText)
+            transferred = true
+            captureError.value = false
+            return true
+        } catch (_: Exception) {
+            if (gate.accepts(binding)) captureError.value = true
+            return false
+        } finally {
+            if (!transferred) { staged?.delete(); selectedText.delete() }
+            snapshot.close()
+        }
+    }
+
     fun attach(binding: SessionBinding, snapshot: ScreenSnapshot): Boolean {
         try {
             if (!gate.accepts(binding) || snapshot.generation != binding.generation) return false
@@ -124,15 +149,22 @@ class DotChatAdapter(
         releaseConsumedFiles()
         val local = preview.value
         if (text.isBlank() && local == null) return false
-        if (local != null) {
-            // One owned inbound copy at a time; repeated taps must never duplicate an attachment.
-            if (owned != null) return false
-            val attachment = target.stage(local.file) ?: return false
-            owned = Owned(attachment)
-            removePreview()
-        }
         try {
-            target.send(text)
+            var message = text
+            if (local != null) {
+                // One owned inbound copy at a time; repeated taps never duplicate an attachment.
+                if (owned != null) return false
+                // Canonical document attachments expose metadata, not their bytes, in the first
+                // model request. Put admitted node evidence in the same canonical user message.
+                local.regionText?.let { message = listOf(text, it.readText()).filter { it.isNotBlank() }.joinToString("\n\n") }
+                // Re-evaluate at Send: model choice can change during the local pixel preview.
+                if (local.regionText == null || (!local.textOnly && target.supportsImages())) {
+                    val attachment = target.stage(local.file) ?: return false
+                    owned = Owned(attachment)
+                }
+            }
+            target.send(message)
+            removePreview()
             target.input("")
             return true
         } catch (_: Exception) {
@@ -155,6 +187,7 @@ class DotChatAdapter(
         val local = preview.value
         preview.value = null
         local?.file?.delete()
+        local?.regionText?.delete()
     }
 
     /** Only an exact durable-media receipt and its nonqueued user row transfer ownership. */
@@ -187,7 +220,7 @@ class DotChatAdapter(
             ChatViewModelStore::resolvePersistedId,
             { id -> CanonicalSession(ViewModelProvider(ChatViewModelStore.ownerFor(id),
                 ChatViewModel.factory(id, app.chatRepository, app.providerRepository, app,
-                    app.memoryRepository, app.skillRepository, app.mcpRepository))[ChatViewModel::class.java]) },
+                    app.memoryRepository, app.skillRepository, app.mcpRepository))[ChatViewModel::class.java], app.providerRepository) },
             { snapshot -> stageLocal(app, snapshot) },
         )
 
@@ -219,7 +252,12 @@ class DotChatAdapter(
     }
 }
 
-private class CanonicalSession(val vm: ChatViewModel) : DotChatSession {
+private class CanonicalSession(val vm: ChatViewModel, private val providers: ProviderRepository) : DotChatSession {
+    // Only explicit effective modalities admit pixels; a guessed model-family name is insufficient.
+    override fun supportsImages(): Boolean {
+        val id = vm.activeEntryId.value ?: return false
+        return providers.config.value.modelEntries.firstOrNull { it.id == id }?.model?.declaresImageInput == true
+    }
     override val messages = vm.messages
     override val inputText = vm.inputText
     override val isStreaming = vm.isStreaming

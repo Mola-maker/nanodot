@@ -1206,4 +1206,8 @@
     <string name="nm_dot_foreground_disconnected">Dot est déconnecté</string>
     <string name="nm_dot_foreground_expand">Développer</string>
     <string name="nm_dot_foreground_adjust">Glisser pour ajuster</string>
+    <string name="nm_dot_region_selected">Zone sélectionnée</string>
+    <string name="nm_dot_region_text_mode">Ce modèle reçoit uniquement le texte accessible de la zone sélectionnée. L’image reste dans cet aperçu.</string>
+    <string name="nm_dot_region_reselect">Sélectionner à nouveau</string>
+    <string name="nm_dot_region_reselect_hint">Faites glisser la boule de cristal autour de la zone à sélectionner.</string>
 </resources>

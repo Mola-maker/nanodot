@@ -30,7 +30,8 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit, onStop: (Sessi
     onExpand: () -> Unit = {}, onAdjust: () -> Unit = {}, onDrag: (Float, Float) -> Unit = { _, _ -> },
     onTranscriptState: (androidx.compose.foundation.lazy.LazyListState) -> Unit = {},
     onContentHeightChanged: (Int) -> Unit = {},
-    onMenuDismissHandler: ((() -> Boolean)?) -> Unit = {}) {
+    onMenuDismissHandler: ((() -> Boolean)?) -> Unit = {},
+    onClearRegion: () -> Unit = {}, onReselectRegion: () -> Unit = {}) {
     val binding by adapter.binding.collectAsState()
     val preview by adapter.preview.collectAsState()
     val captureError by adapter.captureError.collectAsState()
@@ -66,6 +67,8 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit, onStop: (Sessi
     val captureFailureText = stringResource(R.string.nm_dot_chat_capture_failed)
     val missingModelText = stringResource(R.string.nm_chat_no_model)
     val previewTextOnly = stringResource(R.string.nm_dot_chat_text_only)
+    val regionSelectedText = stringResource(R.string.nm_dot_region_selected)
+    val regionTextMode = stringResource(R.string.nm_dot_region_text_mode)
     val previewCaption = preview?.let {
         stringResource(R.string.nm_dot_chat_historical, DateFormat.getDateTimeInstance().format(Date(it.capturedAtMs)))
     }
@@ -81,6 +84,11 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit, onStop: (Sessi
                 if (!it.textOnly) add(160f)
                 add(textHeight(previewCaption.orEmpty()))
                 if (it.textOnly) add(textHeight(previewTextOnly))
+                if (it.regionText != null) {
+                    add(textHeight(regionSelectedText))
+                    if (!session.supportsImages()) add(textHeight(regionTextMode))
+                    add(DotTokens.TouchTarget.value)
+                }
                 add(DotTokens.TouchTarget.value)
             }
             if (captureError) add(textHeight(captureFailureText))
@@ -122,7 +130,14 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit, onStop: (Sessi
                             bitmap?.let { Image(it.asImageBitmap(), null, Modifier.fillMaxWidth().heightIn(max = 160.dp)) }
                             Text(previewCaption.orEmpty(), fontSize = DotTokens.Type.Body)
                             if (local.textOnly) Text(previewTextOnly, fontSize = DotTokens.Type.Body)
-                            TextButton(onClick = adapter::removePreview, modifier = Modifier.heightIn(min = DotTokens.TouchTarget)) {
+                            if (local.regionText != null) {
+                                Text(regionSelectedText, fontSize=DotTokens.Type.Body)
+                                if (!session.supportsImages()) Text(regionTextMode, fontSize=DotTokens.Type.Body)
+                                TextButton(onClick=onReselectRegion,modifier=Modifier.heightIn(min=DotTokens.TouchTarget)) {
+                                    Text(stringResource(R.string.nm_dot_region_reselect),fontSize=DotTokens.Type.Body)
+                                }
+                            }
+                            TextButton(onClick = { adapter.removePreview(); onClearRegion() }, modifier = Modifier.heightIn(min = DotTokens.TouchTarget)) {
                                 Text(stringResource(R.string.nm_dot_chat_remove), fontSize = DotTokens.Type.Body)
                             }
                         }
@@ -148,7 +163,7 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit, onStop: (Sessi
                     Modifier.weight(1f).testTag("dot_composer"),
                     compact = placement == io.github.nanomuse.dot.overlay.ForegroundPlacement.Compact)
                 io.github.nanomuse.dot.voice.DotVoiceControls(adapter)
-                IconButton(onClick = { binding?.let { adapter.send(it, text) } },
+                IconButton(onClick = { binding?.let { if(adapter.send(it, text)) onClearRegion() } },
                     enabled = binding != null && !busy && !configured.isNullOrBlank() && (text.isNotBlank() || preview != null),
                     modifier = Modifier.size(DotTokens.TouchTarget).testTag("dot_composer_send")) {
                     Icon(Icons.AutoMirrored.Filled.Send, stringResource(R.string.nm_dot_chat_send))

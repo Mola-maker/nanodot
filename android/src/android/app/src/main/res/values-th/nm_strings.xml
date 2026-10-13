@@ -1202,4 +1202,8 @@
     <string name="nm_dot_foreground_disconnected">Dot ถูกตัดการเชื่อมต่อ</string>
     <string name="nm_dot_foreground_expand">ขยาย</string>
     <string name="nm_dot_foreground_adjust">ลากเพื่อปรับตำแหน่ง</string>
+    <string name="nm_dot_region_selected">บริเวณที่เลือก</string>
+    <string name="nm_dot_region_text_mode">โมเดลนี้จะได้รับเฉพาะข้อความที่เข้าถึงได้ในบริเวณที่เลือก รูปภาพจะอยู่ในตัวอย่างนี้เท่านั้น</string>
+    <string name="nm_dot_region_reselect">เลือกอีกครั้ง</string>
+    <string name="nm_dot_region_reselect_hint">ลากลูกแก้วคริสตัลล้อมรอบบริเวณที่ต้องการเลือก</string>
 </resources>

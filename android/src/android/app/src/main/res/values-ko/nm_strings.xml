@@ -1202,4 +1202,8 @@
     <string name="nm_dot_foreground_disconnected">Dot 연결이 끊어졌습니다</string>
     <string name="nm_dot_foreground_expand">펼치기</string>
     <string name="nm_dot_foreground_adjust">드래그하여 조정</string>
+    <string name="nm_dot_region_selected">선택한 영역</string>
+    <string name="nm_dot_region_text_mode">이 모델에는 선택 영역에서 읽을 수 있는 텍스트만 전송됩니다. 이미지는 이 미리보기에만 남습니다.</string>
+    <string name="nm_dot_region_reselect">다시 선택</string>
+    <string name="nm_dot_region_reselect_hint">수정 구슬을 드래그하여 원하는 영역을 둘러싸세요.</string>
 </resources>

@@ -1206,4 +1206,8 @@
     <string name="nm_dot_foreground_disconnected">Dot bağlantısı kesildi</string>
     <string name="nm_dot_foreground_expand">Genişlet</string>
     <string name="nm_dot_foreground_adjust">Ayarlamak için sürükle</string>
+    <string name="nm_dot_region_selected">Seçilen alan</string>
+    <string name="nm_dot_region_text_mode">Bu model yalnızca seçilen alandaki erişilebilir metni alır. Görsel bu önizlemede kalır.</string>
+    <string name="nm_dot_region_reselect">Yeniden seç</string>
+    <string name="nm_dot_region_reselect_hint">Kristal küreyi seçmek istediğiniz alanın çevresinde sürükleyin.</string>
 </resources>

@@ -1202,4 +1202,8 @@
     <string name="nm_dot_foreground_disconnected">Dot terputus sambungan</string>
     <string name="nm_dot_foreground_expand">Kembangkan</string>
     <string name="nm_dot_foreground_adjust">Seret untuk laraskan</string>
+    <string name="nm_dot_region_selected">Kawasan dipilih</string>
+    <string name="nm_dot_region_text_mode">Model ini hanya menerima teks yang boleh diakses dalam kawasan dipilih. Imej kekal dalam pratonton ini.</string>
+    <string name="nm_dot_region_reselect">Pilih semula</string>
+    <string name="nm_dot_region_reselect_hint">Seret bola kristal mengelilingi kawasan yang ingin dipilih.</string>
 </resources>

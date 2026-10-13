@@ -48,6 +48,7 @@ import io.github.nanomuse.dot.gesture.*
 import io.github.nanomuse.dot.chat.DotChatAdapter
 import io.github.nanomuse.dot.chat.DotChatPanel
 import io.github.nanomuse.dot.screen.RectPx
+import io.github.nanomuse.dot.selection.*
 import com.openminis.app.accessibility.MinisAccessibilityService
 import com.openminis.app.ui.theme.MinisTheme
 import kotlin.math.roundToInt
@@ -69,7 +70,36 @@ class DotOverlayController(
     internal val orbMenuView get() = orbMenu.view
     internal val orbMenuBounds get() = orbMenu.bounds
     private val idleVoiceUi = kotlinx.coroutines.flow.MutableStateFlow(io.github.nanomuse.dot.voice.DotVoiceController.Ui())
-    private fun ownedViews() = listOfNotNull(orbView, panelView, trailView, captureScanner.view, orbMenu.view) + careWindows.toList()
+    private var selectionOutline: SelectionOutlineView? = null
+    private var selectionOrigin: SelectionOrigin? = null
+    private fun ownedViews() = listOfNotNull(orbView, panelView, trailView, selectionOutline, captureScanner.view, orbMenu.view) + careWindows.toList()
+
+    fun clearSelectionOutline() {
+        checkMainThread()
+        selectionOutline?.let { windows.removeViewImmediate(it) }
+        selectionOutline=null
+    }
+
+    fun showSelectionOutline(selection: RegionSelection) {
+        checkMainThread()
+        clearSelectionOutline()
+        if (!isConnected || locked || !enabled) return
+        val view=SelectionOutlineView(service,selection)
+        val layout=WindowManager.LayoutParams(-1,-1,WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,PixelFormat.TRANSLUCENT).apply {
+            gravity=Gravity.TOP or Gravity.LEFT; title="Nanodot selected region"
+            if (Build.VERSION.SDK_INT >= 30) {
+                // Region points are absolute screen coordinates, like the Care focus contour.
+                setFitInsetsTypes(0)
+                layoutInDisplayCutoutMode=WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+            } else if (Build.VERSION.SDK_INT >= 28) {
+                layoutInDisplayCutoutMode=WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            }
+        }
+        windows.addView(view,layout)
+        selectionOutline=view
+    }
 
     /** Only presentation is dismissed. Chat/Care/voice retain their existing admission. */
     fun dismissOrbMenu(): Boolean {
@@ -371,8 +401,16 @@ class DotOverlayController(
         if (intent == DotIntent.LongPress) { showOrbMenu(); return }
         dismissOrbMenu()
         if (intent is DotIntent.Drag) {
-            // Unclassified movement fallback. Task6 replaces this with full selection geometry;
-            // downPosition remains available throughout this synchronous disposition.
+            val selection=SelectionGeometry.classify(intent.points,service.resources.displayMetrics.density)
+            val origin=selectionOrigin
+            val interaction=(service as? MinisAccessibilityService)?.dotInteraction
+            if (selection != null && origin != null && interaction != null) {
+                restoreDownPosition()
+                clearTrail()
+                interaction.selectRegion(selection,origin)
+                return
+            }
+            // Open/degenerate paths remain ordinary movement, using the measured release velocity.
             val point = intent.points.lastOrNull() ?: return
             val bounds = availableBounds() ?: return
             val p = params ?: return
@@ -562,6 +600,8 @@ class DotOverlayController(
                     evidence, panelPlacement.value, ::expandPanel, ::adjustPanel, ::movePanel,
                     onTranscriptState = { panelTranscriptState = it },
                     onMenuDismissHandler = { panelMenuDismiss = it },
+                    onClearRegion = ::clearSelectionOutline,
+                    onReselectRegion = { (service as? MinisAccessibilityService)?.dotInteraction?.reselectRegion() },
                     onContentHeightChanged = { height ->
                         if (height > 0 && panelRequestedHeight != height) {
                             panelRequestedHeight = height; panelGeometry = null; refreshPanelGeometry()
@@ -625,6 +665,14 @@ class DotOverlayController(
         check(kind == OverlayKind.Orb)
         val owner = DotOverlayOwner()
         val view = object : FrameLayout(service) {
+            override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+                super.onSizeChanged(w, h, oldw, oldh)
+                // An inward drag beginning on the edge orb belongs to the orb, not system Back.
+                // Exclude only this measured 48dp touch window; host gestures outside it remain.
+                if (Build.VERSION.SDK_INT >= 29) {
+                    systemGestureExclusionRects = listOf(android.graphics.Rect(0, 0, w, h))
+                }
+            }
             override fun dispatchTouchEvent(event: MotionEvent): Boolean {
                 handleMotion(event)
                 return true
@@ -729,6 +777,11 @@ class DotOverlayController(
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 dismissOrbMenu()
+                clearSelectionOutline()
+                val screen=(service as? MinisAccessibilityService)?.dotScreen
+                selectionOrigin=screen?.currentSceneKey()?.let { scene ->
+                    screen.hostViewport()?.let { SelectionOrigin(scene,it) }
+                }
                 cancelSnap()
                 velocityTracker?.recycle()
                 velocityTracker = VelocityTracker.obtain()
@@ -776,6 +829,7 @@ class DotOverlayController(
                 if (event.actionMasked == MotionEvent.ACTION_UP) {
                     velocityTracker?.recycle(); velocityTracker = null
                     downPoint = null; downPosition = null
+                    selectionOrigin = null
                 }
             }
             MotionEvent.ACTION_CANCEL -> { restoreDownPosition(); cancelGesture() }
@@ -841,6 +895,8 @@ class DotOverlayController(
 
     private fun cancelGesture() {
         dismissOrbMenu()
+        clearSelectionOutline()
+        selectionOrigin=null
         cancelSnap()
         velocityTracker?.recycle(); velocityTracker = null
         releaseVelocityX = 0f

@@ -1202,4 +1202,8 @@
     <string name="nm_dot_foreground_disconnected">Dot は切断されています</string>
     <string name="nm_dot_foreground_expand">展開</string>
     <string name="nm_dot_foreground_adjust">ドラッグして調整</string>
+    <string name="nm_dot_region_selected">選択した領域</string>
+    <string name="nm_dot_region_text_mode">このモデルには選択領域の読み取れるテキストのみを送信します。画像はこのプレビュー内に残ります。</string>
+    <string name="nm_dot_region_reselect">選び直す</string>
+    <string name="nm_dot_region_reselect_hint">水晶球をドラッグして、選択する領域を囲んでください。</string>
 </resources>

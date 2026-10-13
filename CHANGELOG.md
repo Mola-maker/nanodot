@@ -4,6 +4,10 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Connected closed crystal-orb drags to foreground region previews, masked outside/password pixels and excluded crossing or aggregating text nodes; sent selected accessible text through the canonical user message and attached pixels only for explicitly image-capable models.
+
+- Prevented inward drags from the edge orb from also invoking Android Back by reserving only its 48dp touch area for orb gestures.
+
 - Unified Android foreground chat and Care with a transparent cobalt shell, inset glass highlights, compact status text and a separate 48dp Stop icon; kept readable local input/menu backgrounds and existing message padding.
 
 - Delayed Android Care's first screen sample until its goal editor and keyboard settled, with a cancellable five-second deadline that screen events cannot extend.

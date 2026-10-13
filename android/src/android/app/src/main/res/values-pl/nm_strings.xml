@@ -1214,4 +1214,8 @@
     <string name="nm_dot_foreground_disconnected">Dot jest rozłączony</string>
     <string name="nm_dot_foreground_expand">Rozwiń</string>
     <string name="nm_dot_foreground_adjust">Przeciągnij, aby dostosować</string>
+    <string name="nm_dot_region_selected">Wybrany obszar</string>
+    <string name="nm_dot_region_text_mode">Ten model otrzymuje tylko dostępny tekst z wybranego obszaru. Obraz pozostaje w tym podglądzie.</string>
+    <string name="nm_dot_region_reselect">Wybierz ponownie</string>
+    <string name="nm_dot_region_reselect_hint">Przeciągnij kryształową kulę wokół obszaru, który chcesz wybrać.</string>
 </resources>

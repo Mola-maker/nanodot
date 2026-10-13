@@ -15,6 +15,7 @@ import io.github.nanomuse.dot.chat.DotChatAdapter
 import io.github.nanomuse.dot.gesture.DotIntent
 import io.github.nanomuse.dot.screen.CaptureOutcome
 import io.github.nanomuse.dot.screen.CapturePurpose
+import io.github.nanomuse.dot.selection.*
 import io.github.nanomuse.home.MainChat
 import kotlinx.coroutines.*
 
@@ -132,6 +133,7 @@ class DotInteractionCoordinator internal constructor(
         if (hide) careWindow?.hide()
     }
     fun onHostGeometryChanged() {
+        service.dotOverlay.clearSelectionOutline()
         careWindow?.clearFocus(); careWindow?.stopSpeech()
         careSession.controller.onSceneChanged()
         careWindow?.refreshGeometry()
@@ -201,7 +203,19 @@ class DotInteractionCoordinator internal constructor(
         }
     }
 
-    private fun openConversation(intent: DotIntent, startVoice: Boolean = false) {
+    fun selectRegion(region: RegionSelection, origin: SelectionOrigin) {
+        if (!foreground.state.value.connected) return
+        refreshAccount()
+        openConversation(DotIntent.Double,selection=region to origin)
+    }
+
+    fun reselectRegion() {
+        close()
+        Toast.makeText(service,R.string.nm_dot_region_reselect_hint,Toast.LENGTH_SHORT).show()
+    }
+
+    private fun openConversation(intent: DotIntent, startVoice: Boolean = false,
+        selection: Pair<RegionSelection,SelectionOrigin>? = null) {
         pauseCare(hide=true)
         opening?.cancel()
         // The old panel's collapse callback invalidates its admission before the new ticket exists.
@@ -228,14 +242,44 @@ class DotInteractionCoordinator internal constructor(
             if (intent == DotIntent.Double) {
                 service.dotOverlay.beginCaptureScan(ticket.epoch)
                 try {
-                when (val result = screenCapture(CapturePurpose.Chat,binding.generation)) {
-                    is CaptureOutcome.Success -> if (admitted(ticket, binding)) adapter.attach(binding,result.snapshot) else result.snapshot.close()
+                val acquisition=if (selection == null) screenCapture(CapturePurpose.Chat,binding.generation) else {
+                    SelectionCoordinator(service.dotScreen::currentSceneKey,
+                        { generation ->
+                            val pixels=screenCapture(CapturePurpose.Selection,generation)
+                            if (pixels is CaptureOutcome.Unavailable && pixels.code !in setOf("scene_changed","geometry_changed"))
+                                nodeCapture(generation) else pixels
+                        }, { snapshot, region -> withContext(Dispatchers.Default) { RegionCropper.crop(snapshot,region) } })
+                        .capture(selection.first,selection.second,binding.generation) { admitted(ticket,binding) }
+                }
+                when (val result = acquisition) {
+                    is CaptureOutcome.Success -> if (admitted(ticket, binding)) {
+                        if (selection == null) adapter.attach(binding,result.snapshot)
+                        else {
+                            val snapshot=result.snapshot
+                            var text: java.io.File?=null
+                            try {
+                                val directory=java.io.File(app.cacheDir,"dot_preview").apply { check(mkdirs() || isDirectory) }
+                                text=java.io.File.createTempFile("region-nodes-", ".txt",directory)
+                                val selected=snapshot.nodes.mapNotNull { it.text ?: it.description }.distinct()
+                                text.writeText("Selected region captured ${snapshot.capturedAtMs}. Accessible text only; no image understanding.\n"+
+                                    selected.joinToString("\n").ifBlank { "No accessible text in this selected region." })
+                                if (adapter.attachRegion(binding,snapshot,text)) service.dotOverlay.showSelectionOutline(selection.first)
+                                else text.delete()
+                            } catch (failure: Throwable) { text?.delete(); throw failure }
+                            finally { snapshot.close() }
+                        }
+                    } else result.snapshot.close()
                     is CaptureOutcome.Unavailable -> {
                         if (!admitted(ticket, binding)) return@launch
+                        if (selection != null) {
+                            adapter.captureError.value=true
+                            Toast.makeText(service,R.string.nm_dot_region_reselect_hint,Toast.LENGTH_SHORT).show()
+                        } else {
                         // A fresh read is required: failed screenshot nodes are never reused.
                         when (val fallback = nodeCapture(binding.generation)) {
                             is CaptureOutcome.Success -> if (admitted(ticket, binding)) adapter.attach(binding,fallback.snapshot) else fallback.snapshot.close()
                             is CaptureOutcome.Unavailable -> if (admitted(ticket, binding)) adapter.captureError.value = true
+                        }
                         }
                     }
                 }
@@ -261,6 +305,7 @@ class DotInteractionCoordinator internal constructor(
         if (!foreground.state.value.connected) return
         refreshAccount()
         if (!adapter.accepts(binding)) return
+        service.dotOverlay.clearSelectionOutline()
         service.dotOverlay.dismissOrbMenu()
         val mode = foreground.state.value.mode
         foreground.invalidate()
@@ -275,6 +320,7 @@ class DotInteractionCoordinator internal constructor(
     }
 
     fun close() {
+        service.dotOverlay.clearSelectionOutline()
         service.dotOverlay.dismissOrbMenu()
         service.dotOverlay.cancelCaptureScan()
         foreground.invalidate()

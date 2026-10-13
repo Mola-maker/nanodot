@@ -1210,4 +1210,8 @@
     <string name="nm_dot_foreground_disconnected">Dot este deconectat</string>
     <string name="nm_dot_foreground_expand">Extinde</string>
     <string name="nm_dot_foreground_adjust">Trage pentru ajustare</string>
+    <string name="nm_dot_region_selected">Regiune selectată</string>
+    <string name="nm_dot_region_text_mode">Acest model primește doar textul accesibil din regiunea selectată. Imaginea rămâne în această previzualizare.</string>
+    <string name="nm_dot_region_reselect">Selectează din nou</string>
+    <string name="nm_dot_region_reselect_hint">Trage sfera de cristal în jurul regiunii dorite.</string>
 </resources>
