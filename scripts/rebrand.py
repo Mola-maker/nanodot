@@ -227,16 +227,20 @@ def apply_brand(root: Path, brand: BrandProfile) -> list[Path]:
         if path.parent.name in {"values-es", "values-ru"}:
             text = re.sub(
                 r'(<string name="mcp_section_footer">)([\s\S]*?)(</string>)',
-                lambda m: m[1]
-                + re.sub(r"\b(?:nanoMuse|Minis) Agent\b", brand.displayName + " Agent", m[2])
-                + m[3],
+                lambda m: (
+                    m[1]
+                    + re.sub(r"\b(?:nanoMuse|Minis) Agent\b", brand.displayName + " Agent", m[2])
+                    + m[3]
+                ),
                 text,
             )
         if path.name == "nm_strings.xml":
             text = re.sub(
                 r'(<string name="(?:nm_appearance_header_model_footer|'
                 r'nm_models_image_sub|nm_models_video_sub)">)([\s\S]*?)(</string>)',
-                lambda m: m[1] + _assistant_resource_copy(m[2], path.parent.name, brand) + m[3],
+                lambda m, locale=path.parent.name: (
+                    m[1] + _assistant_resource_copy(m[2], locale, brand) + m[3]
+                ),
                 text,
             )
             avatar_copy = json.loads(

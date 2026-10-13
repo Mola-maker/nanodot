@@ -1,9 +1,9 @@
 """Run the real generator on isolated upstream and already-branded trees."""
 
 import tempfile
+import unittest
 import xml.etree.ElementTree as ET
 from dataclasses import replace
-import unittest
 from pathlib import Path
 
 from scripts import rebrand
@@ -41,9 +41,7 @@ class NanodotRebrandTest(unittest.TestCase):
             "values-ro": ("Clipuri scurte cu Muza ta.", "Clipuri scurte cu Echo."),
             "values-ru": ("Короткие клипы с вашей Музой.", "Короткие клипы с Echo."),
         }
-        locale_names = {
-            p.parent.name for p in (ROOT / MAIN / "res").glob("values*/nm_strings.xml")
-        }
+        locale_names = {p.parent.name for p in (ROOT / MAIN / "res").glob("values*/nm_strings.xml")}
         self.assertEqual(locale_names, set(cases))
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -53,7 +51,7 @@ class NanodotRebrandTest(unittest.TestCase):
                 video_before = video_variants.get(locale, (before, ""))[0]
                 path.write_text(
                     '<resources><string name="nm_appearance_header_model_footer">'
-                    'Muse shows only the name.</string>'
+                    "Muse shows only the name.</string>"
                     f'<string name="nm_models_image_sub">{before}</string>'
                     f'<string name="nm_models_video_sub">{video_before}</string>'
                     '<string name="nm_avatar_style_muse">3D toy (Muse)</string>'
@@ -62,16 +60,17 @@ class NanodotRebrandTest(unittest.TestCase):
                     '<string name="nm_cloud">nanoMuse Cloud</string>'
                     '<string name="nm_upstream">Based on nanoMuse and OpenMinis</string>'
                     '<string name="nm_menu_parallel_addition">Parallel menu entry</string>'
-                    '</resources>', encoding="utf-8",
+                    "</resources>",
+                    encoding="utf-8",
                 )
             brand = replace(load_brand(ROOT / "config/brand.nanodot.json"), agentName="Echo")
             rebrand.apply_brand(root, brand)
             for locale, (_, expected) in cases.items():
                 values = {
                     n.attrib["name"]: n.text
-                    for n in ET.parse(
-                        root / MAIN / "res" / locale / "nm_strings.xml"
-                    ).getroot().findall("string")
+                    for n in ET.parse(root / MAIN / "res" / locale / "nm_strings.xml")
+                    .getroot()
+                    .findall("string")
                 }
                 self.assertEqual(
                     "Echo shows only the name.", values["nm_appearance_header_model_footer"]
@@ -107,7 +106,7 @@ class NanodotRebrandTest(unittest.TestCase):
                 path.parent.mkdir(parents=True)
                 path.write_text(
                     '<resources><string name="nm_avatar_default_description">'
-                    'A pale-yellow dragon with orange horns</string>'
+                    "A pale-yellow dragon with orange horns</string>"
                     '<string name="nm_avatar_style_muse">3D toy (Muse)</string>'
                     '<string name="nm_about_trademark_detail">Muse is a trademark of Meta.</string>'
                     '<string name="nm_custom_avatar">My dragon and orange horns</string>'
@@ -121,9 +120,10 @@ class NanodotRebrandTest(unittest.TestCase):
             rebrand.apply_brand(root, brand)
             for locale, (description, title) in expected.items():
                 values = {
-                    n.attrib["name"]: n.text for n in ET.parse(
-                        root / MAIN / "res" / locale / "nm_strings.xml"
-                    ).getroot().findall("string")
+                    n.attrib["name"]: n.text
+                    for n in ET.parse(root / MAIN / "res" / locale / "nm_strings.xml")
+                    .getroot()
+                    .findall("string")
                 }
                 self.assertEqual(description, values["nm_avatar_default_description"])
                 self.assertEqual(title, values["nm_avatar_style_muse"])
