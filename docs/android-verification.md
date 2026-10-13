@@ -94,13 +94,29 @@ python3 -m unittest discover -s scripts/android -p test_verification_evidence.py
 
 A new or changed verification recipe is a draft until the coordinator runs launch/doctor/one mapped feature/evidence/cleanup on the actual target and records the result. Do not repeat already-passing unrelated suites just to demonstrate the skill. For delivery, identify the final APK's ABI, signing and SHA-256 and retain limitations. A debug APK may be installable while hardware/real-provider checks remain incomplete. Nothing in pstack grants publication or external messaging permission.
 
-## Development snapshot — 2026-10-13
+## Earlier cobalt snapshot — 2026-10-13 {#cobalt-snapshot-2026-10-13}
 
 The cobalt-message candidate was built as paired debug APKs for x86_64 and arm64-v8a. The x86_64 main/test bytes were verified after installation on the isolated Android emulator. Both builds share source fingerprint `1cc6e334e6d357b48a555bfcd22a5ebf8c5d190c9acca15d312f8386121d6d3d`; arm64 installation/runtime has not been checked on physical hardware. These are development artifacts, not a release qualification.
 
 - Scoped JVM checks passed. The refreshed native message-layout test passed all18 normal/short-IME/moved-up and font/sender combinations, and the glass test passed its4 theme/font combinations after fixing2px clipping at200% font size. The real split-screen/IME fixture also passed.
 - One real DeepSeek text exchange returned HTTP200 and six SSE deltas, with44 input and6 output tokens. The main chat and foreground cobalt bubble displayed the same canonical reply, `Nanodot 连接正常。`. The panel was opened with a real orb tap; sending used the existing `chat.uiPrompt` entry into the shared production VM/provider, so this does not establish a physical Send-button tap.
 - The provider exchange used a one-use localhost test relay that read the existing private credential only in host memory. It forwarded the real SSE unchanged, replaced system context with public test text, limited output to128 tokens and disabled tools/thinking. Default-context/tool execution, microphone input and screen interpretation are outside this proof. No credential is in the APK or repository.
-- Care remains incomplete: normal controls passed, but the200% font Back case, compact-menu Expand admission and static-outline top-edge case failed. The static outline was visibly clipped at the top; some remaining fixture admission/scroll assumptions also need repair. Restoring the service after gallery tests exposed a separate `BadTokenException` during overlay attachment. A subsequent successful launch does not resolve that defect.
+- In this snapshot, normal Care controls passed, but the 200% font Back case, compact-menu Expand admission and static-outline top-edge case failed. The static outline was visibly clipped at the top; fixture admission/scroll assumptions also needed repair. Restoring the service after gallery tests exposed a separate `BadTokenException` during overlay attachment. These historical failures remain recorded; the focused follow-up below updates their status.
 
-Keep the original Android-first delivery goal open. These failures remain explicit follow-up work; neither a successful build nor the real text reply qualifies the whole assistant as accepted.
+## Care follow-up (r13) — 2026-10-13 {#care-r13-2026-10-13}
+
+These native fixture results belong to the installed x86_64 development pair with source fingerprint `162a7d2406d0941d8cf54d57d182fb0963a861c6f0187bbb9871a04b24a5cee4`:
+
+| APK | SHA-256 |
+|---|---|
+| Main | `9fb4b7f6155aef6b7e386703db24615138777c24df72eff69a7bd71ca4dba241` |
+| Test | `09e588a71d34b28b0fc445a61a0ee04c89957029a24ebd3c51c87f7b13b8f884` |
+
+The earlier layout, glass, split-screen and real DeepSeek evidence remains bound to `1cc6e334…`; it is not a rerun on this pair.
+
+- **Static outline: pass** (`reset-r13-static-bound`). Removing the focus window's second system-inset adjustment fixed the top-edge clipping. All four outline edges rendered and the target region stayed identical across two captures 300ms apart. The fixture checks the attached View's screen bounds and screenshot pixels; the non-touchable, non-focusable visual layer need not appear in the accessibility window list.
+- **200% font controls and single Back: pass** (`reset-r13-font2-diagnostics`). The fixture retained full 48dp control admission, selected Copy within the menu, observed the host touch, and sent one Back. Back was accepted before a later observation reached `Paused`, removed the card and cleared the outline. This supports a fixture waiting issue, without proving the sole cause of the earlier failure. Production Back handling was unchanged.
+- **Compact controls: guest completion, harness incomplete** (`reset-r13-compact`). After short scrolls based on the current viewport, the guest TestRunner reported one test, zero failures and zero ignored tests. The host runner exited 143 without persisting its normal stdout/result, so this is not an overall harness pass.
+- **Overlay attachment remains unresolved.** One serialized service rebind and subsequent UiAutomation observation showed no new crash. This does not fix the earlier `BadTokenException` or exclude a reattachment race.
+
+Keep the original Android-first delivery goal open. The harness limitation, unresolved attachment defect and remaining device/provider coverage prevent whole-assistant acceptance.

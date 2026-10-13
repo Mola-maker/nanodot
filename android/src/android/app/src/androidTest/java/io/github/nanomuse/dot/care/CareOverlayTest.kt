@@ -122,6 +122,44 @@ class CareOverlayTest {
             } } finally { bitmap.recycle() }
         }
     }
+    private fun saveCareBackEvidence(stage: String, accepted: Boolean? = null) {
+        var owner: Int? = null
+        var cardState = "card absent"
+        instrumentation.runOnMainSync {
+            val view = CareOverlayWindow::class.java.getDeclaredField("card").let {
+                it.isAccessible = true; it.get(window) as? android.view.View
+            }
+            view?.let {
+                val node = it.createAccessibilityNodeInfo()
+                try { owner = node.windowId } finally { node.recycle() }
+                val p = it.layoutParams as? WindowManager.LayoutParams
+                cardState = "attached=${it.isAttachedToWindow} shown=${it.isShown} focused=${it.hasFocus()} " +
+                    "windowFocus=${it.hasWindowFocus()} flags=${p?.flags} type=${p?.type}"
+            }
+            cardState += " state=${session.controller.state.value.state} visible=${session.visible.value} " +
+                "editing=${session.editingGoal.value} focusBounds=${window.focus.bounds}"
+        }
+        val windows = automation.windows
+        val native = try { windows.map {
+            "id=${it.id} type=${it.type} focused=${it.isFocused} active=${it.isActive} " +
+                "bounds=${Rect().also(it::getBoundsInScreen)}"
+        } } finally { windows.forEach { it.recycle() } }
+        val rows = mutableListOf<String>()
+        var menuVisible = false
+        withNodes { all -> all.filter { it.windowId == owner && it.isVisibleToUser }.forEach {
+            if (it.className?.toString() == "android.widget.ScrollView") menuVisible = true
+            rows += "${it.className}:${it.text}:${it.contentDescription}:${Rect().also(it::getBoundsInScreen)}"
+        } }
+        val observation = "CARE_BACK stage=$stage time=${SystemClock.uptimeMillis()} accepted=$accepted " +
+            "owner=$owner menuVisible=$menuVisible $cardState windows=$native rows=$rows"
+        println(observation)
+        java.io.File(instrumentation.targetContext.cacheDir,"care-back-$stage.txt").writeText(observation)
+        automation.takeScreenshot()?.let { bitmap ->
+            try { java.io.File(instrumentation.targetContext.cacheDir,"care-back-$stage.png").outputStream().use {
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it)
+            } } finally { bitmap.recycle() }
+        }
+    }
     private fun settledCareControls(stage: String): CareControlsFrame {
         var previous: CareControlsFrame? = null
         var unchangedSince = SystemClock.uptimeMillis()
@@ -133,7 +171,7 @@ class CareOverlayTest {
         } } catch (failure: AssertionError) { saveCareControlsFailure(stage); throw failure }
         return requireNotNull(previous)
     }
-    private fun careControlBounds(label: String, frame: CareControlsFrame): Rect? {
+    private fun careControlBounds(label: String, frame: CareControlsFrame, menuOnly: Boolean = false): Rect? {
         val hits = mutableListOf<Rect>()
         val minimum = kotlin.math.ceil(48 * instrumentation.targetContext.resources.displayMetrics.density).toInt()
         withNodes { all -> all.filter { it.windowId == frame.owner && it.isVisibleToUser && it.isEnabled &&
@@ -148,16 +186,22 @@ class CareOverlayTest {
                     action.actionList.any { it.id == AccessibilityNodeInfo.ACTION_CLICK }) {
                     val visible = Rect(); action.getBoundsInScreen(visible)
                     var valid = visible.intersect(frame.bounds)
+                    var inMenu = false
+                    val ancestry = mutableListOf<String>()
                     var ancestor = action.parent
                     while (ancestor != null) {
                         val current = requireNotNull(ancestor)
                         try {
                             if (current.windowId != frame.owner) valid = false
                             if (current.isScrollable) valid = visible.intersect(Rect().also(current::getBoundsInScreen)) && valid
+                            if (current.className?.toString() == "android.widget.ScrollView") inMenu = true
+                            ancestry += "${current.className}:${Rect().also(current::getBoundsInScreen)}"
                             ancestor = current.parent
                         } finally { current.recycle() }
                     }
-                    if (valid && visible.width() >= minimum && visible.height() >= minimum) hits += visible
+                    if (menuOnly) println("CARE_CONTROL_PATH label=$label owner=${frame.owner} " +
+                        "visible=$visible inMenu=$inMenu ancestors=$ancestry")
+                    if (valid && (!menuOnly || inMenu) && visible.width() >= minimum && visible.height() >= minimum) hits += visible
                 }
             } finally { action.recycle() }
         } }
@@ -177,9 +221,9 @@ class CareOverlayTest {
         }
         return accepted
     }
-    private fun click(label: String) {
+    private fun click(label: String, menuOnly: Boolean = false) {
         val frame = settledCareControls("click-$label")
-        val bounds = careControlBounds(label,frame)
+        val bounds = careControlBounds(label,frame,menuOnly)
         if (bounds == null) saveCareControlsFailure("click-$label")
         requireNotNull(bounds) { "One visible 48dp Care action required: $label" }
         println("CARE_STAGE click label=$label owner=${frame.owner} actual=${frame.bounds} touch=$bounds")
@@ -189,15 +233,13 @@ class CareOverlayTest {
         val more = context.getString(com.openminis.app.R.string.nm_more)
         val copy = context.getString(com.openminis.app.R.string.nm_care_copy)
         if (label == more || label == copy) {
-            val menuLabels = listOf(com.openminis.app.R.string.nm_care_repeat,
-                com.openminis.app.R.string.nm_care_pause, com.openminis.app.R.string.nm_care_change_goal,
-                com.openminis.app.R.string.nm_care_end).map(context::getString)
             awaitNativeState("Care menu must ${if (label == more) "open" else "close"} after its single action") {
                 var menuVisible = false
                 withNodes { all -> menuVisible = all.any { node ->
-                    node.windowId == frame.owner && node.isVisibleToUser && menuLabels.any {
-                        node.text?.toString() == it || node.contentDescription?.toString() == it
-                    }
+                    // Labels can all be clipped at 200% font. The menu's ScrollView
+                    // remains present; the transcript's LazyColumn has a different class.
+                    node.windowId == frame.owner && node.isVisibleToUser &&
+                        node.className?.toString() == "android.widget.ScrollView"
                 } }
                 menuVisible == (label == more)
             }
@@ -593,8 +635,42 @@ class CareOverlayTest {
             } } catch (failure: AssertionError) { saveControls("$stage-scroll-timeout"); throw failure }
             return requireNotNull(previous)
         }
+        fun scrollMenu(menu: MenuSnapshot, stage: String) {
+            // A full-page AX scroll skips the narrow interval where a 48dp row fits
+            // in a ~60dp compact viewport. Overlap each measured viewport by 48dp.
+            val minimum = kotlin.math.ceil(48 * service.resources.displayMetrics.density).toInt()
+            val slack = menu.bounds.height() - minimum
+            check(slack > 0) { "Care menu viewport cannot expose a complete 48dp action: ${menu.bounds}" }
+            val slop = android.view.ViewConfiguration.get(service).scaledTouchSlop.toFloat()
+            val shift = minOf(slack * .9f, 24f * service.resources.displayMetrics.density)
+            val distance = slop + shift
+            check(distance < menu.bounds.height() - 2) { "Care menu has no room for a native scroll gesture" }
+            val x = menu.bounds.exactCenterX()
+            val from = menu.bounds.exactCenterY() + distance / 2f
+            val to = from - distance
+            lastInput = "time=${SystemClock.uptimeMillis()} stage=$stage scroll owner=${menu.geometry.windowId} " +
+                "viewport=${menu.bounds} maximumShift=$shift point=$x,$from->$x,$to"
+            println("CARE_COMPACT_INPUT $lastInput")
+            inputTrace.append(lastInput).append('\n')
+            java.io.File(service.cacheDir,"care-compact-input.txt").writeText(inputTrace.toString())
+            val down = SystemClock.uptimeMillis()
+            fun send(action: Int, y: Float) {
+                val event = MotionEvent.obtain(down,SystemClock.uptimeMillis(),action,x,y,0)
+                try { injectTouch(event) } finally { event.recycle() }
+            }
+            send(MotionEvent.ACTION_DOWN,from)
+            repeat(4) { index ->
+                SystemClock.sleep(16)
+                send(MotionEvent.ACTION_MOVE,from - distance * (index + 1) / 4f)
+            }
+            // Hold still before UP so fling velocity cannot skip the next admission interval.
+            SystemClock.sleep(200)
+            send(MotionEvent.ACTION_MOVE,to)
+            send(MotionEvent.ACTION_UP,to)
+        }
         fun reach(label: String, stage: String): ControlHit {
-            repeat(20) { step ->
+            val deadline = SystemClock.uptimeMillis() + 45000L
+            repeat(80) { step ->
                 controlHit(label)?.let { return settledControl(label,stage) }
                 if (step == 0) {
                     val more = settledControl(service.getString(com.openminis.app.R.string.nm_more),"$stage-more")
@@ -603,13 +679,11 @@ class CareOverlayTest {
                     val menu = settledMenu("$stage-before-scroll-$step")
                     // The prior traversal may have arrived while waiting for the scroll to settle.
                     controlHit(label)?.let { return settledControl(label,stage) }
-                    var accepted = false
-                    withNodes { all -> all.singleOrNull { it.windowId == menu.geometry.windowId && it.isVisibleToUser &&
-                        it.isScrollable && it.className?.toString() == "android.widget.ScrollView" &&
-                        Rect().also(it::getBoundsInScreen) == menu.bounds &&
-                        it.actionList.any { it.id == AccessibilityNodeInfo.ACTION_SCROLL_FORWARD }
-                    }?.let { accepted = it.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD) } }
-                    if (!accepted) { saveControls("$stage-scroll-timeout"); error("Care menu cannot scroll to the 48dp action: $label") }
+                    if (!menu.forward || SystemClock.uptimeMillis() >= deadline) {
+                        saveControls("$stage-scroll-timeout")
+                        error("Care menu cannot scroll to the 48dp action: $label")
+                    }
+                    scrollMenu(menu,"$stage-scroll-$step")
                 }
                 settledMenu("$stage-scroll-$step")
                 if (step < 3) saveControls("scroll-$step")
@@ -789,7 +863,8 @@ class CareOverlayTest {
             shell("settings put global animator_duration_scale 0")
             instrumentation.context.startActivity(Intent(instrumentation.context,CareOverlayFixture::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             data class StaticGeometry(val scene: SceneKey, val host: RectPx, val target: Rect,
-                val hostWindow: Rect, val focusWindowId: Int?, val focus: Rect?, val native: Rect?, val mode: Int)
+                val hostWindow: Rect, val focusWindowId: Int?, val focus: Rect?, val native: Rect?,
+                val parameters: String?, val mode: Int)
             var lastGeometry = "not sampled"
             val evidence = StringBuilder()
             fun geometry(withFocus: Boolean): StaticGeometry? {
@@ -797,6 +872,7 @@ class CareOverlayTest {
                 var host: RectPx? = null
                 var focus: Rect? = null
                 var focusId: Int? = null
+                var parameters: String? = null
                 var mode = 0
                 var ready = !withFocus
                 instrumentation.runOnMainSync {
@@ -807,8 +883,25 @@ class CareOverlayTest {
                         focus = Rect(location[0],location[1],location[0]+view.width,location[1]+view.height)
                         val node = view.createAccessibilityNodeInfo()
                         try { focusId = node.windowId } finally { node.recycle() }
+                        val p = view.layoutParams as? WindowManager.LayoutParams
+                        val fitTypes = if (Build.VERSION.SDK_INT >= 30) p?.getFitInsetsTypes() else null
+                        val cutout = if (Build.VERSION.SDK_INT >= 28) p?.layoutInDisplayCutoutMode else null
+                        parameters = "type=${p?.type} flags=${p?.flags} fitTypes=$fitTypes cutout=$cutout"
+                        val flags = p?.flags ?: 0
+                        val correctInsets = when {
+                            Build.VERSION.SDK_INT >= 30 -> fitTypes == 0 &&
+                                cutout == WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+                            Build.VERSION.SDK_INT >= 28 ->
+                                cutout == WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                            else -> true
+                        }
                         ready = view.isAttachedToWindow && view.isLaidOut && !view.isLayoutRequested &&
-                            view.isShown && !view.hasFocus()
+                            view.isShown && view.windowVisibility == android.view.View.VISIBLE && view.alpha > 0f &&
+                            view.windowToken != null && !view.hasFocus() && !view.hasWindowFocus() &&
+                            view.importantForAccessibility == android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO &&
+                            p?.type == WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY &&
+                            flags and WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE != 0 &&
+                            flags and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE != 0 && correctInsets
                     }
                 }
                 val windows = automation.windows
@@ -829,7 +922,8 @@ class CareOverlayTest {
                         (!withFocus || layer?.bounds == target?.let { RectPx(it.left.toFloat(),it.top.toFloat(),it.right.toFloat(),it.bottom.toFloat()) })
                 }
                 lastGeometry = "time=${SystemClock.uptimeMillis()} scale=$scale ready=$ready scene=$scene host=$host " +
-                    "target=$target hostWindow=$hostWindow focusId=$focusId focus=$focus native=$native mode=$mode unchanged=$unchanged"
+                    "target=$target hostWindow=$hostWindow focusId=$focusId focus=$focus native=$native " +
+                    "parameters=$parameters mode=$mode unchanged=$unchanged"
                 val marker = target ?: return null
                 val owned = scene ?: return null
                 val viewport = host ?: return null
@@ -837,8 +931,10 @@ class CareOverlayTest {
                 if (!ready || !unchanged || scale != 0f || owned.packageName != instrumentation.context.packageName ||
                     marker.isEmpty || !hostBounds.contains(marker) || marker.left < viewport.left || marker.top < viewport.top ||
                     marker.right > viewport.right || marker.bottom > viewport.bottom ||
-                    (withFocus && (focus == null || focus != native || focus?.contains(marker) != true))) return null
-                return StaticGeometry(owned,viewport,marker,hostBounds,focusId,focus,native,mode)
+                    // A non-touchable/non-focusable visual window need not be in AX.
+                    // Its actual View must cover the target, and all four pixel bands below must render.
+                    (withFocus && (focus == null || (native != null && focus != native) || focus?.contains(marker) != true))) return null
+                return StaticGeometry(owned,viewport,marker,hostBounds,focusId,focus,native,parameters,mode)
             }
             fun save(bitmap: android.graphics.Bitmap, stage: String, target: Rect?) {
                 java.io.File(service.cacheDir,"care-static-$stage.png").outputStream().use {
@@ -1018,7 +1114,7 @@ class CareOverlayTest {
             }
             val copy=service.getString(com.openminis.app.R.string.nm_care_copy)
             assertReachable(copy) // The bounded in-panel menu may have scrolled past Copy.
-            click(copy)
+            click(copy,menuOnly = true)
             instrumentation.runOnMainSync {
                 assertEquals("fixture copy",service.getSystemService(ClipboardManager::class.java).primaryClip!!.getItemAt(0).text.toString())
                 assertTrue(session.controller.verifiedSteps.value.isEmpty())
@@ -1032,8 +1128,14 @@ class CareOverlayTest {
                 if(android.os.Build.VERSION.SDK_INT>=30) assertTrue(all.any { it.stateDescription?.isNotBlank()==true })
                 assertTrue(all.any { it.text?.toString()==service.getString(com.openminis.app.R.string.nm_care_awaiting) })
             }
-            automation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK)
-            automation.waitForIdle(300,5000)
+            saveCareBackEvidence("before")
+            val accepted = automation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK)
+            saveCareBackEvidence("dispatched",accepted)
+            assertTrue("Single native Back must be accepted",accepted)
+            awaitMain("Single Back must pause Care and clear its focus", onTimeout = {
+                saveCareBackEvidence("timeout",accepted)
+            }) { session.controller.state.value.state == CareState.Paused && window.focus.bounds == null }
+            saveCareBackEvidence("paused",accepted)
             instrumentation.runOnMainSync {
                 assertEquals(CareState.Paused,session.controller.state.value.state)
                 assertNull(window.focus.bounds)
