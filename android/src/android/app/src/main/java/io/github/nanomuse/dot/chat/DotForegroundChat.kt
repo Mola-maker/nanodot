@@ -85,8 +85,11 @@ fun DotForegroundChat(status: String? = null, onCollapse: () -> Unit,
 
                 }
             }
-            Box(Modifier.weight(1f).fillMaxWidth().testTag("dot_foreground_history")) {
-                CompositionLocalProvider(LocalDotForegroundTight provides tight,
+            BoxWithConstraints(Modifier.weight(1f).fillMaxWidth().testTag("dot_foreground_history")) {
+                // A naturally short card can still have ample history space. Compress message
+                // padding only when this viewport cannot fit a scaled Care line plus its 16dp inset.
+                val messageTight = maxHeight < with(density) { (DotTokens.Type.Care * 1.45f).toDp() } + 16.dp
+                CompositionLocalProvider(LocalDotForegroundTight provides messageTight,
                     LocalTextStyle provides LocalTextStyle.current.copy(background = dotGlassPlateColor())) {
                     Box(Modifier.fillMaxSize().then(if (more) Modifier.clearAndSetSemantics {} else Modifier)) { history() }
                 }
@@ -119,7 +122,7 @@ fun DotMessageBubble(user: Boolean, modifier: Modifier = Modifier, content: @Com
             shape = RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp,
                 bottomStart = if (user) 18.dp else 4.dp, bottomEnd = if (user) 4.dp else 18.dp), user = user, message = true) {
             CompositionLocalProvider(LocalTextStyle provides LocalTextStyle.current.copy(lineHeight = DotTokens.Type.Body * 1.45f)) {
-                // A short IME host can leave just 48dp for history; keep a scaled line fully visible.
+                // Only a constrained history viewport drops this inset to keep its line visible.
                 Column(Modifier.padding(horizontal = 12.dp, vertical = if (LocalDotForegroundTight.current) 0.dp else 8.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp), content = content)
             }

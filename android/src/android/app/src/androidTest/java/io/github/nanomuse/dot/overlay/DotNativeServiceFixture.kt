@@ -30,6 +30,27 @@ internal class DotNativeServiceFixture {
     private var oldEnabled: Boolean? = null
     private var connected: MinisAccessibilityService? = null
     private var ownsScene = false
+    private var receiptStarted = 0L
+    private var receiptKey: String? = null
+    private var lastFramework: DotNativeServiceState? = null
+    private var frameworkObservedAt = 0L
+    private fun readFramework(own: String): DotNativeServiceState {
+        val state = DotNativeServiceState.read(shell("dumpsys accessibility"), own)
+        lastFramework = state; frameworkObservedAt = SystemClock.uptimeMillis()
+        return state
+    }
+    private fun receipt(phase: String, state: DotNativeServiceState? = lastFramework) {
+        val local = onMain { MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true }
+        fun field(value: Boolean?) = if (state?.valid == true) value.toString() else "unknown"
+        val metadata = "phase=$phase parsed=${state?.valid == true} ownEnabled=${field(state?.enabled)} " +
+            "ownBinding=${field(state?.binding)} ownCrashed=${field(state?.crashed)} localConnected=$local"
+        if (metadata == receiptKey) return
+        receiptKey = metadata
+        val row = "DOT_NATIVE_SERVICE startUptime=$receiptStarted elapsedMs=${SystemClock.uptimeMillis() - receiptStarted} " +
+            "pid=${android.os.Process.myPid()} frameworkObservedUptime=$frameworkObservedAt $metadata\n"
+        println(row.trimEnd())
+        java.io.File(context.cacheDir, "dot-native-service-fixture.txt").appendText(row)
+    }
     private fun setting(key: String): String? = Settings.Secure.getString(context.contentResolver, key)
     private fun validate(key: String, value: String?) {
         require(key in setOf("enabled_accessibility_services", "accessibility_enabled"))
@@ -73,23 +94,40 @@ internal class DotNativeServiceFixture {
         originals = raw
         oldEnabled = DotPreferences(context).showOnAccessibilityConnected()
         oldFlags = automation.serviceInfo.flags
+        receiptStarted = SystemClock.uptimeMillis(); receiptKey = null
+        readFramework(own)
+        receipt("before")
         if (!onMain { MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true }) {
             restore("enabled_accessibility_services", granted.filter { it != own }.joinToString(":").ifEmpty { null })
-            await("Old framework binding must leave before regrant") {
-                shell("dumpsys accessibility").lineSequence()
-                    .filter { it.contains("Bound services:") || it.contains("Binding services:") }
-                    .none { it.contains("MinisAccessibilityService") }
+            receipt("remove_requested")
+            try {
+                await("Framework must acknowledge own service disabled before its single regrant") {
+                    val state = readFramework(own)
+                    receipt("await_disabled", state)
+                    state.isDisabled && !onMain { MinisAccessibilityService.getInstance()?.dotOverlay?.isConnected == true }
+                }
+            } catch (failure: AssertionError) {
+                receipt("disabled_timeout"); throw failure
             }
+            receipt("disabled_acknowledged")
             restore("enabled_accessibility_services", granted.joinToString(":"))
             restore("accessibility_enabled", "1")
+            receipt("regrant_once")
         }
-        await("Framework accessibility service must connect before testing owner behavior") {
-            onMain {
-                MinisAccessibilityService.getInstance()?.takeIf { it.dotOverlay.isConnected }?.let {
-                    connected = it; true
-                } ?: false
+        try {
+            await("Framework accessibility service must connect before testing owner behavior") {
+                onMain {
+                    MinisAccessibilityService.getInstance()?.takeIf { it.dotOverlay.isConnected }?.let {
+                        connected = it; true
+                    } ?: false
+                }
             }
+        } catch (failure: AssertionError) {
+            readFramework(own)
+            receipt("connect_timeout"); throw failure
         }
+        readFramework(own)
+        receipt("connected")
         instrumentation.runOnMainSync {
             val service = service()
             assertNull("Use an isolated scene without a mounted Dot panel", service.dotOverlay.panelView)

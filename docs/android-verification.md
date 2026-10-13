@@ -120,3 +120,24 @@ The earlier layout, glass, split-screen and real DeepSeek evidence remains bound
 - **Overlay attachment remains unresolved.** One serialized service rebind and subsequent UiAutomation observation showed no new crash. This does not fix the earlier `BadTokenException` or exclude a reattachment race.
 
 Keep the original Android-first delivery goal open. The harness limitation, unresolved attachment defect and remaining device/provider coverage prevent whole-assistant acceptance.
+
+## Care entry and message spacing (r14) — 2026-10-13 {#care-r14-2026-10-13}
+
+Message padding now follows the space available in the transcript. A naturally short 208dp Care card keeps 8dp above and below message text when that space is available; padding compresses only when the transcript cannot fit the scaled line and its insets. Native verification was pending at the r14 checkpoint; the r15 results follow below.
+
+The r14 real-provider attempt used an actual orb triple-tap, goal entry and Send tap. The original production SYSTEM and user JSON were preserved; the relay only adapted the output limit to `max_tokens=1024` and disabled thinking. DeepSeek returned HTTP 200 with 1,592 input and 153 output tokens: **transport passed, product flow failed**. Care remained in `Recovering` and did not display the returned instruction.
+
+This used a public two-page test host, so it does not establish third-party app support. Advancing the PageContains step requires explicit user confirmation, not automatic success. At this checkpoint, the fix to wait for the actual keyboard and layout to settle before Care sends was awaiting verification.
+
+
+## Two visible Care plans (r15) — 2026-10-13 {#care-r15-2026-10-13}
+
+The installed r15 pair used source fingerprint `9af766e7…`, main APK `ca33a2b7…` and test APK `582125b4…`. All 670 JVM tests passed. Two native message-layout methods passed: the natural 208dp card retained 8dp above and below the text, and the existing 18 combinations of font scale and constrained layout remained covered. Both real instruction bubbles also measured 8dp vertical padding.
+
+A fresh run on the public two-page test host followed the actual orb triple-tap, keyboard goal entry and Start guiding tap. After the keyboard and layout settled, Care displayed the first real instruction with a blue outline around Next page. The host button was tapped; **I completed this step** explicitly confirmed the transition. Care then displayed the second real instruction and an outline around Finish. Both DeepSeek requests returned HTTP 200: attempt #16 used 1,690 total tokens and #17 used 1,834. They preserved the production SYSTEM/user content, used the 1,024-token output cap with thinking disabled, and made one upstream attempt each with no retry or refusal.
+
+The run ended with Stop reaching `Paused`; Finish was not tapped, `Done` was not reached and there was no third request. Relay cleanup completed. This verifies two displayed plans and a user-confirmed transition on the test host, not automatic completion or third-party app coverage. Evidence is retained in `reset-r15-care-journey` and recheck run `0f619d9a-4fb3-4d14-83a0-4d872f5d03e2`.
+
+The separate native Care input/late-reply regression now **passes** (`reset-r15-care-input-events`, one method, host exit 0, 22.204s). This rerun used the same main APK `ca33a2b7…`, updated test APK `52668f0f…` and source fingerprint `ce093aa5…`. Two actual Send taps were above the visible keyboard; both subsequent captures recorded no native IME and no IME bounds in the snapshot. The two submissions produced exactly two captures and two held local planner calls. Stop left the session `Paused` after the delayed reply was released. This is a native fixture regression with a local planner, separate from the two real DeepSeek plans above.
+
+Both earlier failures remain recorded: `reset-r15-care-input` timed out in the `@Before` service-connection fixture; `reset-r15-care-input-rebind` passed that setup but stayed `Idle` because the isolated test window had not received the service's geometry events, leaving Send under the keyboard. The harness now waits for the framework to acknowledge removal of its own service grant, and the isolated test forwards the existing scene/geometry events before admitting a real Send tap. Neither failure establishes a new product crash. Real microphone ASR, audible TTS, historical `BadTokenException` and whole-assistant acceptance remain open. Earlier r12/r13 results retain their original APK identities.

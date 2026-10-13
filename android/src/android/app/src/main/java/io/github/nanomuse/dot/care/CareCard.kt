@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalDensity
 import io.github.nanomuse.dot.ui.LocalDotMotionEnabled
 import io.github.nanomuse.dot.chat.DotForegroundChat
@@ -59,7 +60,9 @@ internal fun CarePanel(session: CareSession, onCopy: () -> Unit, onRepeat: (Stri
     capsule: (@Composable (String) -> Unit)? = null, placementCompact: Boolean = false,
     onExpand: () -> Unit = {}, onAdjust: () -> Unit = {}, onDrag: (Float, Float) -> Unit = { _, _ -> },
     onContentHeightChanged: (Int) -> Unit = {},
-    onMenuDismissHandler: ((() -> Boolean)?) -> Unit = {}) {
+    onMenuDismissHandler: ((() -> Boolean)?) -> Unit = {},
+    onSubmitGoal: (String) -> Unit = { session.submitGoal(it) }) {
+    val focusManager = LocalFocusManager.current
     val state by session.controller.state.collectAsState()
     val editing by session.editingGoal.collectAsState()
     val history by session.conversation.state.collectAsState()
@@ -154,7 +157,7 @@ internal fun CarePanel(session: CareSession, onCopy: () -> Unit, onRepeat: (Stri
             CarePrimary.Submit -> Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 io.github.nanomuse.dot.chat.DotDraftField(goal, { if (it.length <= 2048) goal = it }, goalLabel,
                     Modifier.weight(1f), compact = placementCompact)
-                IconButton({ session.submitGoal(goal) }, enabled = goal.isNotBlank(), modifier = Modifier.size(DotTokens.TouchTarget)) {
+                IconButton({ focusManager.clearFocus(force = true); onSubmitGoal(goal) }, enabled = goal.isNotBlank(), modifier = Modifier.size(DotTokens.TouchTarget)) {
                     Icon(Icons.AutoMirrored.Filled.Send, stringResource(R.string.nm_care_start))
                 }
             }

@@ -7,6 +7,8 @@ import io.github.nanomuse.dot.screen.ScreenSnapshot
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,6 +46,8 @@ class CareController(
         private set
     private var revision = 0L
     private var work: Job? = null
+    private var initialInput: (suspend () -> Unit)? = null
+    private var inputAdmission: Deferred<Result<Unit>>? = null
     private var automatic = false
     private var active = false
     private var waiting: Step? = null
@@ -53,8 +57,10 @@ class CareController(
 
     init { require(debounceMs in 0..1000) }
 
-    fun start(goal: String) {
+    fun start(goal: String, beforeInitialSample: suspend () -> Unit = {}) {
         invalidate()
+        cancelInputAdmission()
+        initialInput = beforeInitialSample
         generation++
         history.value = emptyList()
         waiting = null
@@ -67,7 +73,7 @@ class CareController(
 
     fun pause() {
         if (!active) return
-        invalidate(); generation++
+        invalidate(); cancelInputAdmission(); generation++
         waiting = null; confirmation = false
         publish(CareState.Paused)
     }
@@ -79,7 +85,7 @@ class CareController(
     }
 
     fun cancel() {
-        invalidate(); generation++
+        invalidate(); cancelInputAdmission(); initialInput = null; generation++
         active = false; waiting = null; confirmation = false
         history.value = emptyList()
         mutableState.value = CareUiState()
@@ -88,7 +94,7 @@ class CareController(
     /** Explicit user task ending; never fabricates a verified step or model Done result. */
     fun finish() {
         if (!active) return
-        invalidate(); generation++
+        invalidate(); cancelInputAdmission(); initialInput = null; generation++
         active = false; waiting = null; confirmation = false
         publish(CareState.Completed)
     }
@@ -114,8 +120,11 @@ class CareController(
     fun reobserve() {
         if (!active || automatic || state.value.state == CareState.Paused) return
         waiting = null; confirmation = false
+        cancelInputAdmission() // Explicit retry may start a new bounded input handoff.
         observe()
     }
+
+    private fun cancelInputAdmission() { inputAdmission?.cancel(); inputAdmission = null }
 
     private fun observe(debounce: Boolean = false, userConfirmed: Boolean = false) {
         invalidate()
@@ -124,11 +133,31 @@ class CareController(
         val ticket = revision
         val task = generation
         val goal = state.value.goal
+        // This owner survives scene-triggered work cancellation: IME/layout events cannot
+        // bypass admission or keep extending its five-second deadline. Stop cancels it.
+        val admission = initialInput?.let { input ->
+            inputAdmission ?: scope.async {
+                try {
+                    withTimeout(5000) { input() }
+                    Result.success(Unit)
+                } catch (timeout: TimeoutCancellationException) {
+                    Result.failure(timeout)
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (failure: Exception) {
+                    Result.failure(failure)
+                }
+            }.also { inputAdmission = it }
+        }
         work = scope.launch {
             var owned: ScreenSnapshot? = null
             try {
+                if (!accepts(ticket, task, goal)) return@launch
+                admission?.await()?.getOrThrow()
+                if (!accepts(ticket, task, goal)) return@launch
                 if (debounce) delay(debounceMs) // Coalesces clues; never counts as completion evidence.
                 if (!accepts(ticket, task, goal)) return@launch
+                initialInput = null; inputAdmission = null
                 val requestedScene = currentScene() ?: run { recover("host_unavailable"); return@launch }
                 val outcome = withTimeout(5000) { sample(task).also { if (it is CaptureOutcome.Success) owned = it.snapshot } }
                 if (!accepts(ticket, task, goal)) return@launch

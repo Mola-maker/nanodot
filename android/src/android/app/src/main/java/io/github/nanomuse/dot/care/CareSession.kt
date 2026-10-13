@@ -15,11 +15,11 @@ class CareSession(val controller: CareController, private val clearFocus: () -> 
         visible.value = true
         editingGoal.value = controller.state.value.state in setOf(CareState.Idle, CareState.Completed)
     }
-    fun submitGoal(goal: String) {
+    fun submitGoal(goal: String, beforeInitialSample: suspend () -> Unit = {}) {
         clearFocus(); stopSpeech()
         conversation.userGoal(goal.trim())
         visible.value = true; editingGoal.value = false
-        controller.start(goal.trim())
+        controller.start(goal.trim(), beforeInitialSample)
     }
     fun changeGoal() {
         clearFocus(); stopSpeech(); controller.cancel()

@@ -1055,6 +1055,190 @@ class CareOverlayTest {
             }
         }
     }
+    /** Actual Compose input/IME and screenshot handoff with an inert delayed provider.
+     * Real service events also reach this isolated owner; this is not real-provider proof. */
+    @Test fun realGoalInputWaitsForImeBeforeCaptureAndStopRejectsLateReply() {
+        val service = nativeService.service()
+        val originalFlags = automation.serviceInfo.flags
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+        val replies = listOf(CompletableDeferred<Unit>(), CompletableDeferred<Unit>())
+        var captures = 0
+        var plans = 0
+        val captureIme = mutableListOf<Boolean>()
+        val snapshotIme = mutableListOf<RectPx?>()
+        val evidence = StringBuilder()
+        var eventListener: ((MinisAccessibilityService.RecordedEvent) -> Unit)? = null
+        var geometryEvents = 0
+        var sceneEvents = 0
+        @Suppress("DEPRECATION")
+        fun imeBounds(): List<Rect> {
+            val windows = service.windows
+            return try { windows.filter { it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_INPUT_METHOD }
+                .map { Rect().also(it::getBoundsInScreen) }.filterNot(Rect::isEmpty) }
+                finally { windows.forEach { it.recycle() } }
+        }
+        fun imeVisible(): Boolean = imeBounds().isNotEmpty()
+        fun writeEvidence(stage: String) {
+            instrumentation.runOnMainSync {
+                evidence.append("stage=$stage time=${SystemClock.uptimeMillis()} captures=$captures plans=$plans " +
+                    "captureIme=$captureIme snapshotIme=$snapshotIme geometryEvents=$geometryEvents sceneEvents=$sceneEvents state=${session.controller.state.value.state} " +
+                    "error=${session.controller.state.value.errorCode}\n")
+                java.io.File(service.cacheDir, "care-input-admission.txt").writeText(evidence.toString())
+            }
+        }
+        fun editAndSend() {
+            val frame = settledCareControls("input-editor")
+            var editor: Rect? = null
+            withNodes { all ->
+                val matches = all.filter { it.windowId == frame.owner && it.isVisibleToUser && it.isEnabled && it.isEditable }
+                assertEquals("One real Care goal editor", 1, matches.size)
+                editor = Rect().also(matches.single()::getBoundsInScreen)
+            }
+            val bounds = requireNotNull(editor)
+            assertTrue("Goal editor lies in its real card", frame.bounds.contains(bounds))
+            tap(bounds.exactCenterX(), bounds.exactCenterY())
+            awaitNativeState("Real editor focus and IME must be ready before text injection") {
+                var focused = false
+                withNodes { all -> focused = all.any { it.windowId == frame.owner && it.isEditable && it.isFocused } }
+                var ime = false
+                instrumentation.runOnMainSync { ime = imeVisible() }
+                focused && ime
+            }
+            instrumentation.sendStringSync("Touch public fixture")
+            awaitNativeState("Real Care editor must contain the injected public goal") {
+                var entered = false
+                withNodes { all -> entered = all.any { it.windowId == frame.owner && it.isEditable &&
+                    it.text?.toString() == "Touch public fixture" } }
+                entered
+            }
+            awaitMain("Actual IME must still be visible before Send") { imeVisible() }
+            val sendFrame = settledCareControls("input-send-after-ime")
+            val send = requireNotNull(careControlBounds(service.getString(com.openminis.app.R.string.nm_care_start), sendFrame)) {
+                "Actual Send must expose its complete 48dp click target"
+            }
+            instrumentation.runOnMainSync {
+                val host = requireNotNull(service.dotScreen.hostViewport())
+                val viewport = Rect(host.left.toInt(), host.top.toInt(), host.right.toInt(), host.bottom.toInt())
+                val keyboard = imeBounds()
+                val hit = viewport.contains(sendFrame.bounds) && viewport.contains(send) && keyboard.isNotEmpty() &&
+                    keyboard.none { Rect.intersects(it, sendFrame.bounds) || Rect.intersects(it, send) }
+                evidence.append("stage=send-hit time=${SystemClock.uptimeMillis()} owner=${sendFrame.owner} " +
+                    "card=${sendFrame.bounds} send=$send viewport=$viewport ime=$keyboard hit=$hit\n")
+                java.io.File(service.cacheDir, "care-input-admission.txt").writeText(evidence.toString())
+                assertTrue("Send and its card must lie in the current host viewport outside the actual IME", hit)
+            }
+            writeEvidence("ime-visible-before-send")
+            tap(send.exactCenterX(), send.exactCenterY()) // Exactly one physical Send, no semantics fallback.
+            awaitMain("The single real Send must leave Idle", onTimeout = { writeEvidence("send-outcome-timeout") }) {
+                session.controller.state.value.state != CareState.Idle
+            }
+            writeEvidence("send-dispatched")
+        }
+        try {
+            automation.serviceInfo = automation.serviceInfo.apply {
+                flags = flags or android.accessibilityservice.AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
+            }
+            instrumentation.context.startActivity(Intent(instrumentation.context, CareOverlayFixture::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            admitSettledCareFixture(service, "input-admission") {
+                val controller = CareController(scope, { generation ->
+                    captures++
+                    captureIme += imeVisible()
+                    service.dotScreen.capture(CapturePurpose.Care, generation).also { outcome ->
+                        if (outcome is CaptureOutcome.Success) snapshotIme += outcome.snapshot.imeBounds
+                    }
+                }, { service.dotScreen.currentSceneKey() }, { goal, snapshot, _ ->
+                    assertEquals("The real editor submission reaches the planner", "Touch public fixture", goal)
+                    val index = plans++
+                    check(index < replies.size) { "Unexpected duplicate planning request" }
+                    val reply = CarePlanner(FixtureProvider(), "Which control can you see?")
+                        .next(goal, snapshot, emptyList())
+                    // Deliberately return even after Stop, exercising the controller's stale-result guard.
+                    withContext(NonCancellable) { replies[index].await() }
+                    reply
+                })
+                session = CareSession(controller, { if (::window.isInitialized) window.clearFocus() }, {})
+                window = CareOverlayWindow(service, scope, session, { service.dotScreen.hostViewport() },
+                    { service.dotScreen.currentSceneKey() }, kotlinx.coroutines.flow.MutableStateFlow(
+                        io.github.nanomuse.dot.DotForegroundState(connected = true,
+                            mode = io.github.nanomuse.dot.DotForegroundMode.Care,
+                            operation = io.github.nanomuse.dot.DotForegroundOperation.CareWaiting)))
+                var previousScene = service.dotScreen.currentSceneKey()
+                val listener: (MinisAccessibilityService.RecordedEvent) -> Unit = {
+                    // The service updates dotScreen before delivering RecordedEvent. Its production
+                    // coordinator owns a different session; this isolated window needs the same wiring.
+                    scope.launch(Dispatchers.Main.immediate) {
+                        val next = service.dotScreen.currentSceneKey()
+                        val before = previousScene
+                        previousScene = next
+                        if (before != next) sceneEvents++
+                        session.sceneChanged(before, next)
+                        geometryEvents++
+                        window.refreshGeometry()
+                    }
+                }
+                eventListener = listener
+                service.addEventListener(listener)
+                session.enter()
+            }
+            editAndSend()
+            awaitMain("The first real input handoff must reach exactly one delayed fake plan",
+                onTimeout = { writeEvidence("first-plan-timeout") }) { plans == 1 }
+            // Keep the response pending for the duration of the observed real-provider first call.
+            SystemClock.sleep(2000)
+            writeEvidence("first-plan-held")
+            instrumentation.runOnMainSync {
+                assertEquals(1, captures); assertEquals(1, plans)
+                assertEquals(listOf(false), captureIme)
+                assertEquals(1, snapshotIme.size); assertNull(snapshotIme.single())
+                assertEquals(CareState.Observing, session.controller.state.value.state)
+                replies[0].complete(Unit)
+            }
+            awaitMain("The delayed first instruction and outline must render after the IME handoff") {
+                session.controller.state.value.state == CareState.AwaitingUser && window.focus.bounds != null
+            }
+            awaitNativeState("Actual returned instruction is visible") {
+                var visible = false
+                withNodes { all -> visible = all.any {
+                    it.isVisibleToUser && it.text?.toString() == "Touch the fixture target"
+                } }
+                visible
+            }
+            click(service.getString(com.openminis.app.R.string.nm_more))
+            val change = service.getString(com.openminis.app.R.string.nm_care_change_goal)
+            assertReachable(change); click(change)
+            editAndSend()
+            awaitMain("Second real input reaches its own single delayed plan") { plans == 2 }
+            click(service.getString(com.openminis.app.R.string.nm_dot_chat_stop))
+            awaitMain("Actual Stop pauses and hides Care before the late reply") {
+                session.controller.state.value.state == CareState.Paused && !session.visible.value && window.focus.bounds == null
+            }
+            instrumentation.runOnMainSync { replies[1].complete(Unit) }
+            SystemClock.sleep(300)
+            writeEvidence("stopped-after-late-reply")
+            instrumentation.runOnMainSync {
+                assertEquals(2, captures); assertEquals(2, plans)
+                assertEquals(listOf(false, false), captureIme)
+                assertEquals(2, snapshotIme.size); assertTrue(snapshotIme.all { it == null })
+                assertEquals(CareState.Paused, session.controller.state.value.state)
+                assertNull(session.controller.state.value.target); assertNull(window.focus.bounds)
+                assertTrue(session.controller.verifiedSteps.value.isEmpty())
+            }
+        } finally {
+            eventListener?.let(service::removeEventListener)
+            eventListener = null
+            try {
+                instrumentation.runOnMainSync {
+                    if (::session.isInitialized) session.disconnect()
+                    replies.forEach { it.complete(Unit) }
+                    if (::window.isInitialized) window.close()
+                    scope.cancel()
+                }
+                closeOwnedFixture(service)
+            } finally { automation.serviceInfo = automation.serviceInfo.apply { flags = originalFlags } }
+        }
+    }
+
     @Test fun oneTouchThroughTargetUserCopyBackPauseAndAccessibleControls() {
         val service=nativeService.service()
         val originalFlags=automation.serviceInfo.flags

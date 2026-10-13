@@ -4,6 +4,10 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Delayed Android Care's first screen sample until its goal editor and keyboard settled, with a cancellable five-second deadline that screen events cannot extend.
+
+- Adjusted Android foreground message padding to preserve 8dp above and below text when the transcript has room, including naturally short Care cards.
+
 - Kept Android Care target outlines visible at the top screen edge by preventing a second system-inset adjustment, while preserving touch-through and non-focusable behavior.
 
 - Excluded cached ARM sandbox assets from x86_64 Android emulator APKs when switching build profiles, while preserving default asset filters and arm64 payloads.

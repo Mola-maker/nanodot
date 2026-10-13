@@ -3,6 +3,7 @@ package com.openminis.app.accessibility
 import com.openminis.app.BuildConfig
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
+import android.content.Intent // nanoMuse: diagnostic-only unbind boundary.
 import android.graphics.Bitmap
 import android.graphics.ColorSpace
 import android.graphics.Path
@@ -61,14 +62,30 @@ class MinisAccessibilityService : AccessibilityService() {
 
     val nodeRegistry: NodeRegistry = NodeRegistry()
 
+    // nanoMuse: DEBUG-only attachment breadcrumbs; never expose tokens or screen content.
+    internal var dotConnectionSequence = 0
+        private set
+
+    private fun traceDotConnection(phase: String) {
+        if (!BuildConfig.DEBUG) return
+        android.util.Log.d("nanoMuse.DotAttach", "phase=$phase uptimeMs=${android.os.SystemClock.uptimeMillis()} " +
+            "pid=${android.os.Process.myPid()} tid=${android.os.Process.myTid()} " +
+            "service=${System.identityHashCode(this)} connection=$dotConnectionSequence " +
+            "published=${_instance === this}")
+    }
+
     override fun onCreate() {
         super.onCreate()
         _instance = this
+        traceDotConnection("service.created") // nanoMuse: identify same-PID replacement instances.
         AppLogger.info(TAG, "service created")
     }
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        // nanoMuse: record callback admission before lazy owners or native addView can fail.
+        if (BuildConfig.DEBUG) dotConnectionSequence++
+        traceDotConnection("service.connected.begin")
         _instance = this
         // nanoMuse: service connection, not onCreate, grants the overlay window token.
         dotOverlay.connect()
@@ -93,6 +110,15 @@ class MinisAccessibilityService : AccessibilityService() {
         } catch (t: Throwable) {
             AppLogger.warning(TAG, "markGranted failed: ${t.message}")
         }
+        traceDotConnection("service.connected.end") // nanoMuse: all connection work returned.
+    }
+
+    // nanoMuse: observe framework unbinding without changing its return value or teardown order.
+    override fun onUnbind(intent: Intent?): Boolean {
+        traceDotConnection("service.unbind.begin")
+        val result = super.onUnbind(intent)
+        traceDotConnection("service.unbind.end")
+        return result
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -120,15 +146,18 @@ class MinisAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
+        traceDotConnection("service.interrupt.begin") // nanoMuse: separate interrupt from unbind.
         // nanoMuse: interruption clears pending gestures and every Dot window.
         dotInteraction.disconnect()
         dotOverlay.disconnect()
         // nanoMuse: disconnect also revokes the legacy projection session.
         dotScreen.disconnect()
         AppLogger.info(TAG, "service interrupted")
+        traceDotConnection("service.interrupt.end") // nanoMuse: teardown observation only.
     }
 
     override fun onDestroy() {
+        traceDotConnection("service.destroy.begin") // nanoMuse: observe before owner teardown.
         // nanoMuse: dispose window composition and owners before the service goes away.
         dotInteraction.disconnect()
         dotOverlay.disconnect()
@@ -140,6 +169,7 @@ class MinisAccessibilityService : AccessibilityService() {
         nodeRegistry.clear()
         eventListeners.clear()
         AppLogger.info(TAG, "service destroyed")
+        traceDotConnection("service.destroy.end") // nanoMuse: publication has now been cleared.
     }
 
     fun snapshotEvents(): List<RecordedEvent> = eventRing.toList()

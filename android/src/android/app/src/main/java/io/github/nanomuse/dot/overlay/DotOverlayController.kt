@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.openminis.app.R
+import com.openminis.app.BuildConfig
 import com.openminis.app.ui.settings.PREF_APPEARANCE
 import io.github.nanomuse.dot.DotDefaults
 import io.github.nanomuse.dot.DotPreferences
@@ -255,6 +256,29 @@ class DotOverlayController(
     private var downPosition: Pair<Int, Int>? = null
     private var blockedTouch = false
     private val registry = DotWindowRegistry(::addWindow, ::removeWindow)
+    private var attachAttemptSequence = 0
+
+    @Suppress("DEPRECATION") // Read the cached manager's target display without another WM lookup.
+    private fun traceAttachment(
+        phase: String,
+        attempt: Int = 0,
+        kind: OverlayKind? = null,
+        layout: WindowManager.LayoutParams? = null,
+        view: View? = null,
+        failure: RuntimeException? = null,
+    ) {
+        if (!BuildConfig.DEBUG) return
+        android.util.Log.d("nanoMuse.DotAttach", "phase=$phase uptimeMs=${SystemClock.uptimeMillis()} " +
+            "pid=${android.os.Process.myPid()} tid=${android.os.Process.myTid()} " +
+            "service=${System.identityHashCode(service)} " +
+            "connection=${(service as? MinisAccessibilityService)?.dotConnectionSequence ?: 0} " +
+            "controller=${System.identityHashCode(this)} wm=${System.identityHashCode(windows)} " +
+            "connected=$isConnected registryCount=${registry.size} display=${windows.defaultDisplay.displayId} " +
+            "attempt=$attempt kind=$kind type=${layout?.type} paramsPresent=${layout != null} " +
+            "tokenNull=${layout?.token == null} tokenIdentity=${layout?.token?.let { System.identityHashCode(it) } ?: 0} " +
+            "viewAttached=${view?.isAttachedToWindow == true} failure=${failure?.javaClass?.simpleName}")
+    }
+
     private val preferenceListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == DotDefaults.SHOW_ON_ACCESSIBILITY_CONNECTED) {
             handler.post { if (isConnected) setEnabled(preferences.showOnAccessibilityConnected()) }
@@ -276,6 +300,7 @@ class DotOverlayController(
 
     fun connect() {
         checkMainThread()
+        traceAttachment("controller.connect.begin")
         if (!isConnected) {
             isConnected = true
             enabled = preferences.showOnAccessibilityConnected()
@@ -290,10 +315,12 @@ class DotOverlayController(
             displays.registerDisplayListener(displayListener, handler)
         }
         sync()
+        traceAttachment("controller.connect.end")
     }
 
     fun disconnect() {
         checkMainThread()
+        traceAttachment("controller.disconnect.begin")
         setForegroundTarget(null)
         cancelCaptureScan()
         cancelGesture()
@@ -304,6 +331,7 @@ class DotOverlayController(
             displays.unregisterDisplayListener(displayListener)
         }
         sync()
+        traceAttachment("controller.disconnect.end")
     }
 
     fun setLocked(locked: Boolean) {
@@ -632,10 +660,16 @@ class DotOverlayController(
         val bounds = availableBounds()
         if (bounds != null) restorePosition(p, bounds)
         else view.alpha = 0f // Never show at a guessed origin before the native parent is known.
+        val attempt = if (BuildConfig.DEBUG) ++attachAttemptSequence else 0
+        traceAttachment("add.begin", attempt, kind, p, view)
         try {
             windows.addView(view, p)
+            // addView applies the framework default token to p before returning or throwing.
+            traceAttachment("add.returned", attempt, kind, p, view)
             owner.start()
+            traceAttachment("add.success", attempt, kind, p, view)
         } catch (failure: RuntimeException) {
+            traceAttachment("add.failure", attempt, kind, p, view, failure)
             owner.destroy()
             composition.disposeComposition()
             throw failure
