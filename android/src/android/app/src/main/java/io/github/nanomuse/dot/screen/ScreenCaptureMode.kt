@@ -12,3 +12,7 @@ internal fun screenCaptureMode(sdk: Int, purpose: CapturePurpose, pixelsRequeste
     purpose in setOf(CapturePurpose.Chat, CapturePurpose.Selection) -> ScreenCaptureMode.Nodes
     else -> ScreenCaptureMode.Display
 }
+
+/** Frame used for both snapshot admission and its screen-to-local transform. */
+internal fun captureBounds(mode: ScreenCaptureMode, host: RectPx, display: RectPx): RectPx =
+    if (mode != ScreenCaptureMode.Display) host else display

@@ -154,11 +154,14 @@ class DotChatAdapter(
             if (local != null) {
                 // One owned inbound copy at a time; repeated taps never duplicate an attachment.
                 if (owned != null) return false
-                // Canonical document attachments expose metadata, not their bytes, in the first
-                // model request. Put admitted node evidence in the same canonical user message.
-                local.regionText?.let { message = listOf(text, it.readText()).filter { it.isNotBlank() }.joinToString("\n\n") }
                 // Re-evaluate at Send: model choice can change during the local pixel preview.
-                if (local.regionText == null || (!local.textOnly && target.supportsImages())) {
+                val sendRegionImage = !local.textOnly && target.supportsImages()
+                // Visual questions use the actual masked crop. Node text remains an explicit
+                // fallback when this capture or the currently selected model cannot send pixels.
+                if (!sendRegionImage) local.regionText?.let {
+                    message = listOf(text, it.readText()).filter { it.isNotBlank() }.joinToString("\n\n")
+                }
+                if (local.regionText == null || sendRegionImage) {
                     val attachment = target.stage(local.file) ?: return false
                     owned = Owned(attachment)
                 }

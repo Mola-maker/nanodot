@@ -64,7 +64,8 @@ class DotInteractionCoordinator internal constructor(
         { generation ->
             refreshAccount()
             val ticket = foreground.ticket()
-            val outcome = service.dotScreen.capture(CapturePurpose.Care, generation)
+            // Care planning and verification consume fresh host nodes, not screenshot pixels.
+            val outcome = nodeCapture(generation)
             if (!admitted(ticket)) {
                 (outcome as? CaptureOutcome.Success)?.snapshot?.close()
                 throw CancellationException("Foreground admission ended")
@@ -147,10 +148,26 @@ class DotInteractionCoordinator internal constructor(
         close()
         if (careWindow == null) careWindow = CareOverlayWindow(service,scope,careSession,
             { service.dotScreen.hostViewport() }, { service.dotScreen.currentSceneKey() },
-            foreground = foreground.state, onStop = { pauseCare(hide = true) })
+            foreground = foreground.state, onStop = ::stopCare)
         careSession.enter()
         foreground.update(DotForegroundMode.Care, null, DotForegroundOperation.Idle)
         project()
+    }
+
+    private fun stopCare() {
+        val state = foreground.state.value
+        val binding = state.binding
+        if (state.mode in setOf(DotForegroundMode.Screen, DotForegroundMode.Chat) && binding != null) {
+            stopChatReply(binding)
+        } else {
+            if (state.mode == DotForegroundMode.Idle) {
+                // A conversation may still be resolving its session before it has a binding.
+                foreground.invalidate()
+                opening?.cancel()
+                capturing.value = false
+            }
+            pauseCare(hide = true)
+        }
     }
 
     /** Explicit main-app session entry switches admission; opening our panel alone never does. */
@@ -216,16 +233,43 @@ class DotInteractionCoordinator internal constructor(
 
     private fun openConversation(intent: DotIntent, startVoice: Boolean = false,
         selection: Pair<RegionSelection,SelectionOrigin>? = null) {
-        pauseCare(hide=true)
-        opening?.cancel()
-        // The old panel's collapse callback invalidates its admission before the new ticket exists.
-        service.dotOverlay.collapsePanel()
+        // Keep the old focusable card until the new one owns native focus. Removing it
+        // first briefly refocuses the host and invalidates the selected scene.
+        val heldCare = careOwner?.takeIf { selection != null && it.visible.value }
+        val heldCareWindow = careWindow
+        pauseCare(hide = heldCare == null)
+        val heldPanel = selection?.let {
+            service.dotOverlay.retainedPanel(adapter, foreground.state, it.second.scene.windowId)
+        }
+        // A selection can keep its focused window while revoking all previous work.
+        // Ordinary entry still collapses before the new ticket exists.
+        if (heldPanel == null) service.dotOverlay.collapsePanel()
         foreground.invalidate()
+        opening?.cancel()
+        projection?.cancel()
+        service.dotOverlay.cancelCaptureScan()
+        service.dotOverlay.clearSelectionOutline()
+        adapter.binding.value?.let(adapter::cancel)
         capturing.value = false
         val ticket = foreground.ticket()
         opening = scope.launch {
+            var careHandoffPending = heldCare != null
+            fun releaseHeldCare() {
+                if (careHandoffPending && careOwner === heldCare && careWindow === heldCareWindow) {
+                    heldCare?.pause(hide = true)
+                    heldCareWindow?.hide()
+                }
+                careHandoffPending = false
+            }
+            try {
             val id = com.openminis.app.ui.chat.ChatViewModelStore.activeSessionId ?: MainChat.sessionId.value ?: MainChat.resolve(app,app.chatRepository)
             if (!admitted(ticket) || !service.dotOverlay.isConnected) return@launch
+            if (heldPanel != null && service.dotOverlay.retainedPanel(adapter, foreground.state,
+                    requireNotNull(selection).second.scene.windowId) !== heldPanel) {
+                // Never let an old collapse callback revoke a newly created binding.
+                close()
+                return@launch
+            }
             val binding = adapter.bind(id)
             foreground.update(if (intent == DotIntent.Double) DotForegroundMode.Screen else DotForegroundMode.Chat,
                 binding, DotForegroundOperation.Idle)
@@ -236,8 +280,19 @@ class DotInteractionCoordinator internal constructor(
             project()
             // Keep the owned cancellation surface mounted throughout capture and fallback.
             // The repository uses host-window pixels or fresh nodes while these controls are visible.
-            service.dotOverlay.showPanel(adapter, onStop = ::stopChatReply, foreground = foreground.state) { close() }
+            if (heldPanel == null) service.dotOverlay.showPanel(adapter, onStop = ::stopChatReply, foreground = foreground.state) { close() }
             if (!admitted(ticket, binding)) return@launch
+            if (careHandoffPending) {
+                val panel = service.dotOverlay.panelView
+                val focused = panel != null && awaitPanelFocus(panel) { admitted(ticket, binding) }
+                if (!admitted(ticket, binding)) return@launch
+                if (!focused) {
+                    adapter.captureError.value = true
+                    capturing.value = false
+                    return@launch
+                }
+                releaseHeldCare()
+            }
             if (startVoice && service.dotOverlay.panelView != null) adapter.voice?.primaryAction()
             if (intent == DotIntent.Double) {
                 service.dotOverlay.beginCaptureScan(ticket.epoch)
@@ -297,14 +352,35 @@ class DotInteractionCoordinator internal constructor(
                     if (foreground.accepts(ticket)) capturing.value = false
                 }
             }
+            } finally {
+                // A replacement Care/Chat admission owns its own windows. Stop and close
+                // release the retained card explicitly before cancelling this job.
+                if (foreground.accepts(ticket)) releaseHeldCare()
+            }
         }
     }
+
+    private suspend fun awaitPanelFocus(panel: android.view.View, admitted: () -> Boolean): Boolean =
+        withTimeoutOrNull(2_000) {
+            while (!panel.isAttachedToWindow || !panel.hasWindowFocus()) {
+                if (!admitted() || service.dotOverlay.panelView !== panel) return@withTimeoutOrNull false
+                suspendCancellableCoroutine<Unit> { continuation ->
+                    val frame = Runnable { if (continuation.isActive) continuation.resumeWith(Result.success(Unit)) }
+                    panel.postOnAnimation(frame)
+                    continuation.invokeOnCancellation { panel.removeCallbacks(frame) }
+                }
+            }
+            admitted() && service.dotOverlay.panelView === panel
+        } == true
 
     /** Stop the owned stream, retaining the mounted panel and canonical history. */
     fun stopChatReply(binding: SessionBinding) {
         if (!foreground.state.value.connected) return
         refreshAccount()
         if (!adapter.accepts(binding)) return
+        // Stop also releases a Care card retained during native focus handoff.
+        careOwner?.pause(hide = true)
+        careWindow?.hide()
         service.dotOverlay.clearSelectionOutline()
         service.dotOverlay.dismissOrbMenu()
         val mode = foreground.state.value.mode

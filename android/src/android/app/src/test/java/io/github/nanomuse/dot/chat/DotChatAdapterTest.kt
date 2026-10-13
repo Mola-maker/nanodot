@@ -83,7 +83,7 @@ class DotChatAdapterTest {
             assertEquals(1,session.sends)
         } finally { adapter.cancel(binding); crop.delete(); selected.delete() }
     }
-    @Test fun pixelPreviewRechecksModelCapabilityAtSendAndIncludesSelectedText() {
+    @Test fun pixelPreviewRechecksModelCapabilityAndSendsPixelsWithoutNodeAnswers() {
         // This adapter boundary owns staged files, not Android Bitmap creation; native crop tests
         // establish pixels separately. A PNG preview with textOnly=false exercises capability routing.
         for ((before, atSend) in listOf(false to false, true to true, true to false, false to true)) {
@@ -96,7 +96,12 @@ class DotChatAdapterTest {
                 adapter.preview.value = DotPreview(crop, 1234, false, selected)
                 session.images = atSend
                 assertTrue(adapter.send(binding, "Describe"))
-                assertTrue("Canonical message must contain admitted text", session.sentText!!.contains("INSIDE_NODE"))
+                if (atSend) {
+                    assertEquals("Image questions must be grounded in the staged crop, not appended node answers",
+                        "Describe", session.sentText)
+                } else {
+                    assertEquals("Text fallback preserves selected node evidence", "Describe\n\nINSIDE_NODE", session.sentText)
+                }
                 assertEquals("Send uses current explicit image capability", if (atSend) 1 else 0, session.stages)
                 if (atSend) assertEquals("masked pixel fixture", session.durable!!.readText())
                 assertFalse(crop.exists()); assertFalse(selected.exists())

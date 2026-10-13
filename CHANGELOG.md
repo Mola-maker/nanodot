@@ -4,6 +4,12 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Preserved the Care card until region chat gained focus and retained the focused conversation for later selections, with Stop available throughout.
+
+- Sampled fresh host-bounded accessibility nodes for Android Care planning and verification, avoiding unused screenshot requests and their rate limit.
+
+- Sent Android region questions with their masked image, without appended accessibility-node answers, when the selected model explicitly supports images; retained the selected-text fallback for other models.
+
 - Refined Android foreground cobalt glass with fading inner edges, corner highlights and softer input borders; kept streaming reply tails visible through finalization and viewport shrink while preserving manual reading positions.
 
 - Connected closed crystal-orb drags to foreground region previews, masked outside/password pixels and excluded crossing or aggregating text nodes; sent selected accessible text through the canonical user message and attached pixels only for explicitly image-capable models.

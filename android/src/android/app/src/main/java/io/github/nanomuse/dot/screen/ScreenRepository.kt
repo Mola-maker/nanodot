@@ -86,7 +86,7 @@ class ScreenRepository(private val service: AccessibilityService, private val ov
                             var pixels: Bitmap? = null
                             try {
                                 val windowCapture = mode == ScreenCaptureMode.Window
-                                val captureBounds = if (windowCapture) before.frame.bounds else before.displayBounds
+                                val captureBounds = captureBounds(mode, before.frame.bounds, before.displayBounds)
                                 if (mode != ScreenCaptureMode.Nodes && Build.VERSION.SDK_INT >= 30) {
                                     val raw = accessibilityCapture(before.frame, windowCapture)
                                     raw.use {

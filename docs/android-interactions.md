@@ -16,7 +16,15 @@ When reading the newest message, the transcript follows streaming text, its fina
 
 The default main-chat avatar uses the same retained blue crystal atlas as the orb. Existing user-selected and Hidden avatars remain respected. Generator-owned copy uses Dot and crystal examples across the 17 supported locales. Genuine upstream attribution, internal compatibility names and nanoMuse Cloud service identity remain explicit.
 
+## Selected-region questions
+
+A closed orb drag opens a masked region preview in the existing foreground conversation. If Care was active, it pauses before this conversation opens; selecting a region does not verify or complete the pending Care step. Subsequent questions use the same canonical conversation history. During the Care-to-Screen handoff, the existing Care card remains available until the new conversation owns focus; Stop can cancel this wait. Further selections on the same host keep the existing conversation card focused while replacing the pending preview.
+
+At Send, a pixel preview and a model that explicitly declares image input send the question with the cropped image. Selected accessibility-node text is not appended to this visual question. If pixels or image capability are unavailable, the existing selected-text fallback remains; that route does not establish image understanding. Changing the model before Send rechecks this choice. Stop and reselect retain their existing cancellation and attachment ownership.
+
 ## Care instruction presentation
+
+Care planning and step verification read fresh accessibility nodes within the current host bounds; they do not request an unused screenshot. Region questions use the separate image path described above. Screenshot-specific protected/blank-image errors belong to pixel capture, not node sampling.
 
 Care draws a blue outline around the currently validated target. There is no target-to-chat leader. A separate touch-through instruction appears, reveals whole Unicode graphemes, stays readable briefly and disappears. The complete instruction appears immediately in bottom chat and remains there. Text placement avoids the target and the whole chat card inside the observed host/keyboard viewport; when it cannot fit, bottom chat carries the instruction alone.
 

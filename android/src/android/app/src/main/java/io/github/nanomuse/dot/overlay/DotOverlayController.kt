@@ -488,6 +488,20 @@ class DotOverlayController(
         }
     }
 
+    /** Only the same owner and host can retain a native focused conversation window. */
+    internal fun retainedPanel(adapter: DotChatAdapter,
+        foreground: kotlinx.coroutines.flow.StateFlow<io.github.nanomuse.dot.DotForegroundState>,
+        hostWindowId: Int): View? {
+        checkMainThread()
+        return panelView?.takeIf {
+            isConnected && enabled && !locked && it.isAttachedToWindow && it.hasWindowFocus() &&
+                panelAdapter === adapter && panelForeground === foreground &&
+                panelHostWindowId == hostWindowId &&
+                (service as? MinisAccessibilityService)?.dotScreen?.hostWindowId() == hostWindowId &&
+                hostViewport() != null
+        }
+    }
+
     fun showPanel(adapter: DotChatAdapter, onStop: ((io.github.nanomuse.dot.chat.SessionBinding) -> Unit)? = null,
         foreground: kotlinx.coroutines.flow.StateFlow<io.github.nanomuse.dot.DotForegroundState>? = null, onCollapse: () -> Unit) {
         checkMainThread()
