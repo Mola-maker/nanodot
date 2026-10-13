@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 from pathlib import Path
 from types import ModuleType
 
@@ -99,20 +100,48 @@ def test_main_rewrites_every_readme_and_check_reports_the_ones_behind(
     assert "nothing to do" in capsys.readouterr().out
 
 
-def test_the_ten_readmes_keep_upstream_cards_and_use_nanodot_identity(script: ModuleType) -> None:
+def upstream_archive_bounds(text: str) -> tuple[int, int]:
+    summary = "<summary>nanoMuse</summary>"
+    assert text.count(summary) == 1, "Expected one nanoMuse archive summary"
+    summary_start = text.index(summary)
+    opened: list[int] = []
+    for tag in re.finditer(r"<(/?)details\b[^>]*>", text):
+        if not tag[1]:
+            opened.append(tag.start())
+        else:
+            assert opened, "Unmatched closing details tag"
+            start = opened.pop()
+            if start < summary_start < tag.start():
+                return start, tag.start()
+    raise AssertionError("nanoMuse archive must be inside a closed details block")
+
+
+@pytest.mark.parametrize("extra_details", ["none", "before", "nested"])
+def test_the_ten_readmes_keep_upstream_cards_and_use_nanodot_identity(
+    script: ModuleType, extra_details: str
+) -> None:
     paths = script.readmes()
     assert len(paths) == 10 and paths[0] == ROOT / "README.md"
     for path in paths:
         text = path.read_text(encoding="utf-8")
+        unrelated = "<details>\n<summary>More languages</summary>\nLanguage links\n</details>\n"
+        if extra_details == "before":
+            text = text.replace("# Nanodot\n", "# Nanodot\n\n" + unrelated, 1)
+        elif extra_details == "nested":
+            summary = "<summary>nanoMuse</summary>"
+            text = text.replace(summary, summary + "\n" + unrelated, 1)
         assert text.startswith("# Nanodot\n"), path.name
         assert "https://github.com/Mola-maker/nanodot" in text, path.name
         assert text.count(script.START) == 1 and text.count(script.END) == 1, path.name
         assert text.index(script.START) < text.index(script.END), path.name
         assert 'href="https://github.com/lgy0404"' in text, path.name
         assert "visitor-badge.laobi.icu/badge?page_id=Mola-maker.nanodot" in text, path.name
-        archive_start = text.index("<details>")
-        archive_end = text.index("</details>")
-        assert archive_start < text.index('href="https://github.com/lgy0404"') < archive_end
-        assert archive_start < text.index(script.START) < text.index(script.END) < archive_end
+        archive_start, archive_end = upstream_archive_bounds(text)
+        assert archive_start < text.index('href="https://github.com/lgy0404"') < archive_end, (
+            path.name
+        )
+        assert archive_start < text.index(script.START) < text.index(script.END) < archive_end, (
+            path.name
+        )
         assert "https://github.com/nano-muse/nanoMuse/releases" in text, path.name
         assert "lgy0404" not in text[text.index(script.START) : text.index(script.END)], path.name
