@@ -2,6 +2,7 @@ package io.github.nanomuse.dot.chat
 
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,6 +22,9 @@ import com.openminis.app.R
 import io.github.nanomuse.dot.ui.DotTokens
 import java.text.DateFormat
 import java.util.Date
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 
 /** The service's focusable accessibility window renders the same VM state as the main chat. */
 @Composable
@@ -54,10 +58,45 @@ fun DotChatPanel(adapter: DotChatAdapter, onCollapse: () -> Unit, onStop: (Sessi
     val listState = rememberLazyListState()
     SideEffect { onTranscriptState(listState) }
     val motion=io.github.nanomuse.dot.ui.LocalDotMotionEnabled.current
-    LaunchedEffect(messages.size, preview) {
-        if (listState.layoutInfo.totalItemsCount > 0) {
-            if(motion) listState.animateScrollToItem(listState.layoutInfo.totalItemsCount - 1)
-            else listState.scrollToItem(listState.layoutInfo.totalItemsCount - 1)
+    var followTail by remember(session) { mutableStateOf(true) }
+    var ownScroll by remember(session) { mutableStateOf(false) }
+    LaunchedEffect(session, listState) {
+        listState.interactionSource.interactions.collect { interaction ->
+            // A finger interrupts follow immediately, including an in-flight animation.
+            if (interaction is DragInteraction.Start) followTail = false
+        }
+    }
+    LaunchedEffect(session, listState) {
+        var externalScroll = false
+        snapshotFlow { Triple(listState.isScrollInProgress, ownScroll, listState.canScrollForward) }
+            .collect { (scrolling, owned, forward) ->
+                if (scrolling && !owned) {
+                    externalScroll = true
+                    followTail = false
+                }
+                if (!scrolling && externalScroll) {
+                    externalScroll = false
+                    followTail = !forward
+                }
+            }
+    }
+    LaunchedEffect(session, listState, motion) {
+        snapshotFlow {
+            val layout = listState.layoutInfo
+            // Observe measured growth/finalization and resize, after Compose has laid them out.
+            followTail to Triple(layout.totalItemsCount, layout.viewportSize,
+                layout.visibleItemsInfo.map { it.index to it.size })
+        }.collect { (following, layout) ->
+            if (following && layout.first > 0 && !listState.isScrollInProgress && listState.canScrollForward) {
+                ownScroll = true
+                try {
+                    if (motion) listState.animateScrollToItem(layout.first - 1)
+                    else listState.scrollToItem(layout.first - 1)
+                } catch (_: CancellationException) {
+                    // User input can cancel this scroll without terminating future follow.
+                    currentCoroutineContext().ensureActive()
+                } finally { ownScroll = false }
+            }
         }
     }
     val visibleMessages = messages.filterNot { it.isInternalBridge }

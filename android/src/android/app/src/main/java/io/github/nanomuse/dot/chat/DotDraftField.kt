@@ -24,13 +24,13 @@ import io.github.nanomuse.dot.ui.dotGlassPlateColor
 fun DotDraftField(value: String, onValueChange: (String) -> Unit, label: String,
     modifier: Modifier = Modifier, compact: Boolean = false) {
     val singleLine = LocalDotForegroundTight.current || compact
-    val shape = RoundedCornerShape(12.dp)
+    val shape = RoundedCornerShape(18.dp)
     val style = LocalTextStyle.current.copy(fontSize = DotTokens.Type.Body,
         lineHeight = 20.sp, color = Color.White)
     BasicTextField(value, onValueChange,
         modifier.heightIn(min = DotTokens.TouchTarget).semantics { contentDescription = label }
             .clip(shape).background(dotGlassPlateColor())
-            .border(.75.dp, Color(0xFFB9DCFF).copy(alpha = .48f), shape)
+            .border(.75.dp, Color(0xFFB9DCFF).copy(alpha = .26f), shape)
             .padding(horizontal = 8.dp, vertical = 4.dp),
         textStyle = style, cursorBrush = SolidColor(Color.White),
         singleLine = singleLine, maxLines = if (singleLine) 1 else 2,

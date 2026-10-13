@@ -40,11 +40,11 @@ fun DotGlassSurface(modifier: Modifier = Modifier, content: @Composable BoxScope
     MaterialTheme(colorScheme = colors) {
         CompositionLocalProvider(LocalContentColor provides colors.onSurface) {
             Box(modifier.clip(shape)
-                .background(Color(0xFF0047AB).copy(alpha = .22f))
+                .background(Color(0xFF0047AB).copy(alpha = .28f))
                 .drawWithCache {
                     val wash = Brush.linearGradient(listOf(
-                        Color(0xFF9BD7FF).copy(alpha = .025f), Color.Transparent,
-                        Color(0xFF307BE1).copy(alpha = .025f)
+                        Color(0xFF9BD7FF).copy(alpha = .012f), Color.Transparent,
+                        Color(0xFF307BE1).copy(alpha = .012f)
                     ), end = Offset(size.width, size.height))
                     // A continuous cap supports white toolbar text over any host. Empty history
                     // below it keeps the actual host contrast; no host capture or blur is involved.
@@ -55,40 +55,67 @@ fun DotGlassSurface(modifier: Modifier = Modifier, content: @Composable BoxScope
                         endY = 96.dp.toPx()
                     )
                     val rim = Brush.linearGradient(listOf(
-                        Color(0xFFE5F6FF).copy(alpha = .90f),
-                        Color(0xFF7ABBFF).copy(alpha = .36f),
-                        Color(0xFF2869BC).copy(alpha = .65f),
-                        Color(0xFFC1E7FF).copy(alpha = .68f)
+                        Color(0xFFE5F6FF).copy(alpha = .88f),
+                        Color(0xFF448DE9).copy(alpha = .22f),
+                        Color(0xFF003270).copy(alpha = .72f),
+                        Color(0xFFC1E7FF).copy(alpha = .78f)
                     ), end = Offset(size.width, size.height))
+                    val bevel = Brush.linearGradient(listOf(
+                        Color(0xFF77BFFF).copy(alpha = .22f),
+                        Color(0xFF0754BD).copy(alpha = .34f),
+                        Color(0xFF002962).copy(alpha = .54f)
+                    ), end = Offset(size.width * .72f, size.height))
                     val innerRim = Brush.linearGradient(listOf(
-                        Color(0xFFB9E6FF).copy(alpha = .50f),
-                        Color(0xFF175CC3).copy(alpha = .12f),
-                        Color(0xFFE2F3FF).copy(alpha = .42f)
-                    ), start = Offset(size.width, 0f), end = Offset(0f, size.height))
+                        Color(0xFF002962).copy(alpha = .46f),
+                        Color(0xFF175CC3).copy(alpha = .08f),
+                        Color(0xFFB9E6FF).copy(alpha = .30f)
+                    ), end = Offset(size.width, size.height))
                     val glint = Brush.horizontalGradient(listOf(Color.Transparent,
                         Color.White.copy(alpha = .72f), Color.Transparent),
                         startX = 24.dp.toPx(), endX = size.width * .58f)
-                    onDrawBehind {
+                    onDrawWithContent {
                         drawRect(wash)
                         drawRect(cap)
-                        // Optical depth stays inside the 4dp rim; it does not cast a gray shadow
-                        // or place a bright reflection behind the toolbar's text.
-                        val depthInset = 2.dp.toPx()
-                        drawRoundRect(Color(0xFF003270).copy(alpha = .56f),
-                            topLeft = Offset(depthInset, depthInset),
-                            size = Size((size.width - depthInset * 2).coerceAtLeast(0f),
-                                (size.height - depthInset * 2).coerceAtLeast(0f)),
-                            cornerRadius = CornerRadius(22.dp.toPx()), style = Stroke(3.dp.toPx()))
+                        drawContent()
+                        // A broad inward bevel and opposing inner edge give the transparent
+                        // body thickness. Fade toward the interior; keep the edge above the
+                        // composer, whose tight layout can reach the bottom of this surface.
+                        // Every radius shares the outer 24dp corner center.
+                        val band = 7.dp.toPx().coerceAtMost(size.minDimension / 8f)
+                        repeat(7) { layer ->
+                            val depthInset = (layer + .5f) * band / 7f
+                            drawRoundRect(bevel,
+                                topLeft = Offset(depthInset, depthInset),
+                                size = Size((size.width - depthInset * 2).coerceAtLeast(0f),
+                                    (size.height - depthInset * 2).coerceAtLeast(0f)),
+                                cornerRadius = CornerRadius((24.dp.toPx() - depthInset).coerceAtLeast(0f)),
+                                alpha = 1f - layer / 8f, style = Stroke(band / 7f * 1.25f))
+                        }
                         val outerInset = .5.dp.toPx()
                         drawRoundRect(rim, topLeft = Offset(outerInset, outerInset),
                             size = Size((size.width - outerInset * 2).coerceAtLeast(0f),
                                 (size.height - outerInset * 2).coerceAtLeast(0f)),
                             cornerRadius = CornerRadius(23.5.dp.toPx()), style = Stroke(1.dp.toPx()))
-                        val innerInset = 3.dp.toPx()
+                        val innerInset = band - .5.dp.toPx()
                         drawRoundRect(innerRim, topLeft = Offset(innerInset, innerInset),
                             size = Size((size.width - innerInset * 2).coerceAtLeast(0f),
                                 (size.height - innerInset * 2).coerceAtLeast(0f)),
-                            cornerRadius = CornerRadius(21.dp.toPx()), style = Stroke(.75.dp.toPx()))
+                            cornerRadius = CornerRadius((24.dp.toPx() - innerInset).coerceAtLeast(0f)),
+                            style = Stroke(.75.dp.toPx()))
+                        // Short corner glints replace an equally bright border around the card.
+                        // These are drawn highlights, not sampled/refraction of another app.
+                        val arcInset = 1.5.dp.toPx()
+                        val arcDiameter = 45.dp.toPx()
+                        for ((origin, start) in listOf(Offset(arcInset, arcInset) to 188f,
+                            Offset(size.width - arcDiameter - arcInset,
+                                size.height - arcDiameter - arcInset) to 8f)) {
+                            drawArc(Color(0xFFB9E6FF).copy(alpha = .20f), start, 68f, false,
+                                origin, Size(arcDiameter, arcDiameter),
+                                style = Stroke(3.dp.toPx(), cap = StrokeCap.Round))
+                            drawArc(Color(0xFFE5F6FF).copy(alpha = .82f), start, 68f, false,
+                                origin, Size(arcDiameter, arcDiameter),
+                                style = Stroke(.8.dp.toPx(), cap = StrokeCap.Round))
+                        }
                         drawLine(glint, Offset(24.dp.toPx(), 2.dp.toPx()),
                             Offset(size.width * .58f, 2.dp.toPx()),
                             strokeWidth = .75.dp.toPx(), cap = StrokeCap.Round)
@@ -108,7 +135,7 @@ fun DotGlassPlate(modifier: Modifier = Modifier, shape: Shape = RoundedCornerSha
     Surface(modifier, shape = shape, color = plateColor,
         contentColor = Color.White,
         border = BorderStroke(.75.dp, Brush.linearGradient(listOf(
-            Color.White.copy(alpha = .62f), colors.primary.copy(alpha = .20f),
+            Color.White.copy(alpha = .32f), colors.primary.copy(alpha = .20f),
             Color.White.copy(alpha = .16f)
         )))) {
         // A bare empty-state line can inherit a substrate from history; a bubble already has one.

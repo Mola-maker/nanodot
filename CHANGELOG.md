@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Refined Android foreground cobalt glass with fading inner edges, corner highlights and softer input borders; kept streaming reply tails visible through finalization and viewport shrink while preserving manual reading positions.
+
 - Connected closed crystal-orb drags to foreground region previews, masked outside/password pixels and excluded crossing or aggregating text nodes; sent selected accessible text through the canonical user message and attached pixels only for explicitly image-capable models.
 
 - Prevented inward drags from the edge orb from also invoking Android Back by reserving only its 48dp touch area for orb gestures.

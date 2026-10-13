@@ -10,6 +10,10 @@ The menu keeps the host/input focus. Selection, outside input, a new orb gesture
 
 Voice uses the existing canonical chat binding, permission flow and recording owner. It finishes/cancels an active recording according to its current state; a new transcription stays in the editable draft until the user sends it. Opening a menu does not capture the screen, start recording or call a provider.
 
+The foreground card has a transparent cobalt body, a fading inward bevel and short corner highlights. The host remains visible through empty history; local dark-blue surfaces support text and controls. These are drawn optical cues, not cross-app refraction. Waiting stays a passive dot and text, beside separate Stop, collapse and menu actions. The rounded draft field keeps its existing 48dp target and short-window editing behavior.
+
+When reading the newest message, the transcript follows streaming text, its final reply and a shrinking viewport. Scrolling into older messages keeps that reading position while new text arrives; returning to the end resumes following. The existing bounded transcript and keyboard/target-aware window placement remain in use.
+
 The default main-chat avatar uses the same retained blue crystal atlas as the orb. Existing user-selected and Hidden avatars remain respected. Generator-owned copy uses Dot and crystal examples across the 17 supported locales. Genuine upstream attribution, internal compatibility names and nanoMuse Cloud service identity remain explicit.
 
 ## Care instruction presentation
