@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Excluded cached ARM sandbox assets from x86_64 Android emulator APKs when switching build profiles, while preserving default asset filters and arm64 payloads.
+
 - Gave Android foreground chat and Care message bubbles translucent cobalt-blue backgrounds with white text and actions, more padding and separation, and 1.45-times line height; reserved panel space for visible text, previews and recovery actions within the existing height bounds.
 - Stopped unchanged Care card geometry from repeatedly requesting native window layout.
 

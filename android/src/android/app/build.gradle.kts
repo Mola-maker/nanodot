@@ -118,6 +118,12 @@ android {
 
     androidResources {
         noCompress += listOf("tar.gz", "proot-aarch64")
+        // nanoMuse: keep chat-only x86 builds independent of cached arm64 sandbox assets.
+        if (project.findProperty("nm.abi") == "x86_64") {
+            // A custom list replaces AGP's implicit defaults (sdk-common 31.7.3 / AAPT).
+            ignoreAssetsPatterns += "!.svn:!.git:!.ds_store:!*.scc:.*:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~".split(":")
+            ignoreAssetsPatterns += listOf("proot-aarch64", "alpine-minirootfs.tar.gz", "alpine-minirootfs.tar")
+        }
     }
 
     testOptions {

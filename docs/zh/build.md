@@ -135,6 +135,10 @@ bash scripts/build-nanodot-apk.sh release
 生成 instrumentation APK；不会执行设备测试。不启用语音诊断 flag。
 Release 必须使用专用签名配置。
 
+x86_64 配置会排除缓存中的 ARM proot 与 Alpine rootfs 资源，包括在同一工作树中先构建
+arm64 的情况。默认的隐藏文件过滤规则仍保留；切换配置无需删除原生缓存。arm64 配置继续
+包含沙箱资源。
+
 每个 APK 候选保存在唯一的 `dist/nanodot/<commit>-<profile>-<ABI>-<unique>/`
 目录和 `receipt.json` 中。记录包括 commit、tree、未提交状态、源码字节指纹、
 请求的任务、ABI flag、从 APK 读取的包名/版本/SDK/ABI、主包和可选测试包 SHA256、

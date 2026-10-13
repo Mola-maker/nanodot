@@ -146,6 +146,11 @@ preparation and builds a chat-only APK. `--with-test` adds the instrumentation A
 in the same Gradle invocation for either debug profile. It does not run device tests.
 No diagnostic voice flag is enabled. Release requires the dedicated signing configuration.
 
+The x86_64 profile excludes cached ARM proot and Alpine rootfs assets, including after
+an arm64 build in the same checkout. It retains the default hidden-file asset filters;
+switching profiles does not require deleting the native cache. The arm64 profiles keep
+their sandbox assets.
+
 Each APK candidate lives in a unique `dist/nanodot/<commit>-<profile>-<ABI>-<unique>/`
 folder with `receipt.json`. It records the commit, tree, dirty state, source-byte
 fingerprint, requested tasks, ABI flag, inspected APK package/version/SDK/ABIs,
