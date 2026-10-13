@@ -2,7 +2,6 @@ package io.github.nanomuse.dot.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,41 +14,87 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 
 /** Transmits the actual host pixels unchanged in position; never blurs or captures the host. */
 @Composable
 fun DotGlassSurface(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
-    val colors = MaterialTheme.colorScheme
+    // Paired colors apply only inside the foreground window, including its menus and composer.
+    val colors = MaterialTheme.colorScheme.copy(
+        primary = Color(0xFF0754BD), onPrimary = Color.White,
+        primaryContainer = Color(0xFF003C91), onPrimaryContainer = Color.White,
+        secondary = Color(0xFF0754BD), onSecondary = Color.White,
+        surface = Color(0xFF003270), onSurface = Color.White,
+        surfaceVariant = Color(0xFF003C91), onSurfaceVariant = Color(0xFFDDEBFF),
+        outline = Color(0xFF8BBCFF), error = Color(0xFFFFD4CD)
+    )
     val shape = RoundedCornerShape(24.dp)
-    val rim = Brush.linearGradient(listOf(
-        Color.White.copy(alpha = .62f), colors.primary.copy(alpha = .34f),
-        Color.White.copy(alpha = .48f), colors.primary.copy(alpha = .52f)
-    ))
-    CompositionLocalProvider(LocalContentColor provides colors.onSurface) {
-        Box(modifier.shadow(3.dp, shape, clip = false).clip(shape)
-            .background(lerp(colors.surface, colors.primary, .08f).copy(alpha = .10f))
-            .drawWithCache {
-                val wash = Brush.linearGradient(listOf(
-                    Color.White.copy(alpha = .06f), colors.primary.copy(alpha = .018f),
-                    Color.White.copy(alpha = .035f)
-                ), end = Offset(size.width, size.height))
-                val glint = Brush.horizontalGradient(listOf(Color.Transparent,
-                    Color.White.copy(alpha = .62f), Color.Transparent))
-                onDrawBehind {
-                    drawRect(wash)
-                    drawLine(glint, Offset(24.dp.toPx(), 2.dp.toPx()),
-                        Offset(size.width - 24.dp.toPx(), 2.dp.toPx()),
-                        strokeWidth = .75.dp.toPx(), cap = StrokeCap.Round)
-                }
-            }.border(BorderStroke(1.dp, rim), shape), content = content)
+    MaterialTheme(colorScheme = colors) {
+        CompositionLocalProvider(LocalContentColor provides colors.onSurface) {
+            Box(modifier.clip(shape)
+                .background(Color(0xFF0047AB).copy(alpha = .22f))
+                .drawWithCache {
+                    val wash = Brush.linearGradient(listOf(
+                        Color(0xFF9BD7FF).copy(alpha = .025f), Color.Transparent,
+                        Color(0xFF307BE1).copy(alpha = .025f)
+                    ), end = Offset(size.width, size.height))
+                    // A continuous cap supports white toolbar text over any host. Empty history
+                    // below it keeps the actual host contrast; no host capture or blur is involved.
+                    val cap = Brush.verticalGradient(
+                        0f to Color(0xFF003270).copy(alpha = .88f),
+                        .60f to Color(0xFF003270).copy(alpha = .86f),
+                        1f to Color.Transparent,
+                        endY = 96.dp.toPx()
+                    )
+                    val rim = Brush.linearGradient(listOf(
+                        Color(0xFFE5F6FF).copy(alpha = .90f),
+                        Color(0xFF7ABBFF).copy(alpha = .36f),
+                        Color(0xFF2869BC).copy(alpha = .65f),
+                        Color(0xFFC1E7FF).copy(alpha = .68f)
+                    ), end = Offset(size.width, size.height))
+                    val innerRim = Brush.linearGradient(listOf(
+                        Color(0xFFB9E6FF).copy(alpha = .50f),
+                        Color(0xFF175CC3).copy(alpha = .12f),
+                        Color(0xFFE2F3FF).copy(alpha = .42f)
+                    ), start = Offset(size.width, 0f), end = Offset(0f, size.height))
+                    val glint = Brush.horizontalGradient(listOf(Color.Transparent,
+                        Color.White.copy(alpha = .72f), Color.Transparent),
+                        startX = 24.dp.toPx(), endX = size.width * .58f)
+                    onDrawBehind {
+                        drawRect(wash)
+                        drawRect(cap)
+                        // Optical depth stays inside the 4dp rim; it does not cast a gray shadow
+                        // or place a bright reflection behind the toolbar's text.
+                        val depthInset = 2.dp.toPx()
+                        drawRoundRect(Color(0xFF003270).copy(alpha = .56f),
+                            topLeft = Offset(depthInset, depthInset),
+                            size = Size((size.width - depthInset * 2).coerceAtLeast(0f),
+                                (size.height - depthInset * 2).coerceAtLeast(0f)),
+                            cornerRadius = CornerRadius(22.dp.toPx()), style = Stroke(3.dp.toPx()))
+                        val outerInset = .5.dp.toPx()
+                        drawRoundRect(rim, topLeft = Offset(outerInset, outerInset),
+                            size = Size((size.width - outerInset * 2).coerceAtLeast(0f),
+                                (size.height - outerInset * 2).coerceAtLeast(0f)),
+                            cornerRadius = CornerRadius(23.5.dp.toPx()), style = Stroke(1.dp.toPx()))
+                        val innerInset = 3.dp.toPx()
+                        drawRoundRect(innerRim, topLeft = Offset(innerInset, innerInset),
+                            size = Size((size.width - innerInset * 2).coerceAtLeast(0f),
+                                (size.height - innerInset * 2).coerceAtLeast(0f)),
+                            cornerRadius = CornerRadius(21.dp.toPx()), style = Stroke(.75.dp.toPx()))
+                        drawLine(glint, Offset(24.dp.toPx(), 2.dp.toPx()),
+                            Offset(size.width * .58f, 2.dp.toPx()),
+                            strokeWidth = .75.dp.toPx(), cap = StrokeCap.Round)
+                    }
+                }, content = content)
+        }
     }
 }
 
@@ -61,7 +106,7 @@ fun DotGlassPlate(modifier: Modifier = Modifier, shape: Shape = RoundedCornerSha
     val plateColor = if (message) Color(0xFF0047AB).copy(alpha = if (user) .86f else .80f)
         else dotGlassPlateColor(user)
     Surface(modifier, shape = shape, color = plateColor,
-        contentColor = if (message) Color.White else colors.onSurface,
+        contentColor = Color.White,
         border = BorderStroke(.75.dp, Brush.linearGradient(listOf(
             Color.White.copy(alpha = .62f), colors.primary.copy(alpha = .20f),
             Color.White.copy(alpha = .16f)
@@ -72,11 +117,11 @@ fun DotGlassPlate(modifier: Modifier = Modifier, shape: Shape = RoundedCornerSha
                 content()
             }
         }
-        if (message) {
-            MaterialTheme(colorScheme = colors.copy(primary = Color.White, onSurface = Color.White)) {
-                plateContent()
-            }
-        } else {
+        MaterialTheme(colorScheme = colors.copy(
+            primary = if (message) Color.White else colors.primary,
+            onPrimary = if (message) Color(0xFF003C91) else colors.onPrimary,
+            onSurface = Color.White, onSurfaceVariant = Color(0xFFDDEBFF)
+        )) {
             plateContent()
         }
     }
@@ -84,6 +129,5 @@ fun DotGlassPlate(modifier: Modifier = Modifier, shape: Shape = RoundedCornerSha
 
 @Composable
 fun dotGlassPlateColor(user: Boolean = false): Color {
-    val colors = MaterialTheme.colorScheme
-    return lerp(colors.surface, colors.primary, if (user) .08f else .025f).copy(alpha = .88f)
+    return Color(0xFF003C91).copy(alpha = if (user) .94f else .90f)
 }

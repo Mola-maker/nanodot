@@ -1,6 +1,10 @@
 package io.github.nanomuse.dot.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,14 +28,15 @@ fun DotForegroundStatus(state: DotForegroundState, onStop: () -> Unit, modifier:
         else stringResource(foregroundStatusResource(state))
     Row(modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget).testTag("dot_foreground_status"),
         verticalAlignment = Alignment.CenterVertically) {
+        Spacer(Modifier.width(8.dp))
+        Box(Modifier.size(6.dp).background(MaterialTheme.colorScheme.onSurface, CircleShape))
+        Spacer(Modifier.width(8.dp))
         Text(description, modifier = Modifier.weight(1f).semantics {
             stateDescription = description; liveRegion = LiveRegionMode.Polite
         }, fontSize = 14.sp, lineHeight = 18.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        TextButton(onStop, enabled = canStopForeground(state),
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
-            modifier = Modifier.heightIn(min = DotTokens.TouchTarget).testTag("dot_foreground_stop")) {
-            Text(stringResource(R.string.nm_dot_chat_stop), fontSize = DotTokens.Type.Body,
-                lineHeight = 20.sp, maxLines = 1, softWrap = false)
+        IconButton(onStop, enabled = canStopForeground(state),
+            modifier = Modifier.size(DotTokens.TouchTarget).testTag("dot_foreground_stop")) {
+            Icon(Icons.Default.Stop, stringResource(R.string.nm_dot_chat_stop))
         }
     }
 }

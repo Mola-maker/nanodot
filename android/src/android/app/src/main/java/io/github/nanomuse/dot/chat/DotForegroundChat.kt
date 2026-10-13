@@ -1,5 +1,6 @@
 package io.github.nanomuse.dot.chat
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -61,28 +62,21 @@ fun DotForegroundChat(status: String? = null, onCollapse: () -> Unit,
         Column(Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = if (tight) 0.dp else 4.dp),
             verticalArrangement = Arrangement.spacedBy(if (tight) 0.dp else 2.dp)) {
             Row(Modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget), verticalAlignment = Alignment.CenterVertically) {
-                DotGlassPlate(Modifier.weight(1f), shape = RoundedCornerShape(12.dp)) {
-                Box(Modifier.fillMaxWidth().pointerInput(onDrag) {
+                Box(Modifier.weight(1f).pointerInput(onDrag) {
                     detectDragGestures { change, amount -> change.consume(); onDrag(amount.x, amount.y) }
                 }.semantics { contentDescription = adjust }.testTag("dot_foreground_drag")) {
                     if (capsule != null) capsule() else Text(status ?: "Dot",
                         style = MaterialTheme.typography.bodyMedium, maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.testTag("dot_foreground_status").semantics {
+                        modifier = Modifier.padding(start = 8.dp).testTag("dot_foreground_status").semantics {
                             stateDescription = status ?: "Dot"; liveRegion = LiveRegionMode.Polite
                         })
                 }
-                }
-                DotGlassPlate(shape = RoundedCornerShape(24.dp)) {
                 IconButton(onCollapse, Modifier.size(DotTokens.TouchTarget)) {
                     Icon(Icons.Default.KeyboardArrowDown, collapse)
                 }
-                }
-                DotGlassPlate(shape = RoundedCornerShape(24.dp)) {
-                    IconButton({ more = !more }, Modifier.size(DotTokens.TouchTarget).testTag("dot_foreground_more")) {
-                        Icon(Icons.Default.MoreVert, stringResource(R.string.nm_more))
-                    }
-
+                IconButton({ more = !more }, Modifier.size(DotTokens.TouchTarget).testTag("dot_foreground_more")) {
+                    Icon(Icons.Default.MoreVert, stringResource(R.string.nm_more))
                 }
             }
             BoxWithConstraints(Modifier.weight(1f).fillMaxWidth().testTag("dot_foreground_history")) {
@@ -107,7 +101,9 @@ fun DotForegroundChat(status: String? = null, onCollapse: () -> Unit,
                 }
             }
             CompositionLocalProvider(LocalDotForegroundTight provides tight) {
-                Box(Modifier.fillMaxWidth().testTag("dot_foreground_controls")) { controls() }
+                // Keep composer/voice/send glyphs readable without tinting empty history.
+                Box(Modifier.fillMaxWidth().background(dotGlassPlateColor(), RoundedCornerShape(16.dp))
+                    .testTag("dot_foreground_controls")) { controls() }
             }
         }
         }

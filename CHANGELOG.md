@@ -4,6 +4,8 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Unified Android foreground chat and Care with a transparent cobalt shell, inset glass highlights, compact status text and a separate 48dp Stop icon; kept readable local input/menu backgrounds and existing message padding.
+
 - Delayed Android Care's first screen sample until its goal editor and keyboard settled, with a cancellable five-second deadline that screen events cannot extend.
 
 - Adjusted Android foreground message padding to preserve 8dp above and below text when the transcript has room, including naturally short Care cards.
