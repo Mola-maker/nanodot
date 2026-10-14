@@ -1,0 +1,225 @@
+/* nanomuse.cn — one stylesheet for the homepage, own-key/, privacy/ and 404.html.
+   System fonts only, nothing fetched from outside. Colours follow docs/brand.md in the main
+   repository: one accent hue, #015CFB on white, #58A6FF on dark. */
+
+:root {
+  --bar: 52px;
+  --bg: #ffffff;
+  --bg-2: #f5f5f7;
+  --fg: #1a1a1a;
+  --muted: #666666;
+  --line: #e3e3e3;
+  --link: #015cfb;
+  --code-bg: #f3f3f3;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC",
+    "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+/* The inline script sets data-theme before first paint: light unless the visitor chose dark
+   on this site. The system's colour scheme is not consulted, so a page without JavaScript is
+   light as well. */
+html[data-theme="dark"] {
+  --bg: #121212;
+  --bg-2: #1c1c1c;
+  --fg: #e8e8e8;
+  --muted: #9c9c9c;
+  --line: #2c2c2c;
+  --link: #58a6ff;
+  --code-bg: #1f1f1f;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
+}
+@media (min-width: 700px) { body { font-size: 17px; } }
+
+a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+img { display: block; max-width: 100%; height: auto; }
+code { font-family: var(--mono); font-size: 0.92em; background: var(--code-bg); border-radius: 4px; padding: 1px 5px; }
+h1, h2, h3 { margin: 0; line-height: 1.25; font-weight: 600; }
+p { margin: 0.8em 0 0; }
+button { font: inherit; color: inherit; }
+
+/* Language: every phrase is written twice; the document's data-lang shows one.
+   Without the script there is no data-lang, and both stay visible, Chinese under English. */
+i.en, i.zh { font-style: normal; }
+html[data-lang="en"] .zh, html[data-lang="zh"] .en { display: none; }
+html:not([data-lang]) i.zh { display: block; margin-top: 0.25em; }
+html:not([data-lang]) .k i.zh, html:not([data-lang]) a i.zh, html:not([data-lang]) .bar i.zh { display: inline; margin: 0; }
+html:not([data-lang]) .k i.zh::before, html:not([data-lang]) a i.zh::before { content: " / "; }
+html:not([data-lang]) #lang, html:not([data-lang]) #theme { display: none; }
+
+/* ---- The bar: fixed, slim. The mark and the name; Docs, Download, GitHub with the star
+   count; the language and theme switches. The same on every page. */
+.bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+  height: var(--bar);
+  display: flex; align-items: center; gap: 18px;
+  padding: 0 20px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 9px; color: var(--fg); text-decoration: none; font-weight: 600; font-size: 1rem; }
+.brand:hover { text-decoration: none; }
+.bar nav { margin-left: auto; display: flex; align-items: center; gap: 4px 18px; font-size: 0.9rem; }
+.bar nav a { color: var(--muted); text-decoration: none; white-space: nowrap; }
+.bar nav a:hover { color: var(--fg); }
+.bar .stars { display: inline-flex; align-items: center; gap: 5px; }
+.bar .stars svg { width: 15px; height: 15px; flex: none; }
+.bar .stars .n { font-variant-numeric: tabular-nums; }
+.bar .stars .n:empty { display: none; }
+.switch {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 28px; min-width: 28px; padding: 0 8px;
+  color: var(--muted); background: none; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 6px;
+  font-size: 0.82rem; line-height: 1;
+}
+.switch:hover { color: var(--fg); border-color: var(--muted); }
+.switch svg { width: 15px; height: 15px; }
+#theme .sun, html[data-theme="dark"] #theme .moon { display: none; }
+html[data-theme="dark"] #theme .sun { display: block; }
+.switch:focus-visible, .bar nav a:focus-visible, .brand:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+@media (max-width: 640px) {
+  .bar { gap: 12px; padding: 0 14px; }
+  .bar nav { gap: 12px; }
+  .bar nav a:not(.stars) { display: none; }
+}
+
+/* ---- The first screen: the demo. Under the bar, one line, then the frame, then the "More
+   below" line at the bottom of the window. The showcase page lays itself out in whatever height
+   the frame has (the phone scaled, the panel beside it), so nothing scrolls inside the frame
+   or inside this section; the page's own scrolling is the only one. */
+.demo {
+  margin-top: var(--bar);
+  height: calc(100svh - var(--bar));
+  min-height: 560px;
+  display: flex; flex-direction: column;
+}
+.demo-head {
+  flex: none;
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 18px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.demo-head h1 { font-size: 1rem; font-weight: 600; letter-spacing: -0.01em; }
+.demo-head p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+.demo-frame { flex: 1; min-height: 0; position: relative; background: var(--bg); }
+.demo-frame iframe { display: block; width: 100%; height: 100%; border: 0; }
+.demo-noscript { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; padding: 20px; text-align: center; }
+/* "More below": a small line under the frame with a chevron, a link to the next section. It
+   bobs once in a while (not for prefers-reduced-motion) and goes once the visitor has scrolled. */
+.more {
+  flex: none; align-self: center;
+  display: inline-flex; align-items: center; gap: 4px;
+  margin: 6px 0 4px; padding: 4px 12px 4px 14px;
+  border: 1px solid var(--line); border-radius: 999px;
+  color: var(--muted); font-size: 0.82rem; text-decoration: none;
+  transition: opacity 0.4s, color 0.2s;
+}
+.more:hover { color: var(--fg); }
+.more:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+.more svg { width: 14px; height: 14px; }
+html.scrolled .more { opacity: 0; pointer-events: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .more svg { animation: more-bob 2.4s ease-in-out infinite; }
+  @keyframes more-bob {
+    0%, 70%, 100% { transform: translateY(0); }
+    80% { transform: translateY(2px); }
+    90% { transform: translateY(0); }
+  }
+}
+section { scroll-margin-top: calc(var(--bar) + 1rem); }
+/* The still, for screens the demo cannot be used on: no frame is loaded there. The section is
+   still one screen: the picture takes the height left between the line above and the sentence
+   below, whole, never cut. */
+.demo-still { display: none; }
+@media (max-width: 999px) {
+  .demo-frame { display: none; }
+  .demo-still { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; padding: 1rem 20px 0.5rem; }
+  .more { order: 1; }
+  .demo-still .shot { flex: 1 1 auto; min-height: 0; width: 100%; max-width: 20rem; }
+  /* :where() keeps the language rule above it the stronger one, so the other picture stays hidden */
+  .demo-still .shot > :where(i) { display: flex; justify-content: center; height: 100%; }
+  .demo-still .shot img { width: auto; height: auto; max-width: 100%; max-height: 100%; border: 1px solid var(--line); border-radius: 18px; }
+  .demo-still p { flex: none; max-width: 44rem; margin: 0.75rem auto 0; color: var(--muted); font-size: 0.95em; text-align: center; }
+}
+
+/* ---- Below the demo: one column, short sections. */
+main { max-width: 44rem; margin: 0 auto; padding: 0 20px; }
+.below { padding-top: 2.5rem; }
+section + section { margin-top: 2.75rem; padding-top: 2rem; border-top: 1px solid var(--line); }
+h2 { font-size: 1.15rem; }
+.meta, .note { color: var(--muted); font-size: 0.95em; }
+.note { margin-top: 1rem; }
+/* The film: one <video> per language in a block wrapper; data-lang hides the other one. The
+   poster fills the frame until play is pressed. */
+.film { margin-top: 1rem; }
+.film video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border: 1px solid var(--line); border-radius: 12px; background: #000; }
+#what p { color: var(--fg); }
+#what .open-source { color: var(--muted); }
+
+/* Rows: a label and its content; stacked on a phone, two columns from 600 px. */
+.rows { list-style: none; margin: 1rem 0 0; padding: 0; }
+.rows li { padding: 0.55rem 0; border-top: 1px solid var(--line); }
+.rows li:last-child { border-bottom: 1px solid var(--line); }
+.rows .k { display: block; color: var(--muted); font-size: 0.95em; }
+.rows .k a { color: var(--fg); }
+.rows .v { display: block; overflow-wrap: anywhere; }
+.rows time { font-variant-numeric: tabular-nums; }
+@media (min-width: 600px) {
+  .rows li { display: grid; grid-template-columns: 11rem 1fr; gap: 0 1.25rem; align-items: baseline; }
+  .rows .k { font-size: inherit; }
+}
+
+/* Footer */
+footer { max-width: 44rem; margin: 3rem auto 0; padding: 1.25rem 20px 3rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
+footer p { margin: 0; }
+footer nav { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-bottom: 0.75rem; }
+footer nav a { color: var(--muted); }
+footer nav a:hover { color: var(--fg); }
+
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+/* ---- The small pages (own-key/, privacy/, 404.html): one column of prose under the bar. */
+.doc { padding-top: calc(var(--bar) + 2rem); }
+.doc .crumb { margin: 0; font-size: 0.9rem; color: var(--muted); }
+.doc h1 { margin-top: 0.5rem; font-size: 1.6rem; letter-spacing: -0.01em; }
+@media (min-width: 700px) { .doc h1 { font-size: 1.9rem; } }
+.doc .lead { color: var(--muted); }
+.doc h2 { margin-top: 2.25rem; font-size: 1.2rem; }
+.doc h3 { margin-top: 1.5rem; font-size: 1.05rem; }
+.doc ul, .doc ol { margin: 0.8em 0 0; padding-left: 1.4em; }
+.doc li + li { margin-top: 0.35em; }
+.doc .steps { list-style: none; counter-reset: step; padding: 0; }
+.doc .steps li { position: relative; padding: 0.75rem 0 0.75rem 2.4rem; border-top: 1px solid var(--line); }
+.doc .steps li:last-child { border-bottom: 1px solid var(--line); }
+.doc .steps li + li { margin-top: 0; }
+.doc .steps li::before {
+  content: counter(step) "."; counter-increment: step; position: absolute; left: 0.25rem; top: 0.75rem;
+  color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.doc .steps strong { display: block; }
+.doc .callout { margin-top: 1rem; padding: 0.6rem 1rem; border-left: 3px solid var(--line); color: var(--muted); }
+.doc table { width: 100%; border-collapse: collapse; margin-top: 0.8em; font-size: 0.95em; }
+.doc th, .doc td { text-align: left; padding: 0.5em 0.6em; border-bottom: 1px solid var(--line); vertical-align: top; }
+.doc th { color: var(--muted); font-weight: 600; }
+/* The row of buttons at the end of a small page, and under the Vision section of the homepage. */
+.cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1.25rem; }
+.btn {
+  display: inline-block; padding: 0.45em 0.9em; border: 1px solid var(--line); border-radius: 6px;
+  color: var(--fg); text-decoration: none; font-weight: 500; line-height: 1.3;
+}
+.btn:hover { border-color: var(--muted); color: var(--fg); }
+.btn.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.btn.small { font-size: 0.85rem; padding: 0.3em 0.7em; }

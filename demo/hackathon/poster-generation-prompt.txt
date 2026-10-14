@@ -1,0 +1,17 @@
+Use case: ads-marketing
+Asset type: 完整中文科技无碍 AI 黑客松参赛宣传海报，竖版，最终画布严格 1080 x 1920 pixels（9:16）。
+Primary request: 为 Nanodot 创作精美、完整、可直接用于参赛封面的宣传海报。品牌视觉来自透明钴蓝水晶球与有厚度和折射高光的玻璃卡片。设计应温暖、克制、精致、清晰，帮助人们理解“圈选不懂的屏幕内容、解释、一步一步引导”。
+Composition: 上方约25%为品牌和大标题；中间约55%为高度精致的立体透明钴蓝水晶球、发光的手绘圈选轨迹、略有倾角的手机界面和三层有厚度的半透明玻璃卡片；下方20%为三个功能短语与清晰的小字。使用强烈但优雅的编辑排版、充裕留白、漂亮的大中文字体、分明层次。画面完整不裁切文字。
+Scene: 深夜蓝到明亮冰蓝的细腻背景渐变，透光水晶与干净的柔光；不要杂乱科幻网格。手机屏幕上是通用简洁的“阅读 / 设置 / 下一步”示意内容，不出现任何真实个人数据。蓝色圈选线明确圈住一块卡片，轻量提示卡显示“先看这里”。提示卡不能是白底灰边，要有蓝色透光厚玻璃、折射边缘、高光与轻微阴影。
+Text verbatim ONLY these lines:
+"Nanodot"
+"圈出不懂的地方"
+"一步一步，看懂手机"
+"圈选 · 理解 · 引导"
+"科技无碍｜Android 智能助手"
+"基于 nanoMuse 开源项目构建"
+"AI 生成宣传视觉 · 界面为设计示意"
+Text hierarchy: Nanodot品牌在顶部左侧，大标题中间偏上两行；三功能短语在下方；最后两行小但可读，避免细到看不清。
+Constraints: 以蓝色、冰蓝、深海军蓝和清透高光为主，保留明显视觉玻璃厚度，不做传统白灰描边按钮，不使用天猫或阿里官方标志，不放奖项、不虚构准确率/已获奖/认证，不加二维码或链接，不额外增加文字，不画真人，不声称真实产品截图。Chinese typography must be correct, legible and beautifully typeset. Premium finished campaign poster, not a wireframe.
+
+Generated with the built-in Imagegen tool on 2026-10-14. Promotional concept; not product test evidence.

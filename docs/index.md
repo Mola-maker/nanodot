@@ -33,6 +33,10 @@ target and an instruction, keeps the instruction in chat, and offers step confir
 The theme follows the system. Custom names, SOUL.md, avatars, animations, models and
 preferences remain yours. Continuous voice and automatic updates default to off.
 
+## Hackathon showcase
+
+The [Tmall showcase guide](hackathon-showcase.md) connects the static ModelScope project, browser interaction, real Android recording, signed release and public source. It documents manual deployment and the remaining device/cloud acceptance boundaries.
+
 ## Actual Android captures
 
 <table>

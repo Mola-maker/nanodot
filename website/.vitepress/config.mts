@@ -74,7 +74,8 @@ function placeholderOrHtml(raw: string): string {
 }
 
 const getStarted: DefaultTheme.SidebarItem[] = [
-  { text: 'Build Nanodot P0', link: '/build' },
+  { text: 'Build Nanodot', link: '/build' },
+  { text: 'Tmall hackathon showcase', link: '/hackathon-showcase' },
   { text: 'Android', link: '/android' },
   { text: 'Android verification', link: '/android-verification' },
   { text: 'Foreground interactions', link: '/android-interactions' },
@@ -137,7 +138,8 @@ const contribute: DefaultTheme.SidebarItem[] = [
 // The same pages in Chinese, under /zh/. The group and item names follow what the apps'
 // Chinese screens call things (CONTRIBUTING.md, "Translating the docs", has the glossary).
 const zhGetStarted: DefaultTheme.SidebarItem[] = [
-  { text: '构建 Nanodot P0', link: '/zh/build' },
+  { text: '构建 Nanodot', link: '/zh/build' },
+  { text: '天猫黑客松展示', link: '/zh/hackathon-showcase' },
   { text: 'Android', link: '/zh/android' },
   { text: 'Android 验收', link: '/zh/android-verification' },
   { text: '前台交互', link: '/zh/android-interactions' },

@@ -30,6 +30,10 @@ APK 使用 Nanodot 专用发行密钥签名；替换使用不同签名的开发�
 
 主题跟随系统；自定义名字、SOUL.md、头像、动画、模型与偏好保留。连续语音与自动更新默认关闭。
 
+## 黑客松展示主页 {#hackathon-showcase}
+
+[天猫展示页指南](hackathon-showcase.md)串联魔搭静态项目、浏览器交互示意、真实 Android 录像、签名发布与公开源码，说明手动部署方式以及仍待完成的设备／云端验收。
+
 ## Android 实际截图 {#android-captures}
 
 <table>
