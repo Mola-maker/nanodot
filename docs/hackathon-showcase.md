@@ -13,6 +13,12 @@ The [showcase source](../demo/hackathon/) presents Nanodot for the Tmall hackath
 
 The [Android verification record](android-verification.md#raster-region-live-2026-10-13) retains the original APK identities, question errors and Care limitations. This presentation does not establish a complete real-provider Care task, voice acceptance, physical arm64 operation or measured outcomes for a particular accessibility population. The cover is AI-generated promotional artwork, not a screenshot.
 
+## Cover formats
+
+The [portrait cover](../demo/hackathon/site/assets/hackathon-cover.png) is 1080 × 1920 and remains the homepage artwork. The [landscape cover](../demo/hackathon/site/assets/hackathon-cover-landscape.png) is 1920 × 1080 and provides a separate entry-upload option. Both are AI-generated promotional illustrations, not product screenshots.
+
+On 2026-10-14, the Tmall form's help text requested a 1080 × 1920 portrait, but its actual file validator rejected that format and requested a 1920 × 1080 landscape. The landscape passed the dimension check; that alone does not establish a successful upload or entry. Check the live form when submitting and retain both variants.
+
 ## Preview and deployment
 
 The canonical files are in `demo/hackathon/site/`. They can be served by any ordinary static file server:

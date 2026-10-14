@@ -13,6 +13,12 @@
 
 [Android 验收记录](android-verification.md#raster-region-live-2026-10-13)保留原 APK 身份、问答错误与 Care 边界。该展示不代表完整真实模型 Care 任务、语音验收、arm64 真机或特定无障碍人群效果已经验证。封面是 AI 生成的宣传视觉，不是应用截图。
 
+## 封面尺寸 {#cover-formats}
+
+[竖版封面](../../demo/hackathon/site/assets/hackathon-cover.png)为 1080 × 1920，继续用于主页；[横版封面](../../demo/hackathon/site/assets/hackathon-cover-landscape.png)为 1920 × 1080，另供报名上传选择。两者均为 AI 生成的宣传视觉，不是产品截图。
+
+2026-10-14 实际操作中，天猫表单帮助文字要求 1080 × 1920 竖版，但文件校验拒绝该尺寸并提示需要 1920 × 1080 横版。横版通过了尺寸校验；这不代表文件已经上传或报名成功。最终提交时请以实时表单为准，同时保留两种尺寸。
+
 ## 预览与部署 {#preview-and-deployment}
 
 规范源码位于 `demo/hackathon/site/`，可通过普通静态文件服务器预览：

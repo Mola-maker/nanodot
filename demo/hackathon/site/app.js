@@ -82,7 +82,16 @@ function showCareStep(){
  addMessage(s.instruction);animatePath(shapePath(targetBox('appointment')));
 }
 function startCare(){cancelAnimation();selectTarget('appointment',false);careStep=0;careStopped=false;$('#care-controls').hidden=false;$('#start-care').hidden=true;showCareStep();}
-function nextCare(){if(careStep<0||careStopped)return;if(careStep>=2){cancelAnimation();clearCanvas();careStep=-1;$('#care-status').textContent='演示结束 · 没有提交真实预约';$('#next-care').disabled=true;$('#repeat-care').disabled=true;addMessage('完成了三步交互示意。你始终可以查看说明、重复高亮或停止。真实场景中的任务结果仍需独立核验。');return;}careStep++;showCareStep();}
+function nextCare(){
+ if(careStep<0||careStopped)return;
+ if(careStep>=2){
+  stopCare('完成了三步交互示意。你可以继续圈选，或重新开始关怀示意。真实场景中的任务结果仍需独立核验。');
+  $('#care-status').textContent='演示结束 · 没有提交真实预约';
+  $('#selection-status').textContent='关怀示意已完成，可以继续自由圈选。';
+  return;
+ }
+ careStep++;showCareStep();
+}
 function restoreCards(){
  $('#screen-title').textContent='今天想做什么？';$('#screen-subtitle').textContent='选择一项服务，看看下一步';
  const cards=$('#sample-cards');cards.replaceChildren();Object.entries(targets).forEach(([key,item],i)=>{const button=document.createElement('button');button.type='button';button.className='sample-card';button.dataset.target=key;const icon=document.createElement('span');icon.className=`card-icon ${['lavender','blue','green'][i]}`;icon.textContent=['▰','▦','≡'][i];const copy=document.createElement('span');const strong=document.createElement('strong');strong.textContent=item.name;const small=document.createElement('small');small.textContent=['余额与出行记录','先预约，再出门','查看待缴与已缴记录'][i];copy.append(strong,small);const arrow=document.createElement('span');arrow.textContent='›';arrow.setAttribute('aria-hidden','true');button.append(icon,copy,arrow);button.addEventListener('click',()=>selectTarget(key));cards.append(button);});

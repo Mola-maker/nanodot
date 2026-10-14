@@ -15,3 +15,5 @@ Text hierarchy: Nanodot品牌在顶部左侧，大标题中间偏上两行；三
 Constraints: 以蓝色、冰蓝、深海军蓝和清透高光为主，保留明显视觉玻璃厚度，不做传统白灰描边按钮，不使用天猫或阿里官方标志，不放奖项、不虚构准确率/已获奖/认证，不加二维码或链接，不额外增加文字，不画真人，不声称真实产品截图。Chinese typography must be correct, legible and beautifully typeset. Premium finished campaign poster, not a wireframe.
 
 Generated with the built-in Imagegen tool on 2026-10-14. Promotional concept; not product test evidence.
+
+Landscape variant record (2026-10-14): a separate Imagegen composition was prepared at 1920 x 1080 for the Tmall uploader's observed 16:9 dimension check. The original 1080 x 1920 portrait remains unchanged for the homepage. Canonical asset: site/assets/hackathon-cover-landscape.png. The prompt above documents the original portrait only; the landscape is a separate generated promotional illustration, not an application screenshot.

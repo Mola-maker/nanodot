@@ -58,30 +58,30 @@ for source, flat in mapping.items():
     original = SOURCE / source
     destination = DEST / flat
     if original.suffix == ".html":
-        s = original.read_text()
+        s = original.read_text(encoding="utf-8")
         s = html_attr.sub(
             lambda m, source=source: (
                 m.group(1) + "=" + m.group(2) + local_url(m.group(3), source) + m.group(2)
             ),
             s,
         )
-        destination.write_text(s)
+        destination.write_text(s, encoding="utf-8", newline="\n")
     elif original.suffix == ".css":
-        s = original.read_text()
+        s = original.read_text(encoding="utf-8")
         s = css_url.sub(
             lambda m, source=source: (
                 "url(" + m.group(1) + local_url(m.group(2).strip(), source) + m.group(1) + ")"
             ),
             s,
         )
-        destination.write_text(s)
+        destination.write_text(s, encoding="utf-8", newline="\n")
     else:
         shutil.copyfile(original, destination)
 # JS contains only local selectors, inline data, and fully qualified network URLs.
 # Fail if a new quoted path to a known local file appears and needs explicit review.
 for source in mapping:
     if source.endswith(".js"):
-        s = (SOURCE / source).read_text()
+        s = (SOURCE / source).read_text(encoding="utf-8")
         for literal in re.findall(r"[\"\']([^\"\'\n]+)[\"\']", s):
             u = urlsplit(literal)
             if u.scheme or u.netloc:
@@ -92,7 +92,7 @@ for source in mapping:
             )
 # Preserve canonical provenance and add the deployed-file identity separately.
 p = DEST / mapping["upstream-demo/source-manifest.json"]
-manifest = json.loads(p.read_text())
+manifest = json.loads(p.read_text(encoding="utf-8"))
 manifest["deploymentLayout"] = (
     "flat export; original hashes remain canonical hierarchical-source hashes"
 )
@@ -101,17 +101,21 @@ for record in manifest["files"]:
     name = mapping[canonical]
     record["deployedFile"] = name
     record["sha256Deployed"] = hashlib.sha256((DEST / name).read_bytes()).hexdigest()
-p.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
+p.write_text(
+    json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n"
+)
 p = DEST / "manifest.json"
-manifest = json.loads(p.read_text())
+manifest = json.loads(p.read_text(encoding="utf-8"))
 manifest["evidence"]["file"] = mapping[manifest["evidence"]["file"]]
 manifest["upstream"]["localPath"] = mapping["upstream-demo/index.html"]
 manifest["deploymentLayout"] = "flat; see deployment-map.json for canonical source paths"
-p.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
+p.write_text(
+    json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n"
+)
 p = DEST / "README.md"
-s = p.read_text()
+s = p.read_text(encoding="utf-8")
 s += """\n## 当前上传包：扁平导出\n\n本目录用于魔搭浏览器多文件上传。上传这里的全部文件到创空间根目录，`index.html` 仍是入口。层级源码在 GitHub 保持原结构；此部署包把路径 `/` 映射为文件名中的 `--`（例如 `upstream-demo--index.html`）。HTML 与 CSS 的本地引用已经同步改写，视频、图片等二进制文件字节保持原样。准确映射和导出哈希见 `deployment-map.json`。上文 `assets/`、`upstream-demo/` 指规范源码中的目录。\n"""
-p.write_text(s)
+p.write_text(s, encoding="utf-8", newline="\n")
 
 
 class Parser(HTMLParser):
@@ -128,10 +132,10 @@ for file in DEST.iterdir():
     urls = []
     if file.suffix == ".html":
         parser = Parser()
-        parser.feed(file.read_text())
+        parser.feed(file.read_text(encoding="utf-8"))
         urls = parser.urls
     elif file.suffix == ".css":
-        urls = [m.group(2).strip() for m in css_url.finditer(file.read_text())]
+        urls = [m.group(2).strip() for m in css_url.finditer(file.read_text(encoding="utf-8"))]
     for url in urls:
         u = urlsplit(url)
         if u.scheme or u.netloc or not u.path:
@@ -164,7 +168,9 @@ for source, flat in mapping.items():
         ensure_ascii=False,
         indent=2,
     )
-    + "\n"
+    + "\n",
+    encoding="utf-8",
+    newline="\n",
 )
 print(
     json.dumps(
@@ -175,6 +181,6 @@ print(
             "rewrittenReferences": len(changes),
             "output": str(DEST),
         },
-        ensure_ascii=False,
+        ensure_ascii=True,
     )
 )
