@@ -175,6 +175,8 @@ First Nanodot Android prerelease: blue crystal foreground interactions, region i
 
 ### Project
 
+- Reworked the English and Simplified Chinese Nanodot READMEs with use cases, a source-install quick start, Dot artwork, platform boundaries and contribution links; added a reusable repository sharing image.
+
 - **The package's own description and the deployment page say what exists.** `pip show nanomuse` opens with the project's sentence instead of "web and desktop next", and lists the website, the documentation and the changelog among its links; the deployment page's *Updating* section drops the PyPI line (the runtime is not on PyPI) and adds the published image's pull; `.env.example` names every value `NANOMUSE_LLM_PROVIDER` and `NANOMUSE_LLM_TOOL_MODE` accept and where the workspace lands by default; the privacy page says which runtimes check for updates in plain words.
 - **The documentation reads without em dashes.** Every page under `docs/`, English and Chinese, now uses commas, colons, parentheses and full stops where an em dash stood (about 1 900 lines across 68 pages); code, tables' "none" cells and quoted log lines are untouched. The desktop's macOS permission dialogs, the hands' error reasons, the installers' descriptions and the release-notes template follow.
 - **The READMEs carry the Trendshift badge.** nanoMuse was number seven on GitHub Trending's Swift list for a day (2026-10-10); the badge under the language links shows the current rank and links to the repository's Trendshift page.

@@ -59,6 +59,17 @@ with no debug-key fallback; the wrapper never publishes. Nanodot has separate pr
 storage from nanoMuse, so data migration requires explicit export/import. Same-ID updates
 also require a matching signature and a higher versionCode.
 
+## Start with a small task
+
+Install the Python runtime from this repository, configure your model, then try a text
+conversation or the local Web console. The [README quick start](https://github.com/Mola-maker/nanodot#quick-start)
+walks through installation. You can also [build Android](build.md) for Android 8+ on ARM64.
+
+For example, ask Dot to create a travel checklist and save it as a file. Read
+[configuration](configuration.md), [permissions](sentinel.md) and [privacy](privacy.md)
+as you add tools. To help the project, [report a reproducible result](https://github.com/Mola-maker/nanodot/issues/new/choose)
+or read the [contribution guide](../CONTRIBUTING.md).
+
 ## Inherited documentation and services
 
 Most platform and runtime pages retain nanoMuse's implementation guidance and historical

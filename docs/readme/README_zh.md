@@ -1,10 +1,26 @@
 # Nanodot
 
-<p align="center"><img src="../../assets/brand/nanodot-mark.svg" alt="Nanodot · Dot" width="112" height="112"></p>
+<p align="center"><img src="../../assets/brand/nanodot-social-preview.png" alt="Nanodot：面向个人设备的开源 AI 智能体，默认助手为 Dot" width="960"></p>
 
-[English](https://github.com/Mola-maker/nanodot/blob/main/README.md) | [简体中文](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_zh.md) | [繁體中文](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_zh-TW.md) | [Español](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_es.md) | [Français](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_fr.md) | [Bahasa Indonesia](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_id.md) | [日本語](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_ja.md) | [한국어](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_ko.md) | [Русский](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_ru.md) | [Tiếng Việt](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_vi.md)
+<p align="center"><strong>使用自己的模型，在手机、电脑或浏览器里与 Dot 一起完成任务。</strong></p>
 
-Nanodot 是基于 [nanoMuse](https://github.com/nano-muse/nanoMuse) 的开源个人智能体；上游手机端基于 [OpenMinis 1.13](https://github.com/OpenMinis/OpenMinis)。默认助手叫 **Dot**。仓库包含 Android、iOS、桌面外壳、Web 控制台和 Python 运行时。
+<p align="center">
+  <a href="../../LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--or--later-136f63" alt="GPL-3.0-or-later"></a>
+  <a href="../../pyproject.toml"><img src="https://img.shields.io/badge/Python-3.11%2B-136f63" alt="Python 3.11 或更新版本"></a>
+  <a href="../zh/build.md"><img src="https://img.shields.io/badge/Android-8%2B%20%C2%B7%20ARM64-136f63" alt="Android 8 或更新版本，ARM64"></a>
+  <a href="#项目状态"><img src="https://img.shields.io/badge/status-1.1.0%20preview-7057a3" alt="Android 1.1.0 预览版"></a>
+</p>
+
+<p align="center"><a href="#快速开始">快速开始</a> · <a href="../zh/index.md">文档</a> · <a href="../../README.md">English</a> · <a href="https://github.com/Mola-maker/nanodot/issues">反馈</a> · <a href="#参与项目">参与项目</a></p>
+
+<details>
+<summary>其他语言</summary>
+
+[繁體中文](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_zh-TW.md) | [Español](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_es.md) | [Français](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_fr.md) | [Bahasa Indonesia](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_id.md) | [日本語](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_ja.md) | [한국어](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_ko.md) | [Русский](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_ru.md) | [Tiếng Việt](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_vi.md)
+
+</details>
+
+Nanodot 是一个开源个人 AI 智能体，默认助手叫 **Dot**。它将对话、工具、记忆和定时任务放在一起，仓库包含 Android 与 iOS App 源码、桌面外壳、Web 控制台和 Python 运行时。项目基于 [nanoMuse](https://github.com/nano-muse/nanoMuse)，手机端基于 [OpenMinis 1.13](https://github.com/OpenMinis/OpenMinis)。
 
 ## Android 预发布 · 1.1.0 Crystal
 
@@ -31,27 +47,93 @@ Nanodot 是基于 [nanoMuse](https://github.com/nano-muse/nanoMuse) 的开源个
 
 **预发布边界。** 真实模型驱动的完整 Care 任务成功闭环、任意第三方应用、ARM64 真机、较旧 Android 版本、中文麦克风识别与可听语音仍需更广泛验收。受控图片提问的核心结果为 4/4 正确，但完整回答仅 2/4 未发现错误；[完整记录](../zh/android-verification.md#raster-region-live-2026-10-13)保留了这些错误。本次发布不代表当前 iOS 或桌面端运行验收已完成。
 
-## 构建与安装
+## 可以和 Dot 一起做什么
 
-从当前 checkout 本地构建 Android。debug 与 release 包分开；release 必须使用独立签名，不会回退到 debug 密钥。构建脚本不会发布、上传或打 tag。
+| 用途 | 项目提供的能力 | 进一步了解 |
+|---|---|---|
+| 资料整理与日常工作 | 使用自己选择的模型对话，通过搜索、文件和 shell 工具把请求变成输出。 | [工具与配置](../zh/configuration.md) |
+| 持续推进的工作 | 记忆、目标、提醒与例程；定时工作需要智能体持续运行。 | [CLI](../zh/cli.md) |
+| 自己的工作流 | 使用技能和 MCP 服务器扩展智能体。 | [技能与 MCP](../zh/configuration.md#skills) |
+| 手机与电脑任务 | 屏幕操作实现，需要对应平台的权限，并受平台能力限制；iOS 不能操作其他 App。 | [手机](../zh/android.md) · [电脑操作](../zh/gui.md) |
+| 多个设备上的入口 | 本地 Web 控制台，以及通过中继实现的可选设备与对话集成。 | [Web](../zh/web.md) · [设备](../zh/device.md) |
+
+这些能力来自继承的实现。Nanodot 的打包与设备验收状态见下文；实际可用的工具取决于模型支持与平台权限。
+
+## 快速开始
+
+### 体验 Python 运行时与 Web 控制台
+
+需要 **Python 3.11+** 和已配置的模型服务商。从本仓库安装，以获取 Nanodot 源码；软件包和 CLI 保留内部名称 `nanomuse`。
+
+```sh
+git clone https://github.com/Mola-maker/nanodot.git
+cd nanodot
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -e .
+nanomuse config init
+```
+
+Windows 使用 `py -m venv .venv`，并在 PowerShell 中执行 `.venv\Scripts\Activate.ps1` 激活。编辑 `config/config.toml` 的 `[llm]` 部分，配置服务商、模型、端点和 API key 环境变量。参见[配置示例](../../config/config.example.toml)与[自己的 key](../zh/own-key.md)。模型 API 可能按服务商规则计费；默认配置不提供 key 或额度。
+
+```sh
+nanomuse doctor       # Check your configuration and available tools.
+nanomuse chat         # Start a conversation in the terminal.
+# Or start the local Web console:
+nanomuse serve
+```
+
+打开 `serve` 打印的本地地址，并保留其中的认证信息。默认仅监听本地；开放远程访问前请阅读 [Web 配置](../zh/web.md)。
+
+可以先试一个小任务：**“帮我创建下次旅行的检查清单，并保存到 trip.md。”** 按提示查看工具审批。浏览器自动化与桌面屏幕操作需要[额外配置](../zh/every-device.md)。
+
+### 构建 Android App
+
+Android 目标为 **Android 8+、ARM64**。先按[构建指南](../zh/build.md)准备 JDK 21、Android SDK/NDK、Go 与原生依赖，再执行：
 
 ```sh
 bash scripts/build-nanodot-apk.sh debug
-# Dedicated local signing configuration is required for release.
-bash scripts/build-nanodot-apk.sh release
 ```
 
-参见[构建指南](../zh/build.md)、[品牌契约](../zh/brand.md)与[项目文档](../zh/index.md)。签名 Android 预览版见本仓库的 [1.1.0 发布页](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0)。上游 nanoMuse 下载与 TestFlight 构建属于另一个产品。
+脚本将 APK 与验证记录写入 `dist/nanodot/`。debug 包使用 debug 签名；release 构建需要独立签名密钥。脚本不会发布版本。在「设置 → 模型」中配置模型后，可以从文字对话开始。
 
-Android applicationId 为 `io.github.nanodot.app`，外部 scheme 为 `nanodot://`。内部 `com.openminis.app`、`io.github.nanomuse.*` 包、`minis://` 路由与沙箱路径保留。新 applicationId 使用独立私有存储；nanoMuse 数据需要显式导出/导入，不能自动读取旧应用文件。
+## 项目状态
 
-## 模型与服务
+**1.1.0 Crystal 是首个 Nanodot Android 预发布版**，versionCode 为 **45**。带独立签名的 arm64 APK 及校验文件位于[发布页](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0)。
 
-可以使用自己的模型服务商，或配置已有中继集成。**nanoMuse Cloud** 保留上游服务的名称与端点；Nanodot 不声称运营该服务，也不承诺免费额度。账号、可用性与数据政策由该服务提供方决定。
+| 部分 | 当前边界 |
+|---|---|
+| Android | 包含水晶球、前台对话、区域提问与用户执行的关怀引导；上方运行证据仍绑定原开发 APK。 |
+| 发布签名 | 使用独立发布证书，不能直接覆盖此前的 debug 包；数据迁移与真机验收仍待完成。 |
+| 桌面与 iOS | 已有源码与构建配置；本次不分发桌面或 iOS 包，也不代表其运行验收已完成。 |
+| 模型与更新 | 配置自己的模型服务商；自动更新与连续语音默认关闭。 |
 
-## 贡献与许可
+无障碍等权限需要你在设备上明确开启。上游 nanoMuse APK、桌面安装器与 TestFlight 构建属于另一个产品。
 
-此 fork 的问题请提交到 [Nanodot issues](https://github.com/Mola-maker/nanodot/issues)。阅读 [CONTRIBUTING.md](../../CONTRIBUTING.md) 与 [AGENTS.md](../../AGENTS.md)，提交需带 DCO sign-off。许可为 [GPL-3.0-or-later](../../LICENSE)，上游署名保留在 [NOTICE](../../NOTICE) 与 [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md)。Nanodot 与 Meta 及其 Muse 商标无关。
+## 模型、数据与权限
+
+- **使用自己的模型服务商。** 继承的运行时与客户端支持服务商配置；可用能力取决于所选模型。参见[自己的 key](../zh/own-key.md)。
+- **查看操作审批。** Python 运行时的[哨兵（Sentinel）](../zh/sentinel.md)处理工具审批；手机与电脑操作还需要对应平台权限。
+- **了解数据流向。** 本地执行仍会在推理时向模型服务商发送提示词与选中的内容。参见[隐私](../zh/privacy.md)与[数据控制](../zh/sync.md)。
+- **可选上游服务保留原身份。** nanoMuse Cloud 是上游服务；Nanodot 不运营该服务，也不承诺其可用性或免费额度，账号与政策由服务提供方管理。
+
+Android applicationId 为 `io.github.nanodot.app`，外部 scheme 为 `nanodot://`。内部包、`minis://` 路由与沙箱路径保留。Nanodot 使用独立私有存储；迁移 nanoMuse 数据需要明确执行受支持的导出/导入。
+
+## 文档
+
+[从这里开始](../zh/index.md) · [构建](../zh/build.md) · [配置](../zh/configuration.md) · [架构](../zh/architecture.md) · [排查问题](../zh/troubleshooting.md) · [更新日志](../../CHANGELOG.md)
+
+平台与运行时文档包含继承的 nanoMuse 实现说明，阅读时请同时参考 [Nanodot 构建边界](../zh/build.md#other-platforms-and-acceptance)。
+
+## 参与项目
+
+用户与开发者都可以参与：
+
+- **试一个工作流**，并[反馈结果](https://github.com/Mola-maker/nanodot/issues/new/choose)，写明源码版本、平台、模型与复现步骤；请勿包含凭据和私人内容。
+- **改善首次使用体验**，补充文档、翻译或平台构建说明。先阅读 [CONTRIBUTING.md](../../CONTRIBUTING.md) 与 [AGENTS.md](../../AGENTS.md)，提交需带 DCO sign-off。
+- **分享一个具体例子**，附上本仓库链接。如果 Nanodot 对你有帮助，GitHub star 能帮助更多人发现项目。
+
+项目反馈请使用 [Nanodot issues](https://github.com/Mola-maker/nanodot/issues)。许可为 [GPL-3.0-or-later](../../LICENSE)，上游署名保留在 [NOTICE](../../NOTICE) 与 [THIRD_PARTY_NOTICES.md](../../THIRD_PARTY_NOTICES.md)。Nanodot 与 Meta 及其 Muse 商标无关。
 
 ## 上游历史与署名
 

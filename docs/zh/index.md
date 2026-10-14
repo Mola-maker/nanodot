@@ -51,6 +51,17 @@ APK 使用 Nanodot 专用发行密钥签名；替换使用不同签名的开发�
 release 构建必须使用独立签名，不回退到 debug 密钥；包装脚本不会发布。Nanodot 与 nanoMuse
 使用独立私有存储，数据迁移需要显式导出/导入；同 applicationId 升级还需要相同签名和更高 versionCode。
 
+## 从一个小任务开始 {#start-with-a-small-task}
+
+从本仓库安装 Python 运行时、配置模型后，可以体验文字对话或本地 Web 控制台。
+[README 快速开始](https://github.com/Mola-maker/nanodot/blob/main/docs/readme/README_zh.md#快速开始)
+说明了安装步骤；你也可以为 Android 8+、ARM64 设备[构建 Android App](build.md)。
+
+例如，让 Dot 创建一份旅行清单并保存为文件。逐步添加工具时，请了解
+[配置](configuration.md)、[权限](sentinel.md)与[隐私](privacy.md)。如果愿意参与，
+可以[反馈可复现的结果](https://github.com/Mola-maker/nanodot/issues/new/choose)，或阅读
+[贡献指南](../../CONTRIBUTING.md)。
+
 ## 继承文档与服务 {#inherited-documentation-and-services}
 
 大多数平台和运行时页面保留 nanoMuse 实现说明与历史引用。上游 nanoMuse APK、桌面安装包、演示
