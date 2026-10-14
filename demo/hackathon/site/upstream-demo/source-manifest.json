@@ -1,0 +1,170 @@
+{
+  "repository": "https://github.com/nano-muse/nano-muse.github.io",
+  "commit": "9aa289087a813fd2875b062b6d811e425e1fd2c5",
+  "retrieved": "2026-10-14",
+  "officialWebsite": "https://nanomuse.cn/",
+  "files": [
+    {
+      "path": ".nojekyll",
+      "bytes": 0,
+      "sha256Original": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256Vendored": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1445,
+      "sha256Original": "b17c0c4b8faf148105822dcc9f0f3b57eb2895827d6bf77b7eebf042a161258b",
+      "sha256Vendored": "b17c0c4b8faf148105822dcc9f0f3b57eb2895827d6bf77b7eebf042a161258b"
+    },
+    {
+      "path": "assets/apple-touch-icon.png",
+      "bytes": 4652,
+      "sha256Original": "4829d6ef4f2552541916f37f9ffc949489e3b20b0d88c3143ebcc8ad5dabcb15",
+      "sha256Vendored": "4829d6ef4f2552541916f37f9ffc949489e3b20b0d88c3143ebcc8ad5dabcb15"
+    },
+    {
+      "path": "assets/avatar-zh.webp",
+      "bytes": 41764,
+      "sha256Original": "a86c728196bb65d10a742b0b56aaef6950aa60e3975c66baab811e8ebde24616",
+      "sha256Vendored": "a86c728196bb65d10a742b0b56aaef6950aa60e3975c66baab811e8ebde24616"
+    },
+    {
+      "path": "assets/avatar.webp",
+      "bytes": 38386,
+      "sha256Original": "f182e0e349c2f11ed9c24359caa33b8a24a99cb1aef9b35e1143b0acc6865bde",
+      "sha256Vendored": "f182e0e349c2f11ed9c24359caa33b8a24a99cb1aef9b35e1143b0acc6865bde"
+    },
+    {
+      "path": "assets/chat-approval-zh.webp",
+      "bytes": 36454,
+      "sha256Original": "d6b778e9b0ad3ecfe39b43f59b48a0a5777151bfda2ad2f7b0092688dff87b16",
+      "sha256Vendored": "d6b778e9b0ad3ecfe39b43f59b48a0a5777151bfda2ad2f7b0092688dff87b16"
+    },
+    {
+      "path": "assets/chat-approval.webp",
+      "bytes": 33490,
+      "sha256Original": "773ec28dc007f98e23aa5e6e83a680e82fd66f765cbf4af3a4cb2bc2860466e9",
+      "sha256Vendored": "773ec28dc007f98e23aa5e6e83a680e82fd66f765cbf4af3a4cb2bc2860466e9"
+    },
+    {
+      "path": "assets/desktop-zh.webp",
+      "bytes": 79862,
+      "sha256Original": "cc9511d107fb4d983487100ad222c422430ae333a61d5e1b8d6d4991cdac0782",
+      "sha256Vendored": "cc9511d107fb4d983487100ad222c422430ae333a61d5e1b8d6d4991cdac0782"
+    },
+    {
+      "path": "assets/desktop.webp",
+      "bytes": 80100,
+      "sha256Original": "d18cd8c60726a55af985cab4f813aecd852afe50688da0f40bde137aa9a1cbb9",
+      "sha256Vendored": "d18cd8c60726a55af985cab4f813aecd852afe50688da0f40bde137aa9a1cbb9"
+    },
+    {
+      "path": "assets/feed-zh.webp",
+      "bytes": 42910,
+      "sha256Original": "7c388b2850d79a4e2cc481fa3270a469b117b4fbeaccb34f608ab35de443b9bd",
+      "sha256Vendored": "7c388b2850d79a4e2cc481fa3270a469b117b4fbeaccb34f608ab35de443b9bd"
+    },
+    {
+      "path": "assets/feed.webp",
+      "bytes": 45990,
+      "sha256Original": "4f34425649e5df6f56a160c260379743d257560e08b4a5372661f87344f70238",
+      "sha256Vendored": "4f34425649e5df6f56a160c260379743d257560e08b4a5372661f87344f70238"
+    },
+    {
+      "path": "assets/goals-zh.webp",
+      "bytes": 30060,
+      "sha256Original": "715c0154ba830dc58846dbf7a88ce2740d266576078bef7f6af1bce815b6fed4",
+      "sha256Vendored": "715c0154ba830dc58846dbf7a88ce2740d266576078bef7f6af1bce815b6fed4"
+    },
+    {
+      "path": "assets/goals.webp",
+      "bytes": 36016,
+      "sha256Original": "fef47004037b073a6eb1949200187ea0d49830114093a853a2695ed07a5f196b",
+      "sha256Vendored": "fef47004037b073a6eb1949200187ea0d49830114093a853a2695ed07a5f196b"
+    },
+    {
+      "path": "assets/icon-512.png",
+      "bytes": 31170,
+      "sha256Original": "90ee07695b017f5b2d032017e9ef9b0718cfbcfcbf3dce426846d761855a7f90",
+      "sha256Vendored": "90ee07695b017f5b2d032017e9ef9b0718cfbcfcbf3dce426846d761855a7f90"
+    },
+    {
+      "path": "assets/icon.svg",
+      "bytes": 1376,
+      "sha256Original": "44f753064e8cd7fac9fd5520762ff825898554b0dc03deebb0ea2fb7050bf838",
+      "sha256Vendored": "44f753064e8cd7fac9fd5520762ff825898554b0dc03deebb0ea2fb7050bf838"
+    },
+    {
+      "path": "assets/mark.svg",
+      "bytes": 1258,
+      "sha256Original": "2b7a9be628a53b79d3c09c8dbb25be191a4665e30c06534c0d9e7a8f88d3549c",
+      "sha256Vendored": "2b7a9be628a53b79d3c09c8dbb25be191a4665e30c06534c0d9e7a8f88d3549c"
+    },
+    {
+      "path": "assets/moods.webp",
+      "bytes": 26332,
+      "sha256Original": "29b54bf6400ee1cadf6cb511caa10e0101a37d092ff442e688030b75b8180d74",
+      "sha256Vendored": "29b54bf6400ee1cadf6cb511caa10e0101a37d092ff442e688030b75b8180d74"
+    },
+    {
+      "path": "assets/social-card.png",
+      "bytes": 59322,
+      "sha256Original": "b14b521c593477c0347e728777cbcecc2168fd5d154d2c8bfb09d860185b35df",
+      "sha256Vendored": "b14b521c593477c0347e728777cbcecc2168fd5d154d2c8bfb09d860185b35df"
+    },
+    {
+      "path": "index.html",
+      "bytes": 22595,
+      "sha256Original": "609712b16802ab2ebc290c1e30895c1a2bd027c7f77d84e80951d59ff54c672a",
+      "sha256Vendored": "a25a62095f879d3fa2d2dcbfa4dc15028cdc437e71047797cba807fd19755215"
+    },
+    {
+      "path": "media/film/nanomuse-film-en-web.mp4",
+      "bytes": 9045033,
+      "sha256Original": "8f05f75db446624109b6a53dbe08b5a59de48fe0bf551c89aa2352eddca96ffe",
+      "sha256Vendored": "8f05f75db446624109b6a53dbe08b5a59de48fe0bf551c89aa2352eddca96ffe"
+    },
+    {
+      "path": "media/film/nanomuse-film-zh-web.mp4",
+      "bytes": 8881015,
+      "sha256Original": "e4c720ce7d3cc55404a648b42e5b70b23fcfea63ba9fefa1dca4a9a874483ec1",
+      "sha256Vendored": "e4c720ce7d3cc55404a648b42e5b70b23fcfea63ba9fefa1dca4a9a874483ec1"
+    },
+    {
+      "path": "media/film/poster-en.png",
+      "bytes": 283796,
+      "sha256Original": "343f81b785b0c4242656edb3c6202808ec0994ba98a5b106585fc82dbd70740c",
+      "sha256Vendored": "343f81b785b0c4242656edb3c6202808ec0994ba98a5b106585fc82dbd70740c"
+    },
+    {
+      "path": "media/film/poster-zh.png",
+      "bytes": 269204,
+      "sha256Original": "8adf34128a214e8ec833538b168d7d7fd329e0ddbc677e5e70e00e00a36dadb0",
+      "sha256Vendored": "8adf34128a214e8ec833538b168d7d7fd329e0ddbc677e5e70e00e00a36dadb0"
+    },
+    {
+      "path": "own-key/index.html",
+      "bytes": 20333,
+      "sha256Original": "5adf470f734ebc12f5c2a400efbbc2debd0566b781549a030be53e697f7763a6",
+      "sha256Vendored": "e5c17d44af7abb971ec8a50dfd64764b317697d5c1e52cfe41c570e951a1cfcd"
+    },
+    {
+      "path": "privacy/index.html",
+      "bytes": 28315,
+      "sha256Original": "e0af2b2223ad0e7b1614e321716efdd4e3f177967254cafc752e065ad9861d35",
+      "sha256Vendored": "dd5568422829ad89228979a370dbf184fd24086c6b44d60c123bada6a3fee821"
+    },
+    {
+      "path": "site.js",
+      "bytes": 6839,
+      "sha256Original": "09f1891c6c73c204992670bb4dad2162a2a7b1f8de7af1fa45906953901937b5",
+      "sha256Vendored": "09f1891c6c73c204992670bb4dad2162a2a7b1f8de7af1fa45906953901937b5"
+    },
+    {
+      "path": "style.css",
+      "bytes": 11231,
+      "sha256Original": "1b9aca5eeadc5d6a1df3ff1ef9d9afcc4bf0ec56cca6023df097bf52e643a7b7",
+      "sha256Vendored": "1b9aca5eeadc5d6a1df3ff1ef9d9afcc4bf0ec56cca6023df097bf52e643a7b7"
+    }
+  ]
+}

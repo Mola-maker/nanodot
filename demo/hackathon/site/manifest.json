@@ -1,0 +1,52 @@
+{
+  "title": "Nanodot · 每一步，都看得懂",
+  "date": "2026-10-14",
+  "target": "天猫黑客松 · 科技无碍方向",
+  "sdk": "static",
+  "source": "https://github.com/Mola-maker/nanodot",
+  "modelscope": "https://modelscope.cn/studios/why2025/nanodot-crystal",
+  "releaseDownloadEnabled": true,
+  "evidence": {
+    "file": "assets/android-region-journey.mp4",
+    "sha256": "bb9f56b13542f976a1e83bd7377af909ee08699a4dbe7ce2c0f8eef033701045",
+    "durationSeconds": 115.6358,
+    "kind": "actual-android-development-recording",
+    "testedEnvironment": "Android 15 / API 35 / x86_64 controlled public Canvas fixture",
+    "limits": "Core tasks 4/4; full error-free replies 2/4. Care target highlighting is visible; full real-provider Care completion is not verified. Earlier development APK, not signed 1.1.0 runtime acceptance.",
+    "run": "d882fbdc-ab84-4ca2-a4f3-4b5bf3301d71",
+    "sourceBase": "774cc5bc5c40",
+    "mainApkSha256": "a153a6fa91f93fa7c9797c9b22db2084b8727f922e8f3b93490fd5d6d70b2e2a",
+    "testApkSha256": "872eec0d6fbacbd8f0e2ba1f35ad636877fe9eac2f693b3c4c21982863cea0a1",
+    "care": {
+      "planningInput": "accessible nodes",
+      "verifiedSteps": 0,
+      "imageUnderstanding": false
+    },
+    "screenChat": {
+      "imageUnderstanding": true,
+      "canonicalTurns": 4,
+      "coreTasksPassed": 4,
+      "entireRepliesWithoutDetectedErrors": 2
+    },
+    "verificationRecord": "https://github.com/Mola-maker/nanodot/blob/main/docs/android-verification.md#raster-region-live-2026-10-13"
+  },
+  "demo": {
+    "kind": "local-scripted-interaction",
+    "modelApiCalls": false,
+    "realBookings": false
+  },
+  "upstream": {
+    "repository": "https://github.com/nano-muse/nano-muse.github.io",
+    "commit": "9aa289087a813fd2875b062b6d811e425e1fd2c5",
+    "localPath": "upstream-demo/",
+    "externalDemo": "https://demo.nanomuse.dev/",
+    "backendVendored": false
+  },
+  "release": {
+    "tag": "v1.1.0",
+    "url": "https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0",
+    "apkUrl": "https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk",
+    "sourceCommitPrefix": "66dd9cdc",
+    "verification": "Release coordinator downloaded and verified all three release assets."
+  }
+}

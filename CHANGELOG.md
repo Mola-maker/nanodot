@@ -8,6 +8,8 @@ Nanodot releases begin with 1.1.0; entries for 1.0.1 and earlier describe upstre
 
 ### Project
 
+- Added the Tmall hackathon static showcase source, a labelled browser interaction, the earlier Android region recording, verified release links and a pinned attributed nanoMuse website snapshot; documented manual ModelScope deployment and GitHub collaboration.
+
 ## [1.1.0] - 2026-10-14 · Crystal
 
 First Nanodot Android prerelease: blue crystal foreground interactions, region image questions and user-guided Care. VersionCode 45 uses a dedicated release signature. Existing runtime evidence and remaining acceptance gaps are described in the [release notes](docs/releases/v1.1.0.md); this is not a full Care, voice or physical-device qualification.

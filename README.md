@@ -28,6 +28,10 @@ Nanodot is an open-source personal AI agent with **Dot** as its default assistan
 
 The first Nanodot Android prerelease targets **Android 8.0+ / ARM64**, version **1.1.0** (versionCode **45**). The asset is `Nanodot-1.1.0-arm64.apk`, signed with a dedicated Nanodot release key. Download its [SHA-256 file](https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk.sha256) alongside it to check the file. Read the installation notes before replacing a development build signed with a different key.
 
+## Tmall hackathon showcase
+
+The [ModelScope project](https://modelscope.cn/studios/why2025/nanodot-crystal) presents the “科技无碍” concept through a labelled local interaction, an actual Android recording and the signed APK. [Source and deployment instructions](demo/hackathon/README.md) explain manual GitHub/ModelScope collaboration and keep browser simulation, development evidence and cloud architecture claims separate. Competition identity fields and final submission remain with the entrant.
+
 ## What is in this preview
 
 - **Crystal Dot.** A floating crystal orb with breathing motion, drag trails and foreground chat in a blue glass panel.

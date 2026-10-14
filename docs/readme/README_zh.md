@@ -28,6 +28,10 @@ Nanodot 是一个开源个人 AI 智能体，默认助手叫 **Dot**。它将对
 
 这是 Nanodot 的首个 Android 预发布，适用于 **Android 8.0+ / ARM64**，版本 **1.1.0**（versionCode **45**）。安装包为 `Nanodot-1.1.0-arm64.apk`，使用 Nanodot 专用发行密钥签名；同时下载 [SHA-256 文件](https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk.sha256)可校验文件。替换使用不同签名的开发包前，请先阅读安装说明。
 
+## 天猫黑客松展示
+
+[魔搭项目](https://modelscope.cn/studios/why2025/nanodot-crystal)以「科技无碍」为主线，提供已标明的本地交互示意、真实 Android 录像与签名 APK。[源码与部署说明](../../demo/hackathon/README.md)解释 GitHub／魔搭的手动协作，并区分浏览器模拟、开发验收与云端架构声明。个人参赛字段与最终提交仍由参赛者完成。
+
 ## 这个预览版包含什么
 
 - **水晶 Dot。** 带呼吸动画与拖动轨迹的水晶悬浮球，以及蓝色玻璃面板中的前台对话。

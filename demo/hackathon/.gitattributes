@@ -1,0 +1,2 @@
+# Keep the canonical website bytes identical to its provenance manifests.
+site/** -text

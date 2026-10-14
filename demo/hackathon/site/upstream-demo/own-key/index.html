@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script>
+      // Language before first paint: the saved choice, else the browser's; the theme is light unless dark was chosen here.
+      (function () {
+        try {
+          var d = document.documentElement;
+          var s = localStorage.getItem("nm-lang");
+          var l = s ? (s === "zh" ? "zh" : "en") : (/^zh/i.test(navigator.language || "") ? "zh" : "en");
+          d.setAttribute("data-lang", l);
+          d.lang = l === "zh" ? "zh-CN" : "en";
+          // Light unless this visitor chose dark: the page is not darkened by the system's setting.
+          d.setAttribute("data-theme", localStorage.getItem("nm-theme") === "dark" ? "dark" : "light");
+        } catch (e) {}
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title data-en="Bring your own key · nanoMuse" data-zh="换成自己的 key · nanoMuse">Bring your own key · nanoMuse</title>
+    <meta name="description" content="When the free allowance of nanoMuse Cloud is used up: an Alibaba Cloud Bailian key in mainland China, an OpenRouter key everywhere else, or any OpenAI-compatible provider. Your sign-in and devices are unaffected." />
+    <meta property="og:title" content="Bring your own key · nanoMuse" />
+    <meta property="og:description" content="Alibaba Cloud Bailian in five steps, or any OpenAI-compatible provider." />
+    <meta property="og:image" content="https://nanomuse.cn/assets/social-card.png" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://nanomuse.cn/own-key/" />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="icon" href="../assets/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+    <link rel="canonical" href="https://nanomuse.cn/own-key/" />
+    <link rel="stylesheet" href="../style.css" />
+  </head>
+  <body>
+<aside class="nanodot-source-note" style="position:relative;z-index:50;padding:10px 18px;background:#e7f0ff;color:#244e88;border-bottom:1px solid #bacfee;font:12px/1.6 system-ui,sans-serif;text-align:center">这是 <strong>nanoMuse 官方 GitHub Pages 源码快照</strong>（2026-10-14 · 9aa2890）。上游品牌、云服务与远程在线演示归属原项目，非 Nanodot 的运行验收。 <a style="text-decoration:underline;color:inherit" href="../../">返回 Nanodot</a> · <a style="text-decoration:underline;color:inherit" href="https://github.com/nano-muse/nano-muse.github.io/tree/9aa289087a813fd2875b062b6d811e425e1fd2c5">查看原始源码</a></aside>
+    <header class="bar">
+      <a class="brand" href="../" aria-label="nanoMuse">
+        <img src="../assets/mark.svg" alt="" width="24" height="24" />
+        <span>nanoMuse</span>
+      </a>
+      <nav aria-label="Site">
+        <a href="https://nanomuse.cn/docs/"><i class="en">Docs</i><i class="zh">文档</i></a>
+        <a href="../#download"><i class="en">Download</i><i class="zh">下载</i></a>
+        <a class="stars" id="stars" href="https://github.com/nano-muse/nanoMuse" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.9l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z" /></svg>
+          <span>GitHub</span>
+          <span class="n"></span>
+        </a>
+        <button class="switch" id="lang" type="button" aria-label="Switch language"><i class="en">中文</i><i class="zh">EN</i></button>
+        <button class="switch" id="theme" type="button" aria-label="Switch between light and dark">
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" /></svg>
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" /></svg>
+        </button>
+      </nav>
+    </header>
+
+    <main class="doc">
+      <p class="crumb"><a href="../#open-source"><i class="en">← Free, open source, non-profit</i><i class="zh">← 免费、开源、非营利</i></a></p>
+      <h1><i class="en">Bring your own key</i><i class="zh">换成自己的 key</i></h1>
+      <p class="lead">
+        <i class="en">nanoMuse is free and non-profit; the model behind it costs money, and the developer pays for a starting allowance per account (the app shows the relay's current figures, and what a friend who signs up with your code adds). When that is gone, the way on is a key of your own. Below: where you are decides the provider (Alibaba Cloud Bailian in mainland China, OpenRouter everywhere else), then any other OpenAI-compatible provider.</i>
+        <i class="zh">nanoMuse 免费、非营利；背后的模型是要花钱的，开发者为每个账号垫付了一笔起步额度（具体数字、邀请朋友加多少，以 App 里显示的为准）。用完之后，换成自己的 key 就能继续。下面先看你在哪（中国大陆用阿里云百炼，海外用 OpenRouter），再是其他 OpenAI 兼容服务商的通用填法。</i>
+      </p>
+      <div class="callout">
+        <i class="en">Nothing else changes: your sign-in, your invite code and your devices stay as they are; only the model provider is swapped. Once your own key is in use, nothing you say passes through nanoMuse Cloud.</i>
+        <i class="zh">其他都不变：登录、邀请码、多设备都照旧，只是换了模型服务商。用自己的 key 之后，你说的话不再经过 nanoMuse Cloud。</i>
+      </div>
+
+      <h2><i class="en">Where you are decides the provider</i><i class="zh">先看你在哪</i></h2>
+      <table>
+        <thead><tr><th></th><th><i class="en">Provider</i><i class="zh">服务商</i></th><th><i class="en">Chat model</i><i class="zh">对话模型</i></th><th><i class="en">Hands model</i><i class="zh">手的模型</i></th><th><i class="en">Base URL</i><i class="zh">地址</i></th></tr></thead>
+        <tbody>
+          <tr><td><i class="en">Mainland China</i><i class="zh">中国大陆</i></td><td><b><i class="en">Alibaba Cloud Bailian</i><i class="zh">阿里云百炼</i></b></td><td><code>deepseek-v4.1-flash</code></td><td><code>qwen3.8-27b</code></td><td><code>https://dashscope.aliyuncs.com/compatible-mode/v1</code></td></tr>
+          <tr><td><i class="en">Everywhere else</i><i class="zh">海外</i></td><td><b>OpenRouter</b></td><td><code>deepseek/deepseek-v4.1-flash</code></td><td><code>qwen/qwen3.8-27b</code></td><td><code>https://openrouter.ai/api/v1</code></td></tr>
+        </tbody>
+      </table>
+      <p>
+        <i class="en">Bailian only signs up accounts with a mainland-China identity, and its international edition has neither model; OpenRouter is the easy way elsewhere: one account, one key, an international card, pay as you go. Both are presets in every client, the other one always a step away. Chat model and hands model are two rows on one page (<em>Settings → Models</em> on the phone and the desktop, <em>Connections</em> in the web console); they default to <code>deepseek-v4.1-flash</code> and <code>qwen3.8-27b</code> on the allowance, and the presets pick the same two under your key.</i>
+        <i class="zh">百炼只给中国大陆身份注册，国际版也没有这两个模型；海外用 OpenRouter 省事：一个账号一把 key，国际信用卡，按量付费。两家在每个客户端里都是预设，想换另一家也只差一步。对话模型和手的模型是同一页上的两行（手机和桌面版：设置 → 模型；网页版：连接）；额度没用完时默认是 <code>deepseek-v4.1-flash</code> 和 <code>qwen3.8-27b</code>，换成自己的 key 之后预设也选这两个。</i>
+      </p>
+
+      <h2><i class="en">Alibaba Cloud Bailian (mainland China)</i><i class="zh">阿里云百炼（中国大陆）</i></h2>
+      <ul>
+        <li><i class="en"><b>A free quota for new accounts</b>: the main models come with free tokens for a while after sign-up.</i><i class="zh"><b>新用户有免费额度</b>：开通后主流模型都送一段时间的免费 token，先用起来不花钱。</i></li>
+        <li><i class="en"><b>One key covers everything</b>: chat (Qwen), pictures (qwen-image) and video (Wan) sit under the same key, so the avatar studio works too.</i><i class="zh"><b>一个 key 就够</b>：对话（Qwen）、画图（qwen-image）、视频（Wan）都在同一个 key 下，形象生成也能直接用。</i></li>
+        <li><i class="en"><b>Direct from China, OpenAI-compatible</b>: nanoMuse already knows the endpoint; you only paste the key.</i><i class="zh"><b>国内直连，OpenAI 兼容</b>：nanoMuse 里已经预置好了地址，只需要贴 key。</i></li>
+      </ul>
+
+      <h2><i class="en">Five steps</i><i class="zh">五步开通</i></h2>
+      <ol class="steps">
+        <li>
+          <strong><i class="en">Open Bailian.</i><i class="zh">开通百炼。</i></strong>
+          <i class="en">Go to <a href="https://bailian.console.aliyun.com/" rel="noopener">bailian.console.aliyun.com</a> and sign in with an Alibaba Cloud account (create one if needed; identity verification is required). On first entry, accept <em>Enable Model Studio</em>; it is free.</i>
+          <i class="zh">打开 <a href="https://bailian.console.aliyun.com/" rel="noopener">bailian.console.aliyun.com</a>，用阿里云账号登录（没有的话注册一个，需要实名认证）。第一次进入会提示「开通百炼服务」，点开通即可，不收费。</i>
+        </li>
+        <li>
+          <strong><i class="en">Create an API key.</i><i class="zh">创建 API key。</i></strong>
+          <i class="en">Open the <a href="https://bailian.console.aliyun.com/?apiKey=1" rel="noopener">API-KEY page</a> (avatar, top right → API-KEY), click <em>Create my API-KEY</em>, keep the default workspace, confirm.</i>
+          <i class="zh">进入 <a href="https://bailian.console.aliyun.com/?apiKey=1" rel="noopener">API-KEY 管理页</a>（右上角头像 → API-KEY），点「创建我的 API-KEY」，归属选默认业务空间，确定。</i>
+        </li>
+        <li>
+          <strong><i class="en">Copy it.</i><i class="zh">复制 key。</i></strong>
+          <i class="en">The key starts with <code>sk-</code>. Click <em>View</em>, then <em>Copy</em>. It is for nanoMuse only; never send it to anyone or paste it into a chat.</i>
+          <i class="zh">新建的 key 以 <code>sk-</code> 开头。点「查看」再「复制」。这串字符只给 nanoMuse 用，不要发给任何人、不要贴到聊天里。</i>
+        </li>
+        <li>
+          <strong><i class="en">Paste it into nanoMuse.</i><i class="zh">贴到 nanoMuse 里。</i></strong>
+          <ul>
+            <li><i class="en"><b>Phone:</b> <em>Set it up</em> on the allowance card opens the provider form pre-filled for Bailian; or <em>Settings → Providers → Add</em>, pick <em>Alibaba Cloud Bailian</em>; the address is already filled in. Paste the key, save.</i><i class="zh"><b>手机：</b>额度卡片上的「去设置」会直接打开预填好的「阿里云百炼」表单；或者 设置 → 服务商 → 添加，选「阿里云百炼」，地址已经填好。贴 key，保存。</i></li>
+            <li><i class="en"><b>Web / desktop:</b> <em>Set it up</em> on the allowance card opens the provider's row (<em>Connections</em> in the web console, <em>Settings → nanoMuse Cloud</em> on the desktop); or go there yourself and click <em>Alibaba Cloud Bailian</em>. Paste the key, save.</i><i class="zh"><b>网页版 / 桌面版：</b>额度卡片上的「去设置」会打开服务商那一行（网页版在「连接」页，桌面版在 设置 → nanoMuse Cloud）；或者自己过去点「阿里云百炼」。贴 key，保存。</i></li>
+          </ul>
+        </li>
+        <li>
+          <strong><i class="en">Pick a model, say something.</i><i class="zh">选一个模型，试一句。</i></strong>
+          <i class="en">After saving, a card asks which jobs this key should handle (chat, the screen, pictures, clips); <em>Use it</em> puts those rows on Bailian's default models. Under <em>Settings → Models</em> (web console: <em>Connections</em>) you can change them: <code>qwen3.8-flash</code> (cheap and quick) or <code>qwen3.8-27b</code> (stronger) for chat, <code>qwen-image-3.0</code> for pictures and <code>wan2.2-i2v-flash</code> for clips. Back in the chat, one answered sentence means it works.</i>
+          <i class="zh">保存后会弹出一张卡片，问这把 key 负责哪些事（对话、操作屏幕、生成图片、生成视频）；点「就这样」，这几行就换到百炼的默认模型。之后在 设置 → 模型（网页版：连接）里随时可以改：对话选 <code>qwen3.8-flash</code>（便宜快）或 <code>qwen3.8-27b</code>（更强），生成图片选 <code>qwen-image-3.0</code>，生成视频选 <code>wan2.2-i2v-flash</code>。回到聊天说一句话，能回答就成了。</i>
+        </li>
+      </ol>
+
+      <h2><i class="en">What it costs afterwards</i><i class="zh">之后怎么算钱</i></h2>
+      <p>
+        <i class="en">Past the free quota, Bailian bills at its list prices (September 2026, Beijing region): <code>qwen3.8-27b</code> ¥3 in / ¥12 out per million tokens, <code>qwen3.8-flash</code> ¥0.8 / ¥2.7, <code>qwen-image-3.0</code> ¥0.18 a picture, <code>wan2.2-i2v-flash</code> ¥0.10 a second. An ordinary day of chatting is a few fen; set a usage alert in the Bailian console. nanoMuse itself charges nothing.</i>
+        <i class="zh">免费额度用完后按百炼的标价计费（2026 年 9 月，北京地域）：<code>qwen3.8-27b</code> 每百万 token 输入 ¥3 / 输出 ¥12，<code>qwen3.8-flash</code> ¥0.8 / ¥2.7，<code>qwen-image-3.0</code> 每张 ¥0.18，<code>wan2.2-i2v-flash</code> 每秒 ¥0.10。正常聊一天几分钱；建议在百炼控制台设一个用量告警。nanoMuse 自己不收任何费用。</i>
+      </p>
+
+      <h2><i class="en">OpenRouter (everywhere else)</i><i class="zh">OpenRouter（海外）</i></h2>
+      <ul>
+        <li><i class="en"><b>One account, one key</b>, hundreds of models behind it; an international card, pay as you go.</i><i class="zh"><b>一个账号、一把 key</b>，背后有几百个模型；国际信用卡付费，按量扣。</i></li>
+        <li><i class="en"><b>No proxy, no mainland identity.</b></i><i class="zh"><b>不用代理，不用国内身份。</b></i></li>
+        <li><i class="en"><b>The phone apps sign in to OpenRouter from the app</b> (Android, iPhone); no key to copy.</i><i class="zh"><b>手机 App 可以直接登录 OpenRouter</b>（Android、iPhone），不用手抄 key。</i></li>
+      </ul>
+      <ol>
+        <li><i class="en"><b>Sign up.</b> Open <a href="https://openrouter.ai/" rel="noopener">openrouter.ai</a> and sign in with Google, GitHub or an e-mail.</i><i class="zh"><b>注册。</b>打开 <a href="https://openrouter.ai/" rel="noopener">openrouter.ai</a>，用 Google、GitHub 或邮箱登录。</i></li>
+        <li><i class="en"><b>Add credits.</b> Avatar → <i>Credits</i> → <i>Add Credits</i>; five dollars lasts a long while.</i><i class="zh"><b>充值。</b>右上角头像 → <i>Credits</i> → <i>Add Credits</i>，国际信用卡；先充 5 美元足够用很久。</i></li>
+        <li><i class="en"><b>Make a key.</b> Avatar → <i>Keys</i> → <i>Create Key</i>, name it (nanoMuse, say), copy the string starting <code>sk-or-v1-</code>. <b>For nanoMuse only; never send it to anyone.</b></i><i class="zh"><b>拿 key。</b>头像 → <i>Keys</i> → <i>Create Key</i>，起个名（比如 nanoMuse），复制以 <code>sk-or-v1-</code> 开头的那串。<b>只给 nanoMuse 用，别发给任何人。</b></i></li>
+        <li><i class="en"><b>Paste it into nanoMuse.</b> Phone: Settings → Providers → Add → OpenRouter → <i>Sign in</i>, approve in the browser and the key comes back by itself; or paste it into the OpenRouter form. Web console: Connections → Chat model → <i>OpenRouter</i>; desktop: Settings → nanoMuse Cloud, the OpenRouter row. Paste, save; the address is filled in.</i><i class="zh"><b>贴到 nanoMuse 里。</b>手机：设置 → 服务商 → 添加 → OpenRouter → 「登录」，浏览器里批准一下，key 自动回到 App，不用复制；或者把 key 贴进 OpenRouter 表单。网页版：连接 → 对话模型 → 「OpenRouter」；桌面版：设置 → nanoMuse Cloud 里 OpenRouter 那一行。贴 key，保存，地址已经填好。</i></li>
+      </ol>
+      <p>
+        <i class="en">Pick <code>deepseek/deepseek-v4.1-flash</code> for the chat and <code>qwen/qwen3.8-27b</code> for the hands. Each model's price is on its OpenRouter page; <i>Settings → Limits</i> puts a monthly cap on the key.</i>
+        <i class="zh">对话选 <code>deepseek/deepseek-v4.1-flash</code>，手的模型选 <code>qwen/qwen3.8-27b</code>。每个模型的单价在 OpenRouter 的模型页上写着；<i>Settings → Limits</i> 可以给 key 设每月上限。</i>
+      </p>
+
+      <h2><i class="en">Any other OpenAI-compatible provider</i><i class="zh">其他 OpenAI 兼容服务商</i></h2>
+      <p>
+        <i class="en">Anything that speaks the OpenAI API works: DeepSeek, Zhipu, Moonshot, OpenRouter, OpenAI itself, or your own vLLM / Ollama. The generic fill-in:</i>
+        <i class="zh">任何 OpenAI 兼容接口都能填：DeepSeek、智谱、月之暗面、OpenRouter、OpenAI 本身，或你自己跑的 vLLM / Ollama。通用填法：</i>
+      </p>
+      <table>
+        <thead><tr><th><i class="en">Field</i><i class="zh">字段</i></th><th><i class="en">Value</i><i class="zh">填什么</i></th></tr></thead>
+        <tbody>
+          <tr><td><i class="en">Type</i><i class="zh">类型</i></td><td><i class="en">OpenAI (compatible)</i><i class="zh">OpenAI（兼容）</i></td></tr>
+          <tr><td><i class="en">Base URL</i><i class="zh">地址（Base URL）</i></td><td><i class="en">the provider's address, usually ending in <code>/v1</code>, e.g. <code>https://api.deepseek.com/v1</code></i><i class="zh">服务商给的地址，通常以 <code>/v1</code> 结尾，例如 <code>https://api.deepseek.com/v1</code></i></td></tr>
+          <tr><td>API key</td><td><i class="en">the key made in the provider's console</i><i class="zh">服务商控制台里创建的 key</i></td></tr>
+          <tr><td><i class="en">Model</i><i class="zh">模型</i></td><td><i class="en">pick from the list after saving; if none appears, type the model id from the provider's docs</i><i class="zh">保存后从列表里选；列不出来就手填服务商文档里的模型 id</i></td></tr>
+        </tbody>
+      </table>
+      <p>
+        <i class="en">The web console's <em>Connections</em> page and the desktop's <em>Settings → nanoMuse Cloud</em> have presets for the common providers: choose one and the address is filled in; only the key is missing.</i>
+        <i class="zh">网页版的「连接」页和桌面版的 设置 → nanoMuse Cloud 里有常见服务商的预设，选中即填好地址，只差 key。</i>
+      </p>
+
+      <div class="cta">
+        <a class="btn primary" href="https://demo.nanomuse.dev/"><i class="en">Try the demo in the browser</i><i class="zh">打开浏览器里的演示</i></a>
+        <a class="btn" href="../#open-source"><i class="en">How nanoMuse is paid for</i><i class="zh">费用从哪来</i></a>
+        <a class="btn" href="https://github.com/nano-muse/nanoMuse/blob/main/docs/own-key.md" rel="noopener"><i class="en">This page as Markdown</i><i class="zh">本页的 Markdown 版</i></a>
+      </div>
+    </main>
+
+    <footer>
+      <nav aria-label="Footer">
+        <a href="https://github.com/nano-muse/nanoMuse" rel="noopener">GitHub</a>
+        <a href="https://nanomuse.cn/docs/cloud"><i class="en">nanoMuse Cloud</i><i class="zh">nanoMuse Cloud 说明</i></a>
+        <a href="../privacy/"><i class="en">Privacy</i><i class="zh">隐私</i></a>
+      </nav>
+      <p>
+        <i class="en">nanoMuse is an independent community project, not affiliated with or endorsed by Meta Platforms, Inc.; Muse is a trademark of Meta Platforms, Inc. The phone app is based on OpenMinis 1.13 (GPL-3.0), modified since 2026-09-24. Nothing is sold under this name.</i>
+        <i class="zh">nanoMuse 是独立的社区项目，与 Meta Platforms, Inc. 无关，也未获其背书；Muse 是 Meta Platforms, Inc. 的商标。手机 App 基于 OpenMinis 1.13（GPL-3.0），自 2026-09-24 起修改。不会以这个名字出售任何东西。</i>
+      </p>
+    </footer>
+
+    <script src="../site.js"></script>
+  </body>
+</html>
