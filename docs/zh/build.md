@@ -1,15 +1,15 @@
-# 构建 Nanodot P0
+# 构建 Nanodot
 
 Nanodot 源码位于 [Mola-maker/nanodot](https://github.com/Mola-maker/nanodot)，基于 nanoMuse
 基线 `f627f33ccc8ab70b9b59322929e5f15a2b1bec64` 与 OpenMinis 1.13。
-P0 沿用版本 **1.0.1** 和 Android versionCode **44**。版本变动属于独立的发布变更。
-[品牌契约](brand.md) 定义统一身份。
+Nanodot 首个预发布版本为 **1.1.0 · Crystal**，Android versionCode 为 **45**。
+版本变动属于独立的发布变更。[品牌契约](brand.md) 定义统一身份。
 
 ## 工具链 {#toolchain}
 
-使用以下 P0 工具链；品牌修改不顺带升级 Kotlin、AGP 或 Compose。
+使用以下固定工具链；Kotlin、AGP 或 Compose 升级属于独立变更。
 
-| 组件 | P0 值 |
+| 组件 | 值 |
 |---|---|
 | JDK | 21 |
 | Android minSdk / targetSdk / compileSdk | 26 / 35 / 36 |
@@ -69,15 +69,38 @@ NANODOT_PYTHON="$PWD/.venv/bin/python" bash scripts/build-nanodot-apk.sh release
 release 不会回退到 debug keystore。将报告中的证书与预期密钥核对；随生成元数据记录精确工具
 版本、源码 revision、工作区是否有未提交改动，以及构建日志。
 
+## 发布已审阅的预发布版本 {#publish-a-reviewed-prerelease}
+
+从干净的最终发布 commit 构建。在本机保留包装脚本输出的唯一候选目录和完整
+`receipt.json`。发布前将源码 commit、tree、字节指纹和干净状态与已审阅源码核对；
+确认 APK 版本为 **1.1.0**、versionCode 为 **45**、包名为 `io.github.nanodot.app`、
+ABI 为 `arm64-v8a`，并检查证书 SHA256 与 APK SHA256。原生缓存哈希只标识字节，
+应保留记录中“来源未经验证”的限制。
+
+首版使用已审阅的手写英文及中文发布说明。旧 `scripts/release-apk.sh` 绕过候选构建记录，
+并调用可能将继承的上游 PR 编号误认成 Nanodot PR 的自动说明流程。本次发布应给精确的
+已审阅 commit 打 tag，手动使用 `gh release create`，传入
+`--repo Mola-maker/nanodot --verify-tag --prerelease --latest=false`。附上已验证 APK、
+校验文件，以及按明确白名单生成的公开构建记录：源码身份、APK 元数据/校验值、证书摘要、
+工具版本和原生来源限制。公开记录不包含本机路径、环境/配置值、日志或私有签名材料。
+如果重命名 APK，记录原始文件名与发布文件名的对应关系，并按发布文件名生成校验文件。
+详见[维护者发布步骤](../../CONTRIBUTING.md#releasing-maintainers)。
+
+`v*` tag 会启动桌面、harness、Docker 与常规测试构建。Release 附件需要另行在该 tag
+手动运行桌面/harness 流程，并设置 `release_tag`。Tag 不会发布 Docker 镜像，也不会部署
+网关、中继、网站或上传 TestFlight。这些仍是单独明确选择的操作；GitHub 预发布不能证明
+它们已经执行。
+
 ## 身份、数据与更新 {#identity-data-and-updates}
 
 Android applicationId 为 `io.github.nanodot.app`，外部 scheme 为 `nanodot://`。
 namespace `com.openminis.app`、内部 `io.github.nanomuse.*` 包、`minis://` 路由与沙箱路径保持。
 新的 applicationId 无法读取 nanoMuse 私有存储。使用明确支持的导出/导入流程，并核对支持范围。
 
-首启仅初始化缺失值：Dot、系统主题与安全偏好。已有 SOUL.md、名字、自定义头像与动画、模型
-选择和偏好保留。同 applicationId 的升级测试需要相同签名与更高 versionCode。
-P0 不为模拟测试而提高当前 versionCode。
+首启仅初始化缺失值：Dot、系统主题与安全偏好。初始化保留已有 SOUL.md、名字、自定义头像
+与动画、模型选择和偏好。同 applicationId 的升级需要相同签名与更高 versionCode。首个
+专用签名版本不能覆盖调试签名构建；上游 nanoMuse 使用不同 applicationId。在记录对应
+安装测试之前，不宣称兼容升级或数据保留验收已通过。
 
 Nanodot 更新渠道配置好之前，自动更新保持关闭。手动查看
 [Nanodot 发布页](https://github.com/Mola-maker/nanodot/releases)，不下载上游 APK 作为更新。
@@ -110,7 +133,9 @@ iOS、桌面（Windows/macOS/Linux）、Web 与相关 CI 配置采用 Nanodot �
 外部链接。记录虚拟设备的 API 级别、ABI 与截图。x86_64 仅聊天的模拟器构建不能验证 arm64
 原生产物；沙箱启动与原生操作需要后续在真实 arm64 硬件上验证。另行验证与 nanoMuse 并存、
 同签名升级中的自定义数据保留，以及 nanoMuse 显式导出/导入。每项检查在记录对应证据之前
-仍待完成；仅生成 APK 不代表安装验收通过。未来的新悬浮球与关怀模式另按后续阶段验收。
+仍待完成；仅生成 APK 不代表安装验收通过。Crystal 预发布包含前台悬浮球、区域聊天和
+关怀引导。已有 API 35/x86_64 检查覆盖记录中的模拟器流程；完整真实 Care、语音、
+arm64 真机操作和同签名升级仍需各自的验收证据。
 
 分发构建时保留 [GPL 条款](../../LICENSE)、[NOTICE](../../NOTICE)、
 [第三方署名](../../THIRD_PARTY_NOTICES.md) 与固定子模块、源码信息。

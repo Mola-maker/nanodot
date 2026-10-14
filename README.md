@@ -8,7 +8,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--or--later-136f63" alt="GPL-3.0-or-later"></a>
   <a href="pyproject.toml"><img src="https://img.shields.io/badge/Python-3.11%2B-136f63" alt="Python 3.11 or newer"></a>
   <a href="docs/build.md"><img src="https://img.shields.io/badge/Android-8%2B%20%C2%B7%20ARM64-136f63" alt="Android 8 or newer, ARM64"></a>
-  <a href="#project-status"><img src="https://img.shields.io/badge/status-source%20preview-7057a3" alt="Source preview"></a>
+  <a href="#project-status"><img src="https://img.shields.io/badge/status-1.1.0%20preview-7057a3" alt="Android 1.1.0 preview"></a>
 </p>
 
 <p align="center"><a href="#quick-start">Quick start</a> · <a href="docs/index.md">Documentation</a> · <a href="docs/readme/README_zh.md">简体中文</a> · <a href="https://github.com/Mola-maker/nanodot/issues">Feedback</a> · <a href="#contributing">Contribute</a></p>
@@ -22,6 +22,31 @@
 
 Nanodot is an open-source personal AI agent with **Dot** as its default assistant. It brings together conversation, tools, memory and scheduled work, with Android and iOS app source, a desktop shell, a Web console and a Python runtime in one repository. It is derived from [nanoMuse](https://github.com/nano-muse/nanoMuse); the phone apps are based on [OpenMinis 1.13](https://github.com/OpenMinis/OpenMinis).
 
+## Android preview · 1.1.0 Crystal
+
+**[Download the Android APK](https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk)** · [Release and checksums](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0) · [Release notes](docs/releases/v1.1.0.md)
+
+The first Nanodot Android prerelease targets **Android 8.0+ / ARM64**, version **1.1.0** (versionCode **45**). The asset is `Nanodot-1.1.0-arm64.apk`, signed with a dedicated Nanodot release key. Download its [SHA-256 file](https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk.sha256) alongside it to check the file. Read the installation notes before replacing a development build signed with a different key.
+
+## What is in this preview
+
+- **Crystal Dot.** A floating crystal orb with breathing motion, drag trails and foreground chat in a blue glass panel.
+- **Ask about a selected region.** Select part of the screen, review the local preview, then send your question. Models explicitly configured for images receive the masked image; other models use available selected text.
+- **Care guidance.** Follow a highlighted target and a written instruction, confirm a completed step, or use Stop. The instruction stays in the conversation after the temporary cue disappears.
+
+The theme follows the system. Custom names, SOUL.md, avatars, animations, models and preferences remain yours. Continuous voice and automatic updates default to off; check this repository’s releases manually.
+
+## Actual Android captures
+
+<table>
+  <tr><th>Nanodot home</th><th>Care conversation</th></tr>
+  <tr><td><img src="docs/superpowers/assets/2026-10-14-main-care/home-welcome.png" alt="Nanodot welcome screen captured on the API 35 emulator" width="260"></td><td><img src="docs/superpowers/assets/2026-10-14-main-care/care-transcript.png" alt="Care instruction retained in foreground chat over a controlled test page" width="260"></td></tr>
+</table>
+
+These are actual API 35 emulator captures from earlier development candidates. The Care example uses a controlled test page and a local planner. They document the interface; they are not a new runtime acceptance run of the signed 1.1.0 APK. See the [dated verification record](docs/android-verification.md#main-care-trace-2026-10-14) for APK identities and test boundaries.
+
+**Preview limits.** A complete real-provider Care task ending in verified success, arbitrary third-party apps, ARM64 hardware, older Android versions, Chinese microphone recognition and audible speech still need broader acceptance. Controlled image questions produced 4/4 correct core results, but only 2/4 complete answers had no detected errors; [the full record](docs/android-verification.md#raster-region-live-2026-10-13) keeps those errors visible. This release does not establish current iOS or desktop runtime acceptance.
+
 ## What you can work on with Dot
 
 | Use case | What the project provides | Learn more |
@@ -33,20 +58,6 @@ Nanodot is an open-source personal AI agent with **Dot** as its default assistan
 | Access from more than one device | A local Web console, plus optional device and conversation integrations through a relay. | [Web](docs/web.md) · [Devices](docs/device.md) |
 
 These capabilities come from the inherited implementations. Nanodot packaging and device acceptance are tracked separately below; model support and platform permissions determine which tools are available.
-
-## Meet Dot
-
-Dot's five bundled faces work without downloading artwork. The theme follows your system; you can keep your own name, SOUL.md, avatar, animations and model choices.
-
-<table>
-  <tr>
-    <td align="center"><img src="assets/brand/nanodot-avatar/idle.png" width="88" alt="Dot idle"><br>Idle</td>
-    <td align="center"><img src="assets/brand/nanodot-avatar/working.png" width="88" alt="Dot working"><br>Working</td>
-    <td align="center"><img src="assets/brand/nanodot-avatar/waiting.png" width="88" alt="Dot waiting"><br>Waiting</td>
-    <td align="center"><img src="assets/brand/nanodot-avatar/happy.png" width="88" alt="Dot happy"><br>Happy</td>
-    <td align="center"><img src="assets/brand/nanodot-avatar/error.png" width="88" alt="Dot error"><br>Error</td>
-  </tr>
-</table>
 
 ## Quick start
 
@@ -88,17 +99,16 @@ The wrapper writes the APK and verification records under `dist/nanodot/`. Debug
 
 ## Project status
 
-**Nanodot is a source preview. There is currently no formal Nanodot GitHub Release.** The inherited version is **1.0.1**; Android versionCode is **44**.
+**1.1.0 Crystal is the first Nanodot Android prerelease**, versionCode **45**. Download the signed arm64 APK and its verification files from the [release page](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0).
 
 | Area | Current boundary |
 |---|---|
-| Nanodot identity | Shared branding, offline Dot faces and system-theme defaults are in the source. |
-| Android | Build from source. Real-device installation, native operation and signed-upgrade acceptance need their own checks. |
-| Desktop and iOS | Source and build configurations are present. Native packaging, signing and device acceptance require the corresponding platforms. |
-| Floating Dot and care interaction | Work beyond the initial branding scope; do not assume a downloaded branding build includes it. |
-| Downloads and updates | Check [Nanodot releases](https://github.com/Mola-maker/nanodot/releases) for future published packages. Automatic updates are disabled. |
+| Android | Crystal orb, foreground conversation, region questions and user-guided Care are included. Runtime evidence above retains the identity of earlier development APKs. |
+| Release signing | A dedicated release certificate is used. Earlier debug builds cannot be overwritten by this package; data migration and physical-device acceptance remain open. |
+| Desktop and iOS | Source and build configurations are present; this release does not distribute desktop or iOS packages or claim their runtime acceptance. |
+| Models and updates | Configure your own provider. Automatic updates and continuous voice default to off. |
 
-Continuous voice defaults to off. Enabling accessibility or other permissions is an explicit device action. Upstream nanoMuse APKs, desktop installers and TestFlight builds are separate products.
+Accessibility and other permissions require an explicit device action. Upstream nanoMuse APKs, desktop installers and TestFlight builds are separate products.
 
 ## Models, data and permissions
 

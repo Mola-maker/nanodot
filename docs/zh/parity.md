@@ -1,5 +1,7 @@
 # 各客户端的功能对照
 
+Nanodot 1.1.0 Crystal 是 Android 预发布版本。下方继承的 nanoMuse 对照表记录实现历史，不能证明所有平台和服务都通过当前 Nanodot 验收。请结合[发布范围](../releases/v1.1.0.md)和[实际 Android 验收](android-verification.md)阅读。
+
 nanoMuse 是同一个智能体，在每台设备上都是它：手机（Android、iOS）、电脑（nanoMuse 桌面版，即 Electron 外壳里的 `dsh-nanomuse` harness 包）和浏览器（nanoMuse Web，由运行时提供）。从 0.1.32 起的规则是**取并集**：一个客户端能做的，每个客户端都要能做，除非平台本身不允许（电脑不会像手机那样搭一个迷你 Linux；iOS 不让一个 App 操控另一个）。这一页是账本：每个客户端有什么，哪些是有意为之的平台差异，哪些还等着拍板。
 
 图例：**✓** 已做 · **◐** 部分（缺什么写在备注里）· **—** 这个客户端上没有 · **n/a** 平台特有，本来就不打算做。

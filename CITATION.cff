@@ -1,14 +1,15 @@
 cff-version: 1.2.0
-message: "If you use nanoMuse in your work, please cite the paper (preferred-citation below)."
-title: "nanoMuse: an open-source personal agent for every device you own"
+message: "Cite this Nanodot release when identifying the fork. The upstream nanoMuse paper is retained as preferred-citation below."
+title: "Nanodot: a personal agent with Dot, based on nanoMuse"
 type: software
 authors:
+  - name: "Nanodot Contributors"
   - name: "nanoMuse Contributors"
-repository-code: "https://github.com/nano-muse/nanoMuse"
-url: "https://nanomuse.cn/"
+repository-code: "https://github.com/Mola-maker/nanodot"
+url: "https://github.com/Mola-maker/nanodot"
 license: GPL-3.0-or-later
-version: 1.0.1
-date-released: 2026-10-10
+version: 1.1.0
+date-released: 2026-10-14
 keywords:
   - personal agent
   - AI assistant

@@ -8,7 +8,7 @@
   <a href="../../LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--or--later-136f63" alt="GPL-3.0-or-later"></a>
   <a href="../../pyproject.toml"><img src="https://img.shields.io/badge/Python-3.11%2B-136f63" alt="Python 3.11 或更新版本"></a>
   <a href="../zh/build.md"><img src="https://img.shields.io/badge/Android-8%2B%20%C2%B7%20ARM64-136f63" alt="Android 8 或更新版本，ARM64"></a>
-  <a href="#项目状态"><img src="https://img.shields.io/badge/status-source%20preview-7057a3" alt="源码预览"></a>
+  <a href="#项目状态"><img src="https://img.shields.io/badge/status-1.1.0%20preview-7057a3" alt="Android 1.1.0 预览版"></a>
 </p>
 
 <p align="center"><a href="#快速开始">快速开始</a> · <a href="../zh/index.md">文档</a> · <a href="../../README.md">English</a> · <a href="https://github.com/Mola-maker/nanodot/issues">反馈</a> · <a href="#参与项目">参与项目</a></p>
@@ -22,6 +22,31 @@
 
 Nanodot 是一个开源个人 AI 智能体，默认助手叫 **Dot**。它将对话、工具、记忆和定时任务放在一起，仓库包含 Android 与 iOS App 源码、桌面外壳、Web 控制台和 Python 运行时。项目基于 [nanoMuse](https://github.com/nano-muse/nanoMuse)，手机端基于 [OpenMinis 1.13](https://github.com/OpenMinis/OpenMinis)。
 
+## Android 预发布 · 1.1.0 Crystal
+
+**[下载 Android APK](https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk)** · [发布页与校验值](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0) · [发布说明](../releases/v1.1.0.md)
+
+这是 Nanodot 的首个 Android 预发布，适用于 **Android 8.0+ / ARM64**，版本 **1.1.0**（versionCode **45**）。安装包为 `Nanodot-1.1.0-arm64.apk`，使用 Nanodot 专用发行密钥签名；同时下载 [SHA-256 文件](https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk.sha256)可校验文件。替换使用不同签名的开发包前，请先阅读安装说明。
+
+## 这个预览版包含什么
+
+- **水晶 Dot。** 带呼吸动画与拖动轨迹的水晶悬浮球，以及蓝色玻璃面板中的前台对话。
+- **圈选后提问。** 选择屏幕区域，查看本地预览，再发送问题。明确配置为支持图像的模型会收到遮罩后的图片；其他模型使用选区内可获取的文字。
+- **Care 关怀引导。** 根据目标描边与文字提示操作，明确确认已完成的步骤，也可随时使用 Stop。临时提示消失后，完整指令仍保留在对话中。
+
+主题默认跟随系统。自定义名字、SOUL.md、头像、动画、模型与偏好保留。连续语音与自动更新默认关闭，请手动查看本仓库发布页。
+
+## Android 实际截图
+
+<table>
+  <tr><th>Nanodot 首页</th><th>Care 对话</th></tr>
+  <tr><td><img src="../superpowers/assets/2026-10-14-main-care/home-welcome.png" alt="API 35 模拟器中实际捕获的 Nanodot 欢迎页" width="260"></td><td><img src="../superpowers/assets/2026-10-14-main-care/care-transcript.png" alt="受控测试页面上，Care 完整指令保留在前台对话中" width="260"></td></tr>
+</table>
+
+以上是此前开发候选包在 API 35 模拟器上的实际截图。Care 示例使用受控测试页面与本地 planner，用于展示界面，不代表本次签名 1.1.0 APK 已重新完成运行验收。各 APK 身份与测试边界见[带日期的验收记录](../zh/android-verification.md#main-care-trace-2026-10-14)。
+
+**预发布边界。** 真实模型驱动的完整 Care 任务成功闭环、任意第三方应用、ARM64 真机、较旧 Android 版本、中文麦克风识别与可听语音仍需更广泛验收。受控图片提问的核心结果为 4/4 正确，但完整回答仅 2/4 未发现错误；[完整记录](../zh/android-verification.md#raster-region-live-2026-10-13)保留了这些错误。本次发布不代表当前 iOS 或桌面端运行验收已完成。
+
 ## 可以和 Dot 一起做什么
 
 | 用途 | 项目提供的能力 | 进一步了解 |
@@ -33,20 +58,6 @@ Nanodot 是一个开源个人 AI 智能体，默认助手叫 **Dot**。它将对
 | 多个设备上的入口 | 本地 Web 控制台，以及通过中继实现的可选设备与对话集成。 | [Web](../zh/web.md) · [设备](../zh/device.md) |
 
 这些能力来自继承的实现。Nanodot 的打包与设备验收状态见下文；实际可用的工具取决于模型支持与平台权限。
-
-## 认识 Dot
-
-Dot 内置五种静态表情，无需下载形象素材。主题跟随系统；你可以保留自己的名字、SOUL.md、头像、动画和模型选择。
-
-<table>
-  <tr>
-    <td align="center"><img src="../../assets/brand/nanodot-avatar/idle.png" width="88" alt="待命的 Dot"><br>待命</td>
-    <td align="center"><img src="../../assets/brand/nanodot-avatar/working.png" width="88" alt="干活中的 Dot"><br>干活中</td>
-    <td align="center"><img src="../../assets/brand/nanodot-avatar/waiting.png" width="88" alt="等你回复的 Dot"><br>等你回复</td>
-    <td align="center"><img src="../../assets/brand/nanodot-avatar/happy.png" width="88" alt="搞定的 Dot"><br>搞定</td>
-    <td align="center"><img src="../../assets/brand/nanodot-avatar/error.png" width="88" alt="出了点问题的 Dot"><br>出了点问题</td>
-  </tr>
-</table>
 
 ## 快速开始
 
@@ -88,17 +99,16 @@ bash scripts/build-nanodot-apk.sh debug
 
 ## 项目状态
 
-**Nanodot 目前是源码预览，尚无正式的 Nanodot GitHub Release。** 沿用版本 **1.0.1**，Android versionCode 为 **44**。
+**1.1.0 Crystal 是首个 Nanodot Android 预发布版**，versionCode 为 **45**。带独立签名的 arm64 APK 及校验文件位于[发布页](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0)。
 
 | 部分 | 当前边界 |
 |---|---|
-| Nanodot 身份 | 源码包含统一品牌、离线 Dot 表情与跟随系统的默认外观。 |
-| Android | 从源码构建；真机安装、原生操作与带签名升级需要分别验收。 |
-| 桌面与 iOS | 已有源码与构建配置；原生打包、签名和设备验收需要对应平台。 |
-| 悬浮 Dot 与关怀交互 | 属于初始品牌范围之后的工作；不能假定下载的品牌构建包含这些能力。 |
-| 下载与更新 | 后续发布包请查看 [Nanodot 发布页](https://github.com/Mola-maker/nanodot/releases)；自动更新关闭。 |
+| Android | 包含水晶球、前台对话、区域提问与用户执行的关怀引导；上方运行证据仍绑定原开发 APK。 |
+| 发布签名 | 使用独立发布证书，不能直接覆盖此前的 debug 包；数据迁移与真机验收仍待完成。 |
+| 桌面与 iOS | 已有源码与构建配置；本次不分发桌面或 iOS 包，也不代表其运行验收已完成。 |
+| 模型与更新 | 配置自己的模型服务商；自动更新与连续语音默认关闭。 |
 
-连续语音默认关闭。无障碍等权限需要你在设备上明确开启。上游 nanoMuse APK、桌面安装器与 TestFlight 构建属于另一个产品。
+无障碍等权限需要你在设备上明确开启。上游 nanoMuse APK、桌面安装器与 TestFlight 构建属于另一个产品。
 
 ## 模型、数据与权限
 

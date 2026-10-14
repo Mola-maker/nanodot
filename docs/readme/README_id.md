@@ -6,13 +6,17 @@
 
 Nanodot adalah agen pribadi sumber terbuka turunan [nanoMuse](https://github.com/nano-muse/nanoMuse), yang aplikasi ponselnya berbasis [OpenMinis 1.13](https://github.com/OpenMinis/OpenMinis). Asisten bawaannya bernama **Dot**. Repositori ini memuat Android, iOS, aplikasi desktop, konsol Web dan runtime Python.
 
-## Cakupan P0
+## Prarilis Android · 1.1.0 Crystal
 
-P0 menetapkan identitas Nanodot, konfigurasi merek bersama, gambar Dot luring dan pengaturan bawaan. Bola mengambang baru dan mode perhatian ada di tahap berikutnya; preferensinya tidak mengaktifkan fitur atau memberikan izin aksesibilitas.
+**[Unduh APK Android](https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk)** · [Rilis dan checksum](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0) · [Catatan rilis](../releases/v1.1.0.md)
 
-Tema mengikuti sistem. Dot memiliki lima ekspresi statis bawaan. Nama, SOUL.md, avatar, animasi, model dan preferensi khusus tetap disimpan. Suara berkelanjutan dan pembaruan otomatis mati secara bawaan; periksa rilis repositori ini secara manual.
+Prarilis Android pertama Nanodot memerlukan **Android 8.0+ / ARM64**: versi **1.1.0**, versionCode **45**. `Nanodot-1.1.0-arm64.apk` memakai kunci penandatanganan rilis khusus Nanodot. Petunjuk instalasi dan pemeriksaan berkas ada dalam catatan rilis.
 
-Versi warisan tetap **1.0.1**, Android versionCode **44**. Konfigurasi lintas platform telah diselaraskan. Instalasi dan peningkatan pada perangkat nyata masih perlu diuji; Linux tidak membuktikan build Xcode atau paket native Windows/macOS.
+Pratinjau ini mencakup bola kristal Dot, percakapan mengambang dalam panel kaca biru, pertanyaan tentang area layar yang dipilih, dan panduan Care. Model yang secara eksplisit dikonfigurasi untuk gambar menerima gambar dengan bagian luar pilihan ditutupi; model lain memakai teks pilihan yang tersedia. Care menyimpan instruksi dan menyediakan konfirmasi langkah serta Stop.
+
+Tema mengikuti sistem; nama, SOUL.md, avatar, animasi, model dan preferensi khusus tetap disimpan. Suara berkelanjutan dan pembaruan otomatis mati secara bawaan.
+
+**Batas prarilis:** pengujian sebelumnya memakai emulator API 35 dan skenario terkontrol, bukan validasi APK rilis ini di perangkat nyata. Tugas Care lengkap dengan penyedia nyata, aplikasi sembarang, perangkat ARM64, suara bahasa Mandarin, dan validasi terkini platform lain masih perlu diuji. Baca [catatan verifikasi](../android-verification.md).
 
 ## Build dan instalasi
 
@@ -24,7 +28,7 @@ bash scripts/build-nanodot-apk.sh debug
 bash scripts/build-nanodot-apk.sh release
 ```
 
-Baca [panduan build](../build.md), [kontrak merek](../brand.md) dan [dokumentasi](../index.md). Paket Nanodot yang diterbitkan akan ada di [halaman rilis Nanodot](https://github.com/Mola-maker/nanodot/releases). Unduhan dan TestFlight nanoMuse merupakan produk lain.
+Baca [panduan build](../build.md), [kontrak merek](../brand.md) dan [dokumentasi](../index.md). Pratinjau bertanda tangan tersedia di [rilis Nanodot 1.1.0](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0). Unduhan dan TestFlight nanoMuse merupakan produk lain.
 
 Android memakai `io.github.nanodot.app` dan `nanodot://`. Paket internal `com.openminis.app` dan `io.github.nanomuse.*`, rute `minis://` dan jalur sandbox tetap sama. ID baru memiliki penyimpanan privat terpisah; data nanoMuse perlu ekspor/impor eksplisit.
 

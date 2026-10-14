@@ -257,7 +257,8 @@ class NanodotRebrandTest(unittest.TestCase):
                 gradle = (root / APP / "build.gradle.kts").read_text(encoding="utf-8")
                 self.assertIn('applicationId = "io.github.nanodot.app"', gradle)
                 self.assertIn('namespace = "com.openminis.app"', gradle)
-                self.assertIn('versionName = "1.0.1"', gradle)
+                self.assertIn(f'versionName = "{rebrand.VERSION_NAME}"', gradle)
+                self.assertIn(f"versionCode = {rebrand.VERSION_CODE}", gradle)
                 self.assertIn(
                     'android:scheme="nanodot"',
                     (root / MAIN / "AndroidManifest.xml").read_text(encoding="utf-8"),

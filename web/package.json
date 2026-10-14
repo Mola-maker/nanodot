@@ -1,7 +1,7 @@
 {
   "name": "nanomuse-web",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Nanodot web app with Dot: chat, goals, ideas, memory and approvals, based on nanoMuse.",
   "type": "module",
   "scripts": {

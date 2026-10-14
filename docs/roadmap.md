@@ -1,5 +1,9 @@
 # Roadmap
 
+## Nanodot preview
+
+[1.1.0 Crystal](releases/v1.1.0.md), dated 2026-10-14, is the first Nanodot Android prerelease. Its crystal orb, region questions and Care guidance have scoped [Android evidence](android-verification.md). Next acceptance priorities are a complete real-provider Care task, reliable image answers, Chinese audio, physical arm64 devices and broader platform/localization coverage. The historical nanoMuse roadmap below describes inherited work and does not establish current Nanodot release acceptance.
+
 A personal agent should not live only in someone else's cloud, so nanoMuse is the open-source, low-cost alternative: on your own devices, with a model you choose and a relay you can host yourself. We want to build it with developers and users everywhere, so that each person truly owns a personal agent. Open an [issue](https://github.com/nano-muse/nanoMuse/issues/new/choose) or send a [pull request](../CONTRIBUTING.md); either one helps nanoMuse get better.
 
 This page is a map for people who want to help: what we are working on now, what comes after, and where to put your hands first in each area. No dates: a thing ships when it works on a real phone and a real computer.

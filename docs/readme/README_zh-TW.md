@@ -6,13 +6,17 @@
 
 Nanodot 是基於 [nanoMuse](https://github.com/nano-muse/nanoMuse) 的開源個人智能體；上游手機端基於 [OpenMinis 1.13](https://github.com/OpenMinis/OpenMinis)。預設助理叫 **Dot**。倉庫包含 Android、iOS、桌面外殼、Web 控制台與 Python 執行環境。
 
-## P0 範圍
+## Android 預發佈 · 1.1.0 Crystal
 
-P0 建立 Nanodot 品牌、統一品牌設定、離線 Dot 素材與安全預設值。新懸浮球與關懷模式屬於後續階段；目前的偏好鍵不會啟用這些能力，也不會授予無障礙權限。
+**[下載 Android APK](https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk)** · [發佈頁與校驗值](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0) · [發佈說明](../releases/v1.1.0.md)
 
-主題預設跟隨系統。Dot 內建五態靜態頭像；自訂名字、SOUL.md、頭像、動畫、模型與偏好保留。連續語音與自動更新預設關閉；請手動查看本倉庫發佈頁。
+Nanodot 首個 Android 預發佈適用於 **Android 8.0+ / ARM64**，版本 **1.1.0**（versionCode **45**）。`Nanodot-1.1.0-arm64.apk` 使用 Nanodot 專用發行金鑰簽章；安裝與校驗步驟見發佈說明。
 
-沿用版本 **1.0.1**，Android versionCode 為 **44**。各平台建置設定已同步；實機安裝與升級驗收仍待完成。Linux 建置不能證明 Xcode 或 Windows/macOS 原生封裝通過。
+此預覽版包含水晶 Dot 懸浮球、藍色玻璃前台對話、螢幕圈選提問與 Care 關懷引導。明確支援圖像的模型會收到遮罩後的選區圖片，其他模型使用可取得的選區文字。Care 保留文字指令，提供步驟確認與 Stop。
+
+主題跟隨系統；自訂名字、SOUL.md、頭像、動畫、模型與偏好保留。連續語音與自動更新預設關閉。
+
+**預發佈邊界：**既有驗收來自 API 35 模擬器與受控測試，不能代替本次發行包的真機驗收。完整真實模型 Care 任務、任意應用程式、ARM64 實機、中文麥克風／語音輸出，以及目前其他平台的執行驗收仍未完成。請閱讀[驗收記錄](../zh/android-verification.md)。
 
 ## 建置與安裝
 
@@ -24,7 +28,7 @@ bash scripts/build-nanodot-apk.sh debug
 bash scripts/build-nanodot-apk.sh release
 ```
 
-參見[建置指南](../zh/build.md)、[品牌契約](../zh/brand.md)與[專案文件](../zh/index.md)。Nanodot 套件發佈後應位於 [Nanodot 發佈頁](https://github.com/Mola-maker/nanodot/releases)。上游 nanoMuse 下載與 TestFlight 建置屬於另一個產品。
+參見[建置指南](../zh/build.md)、[品牌契約](../zh/brand.md)與[專案文件](../zh/index.md)。簽章 Android 預覽版見本倉庫的 [1.1.0 發佈頁](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0)。上游 nanoMuse 下載與 TestFlight 建置屬於另一個產品。
 
 Android applicationId 為 `io.github.nanodot.app`，外部 scheme 為 `nanodot://`。內部 `com.openminis.app`、`io.github.nanomuse.*` 套件、`minis://` 路由與沙箱路徑保留。新 applicationId 使用獨立私有儲存；nanoMuse 資料需要明確匯出/匯入，不能自動讀取舊應用程式檔案。
 
