@@ -1,5 +1,7 @@
 # Feature parity across the clients
 
+Nanodot 1.1.0 Crystal is an Android prerelease. The inherited nanoMuse matrix below is implementation history, not evidence that every platform or service has passed current Nanodot acceptance. See the [release scope](releases/v1.1.0.md) and [actual Android verification](android-verification.md).
+
 nanoMuse is one agent on every device: the phone (Android, iOS), the computer (nanoMuse Desktop,
 the `dsh-nanomuse` harness bundle in the Electron shell) and the browser (nanoMuse Web, served by
 the runtime). The rule since 0.1.32 is the **union**: whatever one client can do, every client

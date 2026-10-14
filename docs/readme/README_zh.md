@@ -6,13 +6,30 @@
 
 Nanodot 是基于 [nanoMuse](https://github.com/nano-muse/nanoMuse) 的开源个人智能体；上游手机端基于 [OpenMinis 1.13](https://github.com/OpenMinis/OpenMinis)。默认助手叫 **Dot**。仓库包含 Android、iOS、桌面外壳、Web 控制台和 Python 运行时。
 
-## P0 范围
+## Android 预发布 · 1.1.0 Crystal
 
-P0 建立 Nanodot 品牌、统一品牌配置、离线 Dot 素材和安全默认值。新悬浮球与关怀模式属于后续阶段；当前偏好键不会启用这些能力，也不会授予无障碍权限。
+**[下载 Android APK](https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk)** · [发布页与校验值](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0) · [发布说明](../releases/v1.1.0.md)
 
-主题默认跟随系统。Dot 内置五态静态头像；自定义名字、SOUL.md、头像、动画、模型与偏好保留。连续语音默认关闭，自动更新关闭；请手动查看本仓库发布页。
+这是 Nanodot 的首个 Android 预发布，适用于 **Android 8.0+ / ARM64**，版本 **1.1.0**（versionCode **45**）。安装包为 `Nanodot-1.1.0-arm64.apk`，使用 Nanodot 专用发行密钥签名；同时下载 [SHA-256 文件](https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk.sha256)可校验文件。替换使用不同签名的开发包前，请先阅读安装说明。
 
-沿用版本 **1.0.1**，Android versionCode 为 **44**。各平台构建配置已同步；真机安装与升级验收仍待完成。Linux 构建不能证明 Xcode 或 Windows/macOS 原生打包通过。
+## 这个预览版包含什么
+
+- **水晶 Dot。** 带呼吸动画与拖动轨迹的水晶悬浮球，以及蓝色玻璃面板中的前台对话。
+- **圈选后提问。** 选择屏幕区域，查看本地预览，再发送问题。明确配置为支持图像的模型会收到遮罩后的图片；其他模型使用选区内可获取的文字。
+- **Care 关怀引导。** 根据目标描边与文字提示操作，明确确认已完成的步骤，也可随时使用 Stop。临时提示消失后，完整指令仍保留在对话中。
+
+主题默认跟随系统。自定义名字、SOUL.md、头像、动画、模型与偏好保留。连续语音与自动更新默认关闭，请手动查看本仓库发布页。
+
+## Android 实际截图
+
+<table>
+  <tr><th>Nanodot 首页</th><th>Care 对话</th></tr>
+  <tr><td><img src="../superpowers/assets/2026-10-14-main-care/home-welcome.png" alt="API 35 模拟器中实际捕获的 Nanodot 欢迎页" width="260"></td><td><img src="../superpowers/assets/2026-10-14-main-care/care-transcript.png" alt="受控测试页面上，Care 完整指令保留在前台对话中" width="260"></td></tr>
+</table>
+
+以上是此前开发候选包在 API 35 模拟器上的实际截图。Care 示例使用受控测试页面与本地 planner，用于展示界面，不代表本次签名 1.1.0 APK 已重新完成运行验收。各 APK 身份与测试边界见[带日期的验收记录](../zh/android-verification.md#main-care-trace-2026-10-14)。
+
+**预发布边界。** 真实模型驱动的完整 Care 任务成功闭环、任意第三方应用、ARM64 真机、较旧 Android 版本、中文麦克风识别与可听语音仍需更广泛验收。受控图片提问的核心结果为 4/4 正确，但完整回答仅 2/4 未发现错误；[完整记录](../zh/android-verification.md#raster-region-live-2026-10-13)保留了这些错误。本次发布不代表当前 iOS 或桌面端运行验收已完成。
 
 ## 构建与安装
 
@@ -24,7 +41,7 @@ bash scripts/build-nanodot-apk.sh debug
 bash scripts/build-nanodot-apk.sh release
 ```
 
-参见[构建指南](../zh/build.md)、[品牌契约](../zh/brand.md)与[项目文档](../zh/index.md)。Nanodot 安装包发布后应位于 [Nanodot 发布页](https://github.com/Mola-maker/nanodot/releases)。上游 nanoMuse 下载与 TestFlight 构建属于另一个产品。
+参见[构建指南](../zh/build.md)、[品牌契约](../zh/brand.md)与[项目文档](../zh/index.md)。签名 Android 预览版见本仓库的 [1.1.0 发布页](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0)。上游 nanoMuse 下载与 TestFlight 构建属于另一个产品。
 
 Android applicationId 为 `io.github.nanodot.app`，外部 scheme 为 `nanodot://`。内部 `com.openminis.app`、`io.github.nanomuse.*` 包、`minis://` 路由与沙箱路径保留。新 applicationId 使用独立私有存储；nanoMuse 数据需要显式导出/导入，不能自动读取旧应用文件。
 

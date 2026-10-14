@@ -4,42 +4,67 @@ title: Nanodot docs
 hero:
   name: Nanodot
   text: Dot, an open-source personal agent.
-  tagline: P0 establishes Nanodot branding, offline Dot faces and safe defaults, based on nanoMuse and OpenMinis. Build from source; device acceptance and native platform packaging need separate verification.
+  tagline: Android preview 1.1.0 Crystal brings a floating crystal orb, foreground chat, region questions and Care guidance. Based on nanoMuse and OpenMinis.
   actions:
     - theme: brand
-      text: Build P0
-      link: /build
+      text: Download Android preview
+      link: https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0
     - theme: alt
-      text: Brand contract
-      link: /brand
+      text: Release notes
+      link: /releases/v1.1.0
     - theme: alt
       text: GitHub source
       link: https://github.com/Mola-maker/nanodot
 ---
 
-## Current scope
+## Android preview · 1.1.0 Crystal
 
-P0 keeps version **1.0.1** / Android versionCode **44**. Dot uses offline static faces;
-existing names, SOUL.md, custom avatars and animations, models and preferences remain
-preserved. The theme follows the system; continuous voice and automatic updates default
-to off. New floating-ball and care-mode interaction belong to later phases.
+This first Nanodot Android prerelease targets **Android 8.0+ / ARM64**, version **1.1.0**
+(versionCode **45**). Download [`Nanodot-1.1.0-arm64.apk`](https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk)
+and its [SHA-256 file](https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk.sha256)
+from this repository. The APK uses a dedicated Nanodot release key; read the
+[release notes](releases/v1.1.0.md) before replacing a development build with a different signature.
 
-## Build and downloads
+The crystal Dot opens foreground chat in a blue glass panel. Select part of the screen,
+review the local preview and ask a question; models explicitly configured for images
+receive the masked image, while other models use available selected text. Care shows a
+target and an instruction, keeps the instruction in chat, and offers step confirmation and Stop.
 
-Use the [build guide](build.md) for the fixed toolchain and `scripts/build-nanodot-apk.sh debug|release`. Release requires a dedicated signature with no debug-key fallback;
-the wrapper never publishes. This page does not claim that an installable Nanodot release
-exists or that real-device installation and signed upgrades have passed.
+The theme follows the system. Custom names, SOUL.md, avatars, animations, models and
+preferences remain yours. Continuous voice and automatic updates default to off.
 
-[Nanodot releases](https://github.com/Mola-maker/nanodot/releases) is the destination for
-future published packages. Upstream nanoMuse APKs, desktop installers, demos and TestFlight
-builds are separate products and are not Nanodot downloads.
+## Actual Android captures
+
+<table>
+  <tr><th>Nanodot home</th><th>Care conversation</th></tr>
+  <tr><td><img src="./superpowers/assets/2026-10-14-main-care/home-welcome.png" alt="Nanodot welcome screen captured on the API 35 emulator" width="260"></td><td><img src="./superpowers/assets/2026-10-14-main-care/care-transcript.png" alt="Care instruction retained over a controlled test page" width="260"></td></tr>
+</table>
+
+These actual API 35 emulator captures come from earlier development candidates. The Care
+example uses a controlled test page and a local planner. They are not a new runtime
+acceptance run of the signed 1.1.0 APK. The [verification record](android-verification.md#main-care-trace-2026-10-14)
+identifies the APKs and the scope of each run.
+
+## Preview limits and source builds
+
+A complete real-provider Care task ending in verified success, arbitrary third-party apps,
+ARM64 hardware, older Android versions, Chinese microphone recognition and audible speech
+still need broader acceptance. The [controlled image journey](android-verification.md#raster-region-live-2026-10-13)
+records correct core results in 4/4 questions, but only 2/4 complete answers without detected
+errors. Current iOS and desktop runtime acceptance remains separate.
+
+Use the [build guide](build.md) for the fixed toolchain and
+`scripts/build-nanodot-apk.sh debug|release`. Release builds require a dedicated signature
+with no debug-key fallback; the wrapper never publishes. Nanodot has separate private
+storage from nanoMuse, so data migration requires explicit export/import. Same-ID updates
+also require a matching signature and a higher versionCode.
 
 ## Inherited documentation and services
 
 Most platform and runtime pages retain nanoMuse's implementation guidance and historical
-references. Read them alongside [Nanodot's P0 build boundaries](build.md#other-platforms-and-acceptance).
-Cross-platform configuration is synchronized; Xcode and native Windows/macOS packaging
-still require their own platform validation.
+references. Upstream nanoMuse APKs, desktop installers, demos and TestFlight builds are
+separate products. Nanodot downloads belong on the [Nanodot releases page](https://github.com/Mola-maker/nanodot/releases).
+Read platform-specific claims alongside the [build and acceptance notes](build.md#other-platforms-and-acceptance).
 
 **nanoMuse Cloud** remains the upstream service, with its real name, endpoints and policies.
 Nanodot does not claim to operate it, promise free allowances or inherit nonprofit status.

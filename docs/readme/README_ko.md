@@ -6,13 +6,17 @@
 
 Nanodot은 [nanoMuse](https://github.com/nano-muse/nanoMuse)를 기반으로 한 오픈소스 개인 에이전트입니다. 상위 프로젝트의 모바일 앱은 [OpenMinis 1.13](https://github.com/OpenMinis/OpenMinis)을 기반으로 합니다. 기본 어시스턴트는 **Dot**입니다. Android, iOS, 데스크톱, Web 콘솔과 Python 런타임이 들어 있습니다.
 
-## P0 범위
+## Android 사전 출시 · 1.1.0 Crystal
 
-P0는 Nanodot 이름, 공통 브랜드 설정, 오프라인 Dot 이미지와 안전한 기본값을 정합니다. 새 플로팅 볼과 케어 모드는 후속 단계입니다. 현재 설정 키는 기능을 켜거나 접근성 권한을 부여하지 않습니다.
+**[Android APK 다운로드](https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk)** · [릴리스와 체크섬](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0) · [릴리스 노트](../releases/v1.1.0.md)
 
-테마는 시스템을 따릅니다. Dot에는 다섯 가지 정적 표정이 포함됩니다. 사용자 이름, SOUL.md, 아바타, 애니메이션, 모델과 설정은 보존됩니다. 연속 음성과 자동 업데이트는 기본적으로 꺼져 있습니다. 이 저장소의 릴리스를 직접 확인하세요.
+Nanodot의 첫 Android 사전 출시 버전은 **Android 8.0+ / ARM64**용입니다. 버전은 **1.1.0**, versionCode는 **45**입니다. `Nanodot-1.1.0-arm64.apk`는 Nanodot 전용 배포 키로 서명됩니다. 설치와 파일 검증 방법은 릴리스 노트를 확인하세요.
 
-상속한 버전 **1.0.1**, Android versionCode **44**를 유지합니다. 플랫폼별 빌드 설정은 동기화했습니다. 실제 기기의 설치와 업그레이드 검증은 아직 필요합니다. Linux 빌드는 Xcode나 Windows/macOS 네이티브 패키지를 검증하지 못합니다.
+이 미리 보기에는 수정 구슬 Dot, 파란 유리 패널의 플로팅 채팅, 선택한 화면 영역에 대한 질문, Care 안내가 포함됩니다. 이미지 지원이 명시적으로 설정된 모델에는 마스킹한 이미지를 보내고, 다른 모델에는 선택 영역에서 가져올 수 있는 텍스트를 사용합니다. Care는 지시를 대화에 보관하고 단계 완료 확인과 Stop을 제공합니다.
+
+테마는 시스템을 따르며 사용자 이름, SOUL.md, 아바타, 애니메이션, 모델과 설정은 보존됩니다. 연속 음성과 자동 업데이트는 기본적으로 꺼져 있습니다.
+
+**사전 출시 검증 범위:** 기존 검증은 API 35 에뮬레이터와 통제된 테스트 환경에서 이루어졌으며, 이번 배포 APK의 실제 기기 검증을 대신하지 않습니다. 실제 모델 제공자를 통한 Care 작업의 완전한 성공, 임의의 앱, ARM64 실제 기기, 중국어 음성 입력·출력, 다른 플랫폼의 현재 동작 검증은 아직 완료되지 않았습니다. [검증 기록](../android-verification.md)을 확인하세요.
 
 ## 빌드와 설치
 
@@ -24,7 +28,7 @@ bash scripts/build-nanodot-apk.sh debug
 bash scripts/build-nanodot-apk.sh release
 ```
 
-[빌드 안내](../build.md), [브랜드 계약](../brand.md), [문서](../index.md)를 참고하세요. 게시된 Nanodot 패키지는 [Nanodot 릴리스](https://github.com/Mola-maker/nanodot/releases)에 있어야 합니다. nanoMuse 다운로드와 TestFlight 빌드는 다른 제품입니다.
+[빌드 안내](../build.md), [브랜드 계약](../brand.md), [문서](../index.md)를 참고하세요. 서명된 Android 미리 보기는 [Nanodot 1.1.0 릴리스](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0)에서 받을 수 있습니다. nanoMuse 다운로드와 TestFlight 빌드는 다른 제품입니다.
 
 Android ID는 `io.github.nanodot.app`, 외부 scheme은 `nanodot://`입니다. 내부 `com.openminis.app`, `io.github.nanomuse.*` 패키지, `minis://` 경로와 샌드박스 경로는 유지합니다. 새 ID는 별도 개인 저장소를 사용하므로 nanoMuse 데이터는 명시적으로 내보내고 가져와야 합니다.
 

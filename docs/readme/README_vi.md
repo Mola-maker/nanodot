@@ -6,13 +6,17 @@
 
 Nanodot là tác tử cá nhân mã nguồn mở dựa trên [nanoMuse](https://github.com/nano-muse/nanoMuse), với ứng dụng điện thoại dựa trên [OpenMinis 1.13](https://github.com/OpenMinis/OpenMinis). Trợ lý mặc định là **Dot**. Kho mã chứa Android, iOS, ứng dụng máy tính, bảng điều khiển Web và môi trường Python.
 
-## Phạm vi P0
+## Bản phát hành thử Android · 1.1.0 Crystal
 
-P0 thiết lập tên Nanodot, cấu hình thương hiệu chung, hình Dot ngoại tuyến và giá trị mặc định an toàn. Bóng nổi mới và chế độ quan tâm thuộc các giai đoạn sau; khóa tùy chọn hiện tại không bật tính năng hay cấp quyền trợ năng.
+**[Tải APK Android](https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk)** · [Bản phát hành và mã kiểm tra](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0) · [Ghi chú phát hành](../releases/v1.1.0.md)
 
-Giao diện theo hệ thống. Dot có năm biểu cảm tĩnh tích hợp. Tên, SOUL.md, ảnh đại diện, hoạt ảnh, mô hình và tùy chọn riêng được giữ lại. Giọng nói liên tục và cập nhật tự động mặc định tắt; hãy kiểm tra bản phát hành của kho mã này thủ công.
+Bản phát hành thử Android đầu tiên của Nanodot dành cho **Android 8.0+ / ARM64**: phiên bản **1.1.0**, versionCode **45**. `Nanodot-1.1.0-arm64.apk` dùng khóa ký phát hành riêng của Nanodot. Ghi chú phát hành hướng dẫn cài đặt và kiểm tra tệp.
 
-Giữ phiên bản kế thừa **1.0.1**, Android versionCode **44**. Cấu hình các nền tảng đã được đồng bộ. Cài đặt và nâng cấp trên thiết bị thật vẫn cần kiểm chứng; bản dựng Linux không xác nhận Xcode hay gói gốc Windows/macOS.
+Bản xem trước này có quả cầu pha lê Dot, trò chuyện nổi trong bảng kính xanh, câu hỏi về vùng màn hình đã chọn và hướng dẫn Care. Mô hình được cấu hình rõ ràng là hỗ trợ hình ảnh nhận ảnh đã che phần ngoài vùng chọn; mô hình khác dùng văn bản có thể lấy được trong vùng chọn. Care giữ hướng dẫn trong cuộc trò chuyện và cung cấp xác nhận bước cùng Stop.
+
+Giao diện theo hệ thống; tên, SOUL.md, ảnh đại diện, hoạt ảnh, mô hình và tùy chọn riêng được giữ lại. Giọng nói liên tục và cập nhật tự động mặc định tắt.
+
+**Giới hạn của bản thử:** các kiểm chứng trước đây dùng trình giả lập API 35 và tình huống có kiểm soát, không thay thế kiểm chứng APK phát hành này trên thiết bị thật. Tác vụ Care hoàn chỉnh với nhà cung cấp mô hình thật, ứng dụng bất kỳ, thiết bị ARM64, giọng nói tiếng Trung và kiểm chứng hiện tại của nền tảng khác vẫn chưa hoàn tất. Xem [hồ sơ kiểm chứng](../android-verification.md).
 
 ## Dựng và cài đặt
 
@@ -24,7 +28,7 @@ bash scripts/build-nanodot-apk.sh debug
 bash scripts/build-nanodot-apk.sh release
 ```
 
-Đọc [hướng dẫn dựng](../build.md), [hợp đồng thương hiệu](../brand.md) và [tài liệu](../index.md). Gói Nanodot được xuất bản sẽ nằm ở [bản phát hành Nanodot](https://github.com/Mola-maker/nanodot/releases). Các bản tải và TestFlight nanoMuse thuộc sản phẩm khác.
+Đọc [hướng dẫn dựng](../build.md), [hợp đồng thương hiệu](../brand.md) và [tài liệu](../index.md). Bản xem trước đã ký có trong [bản phát hành Nanodot 1.1.0](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0). Các bản tải và TestFlight nanoMuse thuộc sản phẩm khác.
 
 Android dùng `io.github.nanodot.app` và `nanodot://`. Giữ các gói nội bộ `com.openminis.app`, `io.github.nanomuse.*`, đường dẫn `minis://` và đường dẫn sandbox. ID mới có vùng lưu trữ riêng; dữ liệu nanoMuse cần xuất/nhập rõ ràng.
 

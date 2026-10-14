@@ -6,13 +6,17 @@
 
 Nanodot es un agente personal de código abierto derivado de [nanoMuse](https://github.com/nano-muse/nanoMuse), cuyas aplicaciones móviles se basan en [OpenMinis 1.13](https://github.com/OpenMinis/OpenMinis). Su asistente predeterminado es **Dot**. El repositorio incluye Android, iOS, escritorio, consola Web y runtime Python.
 
-## Alcance de P0
+## Versión preliminar para Android · 1.1.0 Crystal
 
-P0 establece la identidad Nanodot, la configuración común de marca, las imágenes Dot sin conexión y los valores predeterminados. La nueva burbuja flotante y el modo de cuidado pertenecen a fases posteriores; sus preferencias no activan funciones ni conceden permisos de accesibilidad.
+**[Descargar el APK de Android](https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk)** · [Versión y sumas de verificación](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0) · [Notas de la versión](../releases/v1.1.0.md)
 
-El tema sigue al sistema. Dot incluye cinco expresiones estáticas. Se conservan los nombres, SOUL.md, avatares, animaciones, modelos y preferencias personalizados. La voz continua y las actualizaciones automáticas están desactivadas por defecto; consulta las versiones de este repositorio manualmente.
+La primera versión preliminar de Nanodot para Android requiere **Android 8.0+ / ARM64**: versión **1.1.0**, versionCode **45**. `Nanodot-1.1.0-arm64.apk` usa una clave de firma de distribución dedicada a Nanodot. Las notas explican la instalación y la verificación del archivo.
 
-Se mantiene la versión heredada **1.0.1**, Android versionCode **44**. La configuración de las plataformas está sincronizada. Falta validar instalación y actualización en dispositivos reales; Linux no valida Xcode ni paquetes nativos Windows/macOS.
+Incluye la esfera de cristal Dot, chat flotante en un panel de cristal azul, preguntas sobre una región seleccionada de la pantalla y guía Care. Los modelos configurados explícitamente para imágenes reciben la imagen enmascarada; los demás usan el texto accesible de la selección. Care conserva las instrucciones y ofrece confirmación de pasos y Stop.
+
+El tema sigue al sistema; se conservan los nombres, SOUL.md, avatares, animaciones, modelos y preferencias personalizados. La voz continua y las actualizaciones automáticas están desactivadas por defecto.
+
+**Límites de la versión preliminar:** las pruebas anteriores usaron un emulador API 35 y escenarios controlados, y no sustituyen la validación de este APK en hardware real. Quedan pendientes tareas Care completas con un proveedor real, aplicaciones arbitrarias, dispositivos ARM64, voz en chino y la validación actual de las otras plataformas. Consulta el [registro de verificación](../android-verification.md).
 
 ## Compilación e instalación
 
@@ -24,7 +28,7 @@ bash scripts/build-nanodot-apk.sh debug
 bash scripts/build-nanodot-apk.sh release
 ```
 
-Consulta la [guía de compilación](../build.md), el [contrato de marca](../brand.md) y la [documentación](../index.md). Los paquetes Nanodot publicados estarán en las [versiones de Nanodot](https://github.com/Mola-maker/nanodot/releases). Las descargas y TestFlight de nanoMuse pertenecen a otro producto.
+Consulta la [guía de compilación](../build.md), el [contrato de marca](../brand.md) y la [documentación](../index.md). La versión preliminar firmada está en el [lanzamiento 1.1.0 de Nanodot](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0). Las descargas y TestFlight de nanoMuse pertenecen a otro producto.
 
 Android usa `io.github.nanodot.app` y `nanodot://`. Se conservan los paquetes internos `com.openminis.app` e `io.github.nanomuse.*`, las rutas `minis://` y los directorios del sandbox. El nuevo identificador tiene almacenamiento privado separado; los datos nanoMuse necesitan exportación/importación explícita.
 

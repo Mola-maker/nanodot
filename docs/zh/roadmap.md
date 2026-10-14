@@ -1,5 +1,9 @@
 # 路线图
 
+## Nanodot 预览版
+
+[1.1.0 Crystal](../releases/v1.1.0.md)（2026-10-14）是首个 Nanodot Android 预发布版本。水晶球、区域提问和关怀引导已有范围明确的 [Android 验收记录](android-verification.md)。接下来优先验证真实模型关怀任务完整终点、图像答案可靠性、中文音频、arm64 真机和更多平台／语言。下方 nanoMuse 路线图是继承的历史背景，不代表当前 Nanodot 发布已完成全部验收。
+
 个人智能体不该只长在别人的云里，nanoMuse 想做一个开源、低成本的平替：装在自己的设备上，模型自己选，中继也能自己架。我们希望和全球的开发者、使用者一起，让每个人真正拥有自己的个人智能体。提个 [issue](https://github.com/nano-muse/nanoMuse/issues/new/choose) 或者发个 [PR](../../CONTRIBUTING.md) 都是在帮 nanoMuse 变得更好。
 
 这一页是给想来帮忙的人画的地图：我们现在在做什么，接下来做什么，每个领域先从哪里下手。不写日期：一样东西在一台真手机和一台真电脑上能用了，就发。

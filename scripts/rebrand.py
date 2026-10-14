@@ -23,8 +23,8 @@ else:
     from ui_tokens import CSS_PATH, TS_PATH, load_ui, render_dot_colors, render_outputs
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION_NAME = "1.0.1"
-VERSION_CODE = 44
+VERSION_NAME = "1.1.0"
+VERSION_CODE = 45
 _LITERAL = re.compile(r'"""[\s\S]*?"""|"(?:[^"\\\n]|\\.)*"')
 _PRODUCT = re.compile(r"(?<!X-)(?<![A-Za-z0-9_])(?:Minis|nanoMuse)(?!Skills)(?![A-Za-z0-9_])")
 _IDENTITY = re.compile(r"(?<![A-Za-z0-9_])(?:Minis|nanoMuse|Nanodot|Dot)(?![A-Za-z0-9_])")

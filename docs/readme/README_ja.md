@@ -6,13 +6,17 @@
 
 Nanodot は [nanoMuse](https://github.com/nano-muse/nanoMuse) を基にしたオープンソースの個人エージェントです。上流のモバイルアプリは [OpenMinis 1.13](https://github.com/OpenMinis/OpenMinis) を基にしています。標準アシスタントの名前は **Dot** です。Android、iOS、デスクトップ、Web コンソール、Python ランタイムを含みます。
 
-## P0 の範囲
+## Android プレビュー版 · 1.1.0 Crystal
 
-P0 では Nanodot のブランド、共通ブランド設定、オフラインの Dot 素材、安全な初期値を整えます。新しいフローティングボールとケアモードは後続段階です。現在の設定キーは機能を有効にせず、アクセシビリティ権限も付与しません。
+**[Android APK をダウンロード](https://github.com/Mola-maker/nanodot/releases/download/v1.1.0/Nanodot-1.1.0-arm64.apk)** · [リリースとチェックサム](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0) · [リリースノート](../releases/v1.1.0.md)
 
-テーマはシステムに従います。Dot は五つの静止表情を内蔵します。独自の名前、SOUL.md、アバター、アニメーション、モデル、設定は保持されます。連続音声と自動更新は初期状態では無効です。このリポジトリのリリースを手動で確認してください。
+Nanodot 初の Android プレビュー版は **Android 8.0+ / ARM64** 向けです。バージョンは **1.1.0**、versionCode は **45** です。`Nanodot-1.1.0-arm64.apk` は Nanodot 専用の配布用鍵で署名されます。インストールとファイル検証の手順はリリースノートをご覧ください。
 
-継承したバージョンは **1.0.1**、Android versionCode は **44** のままです。各プラットフォームのビルド設定は同期済みです。実機へのインストールと更新の検証は未完了です。Linux では Xcode や Windows/macOS のネイティブパッケージを検証できません。
+クリスタルの Dot、青いガラスパネルのフローティングチャット、画面の選択範囲についての質問、Care ガイドを含みます。画像対応が明示的に設定されたモデルにはマスク済み画像を送り、それ以外は取得可能な選択範囲のテキストを使います。Care は指示を会話に残し、手順の完了確認と Stop を提供します。
+
+テーマはシステムに従い、独自の名前、SOUL.md、アバター、アニメーション、モデル、設定を保持します。連続音声と自動更新は初期状態では無効です。
+
+**プレビュー版の検証範囲：**従来の検証は API 35 エミュレーターと制御されたテスト環境で行われており、この配布 APK の実機検証を代替しません。実際のモデル提供者を使った Care タスクの完遂、任意のアプリ、ARM64 実機、中国語の音声入力・出力、他プラットフォームの現在の動作検証は未完了です。[検証記録](../android-verification.md)をご覧ください。
 
 ## ビルドとインストール
 
@@ -24,7 +28,7 @@ bash scripts/build-nanodot-apk.sh debug
 bash scripts/build-nanodot-apk.sh release
 ```
 
-[ビルド手順](../build.md)、[ブランド契約](../brand.md)、[ドキュメント](../index.md)を参照してください。公開される Nanodot パッケージは [Nanodot リリース](https://github.com/Mola-maker/nanodot/releases)に置かれます。nanoMuse のダウンロードと TestFlight は別の製品です。
+[ビルド手順](../build.md)、[ブランド契約](../brand.md)、[ドキュメント](../index.md)を参照してください。署名付き Android プレビュー版は [Nanodot 1.1.0 リリース](https://github.com/Mola-maker/nanodot/releases/tag/v1.1.0)から入手できます。nanoMuse のダウンロードと TestFlight は別の製品です。
 
 Android の ID は `io.github.nanodot.app`、外部 scheme は `nanodot://` です。内部の `com.openminis.app`、`io.github.nanomuse.*`、`minis://` ルート、サンドボックスのパスは保持します。新しい ID は独立したプライベートストレージを持つため、nanoMuse データには明示的なエクスポート/インポートが必要です。
 

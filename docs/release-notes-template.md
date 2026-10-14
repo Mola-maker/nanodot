@@ -1,96 +1,70 @@
-# nanoMuse <version> · <Codename>
+# Nanodot <version> · <Codename>
 
-<!-- The first line is the GitHub release title (scripts/release-apk.sh reads it).
-     English first; the Chinese version of the same notes goes in the <details> block at the end.
+<!-- English first; the Chinese version carries the same facts in the collapsed block below.
      Codenames so far: Foundation, Identity, Home, Guardrails, Memory, Avatar, Welcome, Polish,
      Portrait, Motion, Hatch, Hands, Reach, Home, Stage, Palette, Open, Ensemble, Presence,
      Footing, Commons, Welcome, Signal, Mirror, Window, Ledger, Harness, Likeness, Rooms, Locks,
-     Union, Steps, Turns, Accord, Thread, Weave, Loom, Keys, Clear, Choice, Keel, Ballast (CHANGELOG.md has the list). One word, capitalised,
-     not on that list (Home and Welcome were each used twice early on; do not add a third).
+     Union, Steps, Turns, Accord, Thread, Weave, Loom, Keys, Clear, Choice, Keel, Ballast, Crystal (CHANGELOG.md has the list).
+     Choose a new one-word English codename. Earlier names belong to inherited nanoMuse releases.
+     The first Nanodot release is 1.1.0 Crystal, versionCode 45, published as a prerelease.
+     Write and review the notes by hand: inherited upstream PR numbers must not be resolved
+     against Nanodot by scripts/release_notes.py. Add only verified links and actual attachments.
+     Report build, emulator, fixture, real-provider and physical-device evidence separately.
+     Keep voice plain and specific. Replace the placeholders before publishing. -->
 
-     Voice: plain and specific, the maintainer talking to one person. Facts over promises; no
-     slogans, no "every one brings…", no exclamation marks.
+**Nanodot `<version>` “<Codename>”** is a prerelease of <one sentence describing the changes>.
 
-     The shape follows the releases people know (nanobot's): a short story, then Highlights,
-     Upgrade Notes, Community; What's Changed, New Contributors, Contributors and the Full
-     Changelog link are generated from the merged pull requests by scripts/release_notes.py
-     where the marker below stands, when the release is published. -->
-
-🐉 **nanoMuse `<version>` “<Codename>”** <one sentence: what this version is about>.
-
-<One or two short paragraphs: the headline, and the other story; in plain words, what it means for the person using it.>
+<One or two short paragraphs explaining what changed for the person using it.>
 
 ## Highlights
 
-- **<Thing>.** <What it is, where to find it, what it replaces.>
-- …
+- **<Feature>.** <What changed and where to find it.>
+- **Verification.** <Name the tested commit/candidate and actual checks, including device API/ABI when applicable.>
+- **Still pending.** <List the unverified user flows. For Crystal, retain complete real Care, voice, physical arm64-device operation and signed-upgrade acceptance as pending.>
 
 ## Upgrade Notes
 
-- **Android installs over <previous> and keeps your data.** `nanoMuse-<version>-arm64.apk` (Android 8.0+, arm64; versionCode <n>) is signed with the same key as every version before it. Verify with `sha256sum -c nanoMuse-<version>-arm64.apk.sha256`.
-- **The desktop installers are not notarised.** On macOS open the app once from *System Settings → Privacy & Security → Open Anyway* (or right-click → *Open*); on Windows click *Run anyway*. They arrive a little after the APK (CI builds them from the tag), and `SHA256SUMS-desktop.txt` lists every checksum.
-- <Anything a person upgrading must know: a setting that moved, a relay version an operator needs, a platform that needs a newer build.>
-- **Where to get it.**
-
-  | | |
-  |---|---|
-  | Browser | [demo.nanomuse.dev](https://demo.nanomuse.dev/): a nanoMuse on a simulated phone, after a sign-in; a demo, the apps below are the real thing |
-  | Android 8.0+, arm64 | `nanoMuse-<version>-arm64.apk` |
-  | iPhone, iPad | [TestFlight](https://testflight.apple.com/join/ZHexbDqc): a beta; build <n>, delivered once Apple's beta review has passed |
-  | Windows 10+ | `nanoMuse-Desktop-<version>-win-x64.exe` (the desktop app, on DeepSeek Harness) |
-  | macOS 12+ | `nanoMuse-Desktop-<version>-mac-arm64.dmg` / `-mac-x64.dmg` (or the `.zip`: unzip, drag to Applications) |
-  | Linux x64 | `nanoMuse-Desktop-<version>-linux-x64.deb` / `.AppImage` (needs FUSE; `--appimage-extract-and-run` without) / `.tar.gz` (unpack anywhere, run `./nanomuse-desktop`) |
-  | DeepSeek Harness Desktop you already run | `dsh-nanomuse-<version>.tgz`: `dsh plugin --profile desktop add …` ([how](https://github.com/nano-muse/nanoMuse/blob/main/harness/README.md)) |
-
-  In our measurements GitHub's own downloads are quick from China as well; if they fail where you are, the same files are on [nanomuse.cn/dl/v<version>/](https://nanomuse.cn/dl/v<version>/) within fifteen minutes.
+- **Android package.** `<published-apk-name>.apk` targets Android 8.0+ and arm64, with applicationId `io.github.nanodot.app`, version `<version>` and versionCode `<n>`. It uses the dedicated Nanodot release key. Verify it with `sha256sum -c <published-apk-name>.apk.sha256`; the attached public build receipt records its source identity, SHA256, certificate digest and build limitations.
+- **Install and data boundary.** This first dedicated-key release cannot replace a debug-signed build. Upstream nanoMuse uses a different applicationId and private storage. Future same-ID updates require the same release key and a higher versionCode. Do not promise an upgrade or data-preservation result without the corresponding installation evidence.
+- **Acceptance boundary.** An arm64 package and a successful emulator check do not establish physical-device or complete Care/voice acceptance. Cached native-input hashes identify bytes; preserve any unverified-provenance limitation from the receipt.
+- **Available downloads.** <List only the actual APK, checksum, public receipt and any other verified attachments on this release. For desktop artifacts, state actual signing/notarization and validation status. An unsigned iOS archive is not an installable IPA.>
+- **Other platforms and services.** Tags start builds; desktop and harness attachments require separate manual workflow runs. This release does not automatically deploy the gateway, relay or website, publish Docker images, or upload to TestFlight. Upstream download mirrors and TestFlight builds are separate products.
 
 ## Community
 
-nanoMuse is open source, free and non-profit. Sign in with a phone number or an e-mail and you get a starting allowance; the developer pays for it. The account page shows what is left and how to add more. When it is gone, use your own key or a plan you already pay for ([how](https://github.com/nano-muse/nanoMuse/blob/main/docs/own-key.md)). With an account, the text of your conversations is kept on nanoMuse Cloud so that your devices show the same chats; one switch in Data controls turns it off and deletes it; nothing is sold ([privacy policy](https://nanomuse.cn/privacy/)); delete the account whenever you want.
+Report Nanodot issues and contributions in [Mola-maker/nanodot](https://github.com/Mola-maker/nanodot). When using nanoMuse Cloud, its availability, account and data policies remain the upstream service provider's; Nanodot does not operate that service or promise a free allowance.
 
-A stable version is not the last word: nanoMuse keeps evolving, and the [roadmap](https://github.com/nano-muse/nanoMuse/blob/main/docs/roadmap.md) says what comes next. We use it every day and know where it is rough; tell us where it broke for you and what you want it to do. Thanks to everyone who tried a build and reported what broke. [Open an issue](https://github.com/nano-muse/nanoMuse/issues/new/choose) · [send a pull request](https://github.com/nano-muse/nanoMuse/blob/main/CONTRIBUTING.md) · [Discussions](https://github.com/nano-muse/nanoMuse/discussions) · [Discord](https://discord.gg/bkTySmm28X) · [star the repo](https://github.com/nano-muse/nanoMuse); if it is useful to you, a star helps others find it.
+Nanodot derives from [nanoMuse](https://github.com/nano-muse/nanoMuse) and [OpenMinis](https://github.com/OpenMinis/OpenMinis) 1.13. The complete corresponding source is [tag `v<version>`](https://github.com/Mola-maker/nanodot/tree/v<version>) and its pinned submodules, including `android/deps/proot`. Retain [LICENSE](https://github.com/Mola-maker/nanodot/blob/v<version>/LICENSE), [NOTICE](https://github.com/Mola-maker/nanodot/blob/v<version>/NOTICE) and [third-party notices](https://github.com/Mola-maker/nanodot/blob/v<version>/THIRD_PARTY_NOTICES.md). The repository is GPL-3.0-or-later. Nanodot is independent of Meta and its Muse trademark.
 
-Based on [OpenMinis](https://github.com/OpenMinis/OpenMinis) 1.13 (GPL-3.0), modified since 2026-09-24. The complete corresponding source of this build is tag `v<version>` plus the `android/deps/proot` submodule ([nano-muse/proot](https://github.com/nano-muse/proot)). The whole repository is GPL-3.0-or-later. nanoMuse Harness carries DeepSeek Harness unmodified, with its licence files inside; *harness* in the name is the word, not DeepSeek's. nanoMuse is not affiliated with Meta; Muse is a trademark of Meta Platforms, Inc. The desktop follows what Muse's app looks like and does, written down from using it; none of Meta's assets, code or content is in it.
-
-<!-- pull requests -->
+<Add reviewed Nanodot contributor acknowledgements and source-comparison links when available. Preserve upstream attribution without presenting upstream PRs as Nanodot PRs.>
 
 <details>
 <summary>简体中文</summary>
 
-🐉 **nanoMuse `<version>`「<Codename>」**：<一句话：这个版本是关于什么的>。
+**Nanodot `<version>`「<Codename>」** 是预发布版本，<一句话说明本次变更>。
 
-<一两段话：主线，以及另一条线；用平实的话说清对用的人意味着什么。>
+<一两段话，说明这些变化对使用者意味着什么，与英文事实一致。>
 
 ### 亮点
 
-- **<什么>。** <是什么、在哪里、替代了什么。>
-- …
+- **<功能>。** <发生了什么变化，在哪里使用。>
+- **验证结果。** <列明已测试的 commit/候选及实际检查；涉及设备时注明 API/ABI。>
+- **仍待验收。** <列出未验证的用户流程。Crystal 仍须保留完整真实 Care、语音、arm64 真机操作与同签名升级验收待完成。>
 
 ### 升级说明
 
-- **Android 覆盖安装 <previous>，数据保留。** `nanoMuse-<version>-arm64.apk`（Android 8.0+，arm64；versionCode <n>）和之前每个版本用同一把签名。校验：`sha256sum -c nanoMuse-<version>-arm64.apk.sha256`。
-- **桌面安装包没有经过公证。** macOS 第一次在「系统设置 → 隐私与安全性」里点「仍要打开」（或右键 → 「打开」），Windows 点「仍要运行」。安装包会比 APK 晚一点到（CI 从 tag 构建它们）；`SHA256SUMS-desktop.txt` 列出了所有校验值。
-- <升级的人必须知道的事：挪了位置的设置、运维者需要的中转版本、需要新构建的平台。>
-- **去哪下载。**
-
-  | | |
-  |---|---|
-  | 浏览器 | [demo.nanomuse.dev](https://demo.nanomuse.dev/)：模拟手机里的一个 nanoMuse，登录后体验；这是演示，下面的应用才是正式版 |
-  | Android 8.0+，arm64 | `nanoMuse-<version>-arm64.apk` |
-  | iPhone、iPad | [TestFlight](https://testflight.apple.com/join/ZHexbDqc)：测试版，公开链接等 Apple 审核；第 <n> 个构建，通过后即可安装 |
-  | Windows 10+ | `nanoMuse-Desktop-<version>-win-x64.exe`（桌面 App，基于 DeepSeek Harness） |
-  | macOS 12+ | `nanoMuse-Desktop-<version>-mac-arm64.dmg` / `-mac-x64.dmg`（或 `.zip`：解压后拖进「应用程序」） |
-  | Linux x64 | `nanoMuse-Desktop-<version>-linux-x64.deb` / `.AppImage`（需要 FUSE；没有就加 `--appimage-extract-and-run`）/ `.tar.gz`（解压到任意位置，运行 `./nanomuse-desktop`）|
-  | 已在用 DeepSeek Harness Desktop | `dsh-nanomuse-<version>.tgz`：`dsh plugin --profile desktop add …`（[怎么装](https://github.com/nano-muse/nanoMuse/blob/main/harness/README.md)） |
-
-  实测从国内直接下 GitHub 也不慢；万一下不动，同样的文件十五分钟内会出现在 [nanomuse.cn/dl/v<version>/](https://nanomuse.cn/dl/v<version>/)。
+- **Android 安装包。** `<published-apk-name>.apk` 面向 Android 8.0+、arm64，applicationId 为 `io.github.nanodot.app`，版本为 `<version>`，versionCode 为 `<n>`。使用专用 Nanodot 发布密钥。运行 `sha256sum -c <published-apk-name>.apk.sha256` 校验；附带的公开构建记录包含源码身份、SHA256、证书摘要与构建限制。
+- **安装与数据边界。** 首个专用签名版本不能覆盖调试签名构建。上游 nanoMuse 使用不同 applicationId 和私有存储。今后同 applicationId 更新需要相同发布密钥与更高 versionCode。没有对应安装证据时，不承诺升级或数据保留结果。
+- **验收边界。** arm64 安装包和模拟器检查通过不能证明真机或完整 Care/语音验收通过。原生缓存哈希只标识字节；应保留构建记录中来源未经验证的限制。
+- **可下载内容。** <仅列出本次实际附加且验证过的 APK、校验文件、公开构建记录及其他产物。桌面产物说明实际签名/公证与验证状态。未签名 iOS 归档不是可安装 IPA。>
+- **其他平台与服务。** Tag 会启动构建；桌面和 harness 附件需要另行手动运行流程。本次发布不会自动部署网关、中继或网站、发布 Docker 镜像或上传 TestFlight。上游下载镜像与 TestFlight 构建属于其他产品。
 
 ### 社区
 
-nanoMuse 开源、免费、非营利。手机号或邮箱登录后有一份起始额度，钱是开发者出的；剩多少、怎么加，账号页里有数。用完可以换成自己的 key，或者用你已经在付费的套餐登录（[教程](https://github.com/nano-muse/nanoMuse/blob/main/docs/own-key.md)）。登录后，对话文字会保存在 nanoMuse Cloud，让你的几台设备看到同样的对话；「数据控制」里一个开关就能关掉并删除；数据不卖（[隐私政策](https://nanomuse.cn/privacy/)）；账号想删就删。
+请在 [Mola-maker/nanodot](https://github.com/Mola-maker/nanodot) 报告 Nanodot 问题或参与贡献。使用 nanoMuse Cloud 时，可用性、账号与数据政策仍由上游服务提供方负责；Nanodot 不运营该服务，也不承诺免费额度。
 
-稳定版也不是最后一句话：nanoMuse 在持续进化，接下来做什么写在[路线图](https://github.com/nano-muse/nanoMuse/blob/main/docs/zh/roadmap.md)里。我们自己每天在用，知道哪些地方还糙；哪里坏了、想要什么，直接提 issue。谢谢每一位装过、试过、报过问题的人。[提 issue](https://github.com/nano-muse/nanoMuse/issues/new/choose) · [发 PR](https://github.com/nano-muse/nanoMuse/blob/main/CONTRIBUTING.md) · [Discussions](https://github.com/nano-muse/nanoMuse/discussions) · [Discord](https://discord.gg/bkTySmm28X) · [点个 Star](https://github.com/nano-muse/nanoMuse)；觉得有用，点个 Star，让更多人看到。
+Nanodot 源于 [nanoMuse](https://github.com/nano-muse/nanoMuse) 和 [OpenMinis](https://github.com/OpenMinis/OpenMinis) 1.13。完整对应源码为 [tag `v<version>`](https://github.com/Mola-maker/nanodot/tree/v<version>) 及其固定子模块，包括 `android/deps/proot`。分发时保留 [LICENSE](https://github.com/Mola-maker/nanodot/blob/v<version>/LICENSE)、[NOTICE](https://github.com/Mola-maker/nanodot/blob/v<version>/NOTICE) 与[第三方署名](https://github.com/Mola-maker/nanodot/blob/v<version>/THIRD_PARTY_NOTICES.md)。仓库以 GPL-3.0-or-later 发布。Nanodot 独立于 Meta 及其 Muse 商标。
 
-基于 [OpenMinis](https://github.com/OpenMinis/OpenMinis) 1.13（GPL-3.0），自 2026-09-24 起修改；本版本的完整对应源码是 tag `v<version>` 加子模块 `android/deps/proot`（[nano-muse/proot](https://github.com/nano-muse/proot)）。整个仓库以 GPL-3.0-or-later 发布。nanoMuse Harness 原样携带 DeepSeek Harness 及其许可证文件；名字里的 *harness* 是普通词，不是 DeepSeek 的名字。nanoMuse 与 Meta 无关，Muse 是 Meta Platforms, Inc. 的商标。桌面端照着 Muse 应用用起来的样子做，是用过之后写下来的；里面没有 Meta 的任何素材、代码或内容。
+<如有可验证信息，添加与英文一致的 Nanodot 贡献者致谢和源码比较链接。保留上游署名，不将上游 PR 当作 Nanodot PR。>
 
 </details>

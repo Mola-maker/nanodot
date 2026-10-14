@@ -1,8 +1,19 @@
 # Changelog
 
-Nanodot changes are recorded under Unreleased; historical entries below describe nanoMuse. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [Semantic Versioning](https://semver.org/). Unreleased changes are on `main`.
+Nanodot releases begin with 1.1.0; entries for 1.0.1 and earlier describe upstream nanoMuse. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+
+### Android
+
+### Project
+
+## [1.1.0] - 2026-10-14 · Crystal
+
+First Nanodot Android prerelease: blue crystal foreground interactions, region image questions and user-guided Care. VersionCode 45 uses a dedicated release signature. Existing runtime evidence and remaining acceptance gaps are described in the [release notes](docs/releases/v1.1.0.md); this is not a full Care, voice or physical-device qualification.
+
+- Added actual main-navigation and Care Repeat trace acceptance, including successive display frames, retained instructions, user confirmation, Stop and rejected late local work.
+- Updated repository downloads, multilingual current-version descriptions and release provenance guidance for the first Nanodot prerelease.
 
 - Preserved the Care card until region chat gained focus and retained the focused conversation for later selections, with Stop available throughout.
 

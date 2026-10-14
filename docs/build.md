@@ -1,15 +1,16 @@
-# Build Nanodot P0
+# Build Nanodot
 
 Nanodot source is [Mola-maker/nanodot](https://github.com/Mola-maker/nanodot), based on
 nanoMuse baseline `f627f33ccc8ab70b9b59322929e5f15a2b1bec64` and OpenMinis 1.13.
-P0 keeps version **1.0.1** and Android versionCode **44**. Version changes belong to a
-separate release change. The [brand contract](brand.md) defines the shared identity.
+The first Nanodot prerelease is **1.1.0 · Crystal**, Android versionCode **45**.
+Version changes belong to a separate release change. The [brand contract](brand.md)
+defines the shared identity.
 
 ## Toolchain
 
-Use this P0 toolchain; do not upgrade Kotlin, AGP or Compose as part of branding.
+Use this fixed toolchain; Kotlin, AGP and Compose upgrades belong to a separate change.
 
-| Component | P0 value |
+| Component | Value |
 |---|---|
 | JDK | 21 |
 | Android minSdk / targetSdk / compileSdk | 26 / 35 / 36 |
@@ -73,6 +74,32 @@ signing when invoked directly. Release never falls back to the debug keystore. V
 the reported signing certificate against the intended key; record the exact tool versions,
 source revision, dirty-tree status and build logs alongside the generated metadata.
 
+## Publish a reviewed prerelease
+
+Build from the clean final release commit. Keep the unique candidate directory printed by
+the wrapper and its full `receipt.json` locally. Before publishing, match the source commit,
+tree, fingerprint and clean state to the reviewed source; check APK version **1.1.0**,
+versionCode **45**, package `io.github.nanodot.app`, ABI `arm64-v8a`, certificate SHA256
+and APK SHA256. Native-cache hashes identify bytes; retain the receipt's unverified
+provenance limitation.
+
+The first release uses reviewed handwritten English and Chinese notes. Legacy
+`scripts/release-apk.sh` bypasses this candidate receipt and invokes an automatic notes
+path that can confuse inherited upstream PR numbers with Nanodot PRs. For this release,
+tag the exact reviewed commit and use `gh release create` manually with
+`--repo Mola-maker/nanodot --verify-tag --prerelease --latest=false`. Attach the verified
+APK, checksum and an explicitly allowlisted public receipt containing source identity,
+APK metadata/checksum, certificate digest, tool versions and native provenance limits.
+Keep local paths, environment/configuration values, logs and private signing material
+out of the public receipt. If the APK is renamed, record the original-to-published filename
+mapping and write the checksum against the published filename. See the
+[maintainer recipe](../CONTRIBUTING.md#releasing-maintainers).
+
+A `v*` tag starts desktop, harness, Docker and general test builds. Release attachments
+require separate manual desktop/harness runs at that tag with `release_tag` set. Tags do
+not publish Docker images or deploy the gateway, relay, website or TestFlight. Those
+remain separate explicit operations; a GitHub prerelease is not evidence they occurred.
+
 ## Identity, data and updates
 
 Android applicationId is `io.github.nanodot.app`; the external scheme is `nanodot://`.
@@ -82,8 +109,10 @@ storage. Use explicit supported export/import and verify what it carries.
 
 First launch only seeds missing values: Dot, the system theme and safe preferences.
 Existing SOUL.md, names, custom avatars/animations, model choices and preferences are
-preserved. Same-ID upgrades require the same signing key and a higher versionCode for a
-real upgrade test. P0 does not raise the current versionCode to simulate that test.
+preserved by initialization. Same-ID upgrades require the same signing key and a higher
+versionCode. The first dedicated-key release cannot replace a debug-signed build; upstream
+nanoMuse has a different applicationId. No compatible upgrade or data-preservation result
+is claimed until the relevant installation test has been recorded.
 
 Automatic updates remain disabled until a Nanodot channel is configured. Manual checks
 go to [Nanodot releases](https://github.com/Mola-maker/nanodot/releases), not upstream APKs.
@@ -121,7 +150,9 @@ the arm64 native payloads; sandbox startup and native operation require later va
 real arm64 hardware. Separately verify coexistence with nanoMuse, custom-data preservation
 across a signed upgrade and explicit nanoMuse export/import. Each check remains pending until
 its evidence is recorded; a generated APK alone does not establish installation acceptance.
-The future floating ball and care mode have separate later-phase acceptance.
+The Crystal prerelease includes the foreground orb, region chat and Care guidance.
+Existing API 35/x86_64 checks cover the documented emulator flows; complete real Care,
+voice, physical arm64-device operation and signed upgrades still need their own evidence.
 
 Retain [GPL terms](../LICENSE), [NOTICE](../NOTICE), [third-party notices](../THIRD_PARTY_NOTICES.md)
 and the pinned submodule/source information with distributable builds.
