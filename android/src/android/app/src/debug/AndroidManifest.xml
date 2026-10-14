@@ -1,0 +1,7 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- nanoMuse: rendering fixture exists only in debug builds and has no product route. -->
+        <activity android:name="io.github.nanomuse.dot.ui.DotTokenGalleryFixtureActivity"
+            android:exported="false" android:theme="@style/Theme.Minis" />
+    </application>
+</manifest>

@@ -1,5 +1,8 @@
 package com.openminis.app.speech
 
+// nanoMuse: source-selected passive voice proof producer.
+import io.github.nanomuse.dot.voice.proof.VoiceProofTap
+
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
@@ -11,6 +14,13 @@ import com.openminis.app.R
 import com.openminis.app.logging.AppLogger
 import com.openminis.app.provider.voice.VoiceOutputRequest
 import com.openminis.app.provider.voice.VoiceProviderFactory
+// nanoMuse: per-utterance cancellation leaves the queue worker available.
+import io.github.nanomuse.dot.gateway.VoiceGeneration
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.ensureActive
+import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -69,9 +79,26 @@ class ReadAloudPlayer(context: Context) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val queue = Channel<String>(Channel.UNLIMITED)
     private var worker: Job? = null
+    // nanoMuse: stop/pause cancel active synthesis and invalidate late callbacks.
+    private var utteranceJob: Job? = null
+    private val generation = VoiceGeneration()
 
     /** Currently playing provider audio, if any — held so [stop] can cancel it. */
     private var player: MediaPlayer? = null
+    // nanoMuse: a UI Stop is not proof of cleanup. Keep failures until microphone preparation observes them.
+    private var cleanupFailure: Throwable? = null
+    private var shutdownRequested = false
+    private var releasePending = false
+    private var systemCleanupPending = false
+    private var shutdownPending = false
+    internal val hasPendingCaptureCleanup: Boolean
+        get() = player != null || focusRequest != null || systemCleanupPending || shutdownPending ||
+            cleanupFailure != null || utteranceJob?.isCompleted == false
+
+    private fun retainCleanupFailure(failure: Throwable) {
+        if (cleanupFailure == null) cleanupFailure = failure
+        playbackFailed.value = true
+    }
 
     /**
      * Completes the in-flight [playBytes] suspension when [stop] tears the
@@ -104,6 +131,8 @@ class ReadAloudPlayer(context: Context) {
      */
     private fun ownsCapsule(): Boolean = VoiceOutputState.isActivePlayer(this)
 
+    // nanoMuse: embedded Dot controls expose actual playback failure alongside Stop.
+    val playbackFailed = MutableStateFlow(false)
     private val _isSpeaking = MutableStateFlow(false)
     val isSpeaking: StateFlow<Boolean> = _isSpeaking.asStateFlow()
 
@@ -141,16 +170,34 @@ class ReadAloudPlayer(context: Context) {
         // live speaking flag into the global state the capsule renders from.
         VoiceOutputState.init(appContext)
         VoiceOutputState.registerPlayer(this)
-        worker = scope.launch {
-            for (text in queue) {
-                runCatching { speakOne(text) }
-                    .onFailure { AppLogger.error(TAG, "utterance failed: $it") }
-                // Queue drained → speech is over. Counter rather than
-                // Channel.isEmpty, which is experimental API.
-                if (pending.decrementAndGet() <= 0) {
-                    _isSpeaking.value = false
-                    if (ownsCapsule()) VoiceOutputState.isSpeaking.value = false
+        // nanoMuse: queue lifetime is separate from cancellable utterance lifetime.
+        worker = scope.launch { consumeQueue() }
+    }
+
+    private suspend fun consumeQueue() {
+        for (text in queue) {
+            // nanoMuse: child cancellation cannot destroy the persistent queue worker.
+            val ticket = generation.ticket()
+            coroutineScope {
+                val utterance = launch(start = CoroutineStart.LAZY) {
+                    try { speakOne(text, ticket) }
+                    catch (cancelled: CancellationException) { throw cancelled }
+                    catch (failure: Exception) {
+                        // nanoMuse: retain an observable error when the existing player fails.
+                        if (generation.isCurrent(ticket)) playbackFailed.value = true
+                        AppLogger.error(TAG, "utterance failed: $failure")
+                    }
                 }
+                utteranceJob = utterance
+                utterance.start()
+                try { utterance.join() } finally {
+                    if (utteranceJob === utterance) utteranceJob = null
+                }
+            }
+            // nanoMuse: a stopped generation cannot decrement a newer queue's count.
+            if (generation.isCurrent(ticket) && pending.decrementAndGet() <= 0) {
+                _isSpeaking.value = false
+                if (ownsCapsule()) VoiceOutputState.isSpeaking.value = false
             }
         }
     }
@@ -184,9 +231,12 @@ class ReadAloudPlayer(context: Context) {
     }
 
     /** Speak [text] as a single utterance, after stopping anything in flight. */
-    fun speak(text: String) {
+    // nanoMuse: a direct Dot Read reply request does not enable automatic reply reading.
+    fun speak(text: String, explicit: Boolean = false) {
+        // nanoMuse: explicit retry clears the previous playback failure.
+        playbackFailed.value = false
         stop()
-        enqueue(text)
+        enqueue(text, explicit)
     }
 
     /**
@@ -207,13 +257,16 @@ class ReadAloudPlayer(context: Context) {
         enqueue(text)
     }
 
-    private fun enqueue(raw: String) {
+    // nanoMuse: explicit playback bypasses only automatic-output preference, never capture suppression.
+    private fun enqueue(raw: String, explicit: Boolean = false) {
         // [T-android-tts-capsule] Temporary mute suppresses NEW utterances too
         // (not only current playback) — matching iOS, where `canPlay =
         // isEnabled && !isMuted` gates production. Dropping here rather than at
         // playback keeps a long mute from piling up a backlog that would all
         // blurt out on un-mute.
-        if (!VoiceOutputState.canPlay) return
+        // nanoMuse: failed resources cannot be overwritten by a new utterance.
+        if (shutdownRequested || releasePending || systemCleanupPending || shutdownPending) return
+        if (!explicit && !VoiceOutputState.canPlay) return
         // [T-android-tts-scope-align] Mic-capture suppression, from iOS
         // canSpeakNow (feedDynamicTTS logs "DROP — read-replies off
         // (capturing)"): while the VAD/recognizer is actively capturing,
@@ -221,7 +274,8 @@ class ReadAloudPlayer(context: Context) {
         // dictation mic (echo), and capture/playback also fight over the
         // audio route. iOS drops the text outright; mirrored here.
         val recState = SpeechRecognitionManager.state.value
-        if (recState == RecognitionState.RECORDING || recState == RecognitionState.STARTING) {
+        // nanoMuse: suppress newly registered players and finishing captures too.
+        if (VoiceOutputState.captureSuppressed || capturePaused || recState != RecognitionState.IDLE) {
             AppLogger.info(TAG, "enqueue dropped — mic capturing (state=$recState)")
             return
         }
@@ -249,6 +303,12 @@ class ReadAloudPlayer(context: Context) {
     fun suspendForCapture() {
         if (capturePaused) return
         capturePaused = true
+        // nanoMuse: pause cancels current synthesis; held queue remains resumable.
+        generation.invalidate()
+        // nanoMuse: detach before cancellation handlers run, so capture observes release failures.
+        val playback = player
+        player = null
+        utteranceJob?.cancel()
         // Drain into the holding list rather than onto the floor.
         val held = mutableListOf<String>()
         while (true) {
@@ -262,8 +322,9 @@ class ReadAloudPlayer(context: Context) {
         heldForCapture.addAll(held)
 
         playbackFinisher?.invoke()
-        releasePlayer()
-        system.stop()
+        releasePlayer(playback)
+        // nanoMuse: both provider and system cleanup are attempted, regardless of either failure.
+        stopSystemForCleanup()
         pending.set(0)
         _isSpeaking.value = false
         if (ownsCapsule()) {
@@ -271,6 +332,17 @@ class ReadAloudPlayer(context: Context) {
             VoiceOutputState.isSynthesizing.value = false
         }
         AppLogger.info(TAG, "suspended for mic capture — held ${heldForCapture.size} utterance(s)")
+    }
+
+    // nanoMuse: await synthesis/playback coroutine finally after invalidating late bytes.
+    suspend fun suspendForCaptureAndJoin() {
+        io.github.nanomuse.dot.voice.CapturePause.await(utteranceJob) { suspendForCapture() }
+        if (shutdownRequested && shutdownPending) shutdownSystem()
+        // Cancellation handlers/finally can add failures while the join is suspended.
+        // Report once; an unreleased resource remains owned and is retried on the next attempt.
+        val failure = cleanupFailure
+        cleanupFailure = null
+        failure?.let { throw it }
     }
 
     /** Re-queue whatever [suspendForCapture] held back. */
@@ -289,6 +361,9 @@ class ReadAloudPlayer(context: Context) {
 
     /** Stop playback and drop everything pending. */
     fun stop() {
+        // nanoMuse: cancellation reaches OkHttp and invalidates noncooperative late audio.
+        generation.invalidate()
+        utteranceJob?.cancel()
         // A real stop supersedes a capture pause: nothing held is still wanted.
         capturePaused = false
         heldForCapture.clear()
@@ -299,7 +374,7 @@ class ReadAloudPlayer(context: Context) {
         // MediaPlayer will never deliver.
         playbackFinisher?.invoke()
         releasePlayer()
-        system.stop()
+        stopSystemForCleanup()
         pending.set(0)
         _isSpeaking.value = false
         if (ownsCapsule()) {
@@ -308,13 +383,21 @@ class ReadAloudPlayer(context: Context) {
         }
     }
 
+    // nanoMuse: Dot teardown retains registry membership until synthesis cleanup actually completes.
+    suspend fun shutdownAndJoin() {
+        try { io.github.nanomuse.dot.voice.CapturePause.await(utteranceJob) { stop() } }
+        finally { shutdown() }
+    }
+
     /** Release both engines. Call from the owner's DisposableEffect. */
     fun shutdown() {
+        // nanoMuse: teardown cannot permit another utterance while cleanup remains owned.
+        shutdownRequested = true
         stop()
         worker?.cancel()
         queue.close()
         scope.cancel()
-        system.shutdown()
+        shutdownSystem()
         // Deregister by identity: removing a mid-stack player leaves the rest
         // intact, and dropping the top hands the capsule back to the player
         // beneath (typically the reply channel) instead of orphaning it.
@@ -323,7 +406,7 @@ class ReadAloudPlayer(context: Context) {
 
     // -- internals --
 
-    private suspend fun speakOne(text: String) {
+    private suspend fun speakOne(text: String, ticket: Long) {
         val entry = runCatching {
             (appContext as? MinisApp)?.providerRepository?.resolveVoiceOutputEntry()
         }.getOrNull()
@@ -337,8 +420,10 @@ class ReadAloudPlayer(context: Context) {
                 VoiceOutputState.activeModelLabel.value =
                     modelEntry.model.displayName.ifBlank { modelEntry.model.id }
             }
-            val ok = runCatching { speakViaProvider(instance, modelEntry, text) }
+            val ok = runCatching { speakViaProvider(instance, modelEntry, text, ticket) }
                 .getOrElse {
+                    // nanoMuse: cancellation must never turn into device fallback speech.
+                    if (it is CancellationException) throw it
                     AppLogger.error(
                         TAG,
                         "provider TTS failed (model=${modelEntry.model.id} " +
@@ -348,7 +433,13 @@ class ReadAloudPlayer(context: Context) {
                 }
             if (ok) return
         }
+        // nanoMuse: reject superseded generations before entering system fallback.
+        generation.requireCurrent(ticket)
+        coroutineContext.ensureActive()
         if (ownsCapsule()) VoiceOutputState.activeModelLabel.value = null // system engine
+        // nanoMuse: link this real player/manager and current queue generation before system submission.
+        if (VoiceProofTap.ownsPlayer(this))
+            VoiceProofTap.system(this, system, ticket, { generation.isCurrent(ticket) }, text)
         if (!speakViaSystem(text)) {
             // [T-android-tts-silent-blackhole] Terminal state: the provider path
             // did not produce audio AND the device speech engine is unusable.
@@ -356,7 +447,8 @@ class ReadAloudPlayer(context: Context) {
             // why read-aloud "just works" there while Android could go silent
             // with no feedback at all — the reported OPPO symptom. Tell the user
             // once instead of swallowing it.
-            notifySpeechUnavailable(providerConfigured = entry != null)
+            // nanoMuse: a replaced reply must not publish an error into the next panel generation.
+            if (generation.isCurrent(ticket)) notifySpeechUnavailable(providerConfigured = entry != null)
         }
     }
 
@@ -364,6 +456,8 @@ class ReadAloudPlayer(context: Context) {
     private var unavailableNotified = false
 
     private fun notifySpeechUnavailable(providerConfigured: Boolean) {
+        // nanoMuse: Toast alone is not a durable error state for the Dot panel.
+        playbackFailed.value = true
         AppLogger.error(
             TAG,
             "read-aloud produced NO audio: providerConfigured=$providerConfigured " +
@@ -384,6 +478,7 @@ class ReadAloudPlayer(context: Context) {
         instance: com.openminis.app.data.model.ProviderInstance,
         modelEntry: com.openminis.app.data.model.ModelEntry,
         text: String,
+        ticket: Long, // nanoMuse: validate request generation before playback.
     ): Boolean {
         // [T-android-safemode-lateinit-crash-147] `?.` guards a null
         // Application but NOT an unassigned lateinit — the getter throws.
@@ -423,8 +518,12 @@ class ReadAloudPlayer(context: Context) {
                 )
             }
         } finally {
-            VoiceOutputState.isSynthesizing.value = false
+            // nanoMuse: an old completion cannot reset a newer generation's indicator.
+            if (generation.isCurrent(ticket) && ownsCapsule()) VoiceOutputState.isSynthesizing.value = false
         }
+        // nanoMuse: discard late bytes before MediaPlayer/cache dispatch.
+        generation.requireCurrent(ticket)
+        coroutineContext.ensureActive()
         if (data.isEmpty()) {
             AppLogger.error(TAG, "provider TTS returned empty audio (model=${modelEntry.model.id})")
             return false
@@ -611,13 +710,29 @@ class ReadAloudPlayer(context: Context) {
     private fun estimatedSpeechMs(text: String): Long =
         (text.length * 90L + 400L).coerceIn(600L, 30_000L)
 
-    private fun releasePlayer() {
-        player?.runCatching {
-            if (isPlaying) stop()
-            release()
+    // nanoMuse: stop/release failure evidence survives UI Stop and owner teardown.
+    private fun stopSystemForCleanup() {
+        try { system.stop(requireAcknowledgement = true); systemCleanupPending = false }
+        catch (t: Throwable) { systemCleanupPending = true; retainCleanupFailure(t) }
+    }
+
+    private fun shutdownSystem() {
+        try { system.shutdown(); shutdownPending = false; systemCleanupPending = false }
+        catch (t: Throwable) { shutdownPending = true; retainCleanupFailure(t) }
+    }
+
+    private fun releasePlayer(playback: MediaPlayer? = player) {
+        if (player === playback) player = null
+        // Reading state / stopping may throw on OEMs. Release must still be attempted.
+        try { if (playback?.isPlaying == true) playback.stop() }
+        catch (t: Throwable) { retainCleanupFailure(t) }
+        try { playback?.release(); if (playback != null) releasePending = false }
+        catch (t: Throwable) {
+            releasePending = true
+            player = playback // Keep the failed resource reachable for a later cleanup attempt.
+            retainCleanupFailure(t)
         }
-        player = null
-        abandonAudioFocus()
+        try { abandonAudioFocus() } catch (t: Throwable) { retainCleanupFailure(t) }
     }
 
     /**

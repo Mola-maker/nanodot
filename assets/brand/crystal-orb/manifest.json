@@ -1,0 +1,17 @@
+{
+  "generator": "built-in imagegen",
+  "mode": "generate",
+  "size": [
+    1254,
+    1254
+  ],
+  "frames": 16,
+  "grid": [
+    4,
+    4
+  ],
+  "alpha": true,
+  "sha256": "c5985abbf2fc39ee7cdf905b9d6e8f1c8eda300cdc0687811e4ca8727788d4e7",
+  "reference_role": "user moodboard palette only",
+  "status": "generated-preview-not-yet-native-accepted"
+}

@@ -60,6 +60,10 @@ object ExecutionCoordinator {
         appContext = context.applicationContext
     }
 
+    // nanoMuse: test-only view of the per-session registry, so the instrumentation test can
+    // observe a shell's lifetime without reflection (the old single mountedSessionId is gone).
+    internal fun hasShell(sessionId: String): Boolean = shells.containsKey(sessionId)
+
     /**
      * Execute a command in the session's persistent shell.
      *

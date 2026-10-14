@@ -1,5 +1,8 @@
 package com.openminis.app.speech
 
+// nanoMuse: source-selected passive voice proof producer.
+import io.github.nanomuse.dot.voice.proof.VoiceProofTap
+
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -116,7 +119,8 @@ class TextToSpeechManager : TextToSpeech.OnInitListener {
                 setSpeechRate(speechRate)
                 setPitch(speechPitch)
                 setLanguage(Locale.US)
-                setOnUtteranceProgressListener(createProgressListener())
+                // nanoMuse: the original listener retains its actual registered client identity.
+                setOnUtteranceProgressListener(createProgressListener(this))
             }
             Log.d(TAG, "TTS initialized successfully")
             // Replay whatever arrived while the engine was binding, in order.
@@ -204,7 +208,16 @@ class TextToSpeechManager : TextToSpeech.OnInitListener {
         // flight and no progress callback ever coming — ReadAloudPlayer's
         // completion poll then spun forever and the whole read-aloud queue
         // wedged for the rest of the process.
-        val rc = tts?.speak(text, TextToSpeech.QUEUE_FLUSH, params, generateUtteranceId())
+        // nanoMuse: the original nullable receiver still generates exactly one ID only on submission.
+        val rc = tts?.let { client ->
+            val id = generateUtteranceId()
+            if (VoiceProofTap.active)
+                VoiceProofTap.beforeSpeak(this, client, id, TextToSpeech.QUEUE_FLUSH, text)
+            client.speak(text, TextToSpeech.QUEUE_FLUSH, params, id).also { result ->
+                if (VoiceProofTap.active)
+                    VoiceProofTap.speakReturn(this, client, id, result)
+            }
+        }
         if (rc != TextToSpeech.SUCCESS) {
             Log.w(TAG, "speak rejected by engine (rc=$rc len=${text.length})")
             _isSpeaking.value = false
@@ -238,7 +251,16 @@ class TextToSpeechManager : TextToSpeech.OnInitListener {
 
         val params = buildSpeechParams()
         // [T-android-tts-rom-compat] Same rejected-enqueue guard as speak().
-        val rc = tts?.speak(text, TextToSpeech.QUEUE_ADD, params, generateUtteranceId())
+        // nanoMuse: observe the same client/ID without replacing the queue or progress listener.
+        val rc = tts?.let { client ->
+            val id = generateUtteranceId()
+            if (VoiceProofTap.active)
+                VoiceProofTap.beforeSpeak(this, client, id, TextToSpeech.QUEUE_ADD, text)
+            client.speak(text, TextToSpeech.QUEUE_ADD, params, id).also { result ->
+                if (VoiceProofTap.active)
+                    VoiceProofTap.speakReturn(this, client, id, result)
+            }
+        }
         if (rc != TextToSpeech.SUCCESS) {
             Log.w(TAG, "speakQueued rejected by engine (rc=$rc len=${text.length})")
             // Only clear the flag when nothing else is in flight — a QUEUE_ADD
@@ -298,8 +320,9 @@ class TextToSpeechManager : TextToSpeech.OnInitListener {
     /**
      * Stops all speech immediately.
      */
-    fun stop() {
-        tts?.stop()
+    // nanoMuse: capture requires the platform stop acknowledgement; acoustic silence is a device gate.
+    fun stop(requireAcknowledgement: Boolean = false) {
+        val status = tts?.stop() ?: TextToSpeech.SUCCESS
         isPaused = false
         pendingTexts.clear()
         pausedAtIndex = 0
@@ -308,6 +331,7 @@ class TextToSpeechManager : TextToSpeech.OnInitListener {
         // utterances, or they'd blurt out the moment onInit lands.
         synchronized(queueLock) { preInitQueue.clear() }
         _isSpeaking.value = false
+        if (requireAcknowledgement && status != TextToSpeech.SUCCESS) throw IllegalStateException()
     }
 
     /**
@@ -400,14 +424,18 @@ class TextToSpeechManager : TextToSpeech.OnInitListener {
 
     private fun generateUtteranceId(): String = UUID.randomUUID().toString()
 
-    private fun createProgressListener(): UtteranceProgressListener =
+    private fun createProgressListener(actualClient: TextToSpeech): UtteranceProgressListener =
         object : UtteranceProgressListener() {
 
             override fun onStart(utteranceId: String?) {
+                // nanoMuse: passive evidence inside the original registered listener.
+                VoiceProofTap.tts(this@TextToSpeechManager, actualClient, utteranceId, "start")
                 _isSpeaking.value = true
             }
 
             override fun onDone(utteranceId: String?) {
+                // nanoMuse: retain the original main-thread queue completion below.
+                VoiceProofTap.tts(this@TextToSpeechManager, actualClient, utteranceId, "done")
                 // [T-android-tts-init-thread] Progress callbacks arrive on a
                 // binder thread. This used to bump pausedAtIndex and read
                 // pendingTexts.size straight from there, while togglePause()
@@ -426,13 +454,33 @@ class TextToSpeechManager : TextToSpeech.OnInitListener {
 
             @Deprecated("Deprecated in API level 21")
             override fun onError(utteranceId: String?) {
+                // nanoMuse: an error never counts as complete synthesis evidence.
+                VoiceProofTap.tts(this@TextToSpeechManager, actualClient, utteranceId, "error")
                 Log.e(TAG, "TTS error for utterance: $utteranceId")
                 _isSpeaking.value = false
             }
 
             override fun onError(utteranceId: String?, errorCode: Int) {
+                // nanoMuse: original error behavior remains below this passive observation.
+                if (VoiceProofTap.ownsTts(this@TextToSpeechManager, actualClient, utteranceId))
+                    VoiceProofTap.tts(this@TextToSpeechManager, actualClient, utteranceId, "error", intArrayOf(errorCode))
                 Log.e(TAG, "TTS error for utterance $utteranceId, code: $errorCode")
                 _isSpeaking.value = false
+            }
+
+            // nanoMuse: only this bound request's synthesis callback PCM, never a device audio mix.
+            override fun onBeginSynthesis(utteranceId: String?, sampleRateInHz: Int, audioFormat: Int, channelCount: Int) {
+                if (VoiceProofTap.ownsTts(this@TextToSpeechManager, actualClient, utteranceId))
+                    VoiceProofTap.tts(this@TextToSpeechManager, actualClient, utteranceId, "format",
+                        intArrayOf(sampleRateInHz, audioFormat, channelCount))
+            }
+            override fun onAudioAvailable(utteranceId: String?, audio: ByteArray?) {
+                VoiceProofTap.audio(this@TextToSpeechManager, actualClient, utteranceId, audio)
+            }
+            override fun onStop(utteranceId: String?, interrupted: Boolean) {
+                if (VoiceProofTap.ownsTts(this@TextToSpeechManager, actualClient, utteranceId))
+                    VoiceProofTap.tts(this@TextToSpeechManager, actualClient, utteranceId, "stop",
+                        intArrayOf(if (interrupted) 1 else 0))
             }
         }
 }

@@ -3,6 +3,7 @@
 export const en = {
   /** Which dictionary this is; the pages that carry two-language text pick by it. */
   langTag: 'en',
+  gatewayProjectKey: 'Requires a dedicated project key. Existing settings and selected models are kept. Live service acceptance is pending.',
   nav: 'nanoMuse Cloud',
   brand: 'Nanodot',
   title: 'nanoMuse Cloud',
@@ -135,6 +136,9 @@ export const en = {
   // the rail and its corner menu
   railLabel: 'Nanodot',
   railProfile: 'Profile and settings',
+  railTasks: 'Tasks',
+  dotLoading: 'Loading…',
+  dotOffline: 'Dot is offline. Reconnecting…',
   railChats: 'Chats',
   railSearch: 'Search',
   railDevices: 'Devices',
@@ -1430,6 +1434,7 @@ export const en = {
 
 export const zh: typeof en = {
   langTag: 'zh',
+  gatewayProjectKey: '需要专用项目 key。保留已有设置和选中的模型。真实服务验收待完成。',
   nav: 'nanoMuse Cloud',
   brand: 'Nanodot',
   title: 'Nanodot 账号',
@@ -1552,6 +1557,9 @@ export const zh: typeof en = {
   incomingOther: '{from}：{what}',
   railLabel: 'Nanodot',
   railProfile: '形象与设置',
+  railTasks: '任务',
+  dotLoading: '正在加载…',
+  dotOffline: 'Dot 已离线，正在重新连接…',
   railChats: '聊天',
   railSearch: '搜索',
   railDevices: '设备',

@@ -1,5 +1,9 @@
 package io.github.nanomuse.ui.net
 
+import io.github.nanomuse.dot.ui.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -67,6 +71,7 @@ fun NetworkScreen(onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     var cfg by remember { mutableStateOf(OwnProviderProxy.config(context)) }
     var portText by remember { mutableStateOf(if (cfg.port > 0) cfg.port.toString() else "") }
+    var probeJob by remember { mutableStateOf<Job?>(null) }
     var testing by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<String?>(null) }
     var resultOk by remember { mutableStateOf(false) }
@@ -86,7 +91,8 @@ fun NetworkScreen(onBack: () -> Unit) {
         }
         testing = true
         result = null
-        scope.launch {
+        probeJob = scope.launch {
+            try {
             val p = OwnProviderProxy.probe(probeCfg, TEST_URL)
             resultOk = p.ok
             result = if (p.ok) {
@@ -99,7 +105,8 @@ fun NetworkScreen(onBack: () -> Unit) {
                 }
                 context.getString(R.string.nm_network_test_fail, p.host, why)
             }
-            testing = false
+            } catch (e: CancellationException) { throw e }
+            finally { testing = false }
         }
     }
 
@@ -132,7 +139,7 @@ fun NetworkScreen(onBack: () -> Unit) {
                     trailing = { Switch(checked = cfg.enabled, onCheckedChange = { persist(cfg.copy(enabled = it)) }) },
                 )
                 MuseRowDivider(inset = 16.dp)
-                Column(Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
+                Column(Modifier.padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S12)) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         OutlinedTextField(
                             value = cfg.host,
@@ -182,17 +189,16 @@ fun NetworkScreen(onBack: () -> Unit) {
                     chevron = false,
                     titleColor = MuseTones.action,
                     onClick = { test() },
-                    trailing = { if (testing) CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp) },
+                    trailing = {},
                 )
-                result?.let { r ->
-                    Text(
-                        r,
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp,
-                        color = if (resultOk) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
-                    )
+                when {
+                    testing -> DotOperationStatus(DotPageState.Loading, ::test, onCancel = {
+                        probeJob?.cancel()
+                    })
+                    result != null && !resultOk -> DotStatusSurface(DotPageState.Error(result!!, retryable = true), ::test) {}
+                    result != null -> DotResultSurface(result!!, success = true)
                 }
+
             }
             MuseCaption(stringResource(R.string.nm_network_proxy_caption))
             val hosts = remember { OwnProviderProxy.routedHosts().sorted() }

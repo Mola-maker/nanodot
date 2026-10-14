@@ -913,6 +913,13 @@ def create_app(settings: Settings, service: MuseService | None = None) -> FastAP
     async def get_connections() -> dict[str, Any]:
         return conn.view()
 
+    @app.post("/api/connections/gateway", dependencies=dep)
+    async def connect_gateway(body: LLMBody) -> dict[str, Any]:
+        try:
+            return await conn.connect_gateway(body.api_key or "")
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from exc
+
     @app.put("/api/connections/llm", dependencies=dep)
     async def put_llm(body: LLMBody) -> dict[str, Any]:
         try:

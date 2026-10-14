@@ -1,0 +1,23 @@
+{
+  "source": "User-selected DeepSeek harness assets: docs/superpowers/assets/2026-10-12-interaction",
+  "copiedOn": "2026-10-13",
+  "modified": false,
+  "purpose": "Design reference, not screenshots of implemented Android behavior",
+  "files": [
+    {
+      "file": "orb-trail-variants-v1.png",
+      "sha256": "f373804a90c1810b52bb5f1cf5f955ba184920b7a53da3c1e484ffdc20f3e770",
+      "bytes": 1319693
+    },
+    {
+      "file": "expanded-frame-variants-v2.png",
+      "sha256": "f3ecc8dac1e5780dee844a09202a409f1354327efb38243225f6f23f6722367a",
+      "bytes": 1550834
+    },
+    {
+      "file": "workspace-concept-v2.png",
+      "sha256": "b3e46617ecf5f6569878101d67d6d087500f1999677ad12f3e5e37ae75930880",
+      "bytes": 1538665
+    }
+  ]
+}

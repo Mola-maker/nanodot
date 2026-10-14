@@ -329,7 +329,7 @@
     <string name="nm_avatar_retry">Cuba lagi</string>
     <string name="nm_avatar_describe_title">Gambarkan wajah baharu</string>
     <string name="nm_avatar_describe_body">Satu ayat sudah memadai: apa benda itu, apa yang dipakainya, bagaimana rasanya. Pilih gaya, dan model imej anda melukis empat untuk dipilih.</string>
-    <string name="nm_avatar_default_description">Anak naga gempal berwarna kuning pucat dengan tanduk oren kecil dan sayap kecil yang terlipat</string>
+    <string name="nm_avatar_default_description">Bola kristal lutsinar berwarna biru muda, dengan kilauan lembut dan cahaya yang berdenyut perlahan</string>
     <string name="nm_avatar_style_flat">Rata</string>
     <string name="nm_avatar_style_clay">Tanah liat 3D</string>
     <string name="nm_avatar_style_watercolor">Cat air</string>
@@ -376,7 +376,7 @@
     <string name="nm_version_failed">Tidak dapat menyemak, ketik untuk cuba lagi</string>
     <string name="nm_appearance_section_home">Laman utama</string>
     <string name="nm_appearance_header_model_title">Tunjukkan model di bawah nama</string>
-    <string name="nm_appearance_header_model_footer">Muse hanya menunjukkan nama. Hidupkan ini untuk melihat kumpulan model dan penyedia · model di bawahnya; ketik untuk bertukar. Jika mati, model ada di bawah ••• → Model dan dalam Tetapan.</string>
+    <string name="nm_appearance_header_model_footer">Dot hanya menunjukkan nama. Hidupkan ini untuk melihat kumpulan model dan penyedia · model di bawahnya; ketik untuk bertukar. Jika mati, model ada di bawah ••• → Model dan dalam Tetapan.</string>
     <string name="nm_appearance_section_chat">Perbualan</string>
     <string name="nm_appearance_steps_title">Tunjukkan langkah ejen</string>
     <string name="nm_appearance_steps_footer">Jika mati, sembang hanya menyimpan balasan, dan baris di bawah wajah menyatakan apa yang ejen sedang lakukan. Jika hidup, setiap langkah dipaparkan dalam sembang: setiap alat yang digunakannya, penaakulannya, dan satu bar di atas ruang mesej yang membuka butiran langkah itu.</string>
@@ -396,7 +396,7 @@
     <string name="nm_avatar_size_large">Besar</string>
     <string name="nm_avatar_size_extra_large">Sangat besar</string>
     <string name="nm_avatar_size_hidden">Tersembunyi</string>
-    <string name="nm_avatar_style_muse">Mainan 3D (Muse)</string>
+    <string name="nm_avatar_style_muse">Mainan 3D</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">dalam talian</string>
@@ -1076,9 +1076,9 @@
     <string name="nm_models_hands_title">Mengendalikan skrin</string>
     <string name="nm_models_hands_sub">Melihat skrin dan bertindak bagi pihak anda. Perlukan model yang boleh melihat imej.</string>
     <string name="nm_models_image_title">Membuat gambar</string>
-    <string name="nm_models_image_sub">Potret Muse anda dan gambar yang anda minta.</string>
+    <string name="nm_models_image_sub">Potret Dot dan gambar yang anda minta.</string>
     <string name="nm_models_video_title">Membuat klip</string>
-    <string name="nm_models_video_sub">Klip pendek Muse anda.</string>
+    <string name="nm_models_video_sub">Klip pendek Dot.</string>
     <string name="nm_models_chat_applies">Terpakai untuk sembang utama dan sembang baharu; sembang sampingan mengekalkan modelnya sendiri.</string>
     <string name="nm_models_media_more">Pilihan gambar dan klip lain</string>
     <string name="nm_models_media_more_sub">Taip nama model, lihat apa yang terhenti tanpa setiap model, atau semak semula model video yang boleh digunakan oleh satu kunci.</string>
@@ -1104,4 +1104,106 @@
     <string name="nm_models_search_clear">Kosongkan carian</string>
     <string name="nm_models_no_match">Tiada model yang sepadan</string>
     <string name="nm_update_manual">Kemas kini automatik dimatikan. Buka halaman keluaran Nanodot untuk menyemak secara manual.</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Butang terapung Dot</string>
+    <string name="nm_dot_show_orb">Tunjukkan butang Dot</string>
+    <string name="nm_dot_settings_footer">Muncul apabila kebolehcapaian disambungkan. Jika dimatikan, kekal tersembunyi selepas disambung semula.</string>
+    <string name="nm_dot_orb_description">Butang Dot. Buka perbualan, lihat skrin atau mulakan sokongan.</string>
+    <string name="nm_dot_open_conversation">Buka perbualan</string>
+    <string name="nm_dot_view_screen">Lihat skrin</string>
+    <string name="nm_dot_start_care">Mulakan sokongan</string>
+    <string name="nm_dot_action_unavailable">Ciri Dot ini belum tersedia.</string>
+    <string name="nm_tab_tasks">Tugas</string>
+    <string name="nm_task_library">Pustaka</string>
+    <string name="nm_gateway_key_required">Memerlukan key khusus projek. Tetapan dan model pilihan dikekalkan. Pengesahan perkhidmatan sebenar masih belum selesai.</string>
+    <string name="nm_gateway_connection_failed">Tidak dapat menyambung. Semak key projek dan rangkaian.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Tangkapan skrin untuk Dot</string>
+    <string name="nm_dot_capture_active">Tangkapan skrin tersedia sehingga anda menghentikannya.</string>
+    <string name="nm_dot_capture_stop">Hentikan tangkapan</string>
+    <string name="nm_dot_capture_explain">Pada versi Android ini, Dot boleh membaca teks kebolehcapaian. Benarkan tangkapan skrin secara berasingan untuk turut berkongsi imej. Android akan meminta izin.</string>
+    <string name="nm_dot_capture_allow">Benarkan tangkapan skrin</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Memuatkan…</string>
+    <string name="nm_dot_load_failed">Halaman ini tidak dapat dimuatkan.</string>
+    <string name="nm_dot_components">Komponen</string>
+    <string name="nm_dot_empty">Belum ada kandungan di sini.</string>
+    <string name="nm_dot_attach">Lampirkan fail</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">Tambah ke %1$s</string>
+    <string name="nm_goal_completion">Matlamat selesai: %1$s</string>
+    <string name="nm_feed_like_post">Sukai siaran: %1$s</string>
+    <string name="nm_feed_post_info">Maklumat siaran: %1$s</string>
+    <string name="nm_dot_chat_empty">Tulis kepada Dot untuk memulakan perbualan ini.</string>
+    <string name="nm_dot_chat_message">Mesej</string>
+    <string name="nm_dot_chat_send">Hantar</string>
+    <string name="nm_dot_chat_stop">Hentikan</string>
+    <string name="nm_dot_chat_retry">Cuba lagi</string>
+    <string name="nm_dot_chat_collapse">Tutup perbualan</string>
+    <string name="nm_dot_chat_remove">Buang pratonton</string>
+    <string name="nm_dot_chat_capturing">Membaca skrin…</string>
+    <string name="nm_dot_chat_capture_failed">Tangkapan skrin tidak tersedia. Cuba lagi pada skrin asal.</string>
+    <string name="nm_dot_chat_historical">Ditangkap %1$s · lampiran terdahulu</string>
+    <string name="nm_dot_chat_text_only">Teks sahaja · tiada tangkapan skrin</string>
+    <string name="nm_dot_chat_voice_pending">Suara belum tersedia.</string>
+    <string name="nm_dot_chat_compact">Ringkaskan dan hantar</string>
+    <string name="nm_dot_chat_cancel">Batal</string>
+    <string name="nm_care_clarify_no_nodes">Kawalan manakah yang kamu lihat pada halaman ini?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">Saya akan membimbing anda langkah demi langkah.</string>
+    <string name="nm_care_goal">Apakah yang anda mahu lakukan?</string>
+    <string name="nm_care_start">Mulakan panduan</string>
+    <string name="nm_care_copy">Salin teks</string>
+    <string name="nm_care_repeat">Ulang arahan</string>
+    <string name="nm_care_pause">Jeda</string>
+    <string name="nm_care_reobserve">Lihat semula</string>
+    <string name="nm_care_end">Tamatkan panduan</string>
+    <string name="nm_care_resume">Sambung</string>
+    <string name="nm_care_change_goal">Ubah matlamat</string>
+    <string name="nm_care_confirm">Saya telah selesai langkah ini</string>
+    <string name="nm_care_observing">Melihat skrin ini</string>
+    <string name="nm_care_clarifying">Maklumat tambahan diperlukan</string>
+    <string name="nm_care_awaiting">Menunggu anda</string>
+    <string name="nm_care_verifying">Menyemak hasil</string>
+    <string name="nm_care_completed">Panduan tamat</string>
+    <string name="nm_care_recovering">Semak langkah ini</string>
+    <string name="nm_care_paused">Panduan dijeda</string>
+    <string name="nm_care_unavailable">Skrin ini tidak dapat dibaca atau disahkan. Lihat semula, ubah matlamat atau tamatkan panduan.</string>
+    <string name="nm_care_provider_missing">Pilih model teks yang tersedia dalam Tetapan → Model, kemudian lihat semula.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Imlak</string>
+    <string name="nm_dot_voice_permission">Benarkan mikrofon dan pemberitahuan untuk imlak. Anda masih boleh menaip.</string>
+    <string name="nm_dot_voice_keyboard">Gunakan papan kekunci</string>
+    <string name="nm_dot_voice_notification">Mikrofon Dot</string>
+    <string name="nm_dot_voice_stop_hint">Merakam atau menyelesaikan. Berhenti membatalkan rakaman ini.</string>
+    <string name="nm_dot_voice_cancel">Batalkan rakaman</string>
+    <string name="nm_dot_voice_finish">Selesaikan imlak</string>
+    <string name="nm_dot_voice_starting">Memulakan mikrofon…</string>
+    <string name="nm_dot_voice_recording">Mendengar…</string>
+    <string name="nm_dot_voice_finishing">Menyelesaikan dan melepaskan mikrofon…</string>
+    <string name="nm_dot_voice_denied">Mikrofon atau pemberitahuan tidak tersedia. Taip, cuba lagi atau buka Tetapan.</string>
+    <string name="nm_dot_voice_busy">Mikrofon sedang digunakan. Cuba lagi selepas berhenti.</string>
+    <string name="nm_dot_voice_error">Suara gagal. Anda boleh menaip atau cuba lagi.</string>
+    <string name="nm_dot_voice_read">Baca balasan</string>
+    <string name="nm_dot_voice_speaking">Membaca balasan…</string>
+    <string name="nm_dot_voice_read_error">Tidak dapat membaca balasan dengan kuat.</string>
+
+    <string name="nm_dot_bubble_you">Anda</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">Langkah disahkan</string>
+    <string name="nm_dot_foreground_capturing">Membaca skrin semasa</string>
+    <string name="nm_dot_foreground_error">Interaksi ini memerlukan perhatian</string>
+    <string name="nm_dot_foreground_disconnected">Dot terputus sambungan</string>
+    <string name="nm_dot_foreground_expand">Kembangkan</string>
+    <string name="nm_dot_foreground_adjust">Seret untuk laraskan</string>
+    <string name="nm_dot_region_selected">Kawasan dipilih</string>
+    <string name="nm_dot_region_text_mode">Model ini hanya menerima teks yang boleh diakses dalam kawasan dipilih. Imej kekal dalam pratonton ini.</string>
+    <string name="nm_dot_region_reselect">Pilih semula</string>
+    <string name="nm_dot_region_reselect_hint">Seret bola kristal mengelilingi kawasan yang ingin dipilih.</string>
 </resources>

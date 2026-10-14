@@ -109,7 +109,11 @@ class HandsOperator(private val context: Context) {
         userSignal.get()?.countDown()
     }
 
-    fun run(opts: Options): Result {
+    fun run(opts: Options): Result = io.github.nanomuse.dot.care.CareOperationGate.acquire().use {
+        runWithCarePaused(opts)
+    }
+
+    private fun runWithCarePaused(opts: Options): Result {
         val runId = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
         val log = mutableListOf<String>()
         val traceDir = traceDir(opts.sessionId, runId)

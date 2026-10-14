@@ -248,7 +248,12 @@ final class ProviderConfigStore: ObservableObject {
     /// authoritative, replace the JSON-seeded config with its dump. Extracted
     /// verbatim from init's completion closure so degraded-load recovery can
     /// re-run the same adoption after protected data becomes available.
+    // nanoMuse: gateway onboarding waits for authoritative config adoption, including degraded-load recovery.
+    @Published private(set) var gatewayConfigLoaded = false
+
     private func adoptDB(_ db: ProviderConfigDB?) async {
+                // nanoMuse: an unreadable store remains unready; no gateway write may adopt its empty placeholder.
+                defer { gatewayConfigLoaded = loadDegradation == .none }
                 self.db = db
                 guard let db else { return }
                 // [T-thinking-rules-phase2] Prime the synchronous thinking-rule cache the
@@ -922,6 +927,8 @@ final class ProviderConfigStore: ObservableObject {
     }
 
     func updateInstance(_ instance: ProviderInstance) {
+        // nanoMuse: the generic editor cannot move an owned project key to another origin.
+        guard NanodotGateway.mayUseCredential(for: instance) else { return }
         guard let idx = config.instances.firstIndex(where: { $0.id == instance.id }) else { return }
         // If the user changed the base URL or v1 suffix, the previously probed image
         // endpoint may no longer be valid (different upstream). Drop the cached
@@ -2621,6 +2628,8 @@ final class ProviderConfigStore: ObservableObject {
 
     /// Fetch the model list from a provider's API for the given instance.
     static func fetchModelsForInstance(_ instance: ProviderInstance, forceRefresh: Bool = false) async throws -> [LLMModel] {
+        // nanoMuse: reject a stale edited instance before resolving its UUID's Keychain key.
+        guard NanodotGateway.mayUseCredential(for: instance) else { throw ModelRefreshError.noCredential }
         let customBase = instance.effectiveCustomBaseURL
         let appendV1 = instance.appendV1Suffix
         // Custom UA only for custom-base OpenAI/Anthropic-compat instances (proxy/relay);

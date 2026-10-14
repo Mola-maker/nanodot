@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import io.github.nanomuse.dot.ui.DotTokens
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -129,7 +131,7 @@ fun MuseNamePill(
         .background(MuseTones.surface)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = (if (onClick != null) base.clickable(onClick = onClick) else base)
+        modifier = (if (onClick != null) base.heightIn(min = DotTokens.TouchTarget).clickable(onClick = onClick) else base)
             .padding(horizontal = 12.dp, vertical = 4.dp),
     ) {
         Text(
@@ -175,7 +177,7 @@ fun MuseRoundButton(
             color = MuseTones.surface,
             border = if (MuseTones.isDark) BorderStroke(1.dp, MuseTones.hairline) else null,
             shadowElevation = 2.dp,
-            modifier = Modifier.size(44.dp),
+            modifier = Modifier.size(DotTokens.TouchTarget),
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(

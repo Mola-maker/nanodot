@@ -1,0 +1,89 @@
+{
+  "artifactArchiveHashScope": "GitHub API ZIP digest, not the inner installer checksum",
+  "artifacts": [
+    {
+      "id": 11673749677,
+      "name": "Nanodot-debug-arm64",
+      "digest": "sha256:091a7e7a92ec8ba2019831479d77fb2b54b567146398c41ba2d632eefcb18515",
+      "size_in_bytes": 65072506,
+      "expires_at": "2026-10-24T15:30:13Z",
+      "workflow_run": {
+        "id": 38063419898,
+        "repository_id": 1413225984,
+        "head_repository_id": 1413225984,
+        "head_branch": "main",
+        "head_sha": "9736baf447611da903d4bc8d5e1eaa3a998ad457"
+      }
+    },
+    {
+      "id": 11675095670,
+      "name": "nanodot-desktop-macos-arm64",
+      "digest": "sha256:c31ed0e860ceecbedaddb8ec961a8aca378038363ce1b02d130b9a4f63229cb1",
+      "size_in_bytes": 694392658,
+      "expires_at": "2027-01-08T15:34:17Z",
+      "workflow_run": {
+        "id": 38064149128,
+        "repository_id": 1413225984,
+        "head_repository_id": 1413225984,
+        "head_branch": "main",
+        "head_sha": "7ed8ce6e2fd1a24c4a525ca22e7ef0e0f3dbb5e5"
+      }
+    },
+    {
+      "id": 11675075994,
+      "name": "nanodot-desktop-windows-x64",
+      "digest": "sha256:f1eee573fa89e7a8391efc9942d014bda78a076f277bb3eafe6b560869c9afa7",
+      "size_in_bytes": 265245067,
+      "expires_at": "2027-01-08T15:34:17Z",
+      "workflow_run": {
+        "id": 38064149128,
+        "repository_id": 1413225984,
+        "head_repository_id": 1413225984,
+        "head_branch": "main",
+        "head_sha": "7ed8ce6e2fd1a24c4a525ca22e7ef0e0f3dbb5e5"
+      }
+    },
+    {
+      "id": 11674836769,
+      "name": "nanodot-desktop-linux-x64",
+      "digest": "sha256:2e723a03f7726780ce766f25c89c2ae5a282c883a7d157055f74573ba501e064",
+      "size_in_bytes": 853056462,
+      "expires_at": "2027-01-08T15:34:17Z",
+      "workflow_run": {
+        "id": 38064149128,
+        "repository_id": 1413225984,
+        "head_repository_id": 1413225984,
+        "head_branch": "main",
+        "head_sha": "7ed8ce6e2fd1a24c4a525ca22e7ef0e0f3dbb5e5"
+      }
+    },
+    {
+      "id": 11674747052,
+      "name": "nanodot-desktop-macos-x64",
+      "digest": "sha256:7089876cef3b8e5cb53ecdd420c27cfafe2bc3d15abbc1757cdcdbccc0391b30",
+      "size_in_bytes": 716284881,
+      "expires_at": "2027-01-08T15:34:17Z",
+      "workflow_run": {
+        "id": 38064149128,
+        "repository_id": 1413225984,
+        "head_repository_id": 1413225984,
+        "head_branch": "main",
+        "head_sha": "7ed8ce6e2fd1a24c4a525ca22e7ef0e0f3dbb5e5"
+      }
+    },
+    {
+      "id": 11675120423,
+      "name": "nanodot-ios-device-unsigned-2",
+      "digest": "sha256:74d9456cbfa465e57ed6591e778287f095fdf0a5f5b66ebbdfe287a7a7ae2781",
+      "size_in_bytes": 136958155,
+      "expires_at": "2026-10-24T15:39:44Z",
+      "workflow_run": {
+        "id": 38063422268,
+        "repository_id": 1413225984,
+        "head_repository_id": 1413225984,
+        "head_branch": "main",
+        "head_sha": "9736baf447611da903d4bc8d5e1eaa3a998ad457"
+      }
+    }
+  ]
+}

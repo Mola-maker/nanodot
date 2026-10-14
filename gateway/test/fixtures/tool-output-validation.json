@@ -1,0 +1,15 @@
+{
+  "empty_upstream_events": [
+    { "choices": [{ "index": 0, "delta": { "tool_calls": [] } }] },
+    { "choices": [{ "index": 0, "delta": {}, "finish_reason": "stop" }] }
+  ],
+  "empty_normalized_events": [
+    { "choices": [{ "index": 0, "delta": { "tool_calls": [] } }] },
+    { "error": { "code": "upstream_stream_error", "message": "Upstream stream failed or ended without completion." } }
+  ],
+  "tool_only_events": [
+    { "choices": [{ "index": 0, "delta": { "tool_calls": [{ "index": 0, "id": "call_tool_only", "type": "function", "function": { "name": "lookup", "arguments": "" } }] } }] },
+    { "choices": [{ "index": 0, "delta": { "tool_calls": [{ "index": 0, "function": { "arguments": "{\"value\":\"中文\"}" } }] } }] },
+    { "choices": [{ "index": 0, "delta": {}, "finish_reason": "tool_calls" }] }
+  ]
+}

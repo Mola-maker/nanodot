@@ -114,3 +114,56 @@ iOS、桌面（Windows/macOS/Linux）、Web 与相关 CI 配置采用 Nanodot �
 
 分发构建时保留 [GPL 条款](../../LICENSE)、[NOTICE](../../NOTICE)、
 [第三方署名](../../THIRD_PARTY_NOTICES.md) 与固定子模块、源码信息。
+
+## Android 构建配置 {#android-workflow-profiles}
+
+先 source 已有的工具链环境，或通过 `NANODOT_ENV_FILE` 指定该文件。
+入口在预检前读取它和 `scripts/android/env.sh`，不会安装或修复工具链。
+`doctor` 只读取 JDK 21、Go 1.26（仅本地工具链）、SDK API 36、build-tools 35.0.0、
+NDK 27.2.12479018 和 CMake 3.22.1；不运行 Gradle。
+
+```sh
+bash scripts/build-nanodot-apk.sh doctor
+bash scripts/build-nanodot-apk.sh check
+bash scripts/build-nanodot-apk.sh debug-x86_64 --with-test
+bash scripts/build-nanodot-apk.sh debug
+bash scripts/build-nanodot-apk.sh release
+```
+
+`check` 使用 x86_64 运行 debug 单元测试；`debug-x86_64` 跳过 arm64 原生准备，
+构建仅聊天的 APK。两个 debug 配置都可加 `--with-test`，在同一次 Gradle 调用中
+生成 instrumentation APK；不会执行设备测试。不启用语音诊断 flag。
+Release 必须使用专用签名配置。
+
+x86_64 配置会排除缓存中的 ARM proot 与 Alpine rootfs 资源，包括在同一工作树中先构建
+arm64 的情况。默认的隐藏文件过滤规则仍保留；切换配置无需删除原生缓存。arm64 配置继续
+包含沙箱资源。
+
+每个 APK 候选保存在唯一的 `dist/nanodot/<commit>-<profile>-<ABI>-<unique>/`
+目录和 `receipt.json` 中。记录包括 commit、tree、未提交状态、源码字节指纹、
+请求的任务、ABI flag、从 APK 读取的包名/版本/SDK/ABI、主包和可选测试包 SHA256、
+证书摘要及实际工具链输出。构建期间源码变化会拒绝候选。已有原生输入记录哈希，
+明确标注来源未经验证；文件存在不能证明已重新构建 arm64 原生组件。
+主包和测试包证书不一致会拒绝该组合。应一起保留两个包和记录；SHA256 标识安装的 APK 字节。
+
+原 debug/release APK、SHA256、badging、signature 和 `build-<mode>.json` 路径保留，
+供 CI 使用。这些兼容文件会在下次构建时覆盖；保留候选请使用唯一目录。
+构建成功本身不能证明安装、instrumentation 执行、arm64 原生行为或 release lint 通过。
+
+默认 `check` 覆盖完整 debug 单元测试集。若明确只检查本地 nanoMuse 回归范围，可用
+`NANODOT_TEST_SCOPE=nanomuse bash scripts/build-nanodot-apk.sh check`；
+这不代表完整测试集通过，不会静默过滤失败。可选且有界的环境设置包括
+`NANODOT_OFFLINE=1`（Gradle 离线）、`NANODOT_JVM_HEAP_MB=4096`（512–32768 MiB）
+和 `NANODOT_KOTLIN_IN_PROCESS=1`。它们直接转成 Gradle 参数，不使用 eval；
+APK 记录包含这些选项。Instrumentation APK 可以没有版本字段；记录使用 null，
+文件名采用配对主 APK 的版本。
+
+所有配置都显式传入并记录 `-Pnm.manualVoiceProof=false`，避免继承的 Gradle 属性
+启用语音诊断实现。兼容 JSON 的 `file` 指向同目录 APK；`candidateReceipt`
+指向包含配对证据的正式记录。
+
+Android CI 使用同一 `debug --with-test` 入口构建 arm64 主包/测试包组合，
+上传 `dist/nanodot/`。随后使用 x86_64 运行显式
+`NANODOT_TEST_SCOPE=nanomuse` 命名空间范围的 `check`。配对 APK 构建已编译
+instrumentation 源码；CI 不在设备上执行它们。该局部 CI 结果不能证明
+完整上游单元测试集通过。

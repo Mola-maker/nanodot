@@ -326,7 +326,7 @@
     <string name="nm_avatar_retry">Retry</string>
     <string name="nm_avatar_describe_title">Describe a new face</string>
     <string name="nm_avatar_describe_body">One sentence is enough: what it is, what it wears, what it feels like. Pick a style, and your image model draws four to choose from.</string>
-    <string name="nm_avatar_default_description">A chubby pale-yellow baby dragon with tiny orange horns and small folded wings</string>
+    <string name="nm_avatar_default_description">A transparent pale-blue crystal orb with soft highlights and a gentle breathing glow</string>
     <string name="nm_avatar_style_flat">Flat</string>
     <string name="nm_avatar_style_clay">3D clay</string>
     <string name="nm_avatar_style_watercolor">Watercolour</string>
@@ -373,7 +373,7 @@
     <string name="nm_version_failed">Could not check, tap to try again</string>
     <string name="nm_appearance_section_home">Home</string>
     <string name="nm_appearance_header_model_title">Show the model under the name</string>
-    <string name="nm_appearance_header_model_footer">Muse shows only the name. Turn this on to see the model group and provider · model under it; tap them to switch. Off, the model is under ••• → Model and in Settings.</string>
+    <string name="nm_appearance_header_model_footer">Dot shows only the name. Turn this on to see the model group and provider · model under it; tap them to switch. Off, the model is under ••• → Model and in Settings.</string>
     <string name="nm_appearance_section_chat">Conversation</string>
     <string name="nm_appearance_steps_title">Show the agent\'s steps</string>
     <string name="nm_appearance_steps_footer">Off, the chat keeps only the replies, and the line under the face says what the agent is doing right now. On, every step shows in the chat: each tool it uses, its reasoning, and a bar over the composer that opens the step\'s details.</string>
@@ -393,7 +393,7 @@
     <string name="nm_avatar_size_large">Large</string>
     <string name="nm_avatar_size_extra_large">Extra large</string>
     <string name="nm_avatar_size_hidden">Hidden</string>
-    <string name="nm_avatar_style_muse">3D toy (Muse)</string>
+    <string name="nm_avatar_style_muse">3D toy</string>
     <!-- The agent's page -->
     <string name="nm_profile_online">online</string>
     <string name="nm_profile_edit">Edit</string>
@@ -1057,9 +1057,9 @@
     <string name="nm_models_hands_title">Operating the screen</string>
     <string name="nm_models_hands_sub">Looks at the screen and acts for you. Needs a model that can see images.</string>
     <string name="nm_models_image_title">Making pictures</string>
-    <string name="nm_models_image_sub">Portraits of your Muse and the pictures you ask for.</string>
+    <string name="nm_models_image_sub">Portraits of Dot and the pictures you ask for.</string>
     <string name="nm_models_video_title">Making clips</string>
-    <string name="nm_models_video_sub">Short clips of your Muse.</string>
+    <string name="nm_models_video_sub">Short clips of Dot.</string>
     <string name="nm_models_chat_applies">Applies to the main chat and to new chats; a side chat keeps its model.</string>
     <string name="nm_models_media_more">More picture and clip options</string>
     <string name="nm_models_media_more_sub">Type a model name, see what stops without each model, or check again which video models a key can use.</string>
@@ -1085,4 +1085,106 @@
     <string name="nm_models_search_clear">Clear the search</string>
     <string name="nm_models_no_match">No model matches</string>
     <string name="nm_update_manual">Automatic updates are off. Open the Nanodot releases page to check manually.</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Dot orb</string>
+    <string name="nm_dot_show_orb">Show Dot orb</string>
+    <string name="nm_dot_settings_footer">Appears when accessibility is connected. Turning it off keeps it hidden after reconnecting.</string>
+    <string name="nm_dot_orb_description">Dot orb. Open conversation, view screen, or start care.</string>
+    <string name="nm_dot_open_conversation">Open conversation</string>
+    <string name="nm_dot_view_screen">View screen</string>
+    <string name="nm_dot_start_care">Start care</string>
+    <string name="nm_dot_action_unavailable">This Dot action is not available yet.</string>
+    <string name="nm_tab_tasks">Tasks</string>
+    <string name="nm_task_library">Library</string>
+    <string name="nm_gateway_key_required">Requires a dedicated project key. Existing settings and selected models are kept. Live service acceptance is pending.</string>
+    <string name="nm_gateway_connection_failed">Could not connect. Check the project key and network.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Screen capture for Dot</string>
+    <string name="nm_dot_capture_active">Screen capture is available until you stop it.</string>
+    <string name="nm_dot_capture_stop">Stop capture</string>
+    <string name="nm_dot_capture_explain">On this Android version, Dot can read accessible text. Allow screen capture separately to also share pixels. Android will ask for permission.</string>
+    <string name="nm_dot_capture_allow">Allow screen capture</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Loading…</string>
+    <string name="nm_dot_load_failed">Could not load this page.</string>
+    <string name="nm_dot_components">Components</string>
+    <string name="nm_dot_empty">Nothing here yet.</string>
+    <string name="nm_dot_attach">Attach a file</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">Add to %1$s</string>
+    <string name="nm_goal_completion">Goal completed: %1$s</string>
+    <string name="nm_feed_like_post">Like post: %1$s</string>
+    <string name="nm_feed_post_info">Post information: %1$s</string>
+    <string name="nm_dot_chat_empty">Write to Dot to start this conversation.</string>
+    <string name="nm_dot_chat_message">Message</string>
+    <string name="nm_dot_chat_send">Send</string>
+    <string name="nm_dot_chat_stop">Stop</string>
+    <string name="nm_dot_chat_retry">Retry</string>
+    <string name="nm_dot_chat_collapse">Collapse conversation</string>
+    <string name="nm_dot_chat_remove">Remove preview</string>
+    <string name="nm_dot_chat_capturing">Reading the screen…</string>
+    <string name="nm_dot_chat_capture_failed">Screen capture is unavailable. Try again on the host screen.</string>
+    <string name="nm_dot_chat_historical">Captured %1$s · historical attachment</string>
+    <string name="nm_dot_chat_text_only">Text only · no screenshot</string>
+    <string name="nm_dot_chat_voice_pending">Voice is not available yet.</string>
+    <string name="nm_dot_chat_compact">Compact and send</string>
+    <string name="nm_dot_chat_cancel">Cancel</string>
+    <string name="nm_care_clarify_no_nodes">Which control can you see on this page?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">I will guide you step by step.</string>
+    <string name="nm_care_goal">What would you like to do?</string>
+    <string name="nm_care_start">Start guiding</string>
+    <string name="nm_care_copy">Copy text</string>
+    <string name="nm_care_repeat">Repeat instruction</string>
+    <string name="nm_care_pause">Pause</string>
+    <string name="nm_care_reobserve">Look again</string>
+    <string name="nm_care_end">End guidance</string>
+    <string name="nm_care_resume">Resume</string>
+    <string name="nm_care_change_goal">Change goal</string>
+    <string name="nm_care_confirm">I completed this step</string>
+    <string name="nm_care_observing">Looking at this screen</string>
+    <string name="nm_care_clarifying">A detail is needed</string>
+    <string name="nm_care_awaiting">Waiting for you</string>
+    <string name="nm_care_verifying">Checking the result</string>
+    <string name="nm_care_completed">Guidance ended</string>
+    <string name="nm_care_recovering">Check this step</string>
+    <string name="nm_care_paused">Guidance paused</string>
+    <string name="nm_care_unavailable">I could not read or verify this screen. Look again, change the goal, or end guidance.</string>
+    <string name="nm_care_provider_missing">Choose an available text model in Settings → Models, then look again.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Dictate</string>
+    <string name="nm_dot_voice_permission">Allow microphone and notifications to dictate. You can keep typing.</string>
+    <string name="nm_dot_voice_keyboard">Use keyboard</string>
+    <string name="nm_dot_voice_notification">Dot microphone</string>
+    <string name="nm_dot_voice_stop_hint">Recording or finishing. Stop cancels this recording.</string>
+    <string name="nm_dot_voice_cancel">Cancel recording</string>
+    <string name="nm_dot_voice_finish">Finish dictation</string>
+    <string name="nm_dot_voice_starting">Starting microphone…</string>
+    <string name="nm_dot_voice_recording">Listening…</string>
+    <string name="nm_dot_voice_finishing">Finishing and releasing microphone…</string>
+    <string name="nm_dot_voice_denied">Microphone or notifications unavailable. Type, retry, or open Settings.</string>
+    <string name="nm_dot_voice_busy">Microphone is in use. Retry after it stops.</string>
+    <string name="nm_dot_voice_error">Voice failed. You can type or retry.</string>
+    <string name="nm_dot_voice_read">Read reply</string>
+    <string name="nm_dot_voice_speaking">Reading reply…</string>
+    <string name="nm_dot_voice_read_error">Could not read the reply aloud.</string>
+
+    <string name="nm_dot_bubble_you">You</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">Step confirmed</string>
+    <string name="nm_dot_foreground_capturing">Reading the current screen</string>
+    <string name="nm_dot_foreground_error">This interaction needs attention</string>
+    <string name="nm_dot_foreground_disconnected">Dot is disconnected</string>
+    <string name="nm_dot_foreground_expand">Expand</string>
+    <string name="nm_dot_foreground_adjust">Drag to adjust</string>
+    <string name="nm_dot_region_selected">Selected region</string>
+    <string name="nm_dot_region_text_mode">This model receives only the selected accessible text. The image stays in this preview.</string>
+    <string name="nm_dot_region_reselect">Select again</string>
+    <string name="nm_dot_region_reselect_hint">Drag the crystal orb around the region you want to select.</string>
 </resources>

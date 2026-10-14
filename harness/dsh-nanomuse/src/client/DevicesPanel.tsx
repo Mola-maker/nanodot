@@ -11,7 +11,8 @@
  */
 import { Button, Input, Switch } from '@deepseek-ai/dsh-client-ui-primitives'
 import { createElement as h, useState, type FormEvent, type ReactNode } from 'react'
-import { call, errorStyle, type Translate, failureText } from './api.ts'
+import { DotStatus } from './DotStatus.tsx'
+import { call, type Translate, failureText } from './api.ts'
 import { openLink } from './bridge.ts'
 import { settingsBus } from './bus.ts'
 import { CODING_SECTION, codingNav } from './CodingPanel.tsx'
@@ -113,6 +114,7 @@ export function makeDevicesPanel(t: Translate) {
     return h('div', { className: 'nm-page nm-dv' },
       h('div', { className: 'nm-page-inner' },
         h('h1', null, t('railDevices')),
+        h(DotStatus, { state: busy ? 'loading' : !signedIn ? 'empty' : hub.connected ? 'ready' : hub.lastError ? 'error' : 'loading', message: stateLine, onRetry: signedIn && !hub.connected ? () => run(() => call('refresh', {})) : undefined, retryLabel: t('refresh') }),
         h('div', { className: 'nm-dv-head' },
           h('p', { className: 'nm-lead' }, t('devicesLead')),
           signedIn && total > 0
@@ -153,7 +155,7 @@ export function makeDevicesPanel(t: Translate) {
           ? h(EmptyDevices, { t, signedIn, connected: hub.connected })
           : h('div', { className: 'nm-dv-grid' },
               others.map((d) => h(DeviceCard, { key: d.id, t, device: d, busy, onForget: () => run(() => call('devices/forget', { device_id: d.id })) }))),
-        error ? h('div', { style: errorStyle }, error) : null,
+        error ? h(DotStatus, { state: 'error', message: error }) : null,
         h('p', { className: 'nm-lead', style: { fontSize: 13 } }, t('devicesHint')),
         h('div', null,
           h(Button, { variant: 'outline', size: 'sm', disabled: busy, onClick: () => run(() => call('refresh', {})) }, h(IconRefresh, { size: 14 }), ' ', t('refresh')))))

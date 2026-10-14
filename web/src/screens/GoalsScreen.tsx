@@ -103,7 +103,7 @@ export function GoalsScreen() {
   // Muse's Goals page: "Tracking" (goals with a checkbox and a two-line status), then
   // "Create a goal" with its categories.
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col" aria-label={t("Goals")}>
       <TabHeader title={t("Goals")}>
         <MuseRoundButton small onClick={() => setCreating(true)} label={t("New goal")}>
           <Plus size={22} />
@@ -113,7 +113,7 @@ export function GoalsScreen() {
       <div className="flex-1 overflow-y-auto pb-6">
         {proposals.length > 0 && (
           <section className="px-4 pb-2">
-            <div className="px-1 mb-2 text-[12px] font-semibold uppercase tracking-wide text-muted">{t("{name} suggests", { name })}</div>
+            <div className="px-1 mb-2 text-[0.75rem] font-semibold uppercase tracking-wide text-muted">{t("{name} suggests", { name })}</div>
             <div className="space-y-2.5">
               {proposals.map((g) => (
                 <ProposalCard key={g.id} goal={g} onChanged={refreshGoals} onOpen={() => setSelected(g.id)} />
@@ -125,7 +125,7 @@ export function GoalsScreen() {
         <StarNudgeOnce moment="goal_done" due={goalDone} className="mx-4 mb-3" />
         <SectionHeader label={t("Tracking")} dot onAdd={() => createRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })} />
         {tracked.length === 0 ? (
-          <p className="px-5 pb-3 text-[13px] text-muted">{t("Nothing tracked yet")}</p>
+          <p className="px-5 pb-3 text-[0.8125rem] text-muted">{t("Nothing tracked yet")}</p>
         ) : (
           tracked.map((g) => <GoalRow key={g.id} goal={g} onOpen={() => setSelected(g.id)} onToggle={() => void toggleDone(g)} />)
         )}
@@ -138,7 +138,7 @@ export function GoalsScreen() {
               <GoalRow key={g.id} goal={g} onOpen={() => setSelected(g.id)} onToggle={() => void toggleDone(g)} />
             ))}
             {!allFinished && finished.length > 2 && (
-              <button type="button" onClick={() => setAllFinished(true)} className="px-5 py-2 text-[13.5px] font-medium text-accent">
+              <button type="button" onClick={() => setAllFinished(true)} className="px-5 py-2 text-[0.84375rem] font-medium text-accent">
                 {t("Show {n} more", { n: finished.length - 2 })}
               </button>
             )}
@@ -146,13 +146,13 @@ export function GoalsScreen() {
         )}
 
         <div ref={createRef} className="mt-2.5 border-t border-border/70 px-5 pt-3.5 pb-1.5">
-          <h3 className="text-[17px] font-semibold">{t("Create a goal")}</h3>
-          <p className="mt-1 text-[13px] leading-[18px] text-muted">{t("Pick a category and tell me the goal you have in mind. I'll shape a plan with you and keep improving it as you go.")}</p>
+          <h3 className="text-[1.0625rem] font-semibold">{t("Create a goal")}</h3>
+          <p className="mt-1 text-[0.8125rem] leading-[1.125rem] text-muted">{t("Pick a category and tell me the goal you have in mind. I'll shape a plan with you and keep improving it as you go.")}</p>
         </div>
         {CATEGORIES.map((c) => (
           <button key={c.id} type="button" onClick={() => setSheetCategory(c)} className="flex h-[50px] w-full items-center gap-3.5 pl-5 pr-2 text-left active:bg-surface-2/70">
             <span className="text-fg">{c.icon({ size: 22 })}</span>
-            <span className="flex-1 text-[15px] font-medium">{t(c.label)}</span>
+            <span className="flex-1 text-[0.9375rem] font-medium">{t(c.label)}</span>
             <span className="flex h-10 w-10 items-center justify-center text-muted">
               <Plus size={22} />
             </span>
@@ -172,10 +172,10 @@ export function GoalsScreen() {
       <Sheet open={sheetCategory !== null} onClose={() => setSheetCategory(null)}>
         {sheetCategory && (
           <div className="px-1 pb-2">
-            <h3 className="text-[20px] font-bold">{t("Create a {category} goal", { category: t(sheetCategory.label) })}</h3>
-            <p className="mt-3.5 text-[15px] leading-[22px]">{t("First, we'll shape the goal together in the chat. I'll ask a few questions so I understand exactly what you're after.")}</p>
-            <p className="mt-3.5 text-[15px] leading-[22px]">{t("Once it's set, I'll track your progress here.")}</p>
-            <button type="button" onClick={() => startGoal(sheetCategory)} className="mt-6 flex h-[50px] w-full items-center justify-center gap-2 rounded-full bg-accent text-[16px] font-semibold text-accent-fg">
+            <h3 className="text-[1.25rem] font-bold">{t("Create a {category} goal", { category: t(sheetCategory.label) })}</h3>
+            <p className="mt-3.5 text-[0.9375rem] leading-[1.375rem]">{t("First, we'll shape the goal together in the chat. I'll ask a few questions so I understand exactly what you're after.")}</p>
+            <p className="mt-3.5 text-[0.9375rem] leading-[1.375rem]">{t("Once it's set, I'll track your progress here.")}</p>
+            <button type="button" onClick={() => startGoal(sheetCategory)} className="mt-6 flex h-[50px] w-full items-center justify-center gap-2 rounded-full bg-accent text-[1rem] font-semibold text-accent-fg">
               <MessageCircle size={18} /> {t("Start")}
             </button>
           </div>
@@ -190,7 +190,7 @@ function SectionHeader({ label, dot = false, onAdd }: { label: string; dot?: boo
   return (
     <div className="flex items-center pl-5 pr-2 pt-1">
       {dot && <span className="mr-2.5 h-2 w-2 rounded-full bg-emerald-500" />}
-      <span className={cx("flex-1 text-[15px] font-semibold", dot && "text-emerald-600 dark:text-emerald-400")}>{label}</span>
+      <span className={cx("flex-1 text-[0.9375rem] font-semibold", dot && "text-emerald-600 dark:text-emerald-400")}>{label}</span>
       {onAdd ? (
         <button type="button" onClick={onAdd} aria-label={label} className="flex h-10 w-10 items-center justify-center text-muted">
           <Plus size={22} />
@@ -207,7 +207,7 @@ function CategoryBadge({ id, size = "sm" }: { id: GoalCategory; size?: "sm" | "m
   const c = categoryOf(id);
   if (!c) return null;
   return (
-    <span className={cx("inline-flex items-center gap-1 rounded-full font-medium", c.tone, size === "sm" ? "px-2 py-0.5 text-[11.5px]" : "px-2.5 py-1 text-[12.5px]")}>
+    <span className={cx("inline-flex items-center gap-1 rounded-full font-medium", c.tone, size === "sm" ? "px-2 py-0.5 text-[0.71875rem]" : "px-2.5 py-1 text-[0.78125rem]")}>
       {c.icon({ size: size === "sm" ? 11 : 13 })} {t(c.label)}
     </span>
   );
@@ -236,9 +236,9 @@ function GoalRow({ goal, onOpen, onToggle }: { goal: Goal; onOpen: () => void; o
         {done ? <SquareCheck size={22} /> : <Square size={22} />}
       </button>
       <button type="button" onClick={onOpen} className="ml-2.5 min-w-0 flex-1 pt-[3px] text-left">
-        <span className={cx("line-clamp-2 block text-[15px] font-semibold leading-snug", done && "text-muted")}>{goal.title}</span>
-        {subtitle && <span className="mt-0.5 line-clamp-2 block text-[13px] leading-[18px] text-muted">{subtitle}</span>}
-        <span className="mt-0.5 flex items-center gap-2 text-[12px] text-muted/80">
+        <span className={cx("line-clamp-2 block text-[0.9375rem] font-semibold leading-snug", done && "text-muted")}>{goal.title}</span>
+        {subtitle && <span className="mt-0.5 line-clamp-2 block text-[0.8125rem] leading-[1.125rem] text-muted">{subtitle}</span>}
+        <span className="mt-0.5 flex items-center gap-2 text-[0.75rem] text-muted/80">
           <span className="truncate">
             {cadence}
             {due && goal.status === "active" ? ` · ${due}` : ""}
@@ -278,25 +278,25 @@ function ProposalCard({ goal, onChanged, onOpen }: { goal: Goal; onChanged: () =
   return (
     <div className="rounded-3xl border border-accent/30 bg-accent/5 px-4 py-3.5">
       <button type="button" onClick={onOpen} className="w-full text-left">
-        <div className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-wide text-accent">
+        <div className="flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-wide text-accent">
           <Sparkles size={13} /> {t("Adjust the plan for “{title}”?", { title: goal.title })}
         </div>
-        <p className="mt-1.5 text-[14px] leading-snug">{p.reason}</p>
-        <div className="mt-2 text-[12px] text-muted">
+        <p className="mt-1.5 text-[0.875rem] leading-snug">{p.reason}</p>
+        <div className="mt-2 text-[0.75rem] text-muted">
           {kept > 0 && <span>{kept === 1 ? t("Keeps the 1 step already done.") : t("Keeps the {n} steps already done.", { n: kept })} </span>}
           {t("New remaining steps:")}
         </div>
-        <ol className="mt-1 space-y-0.5 text-[13.5px] list-decimal pl-5">
+        <ol className="mt-1 space-y-0.5 text-[0.84375rem] list-decimal pl-5">
           {p.steps.map((s, i) => (
             <li key={i}>{s}</li>
           ))}
         </ol>
       </button>
       <div className="mt-3 flex gap-2">
-        <button type="button" disabled={busy} onClick={() => void act(false)} className="flex-1 rounded-2xl border border-border py-2 text-[13.5px] font-medium disabled:opacity-50">
+        <button type="button" disabled={busy} onClick={() => void act(false)} className="flex-1 rounded-2xl border border-border py-2 text-[0.84375rem] font-medium disabled:opacity-50">
           {t("Keep my plan")}
         </button>
-        <button type="button" disabled={busy} onClick={() => void act(true)} className="flex-1 rounded-2xl bg-accent text-accent-fg py-2 text-[13.5px] font-medium disabled:opacity-50">
+        <button type="button" disabled={busy} onClick={() => void act(true)} className="flex-1 rounded-2xl bg-accent text-accent-fg py-2 text-[0.84375rem] font-medium disabled:opacity-50">
           {t("Use {name}'s plan", { name })}
         </button>
       </div>
@@ -314,7 +314,7 @@ function CategoryPicker({ value, onChange }: { value: GoalCategory; onChange: (v
           type="button"
           onClick={() => onChange(value === c.id ? "" : c.id)}
           className={cx(
-            "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[12.5px] font-medium transition border",
+            "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[0.78125rem] font-medium transition border",
             value === c.id ? cx(c.tone, "border-transparent ring-2 ring-accent/40") : "border-border text-muted",
           )}
         >
@@ -338,7 +338,7 @@ function CadencePicker({ value, onChange }: { value: string; onChange: (spec: st
             type="button"
             onClick={() => set(c.id, c.id === "weekly" ? anchor || "mon" : c.id === "monthly" ? anchor || "1" : "", time)}
             className={cx(
-              "rounded-full px-2.5 py-1 text-[12.5px] font-medium border transition",
+              "rounded-full px-2.5 py-1 text-[0.78125rem] font-medium border transition",
               cadence === c.id ? "bg-accent text-accent-fg border-transparent" : "border-border text-muted",
             )}
           >
@@ -347,7 +347,7 @@ function CadencePicker({ value, onChange }: { value: string; onChange: (spec: st
         ))}
       </div>
       {cadence && (
-        <div className="flex items-center gap-2 text-[13.5px]">
+        <div className="flex items-center gap-2 text-[0.84375rem]">
           {cadence === "weekly" && (
             <select value={anchor || "mon"} onChange={(e) => set(cadence, e.target.value, time)} className="rounded-xl bg-surface-2 px-2.5 py-1.5 outline-none">
               {WEEKDAYS.map((d) => (
@@ -469,13 +469,13 @@ function GoalDetail({
       {goal && (
         <div className="space-y-4">
           {goal.proposal && <ProposalCard goal={goal} onChanged={onChanged} onOpen={() => undefined} />}
-          {goal.description && <p className="text-[14px] text-muted leading-snug">{goal.description}</p>}
+          {goal.description && <p className="text-[0.875rem] text-muted leading-snug">{goal.description}</p>}
 
           {/* category · due · reminders */}
           <div className="rounded-2xl bg-surface-2/60 px-3.5 py-3">
             {!editing ? (
               <button type="button" onClick={() => setEditing(true)} className="w-full text-left">
-                <div className="flex flex-wrap items-center gap-1.5 text-[12.5px]">
+                <div className="flex flex-wrap items-center gap-1.5 text-[0.78125rem]">
                   {goal.category ? <CategoryBadge id={goal.category} size="md" /> : <span className="rounded-full border border-dashed border-border px-2.5 py-1 text-muted">{t("No category")}</span>}
                   <span className={cx("inline-flex items-center gap-1 rounded-full px-2.5 py-1", goal.overdue ? "bg-rose-500/12 text-rose-600 dark:text-rose-300 font-medium" : "bg-surface text-muted")}>
                     <CalendarDays size={13} /> {due || t("No target date")}
@@ -485,32 +485,32 @@ function GoalDetail({
                   </span>
                 </div>
                 {goal.next_check_in && goal.status === "active" && (
-                  <div className="mt-1.5 text-[12px] text-muted">{t("Next check-in {when}", { when: relativeTime(goal.next_check_in) })} · {timeShort(goal.next_check_in)}</div>
+                  <div className="mt-1.5 text-[0.75rem] text-muted">{t("Next check-in {when}", { when: relativeTime(goal.next_check_in) })} · {timeShort(goal.next_check_in)}</div>
                 )}
-                <div className="mt-1.5 text-[12px] text-accent font-medium">{t("Edit")}</div>
+                <div className="mt-1.5 text-[0.75rem] text-accent font-medium">{t("Edit")}</div>
               </button>
             ) : (
               <div className="space-y-3">
                 <div>
-                  <div className="text-[12px] font-semibold uppercase tracking-wide text-muted mb-1.5">{t("Area of life")}</div>
+                  <div className="text-[0.75rem] font-semibold uppercase tracking-wide text-muted mb-1.5">{t("Area of life")}</div>
                   <CategoryPicker value={goal.category} onChange={(v) => void patch({ category: v })} />
                 </div>
                 <div>
-                  <div className="text-[12px] font-semibold uppercase tracking-wide text-muted mb-1.5">{t("Target date")}</div>
+                  <div className="text-[0.75rem] font-semibold uppercase tracking-wide text-muted mb-1.5">{t("Target date")}</div>
                   <div className="flex items-center gap-2">
-                    <input type="date" value={goal.due} onChange={(e) => void patch({ due: e.target.value })} className="rounded-xl bg-surface px-2.5 py-1.5 text-[13.5px] outline-none" />
+                    <input type="date" value={goal.due} onChange={(e) => void patch({ due: e.target.value })} className="rounded-xl bg-surface px-2.5 py-1.5 text-[0.84375rem] outline-none" />
                     {goal.due && (
-                      <button type="button" onClick={() => void patch({ due: "" })} className="text-[12.5px] text-muted">
+                      <button type="button" onClick={() => void patch({ due: "" })} className="text-[0.78125rem] text-muted">
                         {t("Clear")}
                       </button>
                     )}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[12px] font-semibold uppercase tracking-wide text-muted mb-1.5">{t("Reminders from {name}", { name })}</div>
+                  <div className="text-[0.75rem] font-semibold uppercase tracking-wide text-muted mb-1.5">{t("Reminders from {name}", { name })}</div>
                   <CadencePicker value={goal.check_in} onChange={(spec) => void patch({ check_in: spec })} />
                 </div>
-                <button type="button" onClick={() => setEditing(false)} className="text-[12.5px] text-accent font-medium">
+                <button type="button" onClick={() => setEditing(false)} className="text-[0.78125rem] text-accent font-medium">
                   {t("Done")}
                 </button>
               </div>
@@ -518,7 +518,7 @@ function GoalDetail({
           </div>
 
           <div>
-            <div className="text-[12px] font-semibold uppercase tracking-wide text-muted mb-2">
+            <div className="text-[0.75rem] font-semibold uppercase tracking-wide text-muted mb-2">
               {t("Plan")} · {goal.progress.done}/{goal.progress.total}
             </div>
             <ul className="space-y-1">
@@ -535,10 +535,10 @@ function GoalDetail({
                       <Icon size={20} />
                     </button>
                     <div className="flex-1 min-w-0">
-                      <div className={cx("text-[14.5px] leading-snug", (s.status === "done" || s.status === "skipped") && "line-through text-muted")}>
+                      <div className={cx("text-[0.90625rem] leading-snug", (s.status === "done" || s.status === "skipped") && "line-through text-muted")}>
                         {s.idx}. {s.title}
                       </div>
-                      {s.note && <div className="text-[12.5px] text-muted mt-0.5 whitespace-pre-wrap">{s.note}</div>}
+                      {s.note && <div className="text-[0.78125rem] text-muted mt-0.5 whitespace-pre-wrap">{s.note}</div>}
                     </div>
                   </li>
                 );
@@ -550,7 +550,7 @@ function GoalDetail({
                 onChange={(e) => setNewStep(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && void addStep()}
                 placeholder={t("Add a step")}
-                className="flex-1 rounded-2xl bg-surface-2 px-3.5 py-2 text-[14px] outline-none focus:ring-2 focus:ring-accent/40"
+                className="flex-1 rounded-2xl bg-surface-2 px-3.5 py-2 text-[0.875rem] outline-none focus:ring-2 focus:ring-accent/40"
               />
               <button type="button" onClick={() => void addStep()} className="rounded-2xl bg-surface-2 px-3 text-accent" aria-label={t("Add step")}>
                 <Plus size={18} />
@@ -559,8 +559,8 @@ function GoalDetail({
           </div>
           {goal.notes && (
             <div>
-              <div className="text-[12px] font-semibold uppercase tracking-wide text-muted mb-1.5">{t("Notes from {name}", { name })}</div>
-              <pre className="whitespace-pre-wrap break-words text-[13px] leading-snug text-muted font-sans">{goal.notes}</pre>
+              <div className="text-[0.75rem] font-semibold uppercase tracking-wide text-muted mb-1.5">{t("Notes from {name}", { name })}</div>
+              <pre className="whitespace-pre-wrap break-words text-[0.8125rem] leading-snug text-muted font-sans">{goal.notes}</pre>
             </div>
           )}
           <div className="flex flex-wrap gap-x-4 gap-y-1.5">
@@ -571,12 +571,12 @@ function GoalDetail({
                 openThread("main");
                 onClose();
               }}
-              className="text-[13.5px] text-accent font-medium"
+              className="text-[0.84375rem] text-accent font-medium"
             >
               {t("Discuss this goal in chat →")}
             </button>
             {goal.status === "active" && (
-              <button type="button" onClick={() => void checkIn()} className="text-[13.5px] text-accent font-medium inline-flex items-center gap-1">
+              <button type="button" onClick={() => void checkIn()} className="text-[0.84375rem] text-accent font-medium inline-flex items-center gap-1">
                 <BellRing size={14} /> {t("Check in with me now")}
               </button>
             )}
@@ -666,21 +666,21 @@ function NewGoalSheet({ open, onClose, onCreated }: { open: boolean; onClose: ()
       }
     >
       <div className="space-y-3.5">
-        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("What do you want to achieve?")} className="w-full rounded-2xl bg-surface-2 px-3.5 py-2.5 text-[15px] outline-none focus:ring-2 focus:ring-accent/40" />
+        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("What do you want to achieve?")} className="w-full rounded-2xl bg-surface-2 px-3.5 py-2.5 text-[0.9375rem] outline-none focus:ring-2 focus:ring-accent/40" />
         <div>
-          <div className="text-[12px] font-semibold uppercase tracking-wide text-muted mb-1.5">{t("Area of life")}</div>
+          <div className="text-[0.75rem] font-semibold uppercase tracking-wide text-muted mb-1.5">{t("Area of life")}</div>
           <CategoryPicker value={category} onChange={setCategory} />
         </div>
         <div className="flex items-center gap-3">
-          <div className="text-[12px] font-semibold uppercase tracking-wide text-muted flex-1">{t("Target date")}</div>
-          <input type="date" value={due} onChange={(e) => setDue(e.target.value)} className="rounded-xl bg-surface-2 px-2.5 py-1.5 text-[13.5px] outline-none" />
+          <div className="text-[0.75rem] font-semibold uppercase tracking-wide text-muted flex-1">{t("Target date")}</div>
+          <input type="date" value={due} onChange={(e) => setDue(e.target.value)} className="rounded-xl bg-surface-2 px-2.5 py-1.5 text-[0.84375rem] outline-none" />
         </div>
         <div>
-          <div className="text-[12px] font-semibold uppercase tracking-wide text-muted mb-1.5">{t("Reminders from {name}", { name })}</div>
+          <div className="text-[0.75rem] font-semibold uppercase tracking-wide text-muted mb-1.5">{t("Reminders from {name}", { name })}</div>
           <CadencePicker value={checkIn} onChange={setCheckIn} />
         </div>
-        <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("Why it matters, constraints (optional)")} rows={2} className="w-full rounded-2xl bg-surface-2 px-3.5 py-2.5 text-[14px] outline-none focus:ring-2 focus:ring-accent/40 resize-none" />
-        <textarea value={steps} onChange={(e) => setSteps(e.target.value)} placeholder={t("Steps, one per line (optional, or let {name} plan them)", { name })} rows={3} className="w-full rounded-2xl bg-surface-2 px-3.5 py-2.5 text-[14px] outline-none focus:ring-2 focus:ring-accent/40 resize-none" />
+        <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t("Why it matters, constraints (optional)")} rows={2} className="w-full rounded-2xl bg-surface-2 px-3.5 py-2.5 text-[0.875rem] outline-none focus:ring-2 focus:ring-accent/40 resize-none" />
+        <textarea value={steps} onChange={(e) => setSteps(e.target.value)} placeholder={t("Steps, one per line (optional, or let {name} plan them)", { name })} rows={3} className="w-full rounded-2xl bg-surface-2 px-3.5 py-2.5 text-[0.875rem] outline-none focus:ring-2 focus:ring-accent/40 resize-none" />
       </div>
     </Sheet>
   );

@@ -1,0 +1,70 @@
+{
+  "values": {
+    "nm_avatar_default_description": "A transparent pale-blue crystal orb with soft highlights and a gentle breathing glow",
+    "nm_avatar_style_muse": "3D toy"
+  },
+  "values-zh": {
+    "nm_avatar_default_description": "淡蓝色透明水晶球，柔和高光，带有轻柔的呼吸感",
+    "nm_avatar_style_muse": "3D 玩偶"
+  },
+  "values-zh-rTW": {
+    "nm_avatar_default_description": "淡藍色透明水晶球，柔和高光，帶有輕柔的呼吸感",
+    "nm_avatar_style_muse": "3D 玩偶"
+  },
+  "values-de": {
+    "nm_avatar_default_description": "Eine transparente, hellblaue Kristallkugel mit sanften Lichtreflexen und ruhig pulsierendem Schimmer",
+    "nm_avatar_style_muse": "3D-Spielzeug"
+  },
+  "values-es": {
+    "nm_avatar_default_description": "Una esfera de cristal transparente de color azul claro, con reflejos suaves y un brillo que respira lentamente",
+    "nm_avatar_style_muse": "Juguete 3D"
+  },
+  "values-fr": {
+    "nm_avatar_default_description": "Une sphère de cristal transparente bleu pâle, aux reflets doux et à la lueur qui pulse doucement",
+    "nm_avatar_style_muse": "Jouet 3D"
+  },
+  "values-fil": {
+    "nm_avatar_default_description": "Isang malinaw na bolang kristal na mapusyaw na asul, may banayad na kislap at liwanag na tila humihinga",
+    "nm_avatar_style_muse": "3D na laruan"
+  },
+  "values-in": {
+    "nm_avatar_default_description": "Bola kristal transparan berwarna biru muda, dengan kilau lembut dan cahaya yang berdenyut perlahan",
+    "nm_avatar_style_muse": "Mainan 3D"
+  },
+  "values-ja": {
+    "nm_avatar_default_description": "淡い青色の透明な水晶玉。柔らかなハイライトと、呼吸するような穏やかな光",
+    "nm_avatar_style_muse": "3D トイ"
+  },
+  "values-ko": {
+    "nm_avatar_default_description": "은은한 하이라이트와 숨 쉬듯 부드러운 빛을 띤 연한 파란색 투명 수정 구슬",
+    "nm_avatar_style_muse": "3D 장난감"
+  },
+  "values-ms": {
+    "nm_avatar_default_description": "Bola kristal lutsinar berwarna biru muda, dengan kilauan lembut dan cahaya yang berdenyut perlahan",
+    "nm_avatar_style_muse": "Mainan 3D"
+  },
+  "values-pl": {
+    "nm_avatar_default_description": "Przezroczysta, jasnoniebieska kryształowa kula z delikatnymi refleksami i poświatą pulsującą jak spokojny oddech",
+    "nm_avatar_style_muse": "Zabawka 3D"
+  },
+  "values-pt-rBR": {
+    "nm_avatar_default_description": "Uma esfera de cristal transparente azul-clara, com reflexos suaves e um brilho que pulsa como uma respiração tranquila",
+    "nm_avatar_style_muse": "Brinquedo 3D"
+  },
+  "values-ro": {
+    "nm_avatar_default_description": "O sferă de cristal transparentă, albastru-deschis, cu reflexii delicate și o lumină care pulsează ca o respirație liniștită",
+    "nm_avatar_style_muse": "Jucărie 3D"
+  },
+  "values-ru": {
+    "nm_avatar_default_description": "Прозрачный нежно-голубой хрустальный шар с мягкими бликами и свечением в ритме спокойного дыхания",
+    "nm_avatar_style_muse": "3D-игрушка"
+  },
+  "values-th": {
+    "nm_avatar_default_description": "ลูกแก้วคริสตัลโปร่งใสสีฟ้าอ่อน มีแสงสะท้อนนุ่มนวลและแสงเรืองที่ค่อย ๆ เต้นเหมือนลมหายใจ",
+    "nm_avatar_style_muse": "ของเล่น 3D"
+  },
+  "values-tr": {
+    "nm_avatar_default_description": "Yumuşak yansımaları ve nefes alır gibi hafifçe değişen parıltısıyla, saydam açık mavi bir kristal küre",
+    "nm_avatar_style_muse": "3D oyuncak"
+  }
+}

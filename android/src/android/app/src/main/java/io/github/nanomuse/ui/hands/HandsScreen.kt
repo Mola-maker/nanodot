@@ -1,5 +1,7 @@
 package io.github.nanomuse.ui.hands
 
+import io.github.nanomuse.dot.ui.DotTokens
+
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -74,7 +76,7 @@ fun HandsScreen(onBack: () -> Unit, onOpenProviders: () -> Unit, onOpenHandsMode
             fontSize = 14.sp,
             lineHeight = 20.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 16.dp).padding(top = 12.dp),
+            modifier = Modifier.padding(horizontal = DotTokens.Space.S16).padding(top = DotTokens.Space.S12),
         )
 
         SettingsSection(footer = stringResource(R.string.nm_hands_switch_footer)) {

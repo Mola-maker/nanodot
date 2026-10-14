@@ -332,7 +332,7 @@
     <string name="nm_avatar_retry">Subukan ulit</string>
     <string name="nm_avatar_describe_title">Ilarawan ang bagong mukha</string>
     <string name="nm_avatar_describe_body">Sapat na ang isang pangungusap: kung ano ito, ano ang suot nito, ano ang dating nito. Pumili ng istilo, at gumuguhit ang image model mo ng apat na mapagpipilian.</string>
-    <string name="nm_avatar_default_description">Isang mataba at maputlang-dilaw na baby dragon na may maliliit na kahel na sungay at maliliit na nakatuping pakpak</string>
+    <string name="nm_avatar_default_description">Isang malinaw na bolang kristal na mapusyaw na asul, may banayad na kislap at liwanag na tila humihinga</string>
     <string name="nm_avatar_style_flat">Flat</string>
     <string name="nm_avatar_style_clay">3D clay</string>
     <string name="nm_avatar_style_watercolor">Watercolor</string>
@@ -379,7 +379,7 @@
     <string name="nm_version_failed">Hindi masuri, i-tap para subukan ulit</string>
     <string name="nm_appearance_section_home">Home</string>
     <string name="nm_appearance_header_model_title">Ipakita ang modelo sa ilalim ng pangalan</string>
-    <string name="nm_appearance_header_model_footer">Pangalan lang ang ipinapakita ng Muse. I-on ito para makita ang grupo ng modelo at provider · modelo sa ilalim nito; i-tap ang mga ito para lumipat. Kapag naka-off, nasa ••• → Modelo at sa Mga setting ang modelo.</string>
+    <string name="nm_appearance_header_model_footer">Pangalan lang ang ipinapakita ng Dot. I-on ito para makita ang grupo ng modelo at provider · modelo sa ilalim nito; i-tap ang mga ito para lumipat. Kapag naka-off, nasa ••• → Modelo at sa Mga setting ang modelo.</string>
     <string name="nm_appearance_section_chat">Usapan</string>
     <string name="nm_appearance_steps_title">Ipakita ang mga hakbang ng agent</string>
     <string name="nm_appearance_steps_footer">Kapag naka-off, mga sagot lang ang pinapanatili ng chat, at sinasabi ng linya sa ilalim ng mukha kung ano ang ginagawa ng agent ngayon. Kapag naka-on, lumalabas sa chat ang bawat hakbang: bawat tool na ginagamit nito, ang pangangatwiran nito, at isang bar sa ibabaw ng composer na nagbubukas ng mga detalye ng hakbang.</string>
@@ -399,7 +399,7 @@
     <string name="nm_avatar_size_large">Malaki</string>
     <string name="nm_avatar_size_extra_large">Napakalaki</string>
     <string name="nm_avatar_size_hidden">Nakatago</string>
-    <string name="nm_avatar_style_muse">3D na laruan (Muse)</string>
+    <string name="nm_avatar_style_muse">3D na laruan</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">online</string>
@@ -1080,9 +1080,9 @@
     <string name="nm_models_hands_title">Paggamit ng screen</string>
     <string name="nm_models_hands_sub">Tumitingin sa screen at kumikilos para sa iyo. Kailangan ng modelong nakakakita ng larawan.</string>
     <string name="nm_models_image_title">Paggawa ng larawan</string>
-    <string name="nm_models_image_sub">Mga larawan ng iyong Muse at ang mga larawang hinihingi mo.</string>
+    <string name="nm_models_image_sub">Mga larawan ni Dot at ang mga larawang hinihingi mo.</string>
     <string name="nm_models_video_title">Paggawa ng clip</string>
-    <string name="nm_models_video_sub">Maiikling clip ng iyong Muse.</string>
+    <string name="nm_models_video_sub">Maiikling clip ni Dot.</string>
     <string name="nm_models_chat_applies">Para sa pangunahing chat at sa mga bagong chat; pinapanatili ng side chat ang sarili nitong model.</string>
     <string name="nm_models_media_more">Higit pang opsyon sa larawan at clip</string>
     <string name="nm_models_media_more_sub">Mag-type ng pangalan ng modelo, tingnan kung ano ang hihinto kung wala ang bawat modelo, o suriin muli kung aling mga video model ang magagamit ng isang key.</string>
@@ -1108,4 +1108,106 @@
     <string name="nm_models_search_clear">I-clear ang paghahanap</string>
     <string name="nm_models_no_match">Walang tumutugmang modelo</string>
     <string name="nm_update_manual">Naka-off ang awtomatikong update. Buksan ang release page ng Nanodot para tingnan nang manu-mano.</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Lumulutang na button ng Dot</string>
+    <string name="nm_dot_show_orb">Ipakita ang button ng Dot</string>
+    <string name="nm_dot_settings_footer">Lumalabas kapag nakakonekta ang accessibility. Kapag pinatay, mananatiling nakatago kahit muling kumonekta.</string>
+    <string name="nm_dot_orb_description">Button ng Dot. Buksan ang usapan, tingnan ang screen, o simulan ang paggabay.</string>
+    <string name="nm_dot_open_conversation">Buksan ang usapan</string>
+    <string name="nm_dot_view_screen">Tingnan ang screen</string>
+    <string name="nm_dot_start_care">Simulan ang paggabay</string>
+    <string name="nm_dot_action_unavailable">Hindi pa magagamit ang feature na ito ng Dot.</string>
+    <string name="nm_tab_tasks">Mga gawain</string>
+    <string name="nm_task_library">Library</string>
+    <string name="nm_gateway_key_required">Kailangan ng key para sa proyektong ito. Mananatili ang mga setting at napiling modelo. Hindi pa nasusuri ang aktuwal na serbisyo.</string>
+    <string name="nm_gateway_connection_failed">Hindi makakonekta. Suriin ang key ng proyekto at network.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Pagkuha ng screen para sa Dot</string>
+    <string name="nm_dot_capture_active">Magagamit ang pagkuha ng screen hanggang ihinto mo ito.</string>
+    <string name="nm_dot_capture_stop">Ihinto ang pagkuha</string>
+    <string name="nm_dot_capture_explain">Sa bersyong ito ng Android, mababasa ng Dot ang accessible na teksto. Hiwalay na payagan ang pagkuha ng screen upang magbahagi rin ng larawan. Hihingi ng pahintulot ang Android.</string>
+    <string name="nm_dot_capture_allow">Payagan ang pagkuha ng screen</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Naglo-load…</string>
+    <string name="nm_dot_load_failed">Hindi ma-load ang pahinang ito.</string>
+    <string name="nm_dot_components">Mga bahagi</string>
+    <string name="nm_dot_empty">Wala pang laman dito.</string>
+    <string name="nm_dot_attach">Maglakip ng file</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">Idagdag sa %1$s</string>
+    <string name="nm_goal_completion">Nakumpletong layunin: %1$s</string>
+    <string name="nm_feed_like_post">Gustuhin ang post: %1$s</string>
+    <string name="nm_feed_post_info">Impormasyon ng post: %1$s</string>
+    <string name="nm_dot_chat_empty">Sumulat kay Dot upang simulan ang usapang ito.</string>
+    <string name="nm_dot_chat_message">Mensahe</string>
+    <string name="nm_dot_chat_send">Ipadala</string>
+    <string name="nm_dot_chat_stop">Ihinto</string>
+    <string name="nm_dot_chat_retry">Subukang muli</string>
+    <string name="nm_dot_chat_collapse">Isara ang usapan</string>
+    <string name="nm_dot_chat_remove">Alisin ang preview</string>
+    <string name="nm_dot_chat_capturing">Binabasa ang screen…</string>
+    <string name="nm_dot_chat_capture_failed">Hindi makuha ang screen. Subukang muli sa orihinal na screen.</string>
+    <string name="nm_dot_chat_historical">Kinuha %1$s · dating kalakip</string>
+    <string name="nm_dot_chat_text_only">Teksto lang · walang screenshot</string>
+    <string name="nm_dot_chat_voice_pending">Hindi pa available ang boses.</string>
+    <string name="nm_dot_chat_compact">Paikliin at ipadala</string>
+    <string name="nm_dot_chat_cancel">Kanselahin</string>
+    <string name="nm_care_clarify_no_nodes">Aling kontrol ang nakikita mo sa pahinang ito?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">Gagabayan kita nang paisa-isang hakbang.</string>
+    <string name="nm_care_goal">Ano ang gusto mong gawin?</string>
+    <string name="nm_care_start">Simulan ang gabay</string>
+    <string name="nm_care_copy">Kopyahin ang teksto</string>
+    <string name="nm_care_repeat">Ulitin ang tagubilin</string>
+    <string name="nm_care_pause">I-pause</string>
+    <string name="nm_care_reobserve">Tingnan muli</string>
+    <string name="nm_care_end">Tapusin ang gabay</string>
+    <string name="nm_care_resume">Ipagpatuloy</string>
+    <string name="nm_care_change_goal">Baguhin ang layunin</string>
+    <string name="nm_care_confirm">Natapos ko na ang hakbang na ito</string>
+    <string name="nm_care_observing">Tinitingnan ang screen</string>
+    <string name="nm_care_clarifying">May kailangang detalye</string>
+    <string name="nm_care_awaiting">Hinihintay ka</string>
+    <string name="nm_care_verifying">Sinusuri ang resulta</string>
+    <string name="nm_care_completed">Tapos na ang gabay</string>
+    <string name="nm_care_recovering">Suriin ang hakbang na ito</string>
+    <string name="nm_care_paused">Naka-pause ang gabay</string>
+    <string name="nm_care_unavailable">Hindi mabasa o masuri ang screen na ito. Tingnan muli, baguhin ang layunin, o tapusin ang gabay.</string>
+    <string name="nm_care_provider_missing">Pumili ng magagamit na text model sa Mga Setting → Mga Modelo, pagkatapos ay tingnan muli.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Idikta</string>
+    <string name="nm_dot_voice_permission">Payagan ang mikropono at mga notification para magdikta. Maaari ka pa ring mag-type.</string>
+    <string name="nm_dot_voice_keyboard">Gamitin ang keyboard</string>
+    <string name="nm_dot_voice_notification">Mikropono ng Dot</string>
+    <string name="nm_dot_voice_stop_hint">Nagre-record o tinatapos. Kakanselahin ng paghinto ang recording.</string>
+    <string name="nm_dot_voice_cancel">Kanselahin ang recording</string>
+    <string name="nm_dot_voice_finish">Tapusin ang pagdikta</string>
+    <string name="nm_dot_voice_starting">Sinisimulan ang mikropono…</string>
+    <string name="nm_dot_voice_recording">Nakikinig…</string>
+    <string name="nm_dot_voice_finishing">Tinatapos at binibitawan ang mikropono…</string>
+    <string name="nm_dot_voice_denied">Hindi magamit ang mikropono o notification. Mag-type, subukan muli, o buksan ang Mga Setting.</string>
+    <string name="nm_dot_voice_busy">Ginagamit ang mikropono. Subukan muli kapag huminto na.</string>
+    <string name="nm_dot_voice_error">Nabigo ang boses. Maaari kang mag-type o subukan muli.</string>
+    <string name="nm_dot_voice_read">Basahin ang tugon</string>
+    <string name="nm_dot_voice_speaking">Binabasa ang tugon…</string>
+    <string name="nm_dot_voice_read_error">Hindi mabasa nang malakas ang tugon.</string>
+
+    <string name="nm_dot_bubble_you">Ikaw</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">Nakumpirma ang hakbang</string>
+    <string name="nm_dot_foreground_capturing">Binabasa ang kasalukuyang screen</string>
+    <string name="nm_dot_foreground_error">Kailangan ng pansin ang interaksyong ito</string>
+    <string name="nm_dot_foreground_disconnected">Hindi nakakonekta ang Dot</string>
+    <string name="nm_dot_foreground_expand">Palawakin</string>
+    <string name="nm_dot_foreground_adjust">I-drag para ayusin</string>
+    <string name="nm_dot_region_selected">Napiling bahagi</string>
+    <string name="nm_dot_region_text_mode">Natatanggap lang ng modelong ito ang naa-access na teksto sa napiling bahagi. Nananatili ang larawan sa preview na ito.</string>
+    <string name="nm_dot_region_reselect">Pumili muli</string>
+    <string name="nm_dot_region_reselect_hint">I-drag ang bolang kristal paikot sa bahaging nais mong piliin.</string>
 </resources>

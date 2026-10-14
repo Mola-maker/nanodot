@@ -65,6 +65,9 @@ import com.openminis.app.offload.OffloadPermissionManager
 import com.openminis.app.service.SessionActivityTracker
 import com.openminis.app.service.SessionConcurrencyManager
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart // nanoMuse: retain admitted work before it starts.
+import kotlinx.coroutines.currentCoroutineContext // nanoMuse
+import kotlinx.coroutines.ensureActive // nanoMuse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
@@ -1130,6 +1133,9 @@ class ChatViewModel(
 
     /** Cancel an in-flight compaction. No-op when nothing is running. */
     fun cancelCompact() {
+        // nanoMuse: cancel the independent continuation before compact's failure callback fires.
+        compactThenSendJob?.cancel()
+        _pendingCompactSend.value = false
         val job = compactJob ?: return
         if (!job.isActive) return
         AppLogger.info(TAG, "[Compact] cancelled by user")
@@ -1152,8 +1158,22 @@ class ChatViewModel(
     // 2026-06-12 20:22:26 / 20:23:25 (cancel → resume → cancel → retry, where
     // the cancelled resume's finally fired ~2s after the new retry was already
     // streaming, hiding the Stop button while the new turn was live).
+    // nanoMuse: VM completion ownership is independent of promptly cancelled UI flags.
+    private val careJobLifetime = io.github.nanomuse.dot.care.CareJobLifetime()
+    val careOperationBusy: StateFlow<Boolean> get() = careJobLifetime.busy
+    private var carePendingPrompt: AutoCloseable? = null
+    private fun releaseCarePrompt() { carePendingPrompt?.close(); carePendingPrompt = null }
     @Volatile
     private var streamJob: Job? = null
+    // nanoMuse: Stop owns first-send preparation as well as its eventual stream child.
+    @Volatile private var sendSetupJob: Job? = null
+    // nanoMuse: a parked compact-then-send must be revocable before its first suspension.
+    private var compactThenSendJob: Job? = null
+    private val _pendingCompactSend = MutableStateFlow(false)
+    val pendingCompactSend: StateFlow<Boolean> = _pendingCompactSend.asStateFlow()
+    // nanoMuse: receipt only after the matching mediaRef/user row was persisted.
+    private val _consumedAttachmentMessages = MutableStateFlow<Map<String,String>>(emptyMap())
+    val consumedAttachmentMessages: StateFlow<Map<String,String>> = _consumedAttachmentMessages.asStateFlow()
     private var currentProvider: LLMProvider? = null
     private var currentModel: LLMModel? = null
 
@@ -2209,7 +2229,7 @@ class ChatViewModel(
             "[Compact] starting: ${toCompact.size} entries, ${transcriptChars} transcript chars, " +
                 "timeout=${timeoutMs / 1000}s, callBudget=$MAX_COMPACT_LLM_CALLS",
         )
-        compactJob = viewModelScope.launch(Dispatchers.IO) {
+        compactJob = careJobLifetime.launch(viewModelScope, Dispatchers.IO) { // nanoMuse: release only after actual job completion.
             // [T-android-compact-queued-drain] Only a SUCCESSFUL compact kicks
             // the queued-prompt drain below; failure/cancel/empty-summary paths
             // keep today's behavior (queued bubbles stay pending + cancellable).
@@ -3413,29 +3433,45 @@ class ChatViewModel(
      * now AND remembers the choice for every future conversation.
      */
     fun compactAndSendPending(alsoEnableAutoCompact: Boolean = false) {
-        if (alsoEnableAutoCompact) setAutoCompactEnabled(true)
-        _showCompactBeforeSendPrompt.value = false
-        val text = pendingSendText ?: return
-        pendingSendText = null
-        viewModelScope.launch {
-            val ok = awaitCompaction()
-            if (!ok) {
-                AppLogger.warning(TAG, "[Context] pre-send compaction failed — sending anyway")
+        // nanoMuse: transfer parked-prompt ownership only after the next job is admitted.
+        try {
+            if (alsoEnableAutoCompact) setAutoCompactEnabled(true)
+            _showCompactBeforeSendPrompt.value = false
+            val text = pendingSendText ?: return
+            pendingSendText = null
+            // nanoMuse: publish/retain ownership synchronously, including cancellation before start.
+            _pendingCompactSend.value = true
+            compactThenSendJob = careJobLifetime.launch(viewModelScope, start = CoroutineStart.LAZY) { // nanoMuse: release only after actual job completion.
+                try {
+                    val ok = awaitCompaction()
+                    currentCoroutineContext().ensureActive()
+                    if (!ok) {
+                        AppLogger.warning(TAG, "[Context] pre-send compaction failed — sending anyway")
+                    }
+                    sendMessage(text, skipContextCheck = true)
+                } finally {
+                    if (compactThenSendJob === currentCoroutineContext()[Job]) _pendingCompactSend.value = false
+                }
             }
-            sendMessage(text, skipContextCheck = true)
-        }
+            compactThenSendJob?.start()
+        } finally { releaseCarePrompt() }
     }
 
     /** Dialog action: send without compacting. */
     fun sendPendingWithoutCompacting() {
-        _showCompactBeforeSendPrompt.value = false
-        val text = pendingSendText ?: return
-        pendingSendText = null
-        sendMessage(text, skipContextCheck = true)
+        // nanoMuse: transfer parked-prompt ownership only after the next job is admitted.
+        try {
+            _showCompactBeforeSendPrompt.value = false
+            val text = pendingSendText ?: return
+            pendingSendText = null
+            sendMessage(text, skipContextCheck = true)
+        } finally { releaseCarePrompt() }
     }
 
     /** Dialog dismissed — restore the text to the composer so it isn't lost. */
     fun cancelCompactBeforeSend() {
+        // nanoMuse: dismissal ends only the parked decision, not any running job.
+        releaseCarePrompt()
         _showCompactBeforeSendPrompt.value = false
         pendingSendText?.let { _inputText.value = it }
         pendingSendText = null
@@ -3932,6 +3968,8 @@ class ChatViewModel(
 
     /** Ensure the session exists in the database. Called before first message. */
     private suspend fun ensureSession(): String {
+        // nanoMuse: revoked preparation must not create a session at a later checkpoint.
+        currentCoroutineContext().ensureActive()
         if (realSessionId.isNotEmpty()) return realSessionId
         val modelId = currentModel?.id ?: providerRepository.allVisibleEntries().firstOrNull()?.model?.id ?: "unknown"
         // [T-memory-global-toggle-settings-ui-android] Snapshot the
@@ -3943,6 +3981,8 @@ class ChatViewModel(
             modelId = modelId,
             memoryEnabled = _memoryEnabled.value,
         )
+        // nanoMuse: no promotion/binding work after cancellation of the suspended insert.
+        currentCoroutineContext().ensureActive()
         realSessionId = session.id
         // "New Chat in Group": file the just-promoted draft into its folder.
         // Unconditional (vs iOS setFolderIfUnfiled) — the session is seconds
@@ -5354,7 +5394,7 @@ class ChatViewModel(
         AppLogger.info(TAG_STREAM, "rerunFromToolBlock _isStreaming=true (sync, sid=$activeSessionId)")
         _isStreaming.value = true
 
-        viewModelScope.launch {
+        careJobLifetime.launch(viewModelScope) { // nanoMuse: retain stream preparation through completion.
             var streamLaunched = false
             try {
                 val sid = realSessionId.takeIf { it.isNotEmpty() } ?: sessionId
@@ -5542,7 +5582,7 @@ class ChatViewModel(
         AppLogger.info(TAG_STREAM, "retry _isStreaming=true (sync, sid=$activeSessionId)")
         _isStreaming.value = true
 
-        viewModelScope.launch {
+        careJobLifetime.launch(viewModelScope) { // nanoMuse: retain VM work through completion.
             // If setup throws before the inner streamJob is launched, the
             // streaming flag would be stuck true forever. Reset on the
             // unhappy paths; happy path resets in the streamJob's tail.
@@ -5798,7 +5838,7 @@ class ChatViewModel(
 
         // _isStreaming was already set synchronously by the caller.
         val launchedProvider = provider
-        streamJob = viewModelScope.launch(Dispatchers.IO) {
+        streamJob = careJobLifetime.launch(viewModelScope, Dispatchers.IO) { // nanoMuse: release only after actual job completion.
             AppLogger.info(TAG_STREAM, "$label streamJob ENTER sid=$activeSessionId")
             try {
                 SessionConcurrencyManager.acquireSlot(activeSessionId)
@@ -6486,7 +6526,7 @@ class ChatViewModel(
             when (val c = flow.parseChoice(text)) {
                 is io.github.nanomuse.avatar.AvatarFlow.Choice.Index -> {
                     if (io.github.nanomuse.avatar.AvatarStudio.slots.value.getOrNull(c.index) is io.github.nanomuse.avatar.AvatarStudio.Slot.Ready) {
-                        viewModelScope.launch {
+                        careJobLifetime.launch(viewModelScope) { // nanoMuse: retain VM work through completion.
                             nmAppendUserLine(sid, text)
                             nmChooseAvatarInternal(sid, c.index)
                         }
@@ -6495,7 +6535,7 @@ class ChatViewModel(
                 }
                 io.github.nanomuse.avatar.AvatarFlow.Choice.Regenerate -> {
                     val desc = (flow.stage.value as? io.github.nanomuse.avatar.AvatarFlow.Stage.Choosing)?.description.orEmpty()
-                    viewModelScope.launch {
+                    careJobLifetime.launch(viewModelScope) { // nanoMuse: retain VM work through completion.
                         nmAppendUserLine(sid, text)
                         if (flow.regenerate(context)) {
                             nmAppendAssistantLine(sid, context.getString(R.string.nm_avatar_drawing_again))
@@ -6523,7 +6563,7 @@ class ChatViewModel(
                 _messages.value = _messages.value.filterNot { it.id == nmNamingCardId }
             }
         }
-        viewModelScope.launch {
+        careJobLifetime.launch(viewModelScope) { // nanoMuse: retain VM work through completion.
             // A draft main chat gets its session row first, so the request and the
             // reply persist like any other turn.
             val realSid = ensureSession()
@@ -6670,7 +6710,7 @@ class ChatViewModel(
      * Nothing is said if the person already chose or cancelled in the meantime.
      */
     private fun nmAnnounceWhenDrawn(sid: String, desc: String) {
-        viewModelScope.launch {
+        careJobLifetime.launch(viewModelScope) { // nanoMuse: retain VM work through completion.
             val slots = io.github.nanomuse.avatar.AvatarStudio.slots.first { list ->
                 list.none { it is io.github.nanomuse.avatar.AvatarStudio.Slot.Loading }
             }
@@ -6738,7 +6778,7 @@ class ChatViewModel(
         // Muse announces the new face at once; the poses land in the header as they finish.
         val clipsNote = if (io.github.nanomuse.avatar.AvatarMotion.enabled(context)) " " + context.getString(R.string.nm_avatar_clips_coming) else ""
         nmAppendAssistantLine(sid, flow.adoptedText(context, desc) + clipsNote + "\n\n" + flow.optionsFence(desc, index, files))
-        viewModelScope.launch {
+        careJobLifetime.launch(viewModelScope) { // nanoMuse: retain VM work through completion.
             val done = flow.done.first { it.sessionId == sid }
             if (_messages.value.none { it.id == nmAvatarShareId }) {
                 _messages.value = _messages.value + ChatMessage(
@@ -6905,6 +6945,8 @@ class ChatViewModel(
                     // owns it; cancelCompactBeforeSend puts it back.
                     pendingSendText = text
                     _inputText.value = ""
+                    // nanoMuse: a pending decision can later dispatch real work; retain its handoff.
+                    if (carePendingPrompt == null) carePendingPrompt = careJobLifetime.acquire()
                     _showCompactBeforeSendPrompt.value = true
                     return
                 }
@@ -6964,17 +7006,22 @@ class ChatViewModel(
         val editingId = _editingMessageId.value
         if (editingId != null) _editingMessageId.value = null
 
-        viewModelScope.launch {
+        // nanoMuse: retain the entire send before dispatch, not only the later IO stream.
+        sendSetupJob = careJobLifetime.launch(viewModelScope, start = CoroutineStart.LAZY) { // nanoMuse: release only after actual job completion.
             var streamLaunched = false
             try {
             // Ensure session exists in DB (creates on first message for draft sessions)
+            currentCoroutineContext().ensureActive() // nanoMuse
             val activeSessionId = ensureSession()
+            currentCoroutineContext().ensureActive() // nanoMuse
 
             if (editingId != null) {
                 truncateBeforeEdit(editingId)
             }
 
+            currentCoroutineContext().ensureActive() // nanoMuse: media is not read after revocation.
             val prepared = prepareUserAttachments(currentAttachments, activeSessionId)
+            currentCoroutineContext().ensureActive() // nanoMuse
 
             // [T-android-paste-mediaref] Fold `[Pasted#N]` markers out to disk
             // BEFORE persisting, so the stored message carries a mediaRef per
@@ -6995,6 +7042,7 @@ class ChatViewModel(
                 prepared.attachedFilesXml,
                 bodyPartsJson = pasted?.partsJson,
             )
+            currentCoroutineContext().ensureActive() // nanoMuse: fence row persistence.
             val persistedUser = chatRepository.appendMessage(activeSessionId, "user", userPartsJson)
             io.github.nanomuse.sync.ConversationSync.sent(activeSessionId) // nanoMuse: the person's line reaches the other devices at send (C8), then "working" (C9)
 
@@ -7020,7 +7068,11 @@ class ChatViewModel(
                 attachmentNames = prepared.attachmentNames + (pasted?.uiNames ?: emptyList()),
                 attachmentUris = prepared.nonImageUris + (pasted?.uiUris ?: emptyList()),
             )
+            currentCoroutineContext().ensureActive() // nanoMuse: fence UI/history publication.
             _messages.value = _messages.value + userMsg
+            // nanoMuse: only mediaRefs on this persisted row consume these exact attachment IDs.
+            _consumedAttachmentMessages.value = _consumedAttachmentMessages.value +
+                prepared.persistedAttachmentIds.associateWith { persistedUser.id }
             val imageParts = prepared.imageParts
 
             // T132: build the user contentParts in iOS order — caption first
@@ -7095,8 +7147,9 @@ class ChatViewModel(
             } else baseSystemPrompt
 
             // Start agent loop with fallback. _isStreaming was set synchronously at top.
+            currentCoroutineContext().ensureActive() // nanoMuse: OAuth cancellation cannot start a stream.
             streamLaunched = true
-            streamJob = launch(Dispatchers.IO) {
+            streamJob = careJobLifetime.launch(this, Dispatchers.IO) { // nanoMuse: release only after actual job completion.
                 AppLogger.info(TAG_STREAM, "send streamJob ENTER sid=$activeSessionId")
                 try {
                     // [T-STALL-DIAG] Snapshot BEFORE the (possibly blocking)
@@ -7175,12 +7228,14 @@ class ChatViewModel(
                 AppLogger.info(TAG_STREAM, "send streamJob EXIT")
             }
             } finally {
-                if (!streamLaunched) {
+                // nanoMuse: an old cancelled setup must not clear a newer operation's state.
+                if (!streamLaunched && currentCoroutineContext().isActive && sendSetupJob === currentCoroutineContext()[Job]) {
                     AppLogger.info(TAG_STREAM, "send _isStreaming=false (setup aborted)")
                     _isStreaming.value = false
                 }
             }
         }
+        sendSetupJob?.start() // nanoMuse: assignment precedes dispatch, including Main.immediate.
     }
 
     /** Set error inline on the last assistant message (iOS: message.error).
@@ -7397,7 +7452,7 @@ class ChatViewModel(
         AppLogger.info(TAG_STREAM, "retryLast _isStreaming=true (sync, sid=$activeSessionId)")
         _isStreaming.value = true
 
-        viewModelScope.launch {
+        careJobLifetime.launch(viewModelScope) { // nanoMuse: retain stream preparation and children.
             var streamLaunched = false
             try {
             val sid = realSessionId.takeIf { it.isNotEmpty() } ?: sessionId
@@ -7460,7 +7515,7 @@ class ChatViewModel(
 
             // _isStreaming was already set synchronously at the top.
             streamLaunched = true
-            streamJob = launch(Dispatchers.IO) {
+            streamJob = careJobLifetime.launch(this, Dispatchers.IO) { // nanoMuse: release only after actual job completion.
                 AppLogger.info(TAG_STREAM, "retryLast streamJob ENTER sid=$activeSessionId")
                 try {
                     SessionConcurrencyManager.acquireSlot(activeSessionId)
@@ -11024,6 +11079,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
      * attachments survive a session reload (T128).
      */
     private data class PreparedAttachments(
+        val persistedAttachmentIds: Set<String>, // nanoMuse: exact durable mediaRefs in the user row.
         val imageParts: List<LLMMessage.ImagePart>,
         val imageUris: List<Uri>,
         val attachmentNames: List<String>,
@@ -11054,10 +11110,13 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
      * NOT inlined into the LLM payload (parity with iOS processAttachments,
      * AIChatViewModel.swift L1552-1645).
      */
-    private fun prepareUserAttachments(
+    private suspend fun prepareUserAttachments(
         attachments: List<InputAttachment>,
         sessionId: String,
     ): PreparedAttachments {
+        currentCoroutineContext().ensureActive() // nanoMuse: admission before any disk work.
+        val persistedImageIds = mutableListOf<String>() // nanoMuse
+        val persistedFileIds = mutableSetOf<String>() // nanoMuse
         val imageParts = mutableListOf<LLMMessage.ImagePart>()
         val imageUris = mutableListOf<Uri>()
         val imageNames = mutableListOf<String>()
@@ -11092,6 +11151,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
         val nowStr = isoFormatter.format(java.util.Date(nowMs))
 
         for (attachment in attachments) {
+            currentCoroutineContext().ensureActive() // nanoMuse: fence each media transfer.
             if (attachment.isImage) {
                 // T209: read the original image bytes once and reuse them
                 // for storage + uploads dir; only the LLM inference payload
@@ -11106,6 +11166,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
                     Log.w(TAG, "image read failed for ${attachment.fileName}: ${e.message}")
                     null
                 } ?: continue
+                currentCoroutineContext().ensureActive() // nanoMuse: fence durable media persistence.
                 val ref = try {
                     mediaStore.saveMedia(
                         data = rawBytes,
@@ -11152,6 +11213,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
                 imageUris.add(Uri.fromFile(savedFile))
                 imageNames.add(attachment.fileName)
                 imageMediaRefPartsJson.add(buildMediaRefPartJson(ref, linuxPath = linuxPath))
+                persistedImageIds.add(attachment.id) // nanoMuse
                 continue
             }
 
@@ -11185,6 +11247,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
             }
             if (!uploadOk) continue
 
+            currentCoroutineContext().ensureActive() // nanoMuse: fence durable file persistence.
             val ref = try {
                 dest.inputStream().use { input ->
                     mediaStore.saveMediaStreamed(
@@ -11199,6 +11262,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
                 null
             }
             if (ref != null) {
+                persistedFileIds.add(attachment.id) // nanoMuse
                 nonImageMediaRefPartsJson.add(buildMediaRefPartJson(ref))
                 nonImageUris.add(Uri.fromFile(java.io.File(mediaStore.mediaBaseDir, ref.relativePath)))
             }
@@ -11230,6 +11294,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
             val newSize = newImageParts.size
             imageParts.clear()
             imageParts.addAll(newImageParts)
+            while (persistedImageIds.size > newSize) persistedImageIds.removeAt(persistedImageIds.size - 1) // nanoMuse
             while (imageUris.size > newSize) imageUris.removeAt(imageUris.size - 1)
             while (imageNames.size > newSize) imageNames.removeAt(imageNames.size - 1)
             while (imageMediaRefPartsJson.size > newSize) imageMediaRefPartsJson.removeAt(imageMediaRefPartsJson.size - 1)
@@ -11266,6 +11331,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
 
         // Order matches UserAttachmentList convention: images first, then files.
         return PreparedAttachments(
+            persistedAttachmentIds = (persistedImageIds + persistedFileIds).toSet(), // nanoMuse
             imageParts = imageParts,
             imageUris = imageUris,
             attachmentNames = imageNames + nonImageNames,
@@ -11940,6 +12006,10 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
     }
 
     fun cancelStream() {
+        // nanoMuse: preparation has no current assistant response to persist as interrupted.
+        val preparing = sendSetupJob?.isActive == true && streamJob?.isActive != true
+        sendSetupJob?.cancel()
+        cancelCompact()
         AppLogger.info(TAG_STREAM, "cancelStream invoked _isStreaming=false (sid=$activeSessionId)")
         streamJob?.cancel()
         _isStreaming.value = false
@@ -11972,7 +12042,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
             // Mid-turn rename: sweep any lingering draft shell too.
             ExecutionCoordinator.stopCurrentCommand(sessionId)
         }
-        handleUserCancelledCleanup()
+        if (!preparing) handleUserCancelledCleanup() // nanoMuse: never persist a virtual welcome during setup.
 
         // T189: iOS parity (AIChatViewModel.swift L2592-2610). If the user
         // enqueued prompts during the cancelled stream, auto-resume the drain
@@ -11998,7 +12068,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
      * prompt drain after cancel uses the same plumbing as a fresh send.
      */
     private fun resumeQueueAfterCancel() {
-        viewModelScope.launch {
+        careJobLifetime.launch(viewModelScope) { // nanoMuse: retain VM work through completion.
             kotlinx.coroutines.delay(200)
             if (_promptQueue.value.isEmpty()) return@launch
             if (_isStreaming.value) return@launch
@@ -12061,7 +12131,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
             _canResume.value = false
             _error.value = null
 
-            streamJob = launch(Dispatchers.IO) {
+            streamJob = careJobLifetime.launch(this, Dispatchers.IO) { // nanoMuse: release only after actual job completion.
                 AppLogger.info(TAG_STREAM, "resumeQueueAfterCancel streamJob ENTER sid=$activeSessionId")
                 try {
                     SessionConcurrencyManager.acquireSlot(activeSessionId)
@@ -12139,6 +12209,8 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
         val lastIdx = msgs.indexOfLast { it.role == "assistant" }
         if (lastIdx < 0) return
         var last = msgs[lastIdx]
+        // nanoMuse: welcome rows are virtual, not a partial response or a draft DB parent.
+        if (last.id.startsWith("nm_intro_")) return
 
         // T73: clear "Nanodot is thinking…" the moment the user taps Stop.
         // isAwaitingModelResponse is set true at runAgentLoop entry (≈ line
@@ -12332,7 +12404,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
             }
         }
 
-        viewModelScope.launch {
+        careJobLifetime.launch(viewModelScope) { // nanoMuse: retain stream preparation and children.
             val baseSystemPrompt = buildSystemPrompt()
             val systemPrompt =
                 if ((provider as? com.openminis.app.provider.anthropic.AnthropicProvider)?.isOAuth == true) {
@@ -12343,7 +12415,7 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
 
             AppLogger.info(TAG_STREAM, "resume _isStreaming=true (sid=$activeSessionId)")
             _isStreaming.value = true
-            streamJob = launch(Dispatchers.IO) {
+            streamJob = careJobLifetime.launch(this, Dispatchers.IO) { // nanoMuse: release only after actual job completion.
                 AppLogger.info(TAG_STREAM, "resume streamJob ENTER sid=$activeSessionId")
                 try {
                     SessionConcurrencyManager.acquireSlot(activeSessionId)
@@ -12406,6 +12478,8 @@ Scheduled tasks: crontab / at / nohup loops will stop when the app is suspended,
     }
 
     override fun onCleared() {
+        // nanoMuse: jobs keep ownership until completion; the dead VM cannot resolve a prompt.
+        releaseCarePrompt()
         super.onCleared()
         // Tear down whichever shell was actually serving this VM. Terminate
         // both ids when the rename happened, since a draft shell may still

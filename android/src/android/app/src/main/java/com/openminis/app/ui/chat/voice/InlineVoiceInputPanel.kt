@@ -185,10 +185,15 @@ fun InlineVoiceInputPanel(
     },
 ) {
     val scope = androidx.compose.runtime.rememberCoroutineScope()
-    val sttState by SpeechRecognitionManager.state.collectAsState()
+    // nanoMuse: each mounted composer retains its own ticket, including authorized locale restarts.
+    val ownedVoice = remember { io.github.nanomuse.dot.voice.MainVoiceInput() }
+    val ownedTicket by ownedVoice.ticket.collectAsState()
+    val ownedState by SpeechRecognitionManager.ownedState.collectAsState()
+    val sttState = if (ownedState.ticket === ownedTicket) ownedState.state else RecognitionState.IDLE
     val locale by SpeechRecognitionManager.locale.collectAsState()
     val supportedLocales by SpeechRecognitionManager.supportedLocales.collectAsState()
-    val levels by SpeechRecognitionManager.audioLevels.collectAsState()
+    // nanoMuse: Dot microphone levels never appear in the main composer.
+    val levels by SpeechRecognitionManager.mainLevels.collectAsState()
 
     // Load the persisted expanded/compact choice before it is read below.
     // Idempotent, so running on every composition is harmless.
@@ -321,20 +326,17 @@ fun InlineVoiceInputPanel(
     }
 
     fun stopCapture() {
-        SpeechRecognitionManager.stopRecording()
+        // nanoMuse: stop only this mounted composer.
+        ownedVoice.stop()
     }
 
-    fun startCapture() {
-        // Route the engine per the resolved choice (mirrors iOS provider resolve
-        // on prepare/refresh).
-        val engineId = if (choice.isSystem) "system" else "provider"
-        SpeechRecognitionManager.selectEngine(engineId)
-        (SpeechRecognitionManager.availableEngines()
-            .firstOrNull { it.id == "system" } as? com.openminis.app.speech.SystemSpeechRecognitionEngine)
-            ?.preferOffline = (choice.systemPreferOffline == true)
+    fun startCapture(request: Long) {
+        // nanoMuse: selection and admission are atomic at the live manager boundary.
+        val pinnedSelection = io.github.nanomuse.dot.voice.VoiceSelection(
+            if (choice.isSystem) "system" else "provider", locale, choice.systemPreferOffline == true)
         captureBase = transcript
         transcribeError = null
-        SpeechRecognitionManager.startRecording(
+        ownedVoice.start(request, pinnedSelection,
             // [T-android-vad] Commit only on a FINAL result.
             //
             // Previously every interim hypothesis was written straight into the
@@ -346,16 +348,16 @@ fun InlineVoiceInputPanel(
             //
             // Appending (not replacing) matches iOS: successive utterances join
             // with a single space (VoiceInputPanel.swift:931).
-            onPartialOrFinal = { text, isFinal ->
-                if (isEditing) return@startRecording
-                if (!isFinal) return@startRecording
-                if (text.isBlank()) return@startRecording
+            text = { text, isFinal ->
+                if (isEditing) return@start
+                if (!isFinal) return@start
+                if (text.isBlank()) return@start
                 val sep = if (captureBase.isEmpty() || captureBase.endsWith(" ")) "" else " "
                 val joined = captureBase + sep + text
                 captureBase = joined
                 setTranscript(joined)
             },
-            onError = { error, message ->
+            error = { error, message ->
                 when (error) {
                     com.openminis.app.speech.RecognitionError.NO_MATCH -> {}
                     com.openminis.app.speech.RecognitionError.PERMISSION_DENIED ->
@@ -370,19 +372,23 @@ fun InlineVoiceInputPanel(
         when {
             isTranscribing -> {
                 // Spinner while idle → X cancels the in-flight transcription.
-                SpeechRecognitionManager.cancelRecording()
+                // nanoMuse: invalidate pending permission/callbacks as well as this exact capture.
+                ownedVoice.cancel()
             }
             isRecording -> stopCapture()
             else -> scope.launch {
+                // nanoMuse: delayed permission results cannot admit after composer disposal/switch.
+                val request = ownedVoice.pending()
                 // Re-check on every tap: a permission granted moments after a
                 // DENIED race (settings-gate cancel) must not dead-end the mic.
                 if (!ensureMicPermission()) {
                     permissionDenied = true
                     return@launch
                 }
+                if (!ownedVoice.accepts(request)) return@launch
                 permissionDenied = false
                 if (isEditing) leaveEditMode()
-                startCapture()
+                startCapture(request)
             }
         }
     }
@@ -404,12 +410,14 @@ fun InlineVoiceInputPanel(
         }
         SpeechRecognitionManager.refreshSupportedLocales()
     }
-    androidx.compose.runtime.DisposableEffect(Unit) {
-        onDispose {
-            if (SpeechRecognitionManager.state.value != RecognitionState.IDLE) {
-                SpeechRecognitionManager.cancelRecording()
-            }
+    // nanoMuse: lifecycle cancellation is ticket-scoped; a previous panel cannot cancel its replacement.
+    val voiceLifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+    androidx.compose.runtime.DisposableEffect(ownedVoice, voiceLifecycle) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_STOP) ownedVoice.cancel()
         }
+        voiceLifecycle.addObserver(observer)
+        onDispose { voiceLifecycle.removeObserver(observer); ownedVoice.close() }
     }
 
     // External input change (send clears it; "add reply to input") → sync back.
@@ -420,8 +428,9 @@ fun InlineVoiceInputPanel(
             if (inputText.isEmpty()) {
                 // A send emptied the composer → collapse to compact (iOS
                 // collapseAfterSendToken) and stop any live capture.
-                if (SpeechRecognitionManager.state.value != RecognitionState.IDLE) {
-                    SpeechRecognitionManager.cancelRecording()
+                if (sttState != RecognitionState.IDLE) {
+                    // nanoMuse: invalidate pending permission/callbacks as well as this exact capture.
+                    ownedVoice.cancel()
                 }
                 leaveEditMode()
                 persistExpanded(false)
@@ -607,8 +616,9 @@ fun InlineVoiceInputPanel(
                     onTranscriptChange = { setTranscript(it) },
                     onBeginEdit = {
                         if (!isEditing) {
-                            if (SpeechRecognitionManager.state.value != RecognitionState.IDLE) {
-                                SpeechRecognitionManager.cancelRecording()
+                            if (sttState != RecognitionState.IDLE) {
+                                // nanoMuse: invalidate pending permission/callbacks as well as this exact capture.
+                                ownedVoice.cancel()
                             }
                             editSnapshot = transcript
                             isEditing = true

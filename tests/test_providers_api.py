@@ -17,7 +17,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from nanomuse.config import MediaSettings, Settings
-from nanomuse.llm import MockLLM
+from nanomuse.llm import MockLLM, catalogue
 from nanomuse.llm.chatgpt import LoginFlow, TokenStore
 from nanomuse.server import create_app
 from nanomuse.server.service import MuseService
@@ -88,7 +88,7 @@ def test_providers_signed_out_with_the_default_model(server):
     view = client.get("/api/providers").json()
     assert view["region"] == ""
     ids = [p["id"] for p in view["providers"]]
-    assert len(ids) == 19 and "nanomuse_cloud" not in ids
+    assert ids == catalogue.load().ids() and "nanomuse_cloud" not in ids
     # DeepSeek is the default chat model, by its host; the hands follow the chat model
     assert view["configured"]["chat"]["provider"] == "deepseek"
     assert view["configured"]["chat"]["protocol"] == "openai"

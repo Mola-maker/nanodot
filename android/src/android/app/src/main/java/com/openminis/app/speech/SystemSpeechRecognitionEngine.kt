@@ -1,5 +1,8 @@
 package com.openminis.app.speech
 
+// nanoMuse: source-selected passive voice proof producer.
+import io.github.nanomuse.dot.voice.proof.VoiceProofTap
+
 import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -30,7 +33,10 @@ import java.util.Locale
  * Must be constructed and used on the main thread because [SpeechRecognizer]
  * delivers callbacks on the thread that creates it.
  */
-class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRecognitionEngine {
+class SystemSpeechRecognitionEngine(
+    private val appContext: Context,
+    private val mainDispatch: ((() -> Unit) -> Unit)? = null,
+) : SpeechRecognitionEngine {
 
     override val id: String = "system"
     override val displayName: String = "System recognizer"
@@ -45,6 +51,11 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
     private var recognizer: SpeechRecognizer? = null
     private var listener: SpeechRecognitionEngine.Listener? = null
     private val mainHandler = Handler(Looper.getMainLooper())
+
+    // nanoMuse: one dispatch boundary also permits deterministic endpoint/cancel ordering tests.
+    private fun onMain(action: () -> Unit) {
+        mainDispatch?.let { it(action) } ?: mainHandler.post(action)
+    }
 
     override val isAvailable: Boolean
         get() {
@@ -144,7 +155,18 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
         ).distinctBy { it.toLanguageTag() }
     }
 
-    override fun start(locale: Locale, listener: SpeechRecognitionEngine.Listener) {
+    // nanoMuse: pin callbacks and cleanup to this capture and every platform restart.
+    private var platformGeneration = 0L
+    private var captureGeneration = 0L
+    private var cleanupFailure: Throwable? = null
+    private val captureResources = io.github.nanomuse.dot.voice.CaptureResources()
+    override fun start(locale: Locale, listener: SpeechRecognitionEngine.Listener) = startOwned(locale, null, listener)
+    override fun startOwned(locale: Locale, continuous: Boolean?, listener: SpeechRecognitionEngine.Listener) {
+        cleanupFailure = null
+        ++captureGeneration // nanoMuse: invalidate delayed VAD work from a previous capture.
+        // nanoMuse: bind the actual selected engine's capture generation, without starting a recognizer.
+        if (VoiceProofTap.active)
+            VoiceProofTap.captureBegin(this, captureGeneration)
         this.listener = listener
         bufferedPartial = null
         heardSpeech = false
@@ -171,7 +193,7 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
         // harmless because the mic never changes hands. If the recogniser owns
         // the mic, a restart would re-acquire it each time, so we leave that
         // path on single-shot behaviour.
-        continuousSession = feedingAudio
+        continuousSession = io.github.nanomuse.dot.voice.CapturePolicy.continuous(feedingAudio, continuous)
         continuousLocale = if (feedingAudio) locale else null
         startInternal(locale, allowOnDeviceRetry = true)
     }
@@ -237,20 +259,8 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
     private var heldSpokenSeconds = 0f
     private var holdFlushRunnable: Runnable? = null
 
-    /**
-     * Write end of the pipe handed to the recogniser via EXTRA_AUDIO_SOURCE.
-     * Closing it is what ends the recognition session, so it is the single
-     * mechanism by which our VAD controls endpointing.
-     */
-    @Volatile
-    private var audioPipeWrite: android.os.ParcelFileDescriptor? = null
-
-    @Volatile
-    private var audioPipeStream: java.io.OutputStream? = null
-
-    /** Read end, handed to the recogniser; closed once it has taken ownership. */
-    @Volatile
-    private var audioPipeRead: android.os.ParcelFileDescriptor? = null
+    // nanoMuse: every pipe remains owned through write failure and asynchronous retirement.
+    private val audioPipes = io.github.nanomuse.dot.voice.CapturePipes<android.os.ParcelFileDescriptor>()
 
     /**
      * True when this session feeds the recogniser our own audio. False on
@@ -293,6 +303,8 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
     private val segmentTranscript = StringBuilder()
 
     private fun startEndpointingVad() {
+        // nanoMuse: VAD callbacks are delivered on IO; marshal and reject retired captures.
+        val capture = captureGeneration
         // EXTRA_AUDIO_SOURCE is API 33+. Below that the recogniser must open
         // the mic itself, so we cannot run a VAD at all: two AudioRecords on
         // one device leaves one of them silent.
@@ -306,120 +318,16 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
             Log.w(TAG, "[vad] pipe creation failed, platform endpointing: ${t.message}")
             return
         }
-        audioPipeRead = pipe[0]
-        audioPipeWrite = pipe[1]
-        audioPipeStream = android.os.ParcelFileDescriptor.AutoCloseOutputStream(pipe[1])
+        audioPipes.install(io.github.nanomuse.dot.voice.CapturePipe(
+            pipe[0], pipe[1], android.os.ParcelFileDescriptor.AutoCloseOutputStream(pipe[1]),
+        ))
 
-        val det = VoiceActivityDetector(
-            appContext,
-            object : VoiceActivityListener {
-                override fun onVoiceStart() {
-                    speechStartedAt = System.currentTimeMillis()
-                    heardSpeech = true
-                    Log.i(TAG, "[vad] speech start")
-                }
-
-                override fun onLevel(level: Float) {
-                    // Drive the waveform from the VAD's AGC-boosted tap rather
-                    // than onRmsChanged: it updates ~10x more often and uses
-                    // the same perceptual curve as iOS. Mapped back onto the
-                    // [0,12] scale SpeechRecognitionManager normalises from.
-                    listener?.onRmsDb(level * 12f)
-                }
-
-                override fun onVoiceEnd(wav: ByteArray, reason: SegmentEndReason, spokenSeconds: Float) {
-                    if (reason != SegmentEndReason.SILENCE_DETECTED) return
-                    speechStartedAt = 0L
-
-                    // iOS discards a silence-closed segment under 2.0 s
-                    // outright (VoiceInputPanel.swift:652-663) — a cough or a
-                    // door shouldn't commit text. Cancel rather than stop so
-                    // the recognizer produces no result at all.
-                    //
-                    // spokenSeconds is measured from the audio payload; a
-                    // wall-clock figure would include the ~5 s silence that
-                    // closed the segment and could never fall below 2 s.
-                    // [T-android-vad-merge-segments] Accumulate DURATION, don't
-                    // cancel.
-                    //
-                    // The Provider engine can merge WAV payloads, but this path
-                    // can't: the audio has ALREADY been streamed into the
-                    // recognizer's pipe by the time onVoiceEnd fires, so there
-                    // is nothing left to concatenate. The equivalent fix is to
-                    // keep the session open — a sub-2s burst just isn't a
-                    // reason to tear it down. iOS applies its 2 s floor to the
-                    // running total (VoiceInputPanel.swift:651); here the
-                    // recognizer holds the audio and we only track how much
-                    // speech it has been given.
-                    //
-                    // Without this, natural stop-start speech — "yes" (0.8 s),
-                    // pause, "send it" (0.9 s) — cancelled on the first burst
-                    // and could never be dictated.
-                    heldSpokenSeconds += spokenSeconds
-                    if (heldSpokenSeconds < MIN_SEGMENT_SECONDS) {
-                        Log.i(
-                            TAG,
-                            "[vad] silence close, spoken=${"%.2f".format(spokenSeconds)}s " +
-                                "(held ${"%.2f".format(heldSpokenSeconds)}s) — holding session open",
-                        )
-                        // Force-flush after HOLD_FLUSH_MS so an isolated cough
-                        // still settles instead of pinning the mic open. The
-                        // recognizer's own session cap still bounds the total.
-                        holdFlushRunnable?.let { mainHandler.removeCallbacks(it) }
-                        val flush = Runnable {
-                            val held = heldSpokenSeconds
-                            Log.i(TAG, "[vad] hold expired at ${"%.2f".format(held)}s — settling")
-                            stopVad()
-                            cancel()
-                            if (held > TOO_SHORT_FLOOR_SECONDS) {
-                                listener?.onError(
-                                    RecognitionError.NO_MATCH,
-                                    "Too short — tap the mic and speak.",
-                                )
-                            }
-                        }
-                        holdFlushRunnable = flush
-                        mainHandler.postDelayed(flush, HOLD_FLUSH_MS)
-                        return
-                    }
-                    holdFlushRunnable?.let { mainHandler.removeCallbacks(it) }
-                    holdFlushRunnable = null
-                    Log.i(TAG, "[vad] silence close, spoken=${"%.2f".format(spokenSeconds)}s — finalising")
-                    finaliseSession()
-                }
-
-                override fun onSessionLimit(limit: SessionLimit) {
-                    // Not a failure — the session ran out its allowance. Commit
-                    // whatever the recognizer has rather than discarding it, so
-                    // a long dictation that hits the 300 s ceiling is not lost.
-                    Log.i(TAG, "[vad] session limit $limit — finalising")
-                    finaliseSession()
-                }
-
-                override fun onCaptureError(message: String) {
-                    // Endpointing died; leave the recognizer running on the
-                    // platform's own timing rather than stranding the user
-                    // with a mic that never stops.
-                    Log.w(TAG, "[vad] endpointing unavailable, platform timing applies: $message")
-                    stopVad()
-                }
-            },
-        )
+        val det = VoiceActivityDetector(appContext, endpointCallbacks(capture))
         // ONE capture serves both: the VAD judges these samples and the very
         // same frames go down the pipe to the recogniser.
-        det.rawAudioSink = { bytes, len ->
-            val out = audioPipeStream
-            if (out != null) {
-                try {
-                    out.write(bytes, 0, len)
-                } catch (t: Throwable) {
-                    // Recogniser closed its end (finished or died). Stop
-                    // writing; the session is over either way.
-                    Log.i(TAG, "[vad] audio pipe closed by reader: ${t.javaClass.simpleName}")
-                    audioPipeStream = null
-                }
-            }
-        }
+        det.rawAudioSink = ::writeAudioPipe
+        // nanoMuse: retain the detector until the capture job's resource finally completes.
+        captureResources.track({ det.cancel() }, { det.awaitStopped() })
         when (val err = det.start()) {
             null -> {
                 vad = det
@@ -435,6 +343,111 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
             }
         }
     }
+
+    private fun endpointCallbacks(capture: Long): VoiceActivityListener = object : VoiceActivityListener {
+        override fun onVoiceStart() {
+            onMain {
+                if (capture != captureGeneration) return@onMain
+                speechStartedAt = System.currentTimeMillis()
+                heardSpeech = true
+                Log.i(TAG, "[vad] speech start")
+            }
+        }
+
+        override fun onLevel(level: Float) {
+            onMain {
+                if (capture != captureGeneration) return@onMain
+                // Drive the waveform from the VAD's AGC-boosted tap rather
+                // than onRmsChanged: it updates ~10x more often and uses
+                // the same perceptual curve as iOS. Mapped back onto the
+                // [0,12] scale SpeechRecognitionManager normalises from.
+                listener?.onRmsDb(level * 12f)
+            }
+        }
+
+        override fun onVoiceEnd(wav: ByteArray, reason: SegmentEndReason, spokenSeconds: Float) {
+            onMain {
+                if (capture != captureGeneration) return@onMain
+                if (reason != SegmentEndReason.SILENCE_DETECTED) return@onMain
+                speechStartedAt = 0L
+
+                // iOS discards a silence-closed segment under 2.0 s
+                // outright (VoiceInputPanel.swift:652-663) — a cough or a
+                // door shouldn't commit text. Cancel rather than stop so
+                // the recognizer produces no result at all.
+                //
+                // spokenSeconds is measured from the audio payload; a
+                // wall-clock figure would include the ~5 s silence that
+                // closed the segment and could never fall below 2 s.
+                // [T-android-vad-merge-segments] Accumulate DURATION, don't
+                // cancel.
+                //
+                // The Provider engine can merge WAV payloads, but this path
+                // can't: the audio has ALREADY been streamed into the
+                // recognizer's pipe by the time onVoiceEnd fires, so there
+                // is nothing left to concatenate. The equivalent fix is to
+                // keep the session open — a sub-2s burst just isn't a
+                // reason to tear it down. iOS applies its 2 s floor to the
+                // running total (VoiceInputPanel.swift:651); here the
+                // recognizer holds the audio and we only track how much
+                // speech it has been given.
+                //
+                // Without this, natural stop-start speech — "yes" (0.8 s),
+                // pause, "send it" (0.9 s) — cancelled on the first burst
+                // and could never be dictated.
+                heldSpokenSeconds += spokenSeconds
+                if (heldSpokenSeconds < MIN_SEGMENT_SECONDS) {
+                    Log.i(
+                        TAG,
+                        "[vad] silence close, spoken=${"%.2f".format(spokenSeconds)}s " +
+                            "(held ${"%.2f".format(heldSpokenSeconds)}s) — holding session open",
+                    )
+                    // Force-flush after HOLD_FLUSH_MS so an isolated cough
+                    // still settles instead of pinning the mic open. The
+                    // recognizer's own session cap still bounds the total.
+                    holdFlushRunnable?.let { mainHandler.removeCallbacks(it) }
+                    val flush = Runnable {
+                        if (capture != captureGeneration) return@Runnable
+                        val held = heldSpokenSeconds
+                        Log.i(TAG, "[vad] hold expired at ${"%.2f".format(held)}s — settling")
+                        listener?.onError(RecognitionError.NO_MATCH, "Too short — tap the mic and speak.")
+                        cancel()
+                    }
+                    holdFlushRunnable = flush
+                    mainHandler.postDelayed(flush, HOLD_FLUSH_MS)
+                    return@onMain
+                }
+                holdFlushRunnable?.let { mainHandler.removeCallbacks(it) }
+                holdFlushRunnable = null
+                Log.i(TAG, "[vad] silence close, spoken=${"%.2f".format(spokenSeconds)}s — finalising")
+                finaliseSession()
+            }
+        }
+
+        override fun onSessionLimit(limit: SessionLimit) {
+            onMain {
+                if (capture != captureGeneration) return@onMain
+                // Not a failure — the session ran out its allowance. Commit
+                // whatever the recognizer has rather than discarding it, so
+                // a long dictation that hits the 300 s ceiling is not lost.
+                Log.i(TAG, "[vad] session limit $limit — finalising")
+                finaliseSession()
+            }
+        }
+
+        override fun onCaptureError(message: String) {
+            onMain {
+                if (capture != captureGeneration) return@onMain
+                // nanoMuse: a dead audio feeder is terminal, not microphone-ready.
+                Log.w(TAG, "[vad] endpointing unavailable: $message")
+                listener?.onError(RecognitionError.AUDIO_ERROR, message)
+                stopVad()
+                closeAudioPipe()
+            }
+        }
+    }
+
+    private fun writeAudioPipe(bytes: ByteArray, len: Int) = audioPipes.write(bytes, len)
 
     /**
      * End the recognition session the way EXTRA_AUDIO_SOURCE defines it:
@@ -487,9 +500,9 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
             endContinuousSession()
             return
         }
-        audioPipeRead = pipe[0]
-        audioPipeWrite = pipe[1]
-        audioPipeStream = android.os.ParcelFileDescriptor.AutoCloseOutputStream(pipe[1])
+        audioPipes.install(io.github.nanomuse.dot.voice.CapturePipe(
+            pipe[0], pipe[1], android.os.ParcelFileDescriptor.AutoCloseOutputStream(pipe[1]),
+        ))
         feedingAudio = true
 
         startInternal(locale, allowOnDeviceRetry = false)
@@ -505,23 +518,22 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
         val all = joinedTranscript(bufferedPartial.orEmpty())
         segmentTranscript.setLength(0)
         bufferedPartial = null
+        // nanoMuse: continuous application commit is distinct from a platform final.
+        if (VoiceProofTap.ownsCapture(this, captureGeneration, platformGeneration))
+            VoiceProofTap.asr(this, captureGeneration, platformGeneration, "application_continuous_end") { all }
         if (all.isNotEmpty()) listener?.onFinal(all) else listener?.onFinal("")
         tearDown()
     }
 
     private fun closeAudioPipe() {
-        audioPipeStream?.let { runCatching { it.close() } }
-        audioPipeStream = null
-        audioPipeWrite = null
-        audioPipeRead?.let { runCatching { it.close() } }
-        audioPipeRead = null
+        audioPipes.retireCurrent()
         feedingAudio = false
     }
 
     private fun stopVad() {
         vad?.let {
             it.rawAudioSink = null
-            runCatching { it.stop() }
+            runCatching { it.stop() }.onFailure { cleanupFailure = it }
         }
         vad = null
         speechStartedAt = 0L
@@ -545,7 +557,10 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
      * it false, which forces the regular (typically cloud) recognizer.
      */
     private fun startInternal(locale: Locale, allowOnDeviceRetry: Boolean) {
-        mainHandler.post {
+        // nanoMuse: a cancelled/retired posted start cannot open a newer capture's recognizer.
+        val generation = ++platformGeneration
+        onMain {
+            if (platformGeneration != generation) return@onMain
             try {
                 // Only reach for the on-device recognizer when the user actually
                 // asked for offline. It used to be created unconditionally on
@@ -558,15 +573,22 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
                     allowOnDeviceRetry
                 val r = if (wantOnDevice) {
-                    try { SpeechRecognizer.createOnDeviceSpeechRecognizer(appContext) }
-                    catch (_: Throwable) { SpeechRecognizer.createSpeechRecognizer(appContext) }
+                    // nanoMuse: record the branch that really succeeded; keep usingOnDevice policy unchanged.
+                    try { SpeechRecognizer.createOnDeviceSpeechRecognizer(appContext).also {
+                        VoiceProofTap.factory(this, captureGeneration, generation, it, "on_device")
+                    } }
+                    catch (_: Throwable) { SpeechRecognizer.createSpeechRecognizer(appContext).also {
+                        VoiceProofTap.factory(this, captureGeneration, generation, it, "regular_fallback")
+                    } }
                 } else {
-                    SpeechRecognizer.createSpeechRecognizer(appContext)
+                    SpeechRecognizer.createSpeechRecognizer(appContext).also {
+                        VoiceProofTap.factory(this, captureGeneration, generation, it, "regular")
+                    }
                 }
                 usingOnDevice = wantOnDevice
                 pendingLocale = locale
                 recognizer = r
-                r.setRecognitionListener(callbacks)
+                r.setRecognitionListener(callbacksFor(generation))
                 r.startListening(buildIntent(locale))
             } catch (e: Throwable) {
                 Log.w(TAG, "startListening threw: ${e.message}")
@@ -584,6 +606,8 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
     @Volatile private var pendingLocale: Locale? = null
 
     override fun stop() {
+        // nanoMuse: VAD/session-limit stop uses the same owner's timeout as a manual stop.
+        listener?.onFinishing()
         // [T-android-vad] Order matters. stopListening() first, so the
         // recogniser finalises what it already has and delivers onResults;
         // only then close the pipe. Closing first (which segmented-session
@@ -592,7 +616,10 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
         //
         // Our capture is stopped here because nothing else will — the
         // recogniser only owns the pipe, not the AudioRecord behind it.
-        mainHandler.post {
+        // nanoMuse: queued stop belongs to this platform generation only.
+        val generation = platformGeneration
+        onMain {
+            if (generation != platformGeneration) return@onMain
             // [T-android-continuous-dictation] Disarm BEFORE stopListening, so
             // the onResults it triggers ends the dictation instead of starting
             // another segment.
@@ -611,16 +638,41 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
             stopVad()
             closeAudioPipe()
             try { recognizer?.stopListening() }
-            catch (e: Throwable) { Log.w(TAG, "stopListening: ${e.message}") }
+            catch (e: Throwable) {
+                Log.w(TAG, "stopListening: ${e.message}")
+                listener?.onError(RecognitionError.UNKNOWN, e.message)
+            }
         }
     }
 
     override fun cancel() {
-        mainHandler.post {
+        // nanoMuse: invalidate immediately, before the posted platform cleanup runs.
+        ++platformGeneration
+        ++captureGeneration
+        listener = null
+        val generation = platformGeneration
+        onMain {
+            if (generation != platformGeneration) return@onMain
             try { recognizer?.cancel() }
             catch (e: Throwable) { Log.w(TAG, "cancel: ${e.message}") }
             tearDown()
         }
+    }
+
+    // nanoMuse: the manager keeps admission until posted teardown AND VAD completion.
+    override suspend fun cancelAndJoin() {
+        var failure: Throwable? = null
+        try {
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main.immediate) {
+                ++platformGeneration
+                ++captureGeneration
+                listener = null
+                try { recognizer?.cancel() } finally { tearDown() }
+            }
+        } catch (t: Throwable) { failure = t }
+        try { captureResources.closeAndJoin() } catch (t: Throwable) { failure = t }
+        try { audioPipes.closeAndJoin() } catch (t: Throwable) { failure = t }
+        (failure ?: cleanupFailure)?.let { markDegraded(); throw it }
     }
 
     override fun markDegraded() {
@@ -632,7 +684,11 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
     }
 
     private fun tearDown() {
-        try { recognizer?.destroy() } catch (_: Throwable) {}
+        // nanoMuse: stale platform/VAD callbacks must not reach the next listener or restart it.
+        ++platformGeneration
+        ++captureGeneration
+        // nanoMuse: cleanup errors remain observable after all other resources are attempted.
+        try { recognizer?.destroy() } catch (t: Throwable) { cleanupFailure = t }
         recognizer = null
         // [T-android-vad] The VAD holds the mic; leaking it past a session
         // would keep recording after the user stopped. The pipe must go too —
@@ -736,7 +792,7 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
             // recogniser transcribes, and closing the pipe ends the session:
             // "The recognition session will end when and only when the audio
             // is closed" (RecognizerIntent.EXTRA_AUDIO_SOURCE).
-            audioPipeRead?.let { readEnd ->
+            audioPipes.read?.let { readEnd ->
                 putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE, readEnd)
                 putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_ENCODING, AudioFormat.ENCODING_PCM_16BIT)
                 putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_SAMPLING_RATE, VoiceActivityDetector.SAMPLE_RATE)
@@ -777,6 +833,46 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
                 )
             }
         }
+    }
+
+    // nanoMuse: each platform listener carries its own generation, including internal restarts.
+    private fun callbacksFor(generation: Long): RecognitionListener = object : RecognitionListener {
+        override fun onReadyForSpeech(params: Bundle?) { if (generation == platformGeneration) callbacks.onReadyForSpeech(params) }
+        override fun onBeginningOfSpeech() { if (generation == platformGeneration) callbacks.onBeginningOfSpeech() }
+        override fun onBufferReceived(buffer: ByteArray?) { if (generation == platformGeneration) callbacks.onBufferReceived(buffer) }
+        override fun onEndOfSpeech() { if (generation == platformGeneration) callbacks.onEndOfSpeech() }
+        override fun onEvent(eventType: Int, params: Bundle?) { if (generation == platformGeneration) callbacks.onEvent(eventType, params) }
+        override fun onRmsChanged(rms: Float) { if (generation == platformGeneration) callbacks.onRmsChanged(rms) }
+        // nanoMuse: passive platform entry is inside the original generation guard, before one forwarding.
+        override fun onPartialResults(results: Bundle?) { if (generation == platformGeneration) {
+            observePlatform(generation, "platform_partial", results)
+            callbacks.onPartialResults(results)
+        } }
+        override fun onResults(results: Bundle?) { if (generation == platformGeneration) {
+            observePlatform(generation, "platform_results", results)
+            callbacks.onResults(results)
+        } }
+        override fun onSegmentResults(results: Bundle) { if (generation == platformGeneration) {
+            observePlatform(generation, "platform_segment", results)
+            callbacks.onSegmentResults(results)
+        } }
+        override fun onEndOfSegmentedSession() { if (generation == platformGeneration) {
+            observePlatform(generation, "platform_segmented_end", null)
+            callbacks.onEndOfSegmentedSession()
+        } }
+        override fun onError(error: Int) { if (generation == platformGeneration) {
+            observePlatform(generation, "platform_error", null, error)
+            callbacks.onError(error)
+        } }
+    }
+
+    // nanoMuse: no Bundle read or payload copy outside the registered public capture owner.
+    private fun observePlatform(generation: Long, kind: String, results: Bundle?, error: Int? = null) {
+        if (VoiceProofTap.ownsCapture(this, captureGeneration, generation))
+            VoiceProofTap.asr(this, captureGeneration, generation, kind) {
+                if (error != null) error.toString()
+                else results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty()
+            }
     }
 
     private val callbacks = object : RecognitionListener {
@@ -825,6 +921,9 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
                 Log.i(TAG, "[partial] reset detected (${prev.length}→${text.length}) — folding previous into transcript")
                 if (segmentTranscript.isNotEmpty()) segmentTranscript.append(' ')
                 segmentTranscript.append(prev)
+                // nanoMuse: preserve partial folding as application provenance, not platform final.
+                if (VoiceProofTap.ownsCapture(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration))
+                    VoiceProofTap.asr(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration, "application_partial_fold") { prev }
             }
             bufferedPartial = text
         }
@@ -837,6 +936,9 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
             // Prefer the final; fall back to the last partial when the
             // recognizer returned an empty final but did hear something.
             val committed = text.ifEmpty { bufferedPartial.orEmpty() }
+            // nanoMuse: an empty platform result's buffered replacement remains explicitly application salvage.
+            if (text.isEmpty() && committed.isNotEmpty() && VoiceProofTap.ownsCapture(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration))
+                VoiceProofTap.asr(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration, "application_empty_final_salvage") { committed }
             Log.i(
                 TAG,
                 "onResults finalLen=${text.length} bufferedLen=${bufferedPartial?.length ?: 0} " +
@@ -892,6 +994,9 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
          */
         override fun onEndOfSegmentedSession() {
             val tail = bufferedPartial.orEmpty()
+            // nanoMuse: a trailing partial does not become a platform segment final in evidence.
+            if (tail.isNotEmpty() && VoiceProofTap.ownsCapture(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration))
+                VoiceProofTap.asr(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration, "application_trailing_partial") { tail }
             bufferedPartial = null
             Log.i(
                 TAG,
@@ -921,6 +1026,9 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
             sessionCommitted = true
             if (text.isBlank() && heardSpeech) {
                 Log.w(TAG, "[commit] speech heard but zero text — surfacing TRANSCRIPTION_FAILED")
+                // nanoMuse: record only the original application outcome, no synthesized platform result.
+                if (VoiceProofTap.ownsCapture(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration))
+                    VoiceProofTap.asr(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration, "application_commit_error") { "TRANSCRIPTION_FAILED" }
                 listener?.onError(
                     RecognitionError.TRANSCRIPTION_FAILED,
                     "Speech detected but nothing was transcribed. If this keeps happening, " +
@@ -930,6 +1038,9 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
                 tearDown()
                 return
             }
+            // nanoMuse: the original listener receives the original final exactly once.
+            if (VoiceProofTap.ownsCapture(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration))
+                VoiceProofTap.asr(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration, "application_commit") { text }
             listener?.onFinal(text)
             tearDown()
         }
@@ -1003,6 +1114,9 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
             if (salvaged.isNotEmpty()) {
                 Log.i(TAG, "[continuous] salvaging ${salvaged.length} chars from error $errorCode")
                 bufferedPartial = null
+                // nanoMuse: error salvage is an application result with a separate origin.
+                if (VoiceProofTap.ownsCapture(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration))
+                    VoiceProofTap.asr(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration, "application_error_salvage") { salvaged }
                 listener?.onFinal(salvaged)
                 tearDown()
                 return
@@ -1026,6 +1140,9 @@ class SystemSpeechRecognitionEngine(private val appContext: Context) : SpeechRec
                     "install the offline language pack in system voice-input settings, " +
                     "or switch to a provider recognizer."
             } else msg
+            // nanoMuse: retain application error identity without copying unrelated freeform error detail.
+            if (VoiceProofTap.ownsCapture(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration))
+                VoiceProofTap.asr(this@SystemSpeechRecognitionEngine, captureGeneration, platformGeneration, "application_error") { effErr.name }
             listener?.onError(effErr, effMsg)
             tearDown()
         }

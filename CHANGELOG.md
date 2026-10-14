@@ -4,6 +4,111 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ## [Unreleased]
 
+- Preserved the Care card until region chat gained focus and retained the focused conversation for later selections, with Stop available throughout.
+
+- Sampled fresh host-bounded accessibility nodes for Android Care planning and verification, avoiding unused screenshot requests and their rate limit.
+
+- Sent Android region questions with their masked image, without appended accessibility-node answers, when the selected model explicitly supports images; retained the selected-text fallback for other models.
+
+- Refined Android foreground cobalt glass with fading inner edges, corner highlights and softer input borders; kept streaming reply tails visible through finalization and viewport shrink while preserving manual reading positions.
+
+- Connected closed crystal-orb drags to foreground region previews, masked outside/password pixels and excluded crossing or aggregating text nodes; sent selected accessible text through the canonical user message and attached pixels only for explicitly image-capable models.
+
+- Prevented inward drags from the edge orb from also invoking Android Back by reserving only its 48dp touch area for orb gestures.
+
+- Unified Android foreground chat and Care with a transparent cobalt shell, inset glass highlights, compact status text and a separate 48dp Stop icon; kept readable local input/menu backgrounds and existing message padding.
+
+- Delayed Android Care's first screen sample until its goal editor and keyboard settled, with a cancellable five-second deadline that screen events cannot extend.
+
+- Adjusted Android foreground message padding to preserve 8dp above and below text when the transcript has room, including naturally short Care cards.
+
+- Kept Android Care target outlines visible at the top screen edge by preventing a second system-inset adjustment, while preserving touch-through and non-focusable behavior.
+
+- Excluded cached ARM sandbox assets from x86_64 Android emulator APKs when switching build profiles, while preserving default asset filters and arm64 payloads.
+
+- Gave Android foreground chat and Care message bubbles translucent cobalt-blue backgrounds with white text and actions, more padding and separation, and 1.45-times line height; reserved panel space for visible text, previews and recovery actions within the existing height bounds.
+- Stopped unchanged Care card geometry from repeatedly requesting native window layout.
+
+- Added a long-press crystal action menu for Chat, Screen, Care and existing dictation, with bounded placement and shared cancellation ownership.
+- Replaced Care leaders with a target contour and finite, grapheme-aware foreground text cues while keeping the complete instruction in bottom chat.
+- Unified Android default avatar moods and multilingual identity/examples around the blue crystal, preserving personal avatars and actual upstream service attribution.
+- Reused reviewed upstream fixes for Anthropic API-key request construction and ANSI/carriage-return text sanitation, with corrected provider fixtures.
+
+- Simplified foreground chat and Care into one status header, bottom bubble conversation and in-panel secondary controls while retaining draft, history, Stop and target-aware placement.
+- Added sparse translucent crystal afterimages to the soft-blue drag trail using the existing atlas and motion lifetime; preserved the approved visual references with checksums.
+- Added a project-local Android verification skill adapted from pinned pstack sources, candidate-linked evidence checks and explicit current-screen verification guidance for Care.
+
+- Unified Android toolchain checks, scoped/full unit checks and paired emulator APK builds through one entry point; recorded source fingerprints, actual package metadata, signatures and hashes in unique candidate receipts while preserving CI artifact paths.
+
+- Kept screen-analysis Stop visible during sampling with overlay-free Android 14+ window captures and fresh foreground text snapshots on older Android versions; isolated prior capture errors from new Care status.
+- Connected compact placement, bounded click/drag adjustment and Expand to the actual Care card while preserving its conversation and unsent goal editor.
+- Added a light transparent blue glass base to foreground chat and Care, with edge highlights and local reading plates; retained current-target avoidance and movable compact controls.
+
+- Kept full Dot reply lines visible in short keyboard hosts at 200% text by sharing compact status/Stop with the scrolling controls viewport.
+
+- Preserved the mounted Dot chat, draft and transcript state during foreground target avoidance, keyboard and display changes; added owner-backed status and compact Expand/placement controls with localized labels.
+
+- Unified Dot breathing, press, trail and edge-snap motion durations across generated platform tokens; Android uses measured release velocity and interruptible native springs, with immediate reduced-motion cleanup.
+- Scoped Android Dot foreground admission to the accessibility connection, rejected late capture/status results after Stop or account replacement, and recreated transient Care owners on reconnect while preserving canonical history.
+
+- Added opt-in Android diagnostic voice observation bound to the actual Dot session and resource generations, with bounded request-owned synthesis PCM and separate platform/application recognition provenance; ordinary debug and every release retained stateless producers, while actual audio acceptance remained pending.
+
+- Fixed the Android capture scanner's effective motion detection, visible drawing lifetime and full-display perimeter around system bars.
+
+- Preserved at least 48dp of foreground chat history in short keyboard hosts at 200% text size after native pixel rounding.
+
+- Kept the complete current Care instruction available in chat, fixed compact foreground chat height with short keyboard hosts and enlarged text, and preserved keyboard-first Care Back handling across direct supported paths.
+
+- Kept Dot conversations and Care goals, instructions and confirmed steps in bounded foreground bubble panels; added a capture-owned blue screen-edge scan and touch-through target tracing, while moving visible Care chat upward around targets and retaining keyboard, voice and cancellation ownership.
+
+- Preserved desktop navigation and saved profile accents while integrating the shared blue palette; branding regenerated token defaults without corrupting the TypeScript stylesheet.
+
+- Fixed Android Dot dictation retries after transient recognition errors and preserved reply playback cleanup failures across Stop and panel closure before microphone admission.
+- Connected Android Dot overlay dictation and explicit reply read-aloud to the shared voice manager, with a visible permission Activity, private microphone service, Stop notification and generation-scoped cancellation; native and genuine Chinese ASR/TTS acceptance remained pending.
+
+- Added Android capture tickets, awaited recorder/synthesis cleanup and guarded late voice callbacks; floating voice UI, permission/service integration and real ASR/TTS acceptance remained pending.
+
+- Deferred Android care-card measurement until its Compose window attached, and cancelled old layout callbacks when the card closed or detached.
+
+- Preserved crystal transparency across breathing frame transitions and made Android thinking/model-picker text and control accents follow the selected theme without low-opacity small text.
+
+- Replaced the Android Dot orb with a packaged ice-blue crystal breathing atlas and short, touch-through drag trails that stop with reduced motion or overlay cleanup; unified shared light/dark colors in blue while retaining theme and avatar preferences.
+
+- Kept Android care paused until remote VM jobs and cancellation cleanup actually completed, including compact/send handoffs and intercepted prompt jobs.
+
+- Added Android triple-tap care guidance with a touch-through target outline, accessible instruction and goal controls, explicit copy/confirmation, and service/automatic-operation ownership; native and real-model acceptance remained separate gates.
+
+- Added an Android care controller foundation that advanced only from fresh target evidence or explicit user confirmation, cleared stale targets on pause or scene changes, and closed owned snapshots; care UI and native acceptance remained pending.
+
+- Rejected whitespace-separated numeric calls in Android care instructions, copy text and expectations while retaining ordinary text guidance.
+
+- Rejected plainly executable unfenced code in Android care proposals while preserving ordinary text and URL guidance; documented the conservative recognition boundary.
+
+- Added a node-grounded Android care planner foundation that prepared one user instruction through a bounded read-only model request and rejected stale or unsupported proposals; real-model, care UI and evidence-advancement acceptance remained pending.
+
+- Masked sensitive Android LLM request headers before retaining debug logs and exporting request or agent traces; later caller mutations no longer changed logged headers.
+- Kept composer suggestions full width, announced send errors and added separate Feed request recovery.
+
+- Unified desktop and Web navigation under Chat, Tasks, Devices and Settings, retained the existing rooms and chat drafts, and added accessible state text, retry controls, system fonts and reduced-motion behavior.
+
+- Corrected gateway bootstrap instructions to require specific consent for temporary Hello World public URLs, confirmed closure before existing-Worker uploads and SQLite migration, and individual Worker Editor scopes with Dashboard domain connections.
+
+- Documented Mola-maker’s required human gateway deployment approval, permitted initiator review, and main-only deployment policy.
+
+- Required observed active-reader cancellation in the live verifier; empty or naturally completed streams fail cancellation acceptance. Strengthened required preflight headers and error-cache checks, and configured ignored writable dry-run logs.
+
+- Added exact-domain gateway CORS, credential-safe www redirects, an inference recovery switch, protected manual version publishing and bilingual deployment/rollback instructions. Prepared bounded protocol acceptance and private audio/counter probes; real deployment and device acceptance remained pending.
+
+- Added a real Android accessibility-overlay conversation sharing the main chat ViewModel. Double tap captured the host before opening the panel and kept a timestamped removable preview local until Send, with session-generation guards and temporary-file cleanup. Native panel and live gateway acceptance remained separate.
+
+- Added an optional Nanodot · Workers AI connection with dedicated project credentials and UUID ownership across clients. Project credentials remain bound during native provider edits, and unsaved Web keys are cleared before a changed destination is previewed. Connecting preserves existing Cloud accounts and model selections; local protocol fixtures pass, while deployment and live model/voice acceptance remain pending.
+
+- Prevented product-site builds from deleting source trees through custom output paths while preserving the dedicated generated output and external temporary builds.
+
+- Added bilingual Nanodot product, connection and privacy pages with offline Dot artwork, temporary P0 artifact ZIP checksums and honest preview states; preserved API JSON routing and the existing documentation base.
+
+- Added one source for Nanodot spacing, system typography and motion across native and Web clients, completed Android Material color roles, and documented accessible component states in English and Chinese.
+
 ### Nanodot P0
 
 - Establish the shared Nanodot brand profile, default assistant Dot, application ID `io.github.nanodot.app` and external `nanodot://` scheme. Internal Kotlin packages, `minis://` routes, sandbox paths and CLI names remain stable.
@@ -15,6 +120,12 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 - Keep version 1.0.1 / Android versionCode 44. Real-device install/upgrade acceptance and native Xcode, Windows and macOS packaging need their own evidence.
 
 ### Cloud
+
+- Added bounded Whisper WAV transcription and gated MeloTTS speech protocols; Chinese cloud speech remained disabled pending real decoding and listening. Android voice cancellation interrupted HTTP and discarded stopped utterances.
+
+- Fixed empty tool arrays and malformed reasoning/function deltas being accepted as successful gateway streams. Genuine tool-only replies remained supported.
+- Added allowlisted Workers AI model discovery, validated chat/vision adapters and OpenAI SSE streaming, with shared fixtures tested through the real Android provider. Qwen tool history remained gated pending verification; deployment and live acceptance remained separate.
+- Added private Worker project-credential authentication and persistent SQLite admission counters (40 attempts per UTC day globally, 12 per client in a rolling minute). Inference remained disabled pending the separately verified model routes.
 
 ### Runtime
 
@@ -33,6 +144,17 @@ Nanodot changes are recorded under Unreleased; historical entries below describe
 
 ### Android
 
+- Preserved Send/Stop glyph contrast during keyboard focus and held presses, named Goals/Feed actions with their actual checked state, and exposed Cloud mode/usage tab selection to native accessibility.
+
+- Kept the Android composer and Send/Stop reachable with large text and a shown landscape keyboard, added shared accessible page states and native selected controls, and bound Cloud/Network cancellation to actual requests while preserving input and error details.
+
+- Unified Android home navigation into labeled Chat, Tasks, Devices and Settings destinations, retained Feed/Ideas/Goals/Library inside Tasks, and adapted the same session host to bottom navigation, rail and conversation-list panes.
+
+- Added fresh, read-only Dot host snapshots with password redaction, serialized capture ownership and an explicit foreground screen-recording grant for Android 8–10; pixel errors kept distinct codes and a fresh text fallback.
+
+- Fixed stopping an Android OpenAI stream leaving its HTTP reader active until EOF. Kept reasoning output while omitting unsupported reasoning history only for the exact Nanodot HTTPS gateway origin.
+- Added a 48dp Dot accessibility orb with a persistent appearance switch, TalkBack actions, edge positioning within native system-bar and cutout bounds, and cleanup on lock, disconnect, and rotation. Pending conversation, screen, and care actions report that they are unavailable; showing Dot does not capture or record.
+- Prepared pure Dot orb gesture arbitration with exclusive single/double/triple taps, drag trajectories, and cancellation.
 - **The app starts beside OpenMinis.** Both apps bound the same Linux abstract socket, `native-offload`, for the sandbox's calls back into the app, and abstract sockets are one namespace for every app on the device, so whichever app started second failed to bind and died before its first screen. nanoMuse's socket is now `io.github.nanomuse.app.native-offload`; when even that is still held by a previous process of ours, the app binds a per-process name and tells proot that one instead of crashing (#271).
 - **When even the per-process socket cannot be bound, the crash names that socket.** The message used to blame the app's own socket name whatever had failed, and carried a dash; it now names the per-process socket that failed last and says that another process may hold the namespace (#288).
 

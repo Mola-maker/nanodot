@@ -9,6 +9,8 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- nanoMuse: explicit Dot microphone capture starts from a visible permission Activity. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <!-- T-android-fgs-timeout-crash: switched from dataSync to mediaPlayback.
          dataSync has a hard 6h/24h cumulative cap on Android 14+, after
          which the system throws ForegroundServiceDidNotStopInTimeException
@@ -175,6 +177,9 @@
          never go to Google's device backup; a reinstall starts empty and the account's chats come
          back through sync at sign-in (docs/sync.md). The two rule files below are kept for the day
          the switch is turned on again. -->
+    <!-- nanoMuse: explicit legacy capture has its own foreground-service type. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+
     <application
         android:name=".MinisApp"
         android:allowBackup="false"
@@ -478,6 +483,16 @@
                     android:path="/callback" />
             </intent-filter>
         </activity>
+
+        <!-- nanoMuse: legacy pixels require this separate visible system-consent entry. -->
+        <activity android:name="io.github.nanomuse.dot.screen.LegacyProjectionPermissionActivity" android:exported="false" android:theme="@style/Theme.Minis" />
+        <service android:name="io.github.nanomuse.dot.screen.LegacyProjectionService" android:exported="false" android:foregroundServiceType="mediaProjection" />
+
+        <!-- nanoMuse: private in-process voice authorization; never rearm on process restart. -->
+        <activity android:name="io.github.nanomuse.dot.voice.DotVoicePermissionActivity"
+            android:exported="false" android:excludeFromRecents="true" android:theme="@style/Theme.Minis" />
+        <service android:name="io.github.nanomuse.dot.voice.DotMicrophoneService"
+            android:exported="false" android:foregroundServiceType="microphone" />
 
         <!-- Agent foreground service -->
         <!-- T-android-fgs-timeout-crash: type=mediaPlayback to escape the

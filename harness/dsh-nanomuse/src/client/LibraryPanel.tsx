@@ -7,6 +7,7 @@
  * Markdown rendered and editable in place, pictures, video and audio played,
  * a web page framed — with Open (the system app) and Reveal.
  */
+import { DotStatus } from './DotStatus.tsx'
 import { failureText } from './api.ts'
 import { createElement as h, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import type { Translate } from './api.ts'
@@ -135,8 +136,9 @@ export function makeLibraryPanel(t: Translate) {
       column,
       h('div', { className: 'nm-lib-main' },
         h('div', { className: 'nm-room-top', 'data-window-drag': true }),
+      !rooms.streaming ? h(DotStatus, { state: 'loading', message: t('dotOffline') }) : null,
         head,
-        h('div', { className: 'nm-room-body' }, h('div', { className: 'nm-room-inner nm-lib-inner' }, error ? h('div', { className: 'nm-room-error' }, error) : null, grid))))
+        h('div', { className: 'nm-room-body' }, h('div', { className: 'nm-room-inner nm-lib-inner' }, error ? h(DotStatus, { state: 'error', message: error }) : null, grid))))
   }
 }
 
@@ -202,7 +204,7 @@ function Viewer({ t, item, lang, onBack, onOpen, onReveal, onRemove, onFail }: {
   else if (item.kind === 'video') body = h('div', { className: 'nm-view-media' }, h('video', { src: fileUrl(item.id), controls: true }))
   else if (item.kind === 'audio') body = h('div', { className: 'nm-view-media nm-view-audio' }, h(IconWave, { size: 40 }), h('audio', { src: fileUrl(item.id), controls: true }))
   else if (item.kind === 'web') body = h('iframe', { className: 'nm-view-frame', src: fileUrl(item.id), sandbox: 'allow-same-origin', title: item.name })
-  else if (state === 'loading') body = h('div', { className: 'nm-view-loading' }, h('span', { className: 'nm-spinner' }))
+  else if (state === 'loading') body = h(DotStatus, { state: 'loading', message: t('dotLoading') })
   else if (state === 'binary' || text === undefined) body = h(Empty, { icon: h(Icon, { size: 28 }), text: t('libBinary') }, h('button', { type: 'button', className: 'nm-pill nm-pill-sm', onClick: onOpen }, t('libOpen')))
   else if (editing) body = h('textarea', { className: 'nm-view-editor', value: draft, spellCheck: false, onChange: (e: FormEvent<HTMLTextAreaElement>) => setDraft(e.currentTarget.value) })
   else body = markdown ? h(Markdown, { text, className: 'nm-view-md' }) : h('pre', { className: 'nm-view-pre' }, text)

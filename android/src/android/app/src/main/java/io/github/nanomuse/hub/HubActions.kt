@@ -76,6 +76,8 @@ object HubActions {
             call.fail("not_allowed", "the person holding ${Hub.name(context)} did not allow ${call.senderName} to do that")
             return
         }
+        val careLease = if (call.action in setOf("shell", "open", "task"))
+            io.github.nanomuse.dot.care.CareOperationGate.acquire() else null
         try {
             when (call.action) {
                 "shell" -> shell(context, call)
@@ -92,7 +94,7 @@ object HubActions {
             }
         } catch (e: Refused) {
             call.fail(e.code, e.message ?: e.code)
-        }
+        } finally { careLease?.close() }
     }
 
     class Refused(val code: String, message: String) : Exception(message)
@@ -302,7 +304,8 @@ object HubActions {
         val stopped: Boolean
         val result = try {
             runBlocking {
-                HeadlessChatRunner.prompt(context = app, sessionId = sessionId, text = prompt, attachments = emptyList(), thinkingLevel = null, wait = true, timeoutMs = TASK_TIMEOUT_MS)
+                HeadlessChatRunner.prompt(context = app, sessionId = sessionId, text = prompt, attachments = emptyList(), thinkingLevel = null, wait = true, timeoutMs = TASK_TIMEOUT_MS,
+                    onOperationState = io.github.nanomuse.dot.care.CareOperationGate::retainUntilIdle)
             }
         } finally {
             relay.cancel()

@@ -16,6 +16,7 @@
  * device is a chat here from the moment it is pulled, and nothing in the column
  * says where a chat was written — the bubbles do (`RemoteBubbles.ts`).
  */
+import { DotStatus } from './DotStatus.tsx'
 import { createElement as h, useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react'
 import { call, type Translate } from './api.ts'
 import { IconMore, IconPlus, IconSearch } from './icons.tsx'
@@ -312,7 +313,7 @@ export function MuseChats({ t, useSessions, useSessionStatus, useWorkspaces, act
         h('span', null, t('chSide')),
         h('button', { type: 'button', className: 'nm-icon-btn nm-icon-btn-sm', 'aria-label': t('chNewSide'), title: t('chNewSide'), onClick: actions.startSession }, h(IconPlus, { size: 16 }))),
       side.length === 0
-        ? h('div', { className: 'nm-chats-empty' }, q === '' ? t('chEmpty') : t('chNoMatch'))
+        ? h(DotStatus, { state: 'empty', message: q === '' ? t('chEmpty') : t('chNoMatch') })
         : side.map((chat) => h(ChatRow, {
             key: chat.id,
             t,

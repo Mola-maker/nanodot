@@ -161,7 +161,7 @@ function SettingsPanel({ t, rows, renderSlot, activeId, from, onSelect, onBack, 
               ? h('button', { type: 'button', className: 'nm-cn-back nm-settings-back', 'data-testid': 'nm-settings-back', 'aria-label': t('navBackTo', { page: fromRow.label }), onClick: onBack }, h(IconChevronLeft, { size: 16 }), fromRow.label)
               : null,
             renderSlot('settings.action', {}),
-            h('button', { type: 'button', className: 'nm-close', onClick: onClose },
+            h('button', { type: 'button', className: 'nm-close', 'aria-label': t('close'), onClick: onClose },
               h(IconClose, { size: 14 }),
               h('span', { className: 'nm-hidden' }, renderSlot('settings.close', {}, { fallback: t('close') })))),
           h('div', { className: 'nm-settings-body', key: active },

@@ -27,6 +27,7 @@ from loguru import logger
 from openai import AsyncOpenAI
 
 from nanomuse.config import LLMSettings, MemorySettings
+from nanomuse.llm.gateway_profile import may_inherit_project_key
 from nanomuse.memory.store import MemoryItem, MemoryStore, content_hash
 
 OPENAI_DEFAULT = "text-embedding-3-small"
@@ -99,6 +100,11 @@ class Embedder:
         self.base_url = memory.embedding_base_url or llm.base_url or "https://api.openai.com/v1"
         self.model = memory.embedding_model or default_model(self.base_url)
         key = api_key if api_key is not None else (memory.embedding_api_key or llm.api_key)
+        # nanoMuse: enforce project-origin isolation for direct and vault-resolved callers.
+        if not memory.embedding_api_key and not may_inherit_project_key(
+            llm.provider, llm.api_key, self.base_url
+        ):
+            key = ""
         # the chat endpoint's headers (a gateway's end-user id) belong to that endpoint only
         headers = None if own_endpoint else (llm.extra_headers or None)
         self.client = AsyncOpenAI(

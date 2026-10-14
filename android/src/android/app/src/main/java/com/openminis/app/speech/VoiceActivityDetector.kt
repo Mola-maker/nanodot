@@ -240,7 +240,9 @@ class VoiceActivityDetector(
     @Volatile
     private var vad: VADWrapper? = null
     private var recorder: AudioRecord? = null
-    private var captureJob: Job? = null
+    // nanoMuse: completion includes the allocated recorder's finally, including failed startup.
+    private val captureWorker = io.github.nanomuse.dot.voice.CaptureWorker()
+    @Volatile private var cleanupFailure: Throwable? = null
     private val scope = CoroutineScope(Dispatchers.IO)
 
     // AGC state, carried frame to frame.
@@ -334,7 +336,16 @@ class VoiceActivityDetector(
         }
         recorder = rec
 
-        captureJob = scope.launch { captureLoop(rec) }
+        // nanoMuse: completion owns the recorder even before the IO dispatcher starts it.
+        captureWorker.start(scope, { captureLoop(rec) }, {
+            try {
+                runCatching { rec.stop() }
+                rec.release()
+            } finally {
+                if (recorder === rec) recorder = null
+                stopInternal()
+            }
+        })
         return null
     }
 
@@ -491,8 +502,6 @@ class VoiceActivityDetector(
             }
         }
 
-        try { rec.stop() } catch (_: Throwable) {}
-        rec.release()
     }
 
     /** iOS's noise-aware AGC, ported verbatim (`VoiceActivityDetector.swift:617-655`). */
@@ -537,7 +546,7 @@ class VoiceActivityDetector(
         override fun onVoiceStart() {
             isSpeaking = true
             segmentSamples = 0
-            listener.onVoiceStart()
+            if (!cancelled.get()) listener.onVoiceStart()
         }
 
         override fun onVoiceEnd(wav: ByteArray?) {
@@ -546,7 +555,7 @@ class VoiceActivityDetector(
             lastSpeechAtMs = System.currentTimeMillis()
             val reason = pendingReason ?: SegmentEndReason.SILENCE_DETECTED
             pendingReason = null
-            if (wav == null || wav.isEmpty()) return
+            if (cancelled.get() || wav == null || wav.isEmpty()) return
             // Duration from the payload, NOT wall-clock: the interval between
             // speech-start and this callback necessarily contains the ~5 s
             // silence that closed the segment, so a wall-clock figure can never
@@ -573,6 +582,13 @@ class VoiceActivityDetector(
         stopInternal()
     }
 
+    // nanoMuse: cancellation alone is not proof that AudioRecord has left its finally.
+    suspend fun awaitStopped() {
+        captureWorker.awaitStopped()
+        cleanupFailure?.let { throw it }
+    }
+    suspend fun cancelAndJoin() { cancel(); awaitStopped() }
+
     private fun stopInternal() {
         running.set(false)
         isSpeaking = false
@@ -581,16 +597,17 @@ class VoiceActivityDetector(
         captureStartedAtMs = 0
         lastSpeechAtMs = 0
         backgroundedAtMs = 0
-        captureJob?.let { runCatching { it.cancel() } }
-        captureJob = null
-        recorder = null
+        captureWorker.cancel()
+        // nanoMuse: unblock read, retain the job until awaitStopped confirms recorder release.
+        runCatching { recorder?.stop() }
         // Null the reference and free the native object under the same lock the
         // capture thread holds while inside processAudio, so release() waits for
         // any in-flight frame instead of freeing underneath it.
         synchronized(vadLock) {
             val w = vad
             vad = null
-            w?.let { runCatching { it.release() } }
+            // nanoMuse: failed native release must not be reported as successful cleanup.
+            w?.let { runCatching { it.release() }.onFailure { cleanupFailure = it } }
         }
     }
 }

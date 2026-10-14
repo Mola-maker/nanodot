@@ -87,7 +87,7 @@ export function Avatar({ size, profile, mood = 'idle', className, title, still =
   const box: CSSProperties = { width: size, height: size }
   const emoji = profile?.avatar === 'emoji'
   const inner = emoji
-    ? h('span', { className: 'nm-avatar-emoji', style: { background: profile.color || '#136F63', fontSize: Math.round(size * 0.58), lineHeight: `${size}px` } }, profile.emoji || '✨')
+    ? h('span', { className: 'nm-avatar-emoji', style: { background: profile.color || 'var(--nm-accent)', fontSize: Math.round(size * 0.58), lineHeight: `${size}px` } }, profile.emoji || '✨')
     : clip
       ? h('video', {
           key: clip,

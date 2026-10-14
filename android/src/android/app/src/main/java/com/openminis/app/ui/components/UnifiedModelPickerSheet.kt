@@ -338,7 +338,7 @@ fun UnifiedModelPickerSheet(
                                 Icon(
                                     Icons.Default.Layers,
                                     contentDescription = null,
-                                    tint = Color(0xFF136F63),
+                                    tint = androidx.compose.material3.MaterialTheme.colorScheme.primary, // nanoMuse: active-theme foreground accent.
                                     modifier = Modifier.size(18.dp),
                                 )
                                 Spacer(Modifier.width(10.dp))
@@ -831,7 +831,7 @@ private fun SelectionMark(selected: Boolean) {
     Icon(
         if (selected) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
         contentDescription = null,
-        tint = if (selected) Color(0xFF136F63)
+        tint = if (selected) androidx.compose.material3.MaterialTheme.colorScheme.primary // nanoMuse: active-theme foreground accent.
         else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
         modifier = Modifier.size(20.dp),
     )

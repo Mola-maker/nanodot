@@ -33,7 +33,9 @@ from nanomuse.config import (
     save_app_settings,
 )
 from nanomuse.contacts import OWN
+from nanomuse.llm import catalogue as provider_catalogue
 from nanomuse.llm.chatgpt import DEFAULT_MODEL as CHATGPT_DEFAULT_MODEL
+from nanomuse.llm.gateway_profile import GatewayProfiles
 from nanomuse.logger import logger
 from nanomuse.schema import Message
 from nanomuse.search import WebSearchProvider
@@ -331,6 +333,7 @@ class Connections:
     def __init__(self, svc: MuseService):
         self.svc = svc
         self.data = load_app_settings(svc.data_dir)
+        self.gateway = GatewayProfiles(svc.data_dir / "gateway-profile.json", svc.app.vault)
         # MCP servers added from the app, connected on demand: name -> manager
         self._mcp: dict[str, MCPManager] = {}
         # calendar feeds that come from config.toml (the app cannot delete those, only its own)
@@ -368,10 +371,25 @@ class Connections:
         """The catalogue, plus nanoMuse Cloud as a provider of its own while the account is
         signed in: the account's chat models, no key to paste (the account key is the key),
         so the form says "nanoMuse Cloud" rather than a bare URL under "other endpoint"."""
+        entry = provider_catalogue.load().get("nanodot-workers")
+        providers = dict(PROVIDERS)
+        if entry is not None:
+            providers[entry.id] = {
+                "label": entry.name,
+                "subtitle": entry.note,
+                "group": "openai",
+                "provider": entry.id,
+                "base_url": entry.base_url,
+                "models": [],
+                "key_url": entry.key_url,
+                "key_hint": entry.key_hint,
+                "gateway": True,
+                "gateway_connected": self.gateway.path.exists(),
+            }
         hub = getattr(self.svc, "hub", None)
         if hub is None or not hub.signed_in or not self.settings.cloud.models:
             # signed out, or the account's models switched off (``[cloud] models``)
-            return PROVIDERS
+            return providers
         return {
             self.CLOUD_PRESET: {
                 "label": "nanoMuse Cloud",
@@ -385,7 +403,7 @@ class Connections:
                 "no_key": True,
                 "cloud": True,
             },
-            **PROVIDERS,
+            **providers,
         }
 
     def view(self) -> dict[str, Any]:
@@ -547,6 +565,10 @@ class Connections:
         }
 
     # ------------------------------------------------------------------ model
+    async def connect_gateway(self, credential: str) -> dict[str, Any]:
+        """Add the gateway without changing active LLM/GUI/media slots or account state."""
+        return await self.gateway.connect(credential)
+
     def set_llm(self, body: dict[str, Any]) -> dict[str, Any]:
         llm = dict(self.data.get("llm") or {})
         for key in ("provider", "model", "base_url", "tool_mode", "image_model", "video_model"):
@@ -570,9 +592,32 @@ class Connections:
             # this provider's requests through one proxy, never nanoMuse Cloud; "" clears
             llm["proxy"] = normalize_proxy(str(body["proxy"]))
         api_key = body.get("api_key")
-        if api_key:
+        target = urlsplit(str(body.get("base_url") or llm.get("base_url") or ""))
+        if llm.get("provider") == "nanodot-workers" or target.hostname == "molamaker.si":
+            from nanomuse.llm.gateway_profile import gateway_base
+
+            profile = self.gateway.load()
+            if not profile or not self.vault.get(profile["key_ref"]):
+                raise ValueError(
+                    "Connect with a dedicated project key before selecting a gateway model"
+                )
+            gateway_base(str(body.get("base_url") or profile["base_url"]))
+            if api_key is not None:
+                raise ValueError(
+                    "Change the project key through the independent gateway connection"
+                )
+            model = next((m for m in profile["models"] if m["id"] == llm.get("model")), None)
+            if model is None or "text" not in model["input_modalities"]:
+                raise ValueError("Choose a chat model from the gateway model list")
+            llm["provider"] = "nanodot-workers"
+            llm["base_url"] = profile["base_url"]
+            llm["api_key"] = "{{vault:" + profile["key_ref"] + "}}"
+            llm["vision"] = "on" if "image" in model["input_modalities"] else "off"
+        elif api_key:
             self.vault.set(LLM_KEY, str(api_key).strip())
             llm["api_key"] = "{{vault:" + LLM_KEY + "}}"
+        elif api_key is None and str(llm.get("api_key", "")).startswith("{{vault:NANODOT_GATEWAY_"):
+            llm["api_key"] = ""  # Project credentials cannot follow an edited slot off-origin.
         elif api_key == "":
             # an explicitly empty key: no key at all (local models)
             self.vault.delete(LLM_KEY)
@@ -782,6 +827,41 @@ class Connections:
         read pictures (``vision``), so the pickers show a member the whole list in groups.
         """
         preset_id = str(body.get("preset") or "")
+        target = urlsplit(str(body.get("base_url") or ""))
+        if preset_id == "nanodot-workers" or target.hostname == "molamaker.si":
+            import httpx
+
+            from nanomuse.llm.gateway_profile import gateway_base
+
+            gateway_base(str(body.get("base_url") or "https://molamaker.si/v1"))
+            profile = self.gateway.load()
+            key = str(body.get("api_key") or "")
+            if not key and profile:
+                key = self.vault.get(profile["key_ref"]) or ""
+            if not key:
+                return {"models": [], "source": "catalogue", "error": "project_key_required"}
+            try:
+                async with httpx.AsyncClient(trust_env=False, timeout=8) as client:
+                    gateway_rows = await GatewayProfiles._models(client, key)
+                chat = [
+                    m["id"]
+                    for m in gateway_rows
+                    if "text" in m["input_modalities"]
+                    and "text" in m["output_modalities"]
+                    and "audio" not in m["output_modalities"]
+                ]
+                return {
+                    "models": chat,
+                    "vision": [m["id"] for m in gateway_rows if "image" in m["input_modalities"]],
+                    "voice_models": [
+                        m["id"]
+                        for m in gateway_rows
+                        if "audio" in m["input_modalities"] or "audio" in m["output_modalities"]
+                    ],
+                    "source": "live",
+                }
+            except (ValueError, httpx.HTTPError):
+                return {"models": [], "source": "catalogue", "error": "gateway_models_unavailable"}
         if preset_id == self.CLOUD_PRESET:
             hub = self.svc.hub
             if not hub.signed_in:
@@ -1285,9 +1365,33 @@ class Connections:
                 str(gui["provider"]), gui.get("base_url") or "", "vision"
             )
         api_key = body.get("api_key")
-        if api_key:
+        target = urlsplit(str(gui.get("base_url") or ""))
+        if gui.get("provider") == "nanodot-workers" or target.hostname == "molamaker.si":
+            from nanomuse.llm.gateway_profile import gateway_base
+
+            profile = self.gateway.load()
+            if not profile or not self.vault.get(profile["key_ref"]):
+                raise ValueError(
+                    "Connect with a dedicated project key before selecting a gateway model"
+                )
+            gateway_base(str(gui.get("base_url") or profile["base_url"]))
+            if api_key is not None:
+                raise ValueError(
+                    "Change the project key through the independent gateway connection"
+                )
+            model = next((m for m in profile["models"] if m["id"] == gui.get("model")), None)
+            if model is None or "image" not in model["input_modalities"]:
+                raise ValueError("Choose a vision model from the gateway model list")
+            gui.update(
+                provider="nanodot-workers",
+                base_url=profile["base_url"],
+                api_key="{{vault:" + profile["key_ref"] + "}}",
+            )
+        elif api_key:
             self.vault.set(GUI_KEY, str(api_key).strip())
             gui["api_key"] = "{{vault:" + GUI_KEY + "}}"
+        elif api_key is None and str(gui.get("api_key", "")).startswith("{{vault:NANODOT_GATEWAY_"):
+            gui["api_key"] = ""
         elif api_key == "":
             self.vault.delete(GUI_KEY)
             gui["api_key"] = ""

@@ -147,7 +147,7 @@
     <string name="mcp_add">Agregar servidor MCP</string>
     <string name="mcp_edit">Editar servidor MCP</string>
     <string name="mcp_section_servers">Servidores</string>
-    <string name="mcp_section_footer">Los servidores MCP permiten que nanoMuse Agent llame a herramientas externas mediante minis-mcp-cli. Las configuraciones se guardan en /var/minis/mcp-servers/servers.json (compatible con Claude Desktop).</string>
+    <string name="mcp_section_footer">Los servidores MCP permiten que Nanodot Agent llame a herramientas externas mediante minis-mcp-cli. Las configuraciones se guardan en /var/minis/mcp-servers/servers.json (compatible con Claude Desktop).</string>
     <string name="mcp_empty_title">Sin servidores MCP</string>
     <string name="mcp_empty_action">Agrega un servidor con el botón +.</string>
     <string name="mcp_transport_http">HTTP</string>

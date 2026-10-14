@@ -329,7 +329,7 @@
     <string name="nm_avatar_retry">再試行</string>
     <string name="nm_avatar_describe_title">新しい顔を描写する</string>
     <string name="nm_avatar_describe_body">一文で十分です: 何なのか、何を着ているか、どんな雰囲気か。スタイルを選ぶと、画像モデルが候補を 4 枚描きます。</string>
-    <string name="nm_avatar_default_description">小さなオレンジ色の角と小さく畳んだ翼を持つ、ぽっちゃりした薄黄色の赤ちゃんドラゴン</string>
+    <string name="nm_avatar_default_description">淡い青色の透明な水晶玉。柔らかなハイライトと、呼吸するような穏やかな光</string>
     <string name="nm_avatar_style_flat">フラット</string>
     <string name="nm_avatar_style_clay">3D クレイ</string>
     <string name="nm_avatar_style_watercolor">水彩</string>
@@ -376,7 +376,7 @@
     <string name="nm_version_failed">確認できませんでした。タップして再試行</string>
     <string name="nm_appearance_section_home">ホーム</string>
     <string name="nm_appearance_header_model_title">名前の下にモデルを表示</string>
-    <string name="nm_appearance_header_model_footer">Muse は名前だけを表示します。これをオンにすると、その下にモデルグループと「プロバイダ · モデル」が表示され、タップして切り替えられます。オフのときは、モデルは ••• → モデルと設定にあります。</string>
+    <string name="nm_appearance_header_model_footer">Dot は名前だけを表示します。これをオンにすると、その下にモデルグループと「プロバイダ · モデル」が表示され、タップして切り替えられます。オフのときは、モデルは ••• → モデルと設定にあります。</string>
     <string name="nm_appearance_section_chat">会話</string>
     <string name="nm_appearance_steps_title">エージェントのステップを表示</string>
     <string name="nm_appearance_steps_footer">オフのときは、チャットには返信だけが残り、顔の下の一行がエージェントの今の作業を示します。オンのときは、すべてのステップがチャットに表示されます：使った各ツール、推論、そして入力欄の上にステップの詳細を開くバーが出ます。</string>
@@ -396,7 +396,7 @@
     <string name="nm_avatar_size_large">大</string>
     <string name="nm_avatar_size_extra_large">特大</string>
     <string name="nm_avatar_size_hidden">非表示</string>
-    <string name="nm_avatar_style_muse">3D トイ（Muse）</string>
+    <string name="nm_avatar_style_muse">3D トイ</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">オンライン</string>
@@ -1076,9 +1076,9 @@
     <string name="nm_models_hands_title">画面の操作</string>
     <string name="nm_models_hands_sub">画面を見てあなたの代わりに操作します。画像を見られるモデルが必要です。</string>
     <string name="nm_models_image_title">画像の生成</string>
-    <string name="nm_models_image_sub">ミューズの肖像と、あなたが頼んだ画像。</string>
+    <string name="nm_models_image_sub">Dotの肖像と、あなたが頼んだ画像。</string>
     <string name="nm_models_video_title">動画の生成</string>
-    <string name="nm_models_video_sub">ミューズの短い動画。</string>
+    <string name="nm_models_video_sub">Dotの短い動画。</string>
     <string name="nm_models_chat_applies">メインチャットと新しいチャットに適用されます。サイドチャットは各自のモデルを保ちます。</string>
     <string name="nm_models_media_more">画像と動画のその他のオプション</string>
     <string name="nm_models_media_more_sub">モデル名を入力する、各モデルがないと何が止まるかを見る、キーで使える動画モデルを再確認する。</string>
@@ -1104,4 +1104,106 @@
     <string name="nm_models_search_clear">検索をクリア</string>
     <string name="nm_models_no_match">一致するモデルはありません</string>
     <string name="nm_update_manual">自動更新はオフです。Nanodot のリリースページで手動で確認してください。</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Dot フローティングボタン</string>
+    <string name="nm_dot_show_orb">Dot ボタンを表示</string>
+    <string name="nm_dot_settings_footer">ユーザー補助の接続時に表示します。オフにすると再接続しても非表示のままです。</string>
+    <string name="nm_dot_orb_description">Dot ボタン。会話を開く、画面を見る、またはケアを開始。</string>
+    <string name="nm_dot_open_conversation">会話を開く</string>
+    <string name="nm_dot_view_screen">画面を見る</string>
+    <string name="nm_dot_start_care">ケアを開始</string>
+    <string name="nm_dot_action_unavailable">この Dot 機能はまだ利用できません。</string>
+    <string name="nm_tab_tasks">タスク</string>
+    <string name="nm_task_library">ライブラリ</string>
+    <string name="nm_gateway_key_required">専用のプロジェクトキーが必要です。既存の設定と選択したモデルは保持されます。実サービスの検証は未完了です。</string>
+    <string name="nm_gateway_connection_failed">接続できません。プロジェクトキーとネットワークを確認してください。</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Dot の画面取得</string>
+    <string name="nm_dot_capture_active">停止するまで画面を取得できます。</string>
+    <string name="nm_dot_capture_stop">取得を停止</string>
+    <string name="nm_dot_capture_explain">この Android バージョンでは、Dot はアクセシビリティのテキストを読み取れます。画像も共有するには、画面取得を別途許可してください。Android が許可を求めます。</string>
+    <string name="nm_dot_capture_allow">画面取得を許可</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">読み込み中…</string>
+    <string name="nm_dot_load_failed">このページを読み込めませんでした。</string>
+    <string name="nm_dot_components">コンポーネント</string>
+    <string name="nm_dot_empty">まだ何もありません。</string>
+    <string name="nm_dot_attach">ファイルを添付</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">%1$sに追加</string>
+    <string name="nm_goal_completion">完了した目標：%1$s</string>
+    <string name="nm_feed_like_post">投稿にいいね：%1$s</string>
+    <string name="nm_feed_post_info">投稿の情報：%1$s</string>
+    <string name="nm_dot_chat_empty">Dot にメッセージを送って会話を始めましょう。</string>
+    <string name="nm_dot_chat_message">メッセージ</string>
+    <string name="nm_dot_chat_send">送信</string>
+    <string name="nm_dot_chat_stop">停止</string>
+    <string name="nm_dot_chat_retry">再試行</string>
+    <string name="nm_dot_chat_collapse">会話を閉じる</string>
+    <string name="nm_dot_chat_remove">プレビューを削除</string>
+    <string name="nm_dot_chat_capturing">画面を読み取り中…</string>
+    <string name="nm_dot_chat_capture_failed">画面を取得できません。元の画面で再試行してください。</string>
+    <string name="nm_dot_chat_historical">取得 %1$s · 過去の添付</string>
+    <string name="nm_dot_chat_text_only">テキストのみ · スクリーンショットなし</string>
+    <string name="nm_dot_chat_voice_pending">音声はまだ利用できません。</string>
+    <string name="nm_dot_chat_compact">圧縮して送信</string>
+    <string name="nm_dot_chat_cancel">キャンセル</string>
+    <string name="nm_care_clarify_no_nodes">このページにはどの操作項目が見えますか？</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">一歩ずつ案内します。</string>
+    <string name="nm_care_goal">何をしたいですか？</string>
+    <string name="nm_care_start">案内を開始</string>
+    <string name="nm_care_copy">テキストをコピー</string>
+    <string name="nm_care_repeat">説明を繰り返す</string>
+    <string name="nm_care_pause">一時停止</string>
+    <string name="nm_care_reobserve">もう一度確認</string>
+    <string name="nm_care_end">案内を終了</string>
+    <string name="nm_care_resume">再開</string>
+    <string name="nm_care_change_goal">目標を変更</string>
+    <string name="nm_care_confirm">この手順を完了しました</string>
+    <string name="nm_care_observing">画面を確認中</string>
+    <string name="nm_care_clarifying">追加の情報が必要です</string>
+    <string name="nm_care_awaiting">操作を待っています</string>
+    <string name="nm_care_verifying">結果を確認中</string>
+    <string name="nm_care_completed">案内が終了しました</string>
+    <string name="nm_care_recovering">この手順を確認してください</string>
+    <string name="nm_care_paused">案内を一時停止中</string>
+    <string name="nm_care_unavailable">この画面を読み取り、確認できませんでした。再確認するか、目標を変更するか、案内を終了してください。</string>
+    <string name="nm_care_provider_missing">設定 → モデルで利用可能なテキストモデルを選び、もう一度確認してください。</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">音声入力</string>
+    <string name="nm_dot_voice_permission">音声入力にはマイクと通知を許可してください。文字入力も使えます。</string>
+    <string name="nm_dot_voice_keyboard">キーボードを使う</string>
+    <string name="nm_dot_voice_notification">Dot マイク</string>
+    <string name="nm_dot_voice_stop_hint">録音または終了処理中です。停止すると録音を取り消します。</string>
+    <string name="nm_dot_voice_cancel">録音を取り消す</string>
+    <string name="nm_dot_voice_finish">音声入力を完了</string>
+    <string name="nm_dot_voice_starting">マイクを起動中…</string>
+    <string name="nm_dot_voice_recording">聞き取り中…</string>
+    <string name="nm_dot_voice_finishing">文字起こしとマイクの解放を実行中…</string>
+    <string name="nm_dot_voice_denied">マイクまたは通知を使用できません。文字入力、再試行、設定を使えます。</string>
+    <string name="nm_dot_voice_busy">マイクは使用中です。停止後に再試行してください。</string>
+    <string name="nm_dot_voice_error">音声入力に失敗しました。文字入力または再試行ができます。</string>
+    <string name="nm_dot_voice_read">返信を読み上げる</string>
+    <string name="nm_dot_voice_speaking">返信を読み上げ中…</string>
+    <string name="nm_dot_voice_read_error">返信を読み上げられませんでした。</string>
+
+    <string name="nm_dot_bubble_you">あなた</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">この手順を確認しました</string>
+    <string name="nm_dot_foreground_capturing">現在の画面を読み取り中</string>
+    <string name="nm_dot_foreground_error">この操作には対応が必要です</string>
+    <string name="nm_dot_foreground_disconnected">Dot は切断されています</string>
+    <string name="nm_dot_foreground_expand">展開</string>
+    <string name="nm_dot_foreground_adjust">ドラッグして調整</string>
+    <string name="nm_dot_region_selected">選択した領域</string>
+    <string name="nm_dot_region_text_mode">このモデルには選択領域の読み取れるテキストのみを送信します。画像はこのプレビュー内に残ります。</string>
+    <string name="nm_dot_region_reselect">選び直す</string>
+    <string name="nm_dot_region_reselect_hint">水晶球をドラッグして、選択する領域を囲んでください。</string>
 </resources>

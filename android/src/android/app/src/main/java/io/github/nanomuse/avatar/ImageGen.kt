@@ -14,6 +14,7 @@ import com.openminis.app.data.model.ProviderType
 import com.openminis.app.logging.AppLogger
 import com.openminis.app.provider.ProviderFactory
 import com.openminis.app.provider.openai.OpenAIProvider
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -242,6 +243,8 @@ object ImageGen {
             provider(context, ep, ep.model).generateImage(prompt = prompt, n = 1, size = size)
         } catch (e: ImageGenException) {
             throw e
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw ImageGenException(e.message ?: e.javaClass.simpleName)
         }
@@ -261,6 +264,8 @@ object ImageGen {
                 n = 1,
                 size = "1024x1024",
             )
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw ImageGenException(e.message ?: e.javaClass.simpleName)
         }

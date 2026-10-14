@@ -3,7 +3,7 @@
 DISPLAY_NAME = "Nanodot"
 AGENT_NAME = "Dot"
 DEFAULT_AVATAR = "dot-v1"
-DEFAULT_COLOR = "#136F63"
+DEFAULT_COLOR = "#2D6396"
 REPOSITORY_URL = "https://github.com/Mola-maker/nanodot"
 UPDATES_ENABLED = False
 UPDATE_REPOSITORY_URL: str | None = None

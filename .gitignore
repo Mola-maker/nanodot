@@ -38,8 +38,10 @@ web/dist/
 web/.vite/
 npm-debug.log*
 
-# website: generated from web/ and docs/ by `npm run site:mascot` (see site/README.md)
-site/assets/
+# Product Dot SVGs are committed; other legacy site assets are generated.
+site/assets/*
+!site/assets/dot-idle.svg
+!site/assets/nanodot-icon.svg
 # the docs site, built by pages.yml from website/ into site/docs/
 site/docs/
 
@@ -71,3 +73,9 @@ uv.lock
 
 # nanoMuse Cloud relay runtime data
 cloud/data/
+
+# Generated gateway acceptance bundles and private local evidence
+evidence/task-6/
+gateway/dist-operator/
+gateway/dist-relay/
+gateway/static-scan.json

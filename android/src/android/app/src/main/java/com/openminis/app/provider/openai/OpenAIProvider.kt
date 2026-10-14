@@ -17,12 +17,13 @@ import com.openminis.app.provider.thinking.ThinkingRuleResolver
 import com.openminis.app.provider.LLMProvider
 import com.openminis.app.provider.applyUserAgentOverride
 import com.openminis.app.provider.safeOptString
+import kotlinx.coroutines.CoroutineStart // nanoMuse: enter the cancellation watcher before blocking IO
+import kotlinx.coroutines.awaitCancellation // nanoMuse: keep the watcher alive for the call lifetime
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collect
@@ -746,6 +747,13 @@ class OpenAIProvider private constructor(
         // (b) evict THIS ONE connection on timeout.
         val watchState = CallWatchState()
         val call = client.newCall(request.newBuilder().tag(CallWatchState::class.java, watchState).build())
+        // nanoMuse: a child watcher receives parent cancellation while execute or
+        // readLine blocks this producer. Enter its suspension before starting IO.
+        // Existing finally blocks still own the response and reader; normal close
+        // below ends the watcher, so it cannot outlive this call.
+        val cancellationWatcher = launch(start = CoroutineStart.UNDISPATCHED) {
+            try { awaitCancellation() } finally { call.cancel() }
+        }
         // [T-android-stale-conn-retry-hang] Time-to-first-byte watchdog. A
         // request written into a dead pooled h2 tunnel (local proxy socket
         // survives a network flap) produces NO further events — no headers,
@@ -886,10 +894,8 @@ class OpenAIProvider private constructor(
                 response.close()
             }
             channel.close()
-            awaitClose {
-                try { call.cancel() } catch (_: Exception) {}
-                try { response.close() } catch (_: Exception) {}
-            }
+            // nanoMuse: end this call's cancellation watcher on normal completion.
+            cancellationWatcher.cancel()
             return@callbackFlow
         }
 
@@ -1496,15 +1502,8 @@ class OpenAIProvider private constructor(
             response.close()
         }
         channel.close()
-        // T171: when the coroutine is cancelled (user tapped stop), the
-        // reader loop above is suspended inside the OkHttp source — only
-        // call.cancel() will tear the socket down promptly. response.close()
-        // is also explicit so connection-pool leaks are impossible if cancel
-        // races with the finally block.
-        awaitClose {
-            try { call.cancel() } catch (_: Exception) {}
-            try { response.close() } catch (_: Exception) {}
-        }
+        // nanoMuse: the existing finally released the response; end its watcher.
+        cancellationWatcher.cancel()
     }
 
     // MARK: - Raw Passthrough [T-android-model-use-passthrough-mode]
@@ -2020,7 +2019,11 @@ class OpenAIProvider private constructor(
         // history while Mistral forbids it, and neither advertises
         // supportsReasoning via /v1/models — opposite requirements on the same
         // generic openAI provider path. Hence a spec-driven vendor flag.
-        val forbidReasoningField = isMistral
+        // nanoMuse: Nanodot supports reasoning output, but neither allowlisted
+        // model has a verified reasoning-history input schema. Scope only to
+        // the parsed exact HTTPS origin; preserve every other provider's echo.
+        val forbidReasoningField = isMistral ||
+            io.github.nanomuse.dot.gateway.GatewayHistoryPolicy.forbidsReasoningHistory(basePath)
         val includeReasoning =
             (thinkingLevel.isEnabled || modelAlwaysReasons) && modelMayReason && !forbidReasoningField
         val echoReasoning = includeReasoning

@@ -6,6 +6,7 @@
  * chat, Done, Delete. Below the list, "Create a goal" by category opens a
  * sheet with examples; the goal then lives in a chat of its own.
  */
+import { DotStatus } from './DotStatus.tsx'
 import { failureText } from './api.ts'
 import { createElement as h, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import type { Translate } from './api.ts'
@@ -63,6 +64,7 @@ export function makeGoalsPanel(t: Translate) {
 
     return h('div', { className: 'nm-room' },
       h('div', { className: 'nm-room-top', 'data-window-drag': true }),
+      !rooms.streaming ? h(DotStatus, { state: 'loading', message: t('dotOffline') }) : null,
       h('div', { className: 'nm-room-head' },
         h(RoomToggle, { t, panel: GOALS_PANEL }),
         h('h1', { className: 'nm-room-title' }, t('railGoals')),
@@ -73,7 +75,7 @@ export function makeGoalsPanel(t: Translate) {
           ] }))),
       h('div', { className: 'nm-room-body' },
         h('div', { className: 'nm-room-inner nm-goals' },
-          error ? h('div', { className: 'nm-room-error' }, error) : null,
+          error ? h(DotStatus, { state: 'error', message: error }) : null,
           tracking.length === 0 && !showDone
             ? h(Empty, { icon: h(IconTarget, { size: 28 }), text: t('goalsEmptyTitle') }, h('p', { className: 'nm-empty-sub' }, t('goalsEmptyBody')))
             : h('section', null,
@@ -197,5 +199,5 @@ function CreateGoal({ t, category, onClose, onCreated }: { t: Translate; categor
       h('p', { className: 'nm-sheet-lead' }, t('goalCreateLead')),
       h('textarea', { className: 'nm-textarea', rows: 4, value: text, placeholder: t('goalPlaceholder'), maxLength: 2000, onChange: (e: FormEvent<HTMLTextAreaElement>) => setText(e.currentTarget.value), 'data-modal-autofocus': true }),
       h('div', { className: 'nm-chips' }, meta.examples.map((key) => h('button', { key, type: 'button', className: 'nm-chip', onClick: () => setText(t(key)) }, t(key)))),
-      error ? h('div', { className: 'nm-room-error' }, error) : null))
+      error ? h(DotStatus, { state: 'error', message: error }) : null))
 }

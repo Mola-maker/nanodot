@@ -35,7 +35,11 @@ import kotlin.math.sqrt
  * No partial results: cloud transcription is one-shot on stop. The System
  * engine remains the streaming/live option.
  */
-class ProviderSpeechRecognitionEngine(private val appContext: Context) : SpeechRecognitionEngine {
+// nanoMuse: retain capture resources until cancellation completion, including detectors already stopped.
+class ProviderSpeechRecognitionEngine(
+    private val appContext: Context,
+    private val captureResources: io.github.nanomuse.dot.voice.CaptureResources = io.github.nanomuse.dot.voice.CaptureResources(),
+) : SpeechRecognitionEngine {
 
     companion object {
         private const val TAG = "ProviderASR"
@@ -82,6 +86,8 @@ class ProviderSpeechRecognitionEngine(private val appContext: Context) : SpeechR
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var captureJob: Job? = null
+    // nanoMuse: unblock a legacy blocking read before joining its resource finally.
+    @Volatile private var legacyRecorder: AudioRecord? = null
     private var transcribeJob: Job? = null
     /** [T-android-vad-merge-segments] Sub-threshold segments held for merge. */
     private val pendingSegments = mutableListOf<ByteArray>()
@@ -203,6 +209,7 @@ class ProviderSpeechRecognitionEngine(private val appContext: Context) : SpeechR
                 return@launch
             }
 
+            legacyRecorder = recorder
             val pcm = ByteArrayOutputStream()
             val buf = ByteArray(minBuf)
             val maxBytes = SAMPLE_RATE * 2 * MAX_RECORD_SECONDS
@@ -223,6 +230,7 @@ class ProviderSpeechRecognitionEngine(private val appContext: Context) : SpeechR
             } finally {
                 runCatching { recorder.stop() }
                 recorder.release()
+                legacyRecorder = null
             }
 
             if (cancelled.get()) return@launch
@@ -360,12 +368,8 @@ class ProviderSpeechRecognitionEngine(private val appContext: Context) : SpeechR
                             val held = WavSegmentMerger.totalSeconds(pendingSegments)
                             Log.i(TAG, "[vad] hold expired at ${"%.2f".format(held)}s — settling")
                             stopVad()
-                            if (held > TOO_SHORT_TOAST_FLOOR) {
-                                listener.onError(
-                                    RecognitionError.NO_MATCH,
-                                    "Too short — hold the mic and speak.",
-                                )
-                            }
+                            // nanoMuse: even a tiny/no-speech terminal must settle owned admission.
+                            listener.onError(RecognitionError.NO_MATCH, "Too short — hold the mic and speak.")
                             pendingSegments.clear()
                         }
                         return
@@ -398,6 +402,8 @@ class ProviderSpeechRecognitionEngine(private val appContext: Context) : SpeechR
                     // here, so just settle the mic.
                     Log.i(TAG, "[vad] session limit $limit — stopping")
                     stopVad()
+                    // nanoMuse: no pending transcription means this terminal has no later callback.
+                    if (!cancelled.get() && transcribeJob?.isActive != true) listener.onFinal("")
                 }
 
                 override fun onCaptureError(message: String) {
@@ -414,6 +420,8 @@ class ProviderSpeechRecognitionEngine(private val appContext: Context) : SpeechR
             it.maxSegmentSeconds = CLOUD_MAX_SEGMENT_SECONDS
         }
 
+        // nanoMuse: stopVad may clear the active reference before AudioRecord has released.
+        captureResources.track({ det.cancel() }, { det.awaitStopped() })
         val err = det.start()
         if (err != null) {
             recording.set(false)
@@ -503,12 +511,36 @@ class ProviderSpeechRecognitionEngine(private val appContext: Context) : SpeechR
     override fun cancel() {
         cancelled.set(true)
         recording.set(false)
+        // nanoMuse: cancel owns the detector as well as transcription jobs.
+        var failure: Throwable? = null
+        try { captureResources.cancel() } catch (t: Throwable) { failure = t }
+        detector = null
+        runCatching { legacyRecorder?.stop() }
+        captureJob?.cancel()
         transcribeJob?.cancel()
         holdFlushJob?.cancel()
         holdFlushJob = null
         // Drop held audio: a cancelled session's partial utterance must never
         // surface in a later one.
         pendingSegments.clear()
+        failure?.let { throw it }
+    }
+
+    // nanoMuse: join capture before snapshotting jobs it could have spawned at its endpoint.
+    override suspend fun cancelAndJoin() {
+        var failure: Throwable? = null
+        try { cancel() } catch (t: Throwable) { failure = t }
+        captureJob?.join()
+        try { captureResources.closeAndJoin() } catch (t: Throwable) { failure = t }
+        // Detector callbacks may have entered immediately before cancel; await their children too.
+        val jobs = scope.coroutineContext[Job]!!.children.toList()
+        jobs.forEach { it.cancel() }
+        jobs.forEach { it.join() }
+        captureJob = null
+        transcribeJob = null
+        holdFlushJob = null
+        pendingSegments.clear()
+        failure?.let { throw it }
     }
 
     /** Rough dB estimate over the chunk for the UI waveform. */

@@ -6,6 +6,7 @@
 //   npm run docs:build    # .vitepress/dist, also the dead-link check
 //   DOCS_BASE=/docs/ npm run docs:build   # for nanomuse.cn/docs/
 //
+// NANODOT_DOCS_BASE=/docs/ is the optional gateway deployment override.
 // DOCS_BASE defaults to /nanodot/docs/. Override it for the destination that you deploy;
 // building this site does not publish it or claim ownership of nanomuse.cn.
 import { posix } from 'node:path'
@@ -13,7 +14,7 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig, type DefaultTheme } from 'vitepress'
 
 const REPO = 'https://github.com/Mola-maker/nanodot'
-const base = process.env.DOCS_BASE ?? '/nanodot/docs/'
+const base = process.env.NANODOT_DOCS_BASE ?? process.env.DOCS_BASE ?? '/nanodot/docs/'
 
 // Directories under docs/ that are not pages of the site: task briefs and traces are
 // working notes, the archive is the Python line's record, the release notes and the
@@ -75,11 +76,14 @@ function placeholderOrHtml(raw: string): string {
 const getStarted: DefaultTheme.SidebarItem[] = [
   { text: 'Build Nanodot P0', link: '/build' },
   { text: 'Android', link: '/android' },
+  { text: 'Android verification', link: '/android-verification' },
+  { text: 'Foreground interactions', link: '/android-interactions' },
   { text: 'iPhone and iPad', link: '/ios' },
   { text: 'The desktop app', link: '/desktop' },
   { text: 'The web console', link: '/web' },
   { text: 'One account, all your devices', link: '/trial' },
   { text: 'Your own model key', link: '/own-key' },
+  { text: 'Gateway operations', link: '/gateway-operations' },
   { text: 'Troubleshooting', link: '/troubleshooting' },
 ]
 
@@ -112,6 +116,7 @@ const understandIt: DefaultTheme.SidebarItem[] = [
   { text: 'What stays on a phone, and whose it is', link: '/sync' },
   { text: 'The hub', link: '/hub' },
   { text: 'What nanoMuse takes from Muse', link: '/design' },
+  { text: 'Nanodot design system', link: '/design-system' },
   { text: 'nanoMuse on DeepSeek Harness', link: '/harness' },
   { text: 'The phone’s own capabilities', link: '/device' },
   { text: 'The app, as designed', link: '/app' },
@@ -134,11 +139,14 @@ const contribute: DefaultTheme.SidebarItem[] = [
 const zhGetStarted: DefaultTheme.SidebarItem[] = [
   { text: '构建 Nanodot P0', link: '/zh/build' },
   { text: 'Android', link: '/zh/android' },
+  { text: 'Android 验收', link: '/zh/android-verification' },
+  { text: '前台交互', link: '/zh/android-interactions' },
   { text: 'iPhone 和 iPad', link: '/zh/ios' },
   { text: '桌面版', link: '/zh/desktop' },
   { text: '网页控制台', link: '/zh/web' },
   { text: '一个账号，所有设备', link: '/zh/trial' },
   { text: '自己的模型 key', link: '/zh/own-key' },
+  { text: '网关运维', link: '/zh/gateway-operations' },
   { text: '故障排查', link: '/zh/troubleshooting' },
 ]
 
@@ -171,6 +179,7 @@ const zhUnderstandIt: DefaultTheme.SidebarItem[] = [
   { text: '什么留在手机上，归谁', link: '/zh/sync' },
   { text: 'hub：设备互联', link: '/zh/hub' },
   { text: 'nanoMuse 从 Muse 借了什么', link: '/zh/design' },
+  { text: 'Nanodot 设计系统', link: '/zh/design-system' },
   { text: 'DeepSeek Harness 上的 nanoMuse', link: '/zh/harness' },
   { text: '手机自身的能力', link: '/zh/device' },
   { text: '手机 App 的设计', link: '/zh/app' },

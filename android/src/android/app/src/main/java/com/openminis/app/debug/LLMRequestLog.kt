@@ -54,7 +54,10 @@ object LLMRequestLog {
                     "\n…[truncated ${entry.requestBody.length - MAX_BODY_CHARS} chars]",
             )
         } else entry
-        entries.add(safeEntry)
+        // nanoMuse: mask and snapshot request headers before debug retention or export.
+        entries.add(safeEntry.copy(
+            requestHeaders = io.github.nanomuse.debug.RequestHeaderSanitizer.snapshot(safeEntry.requestHeaders),
+        ))
         if (entries.size > MAX_ENTRIES) {
             entries.removeAt(0)
         }

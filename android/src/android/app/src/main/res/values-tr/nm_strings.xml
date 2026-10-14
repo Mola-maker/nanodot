@@ -332,7 +332,7 @@
     <string name="nm_avatar_retry">Yeniden dene</string>
     <string name="nm_avatar_describe_title">Yeni bir yüz tarif et</string>
     <string name="nm_avatar_describe_body">Tek cümle yeter: ne olduğu, ne giydiği, nasıl hissettirdiği. Bir tarz seç; görsel modelin seçmen için dört tane çizer.</string>
-    <string name="nm_avatar_default_description">Küçük turuncu boynuzları ve küçük katlı kanatları olan tombul, açık sarı bir bebek ejderha</string>
+    <string name="nm_avatar_default_description">Yumuşak yansımaları ve nefes alır gibi hafifçe değişen parıltısıyla, saydam açık mavi bir kristal küre</string>
     <string name="nm_avatar_style_flat">Düz</string>
     <string name="nm_avatar_style_clay">3D kil</string>
     <string name="nm_avatar_style_watercolor">Suluboya</string>
@@ -379,7 +379,7 @@
     <string name="nm_version_failed">Denetlenemedi, yeniden denemek için dokun</string>
     <string name="nm_appearance_section_home">Ana ekran</string>
     <string name="nm_appearance_header_model_title">Modeli adın altında göster</string>
-    <string name="nm_appearance_header_model_footer">Muse yalnızca adı gösterir. Model grubunu ve sağlayıcı · model bilgisini adın altında görmek için bunu aç; değiştirmek için üzerine dokun. Kapalıyken model ••• → Model altında ve Ayarlar’dadır.</string>
+    <string name="nm_appearance_header_model_footer">Dot yalnızca adı gösterir. Model grubunu ve sağlayıcı · model bilgisini adın altında görmek için bunu aç; değiştirmek için üzerine dokun. Kapalıyken model ••• → Model altında ve Ayarlar’dadır.</string>
     <string name="nm_appearance_section_chat">Konuşma</string>
     <string name="nm_appearance_steps_title">Ajanın adımlarını göster</string>
     <string name="nm_appearance_steps_footer">Kapalıyken sohbette yalnızca yanıtlar kalır ve yüzün altındaki satır ajanın şu anda ne yaptığını söyler. Açıkken her adım sohbette görünür: kullandığı her araç, akıl yürütmesi ve adımın ayrıntılarını açan, yazma alanının üstündeki bir çubuk.</string>
@@ -399,7 +399,7 @@
     <string name="nm_avatar_size_large">Büyük</string>
     <string name="nm_avatar_size_extra_large">Çok büyük</string>
     <string name="nm_avatar_size_hidden">Gizli</string>
-    <string name="nm_avatar_style_muse">3D oyuncak (Muse)</string>
+    <string name="nm_avatar_style_muse">3D oyuncak</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">çevrimiçi</string>
@@ -1080,9 +1080,9 @@
     <string name="nm_models_hands_title">Ekranı kullanma</string>
     <string name="nm_models_hands_sub">Ekrana bakar ve senin yerine işlem yapar. Görsel görebilen bir model gerekir.</string>
     <string name="nm_models_image_title">Görsel oluşturma</string>
-    <string name="nm_models_image_sub">Muse’unun portreleri ve istediğin görseller.</string>
+    <string name="nm_models_image_sub">Dot’un portreleri ve istediğin görseller.</string>
     <string name="nm_models_video_title">Klip oluşturma</string>
-    <string name="nm_models_video_sub">Muse’unun kısa klipleri.</string>
+    <string name="nm_models_video_sub">Dot’un kısa klipleri.</string>
     <string name="nm_models_chat_applies">Ana sohbet ve yeni sohbetler için geçerlidir; yan sohbet kendi modelini korur.</string>
     <string name="nm_models_media_more">Daha fazla görsel ve klip seçeneği</string>
     <string name="nm_models_media_more_sub">Bir model adı yaz, hangi model olmadan neyin durduğunu gör ya da bir anahtarın hangi video modellerini kullanabildiğini yeniden denetle.</string>
@@ -1108,4 +1108,106 @@
     <string name="nm_models_search_clear">Aramayı temizle</string>
     <string name="nm_models_no_match">Eşleşen model yok</string>
     <string name="nm_update_manual">Otomatik güncellemeler kapalı. Nanodot sürüm sayfasını elle kontrol edin.</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Dot yüzen düğmesi</string>
+    <string name="nm_dot_show_orb">Dot düğmesini göster</string>
+    <string name="nm_dot_settings_footer">Erişilebilirlik bağlandığında görünür. Kapatıldığında yeniden bağlanınca da gizli kalır.</string>
+    <string name="nm_dot_orb_description">Dot düğmesi. Sohbeti aç, ekranı görüntüle veya desteği başlat.</string>
+    <string name="nm_dot_open_conversation">Sohbeti aç</string>
+    <string name="nm_dot_view_screen">Ekranı görüntüle</string>
+    <string name="nm_dot_start_care">Desteği başlat</string>
+    <string name="nm_dot_action_unavailable">Bu Dot özelliği henüz kullanılamıyor.</string>
+    <string name="nm_tab_tasks">Görevler</string>
+    <string name="nm_task_library">Kitaplık</string>
+    <string name="nm_gateway_key_required">Projeye özel bir anahtar gerekir. Ayarlar ve seçili modeller korunur. Gerçek hizmet doğrulaması henüz tamamlanmadı.</string>
+    <string name="nm_gateway_connection_failed">Bağlanılamadı. Proje anahtarını ve ağı kontrol edin.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Dot için ekran yakalama</string>
+    <string name="nm_dot_capture_active">Ekran yakalama siz durdurana kadar kullanılabilir.</string>
+    <string name="nm_dot_capture_stop">Yakalamayı durdur</string>
+    <string name="nm_dot_capture_explain">Bu Android sürümünde Dot erişilebilir metni okuyabilir. Görüntüleri de paylaşmak için ekran yakalamaya ayrıca izin verin. Android izin isteyecek.</string>
+    <string name="nm_dot_capture_allow">Ekran yakalamaya izin ver</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Yükleniyor…</string>
+    <string name="nm_dot_load_failed">Bu sayfa yüklenemedi.</string>
+    <string name="nm_dot_components">Bileşenler</string>
+    <string name="nm_dot_empty">Henüz burada içerik yok.</string>
+    <string name="nm_dot_attach">Dosya ekle</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">%1$s bölümüne ekle</string>
+    <string name="nm_goal_completion">Tamamlanan hedef: %1$s</string>
+    <string name="nm_feed_like_post">Gönderiyi beğen: %1$s</string>
+    <string name="nm_feed_post_info">Gönderi bilgileri: %1$s</string>
+    <string name="nm_dot_chat_empty">Bu konuşmayı başlatmak için Dot’a yazın.</string>
+    <string name="nm_dot_chat_message">Mesaj</string>
+    <string name="nm_dot_chat_send">Gönder</string>
+    <string name="nm_dot_chat_stop">Durdur</string>
+    <string name="nm_dot_chat_retry">Yeniden dene</string>
+    <string name="nm_dot_chat_collapse">Konuşmayı daralt</string>
+    <string name="nm_dot_chat_remove">Önizlemeyi kaldır</string>
+    <string name="nm_dot_chat_capturing">Ekran okunuyor…</string>
+    <string name="nm_dot_chat_capture_failed">Ekran yakalama kullanılamıyor. Asıl ekranda yeniden deneyin.</string>
+    <string name="nm_dot_chat_historical">Yakalandı %1$s · geçmiş ek</string>
+    <string name="nm_dot_chat_text_only">Yalnızca metin · ekran görüntüsü yok</string>
+    <string name="nm_dot_chat_voice_pending">Ses henüz kullanılamıyor.</string>
+    <string name="nm_dot_chat_compact">Sıkıştır ve gönder</string>
+    <string name="nm_dot_chat_cancel">İptal</string>
+    <string name="nm_care_clarify_no_nodes">Bu sayfada hangi kontrolü görebiliyorsun?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">Size adım adım rehberlik edeceğim.</string>
+    <string name="nm_care_goal">Ne yapmak istiyorsunuz?</string>
+    <string name="nm_care_start">Rehberliği başlat</string>
+    <string name="nm_care_copy">Metni kopyala</string>
+    <string name="nm_care_repeat">Talimatı tekrarla</string>
+    <string name="nm_care_pause">Duraklat</string>
+    <string name="nm_care_reobserve">Yeniden bak</string>
+    <string name="nm_care_end">Rehberliği bitir</string>
+    <string name="nm_care_resume">Sürdür</string>
+    <string name="nm_care_change_goal">Hedefi değiştir</string>
+    <string name="nm_care_confirm">Bu adımı tamamladım</string>
+    <string name="nm_care_observing">Ekrana bakılıyor</string>
+    <string name="nm_care_clarifying">Bir ayrıntı gerekiyor</string>
+    <string name="nm_care_awaiting">Siz bekleniyorsunuz</string>
+    <string name="nm_care_verifying">Sonuç kontrol ediliyor</string>
+    <string name="nm_care_completed">Rehberlik bitti</string>
+    <string name="nm_care_recovering">Bu adımı kontrol edin</string>
+    <string name="nm_care_paused">Rehberlik duraklatıldı</string>
+    <string name="nm_care_unavailable">Bu ekran okunamadı veya doğrulanamadı. Yeniden bakın, hedefi değiştirin ya da rehberliği bitirin.</string>
+    <string name="nm_care_provider_missing">Ayarlar → Modeller bölümünden kullanılabilir bir metin modeli seçip yeniden bakın.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Dikte et</string>
+    <string name="nm_dot_voice_permission">Dikte için mikrofon ve bildirimlere izin verin. Yazmaya devam edebilirsiniz.</string>
+    <string name="nm_dot_voice_keyboard">Klavyeyi kullan</string>
+    <string name="nm_dot_voice_notification">Dot mikrofonu</string>
+    <string name="nm_dot_voice_stop_hint">Kayıt veya tamamlama sürüyor. Durdurmak kaydı iptal eder.</string>
+    <string name="nm_dot_voice_cancel">Kaydı iptal et</string>
+    <string name="nm_dot_voice_finish">Dikteyi bitir</string>
+    <string name="nm_dot_voice_starting">Mikrofon başlatılıyor…</string>
+    <string name="nm_dot_voice_recording">Dinleniyor…</string>
+    <string name="nm_dot_voice_finishing">Tamamlanıyor ve mikrofon bırakılıyor…</string>
+    <string name="nm_dot_voice_denied">Mikrofon veya bildirimler kullanılamıyor. Yazın, yeniden deneyin veya Ayarları açın.</string>
+    <string name="nm_dot_voice_busy">Mikrofon kullanımda. Durduktan sonra yeniden deneyin.</string>
+    <string name="nm_dot_voice_error">Ses başarısız oldu. Yazabilir veya yeniden deneyebilirsiniz.</string>
+    <string name="nm_dot_voice_read">Yanıtı oku</string>
+    <string name="nm_dot_voice_speaking">Yanıt okunuyor…</string>
+    <string name="nm_dot_voice_read_error">Yanıt sesli okunamadı.</string>
+
+    <string name="nm_dot_bubble_you">Siz</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">Adım doğrulandı</string>
+    <string name="nm_dot_foreground_capturing">Geçerli ekran okunuyor</string>
+    <string name="nm_dot_foreground_error">Bu etkileşim dikkat gerektiriyor</string>
+    <string name="nm_dot_foreground_disconnected">Dot bağlantısı kesildi</string>
+    <string name="nm_dot_foreground_expand">Genişlet</string>
+    <string name="nm_dot_foreground_adjust">Ayarlamak için sürükle</string>
+    <string name="nm_dot_region_selected">Seçilen alan</string>
+    <string name="nm_dot_region_text_mode">Bu model yalnızca seçilen alandaki erişilebilir metni alır. Görsel bu önizlemede kalır.</string>
+    <string name="nm_dot_region_reselect">Yeniden seç</string>
+    <string name="nm_dot_region_reselect_hint">Kristal küreyi seçmek istediğiniz alanın çevresinde sürükleyin.</string>
 </resources>

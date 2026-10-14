@@ -46,9 +46,12 @@ node scripts/providers-json.mjs --check         # the clients' copies of the pro
 # Desktop shell (harness/desktop/)
 cd harness/desktop && npm ci && npm run typecheck && npm test
 
-# Android (android/src/android); JDK 21, NDK r27c; natives first: bash scripts/android/build-natives.sh
-cd android/src/android && ./gradlew :app:assembleDebug --console=plain --no-daemon
-./gradlew :app:testDebugUnitTest --tests 'io.github.nanomuse.*' --console=plain --no-daemon # our unit tests; CI runs them too
+# Android: fixed toolchain and profile/receipt details in docs/build.md
+bash scripts/build-nanodot-apk.sh doctor
+bash scripts/build-nanodot-apk.sh check
+bash scripts/build-nanodot-apk.sh debug-x86_64 --with-test # chat-only emulator candidate
+bash scripts/build-nanodot-apk.sh debug --with-test # arm64 main/test pair, used by CI
+NANODOT_TEST_SCOPE=nanomuse bash scripts/build-nanodot-apk.sh check # CI scope, not full suite
 
 # iOS (android/src/ios); macOS only; the device build must finish with zero warnings in NanoMuse/
 xcodebuild build -project Minis.xcodeproj -scheme Minis -configuration Debug -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO
@@ -85,6 +88,13 @@ The three protocols are documented and versioned; change the doc in the same cha
 - **Android** builds with JDK 21, SDK CMake 3.22.1, NDK r27c, Go 1.26. Virtual Android with arm64 translation can check APK installation and UI; native sandbox, accessibility actions and performance still need separate arm64 validation. See [docs/build.md](docs/build.md).
 - **Desktop** is a dsh plugin: profile overlays in `cordis.patch.yml`, the relay URL in the plugin's `config.baseURL`; [docs/desktop.md](docs/desktop.md). The Electron shell and the plugin carry the same version.
 - **CI** uses Node 22 for every JavaScript job; keep `engines` and lock files compatible with it even when you develop on a newer Node.
+
+## Android verification and task loops
+
+- For Android acceptance, UI regressions, or APK delivery, read [verify-nanodot-android](skills/verify-nanodot-android/SKILL.md). This repository-local skill is loaded through this link; it is not installed globally. [Android verification](docs/android-verification.md) owns the commands and evidence contract.
+- Resume from the original goal, reviewed plan, current diff and artifact receipts. Reuse unchanged evidence; label source review, fixture, real user flow and real-provider proof separately. A build or a subagent report is not a runtime pass.
+- Give each writer a disjoint scope and one coordinator ownership of Gradle and the target device. Record hypothesis, change and observed result per repair; repeated failure of the same premise requires new evidence before another patch. Preserve Stop, deadlines and explicit retry budgets in product loops.
+- These are selected adaptations of poteto's MIT-licensed pstack, with [pinned sources](skills/verify-nanodot-android/references/pstack-source-lock.json). They do not import Cursor tools, model names, infinite retries or permission to publish, message, merge or change login/gateway configuration.
 
 ## Writing a release
 

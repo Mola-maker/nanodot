@@ -1,5 +1,18 @@
 package io.github.nanomuse.ui.avatar
 
+import io.github.nanomuse.dot.ui.DotTokens
+import io.github.nanomuse.dot.ui.DotPageState
+import io.github.nanomuse.dot.ui.DotOperationStatus
+import io.github.nanomuse.dot.ui.LocalDotMotionEnabled
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.selected
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.RepeatMode
@@ -94,6 +107,7 @@ const val ROUTE_AVATAR_STUDIO = "nanomuse/avatar"
 @Composable
 fun AvatarStudioScreen(onBack: () -> Unit, onOpenSoul: () -> Unit, onOpenMediaModels: () -> Unit = {}) {
     val context = LocalContext.current
+    val motionEnabled = LocalDotMotionEnabled.current
     val current by AvatarStore.current.collectAsState()
     val slots by AvatarStudio.slots.collectAsState()
     val selected by AvatarStudio.selected.collectAsState()
@@ -121,8 +135,9 @@ fun AvatarStudioScreen(onBack: () -> Unit, onOpenSoul: () -> Unit, onOpenMediaMo
     }
 
     // The preview face cycles through its moods so the user sees what they got.
-    LaunchedEffect(current?.createdAt) {
+    LaunchedEffect(current?.createdAt, motionEnabled) {
         previewMood = AgentMood.IDLE
+        if (!motionEnabled) return@LaunchedEffect
         val order = listOf(AgentMood.IDLE, AgentMood.WORKING, AgentMood.WAITING, AgentMood.HAPPY, AgentMood.ERROR)
         var i = 0
         while (true) {
@@ -139,8 +154,8 @@ fun AvatarStudioScreen(onBack: () -> Unit, onOpenSoul: () -> Unit, onOpenMediaMo
             trailing = {
                 Box {
                     Surface(onClick = { menu = true }, shape = CircleShape, color = MuseTones.surface, border = BorderStroke(1.dp, MuseTones.hairline)) {
-                        Box(Modifier.size(44.dp), contentAlignment = Alignment.Center) {
-                            Icon(Icons.Filled.MoreHoriz, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface)
+                        Box(Modifier.size(DotTokens.TouchTarget), contentAlignment = Alignment.Center) {
+                            Icon(Icons.Filled.MoreHoriz, contentDescription = stringResource(R.string.nm_more), tint = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                     DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
@@ -160,14 +175,15 @@ fun AvatarStudioScreen(onBack: () -> Unit, onOpenSoul: () -> Unit, onOpenMediaMo
                 }
             },
         )
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 32.dp)) {
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = DotTokens.Space.S32)) {
             item(key = "face") {
-                Column(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(Modifier.fillMaxWidth().padding(top = DotTokens.Space.S8, bottom = DotTokens.Space.S4), horizontalAlignment = Alignment.CenterHorizontally) {
                     val pop = remember { Animatable(1f) }
-                    LaunchedEffect(current?.createdAt) {
-                        if (current != null) {
+                    LaunchedEffect(current?.createdAt, motionEnabled) {
+                        pop.snapTo(1f)
+                        if (current != null && motionEnabled) {
                             pop.snapTo(0.6f)
-                            pop.animateTo(1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow))
+                            pop.animateTo(1f, tween(DotTokens.Motion.Focus))
                         }
                     }
                     Box(
@@ -196,26 +212,31 @@ fun AvatarStudioScreen(onBack: () -> Unit, onOpenSoul: () -> Unit, onOpenMediaMo
                         Spacer(Modifier.height(10.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             if (p.running) {
-                                CircularProgressIndicator(Modifier.size(14.dp), strokeWidth = 2.dp, color = MuseTones.action)
+                                if (motionEnabled) CircularProgressIndicator(Modifier.size(14.dp), strokeWidth = 2.dp, color = MuseTones.action)
+                                else Icon(Icons.Outlined.AutoAwesome, null, Modifier.size(14.dp))
                                 Spacer(Modifier.width(8.dp))
                                 Text(stringResource(R.string.nm_avatar_moods_progress, p.done, p.total), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             } else {
                                 Text(
-                                    if (p.failed.isEmpty()) stringResource(R.string.nm_avatar_moods_done)
+                                    if (p.done < p.total) stringResource(R.string.nm_coding_stopped)
+                                    else if (p.failed.isEmpty()) stringResource(R.string.nm_avatar_moods_done)
                                     else stringResource(R.string.nm_avatar_moods_partial, p.total - p.failed.size, p.total),
                                     fontSize = 13.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
-                                if (p.failed.isNotEmpty()) {
+                                if (p.failed.isNotEmpty() || p.done < p.total) {
                                     TextButton(onClick = { AvatarStudio.generateMoods(context) }) { Text(stringResource(R.string.nm_avatar_retry), fontSize = 13.sp) }
                                 }
                             }
                         }
                     }
+                    if (p?.running == true) {
+                        DotOperationStatus(DotPageState.Loading, {}, AvatarStudio::cancelMoods)
+                    }
                     // The face is done: a moment of delight, and the one ask for a star it is fair to make here (once).
                     var starAsk by remember { mutableStateOf(false) }
                     LaunchedEffect(p?.running) {
-                        if (p != null && !p.running && p.failed.isEmpty() && io.github.nanomuse.community.StarPrompt.due(context, io.github.nanomuse.community.StarPrompt.Moment.NEW_LOOK)) {
+                        if (p != null && !p.running && p.done == p.total && p.failed.isEmpty() && io.github.nanomuse.community.StarPrompt.due(context, io.github.nanomuse.community.StarPrompt.Moment.NEW_LOOK)) {
                             io.github.nanomuse.community.StarPrompt.markShown(context, io.github.nanomuse.community.StarPrompt.Moment.NEW_LOOK)
                             starAsk = true
                         }
@@ -230,7 +251,7 @@ fun AvatarStudioScreen(onBack: () -> Unit, onOpenSoul: () -> Unit, onOpenMediaMo
                 }
             }
             item(key = "describe") {
-                Column(Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
+                Column(Modifier.padding(horizontal = DotTokens.Space.S24, vertical = DotTokens.Space.S12)) {
                     Text(stringResource(R.string.nm_avatar_describe_title), fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                     Spacer(Modifier.height(4.dp))
                     Text(stringResource(R.string.nm_avatar_describe_body), fontSize = 13.sp, lineHeight = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -246,17 +267,17 @@ fun AvatarStudioScreen(onBack: () -> Unit, onOpenSoul: () -> Unit, onOpenMediaMo
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MuseTones.action, unfocusedBorderColor = MuseTones.hairline),
                     )
                     Spacer(Modifier.height(12.dp))
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    LazyRow(Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(AvatarStudio.Style.entries.size) { i ->
                             val s = AvatarStudio.Style.entries[i]
                             val on = s == style
                             Surface(
-                                onClick = { style = s },
+                                modifier = Modifier.heightIn(min = DotTokens.TouchTarget).selectable(selected = on, role = Role.RadioButton, onClick = { style = s }),
                                 shape = CircleShape,
                                 color = if (on) MaterialTheme.colorScheme.onSurface else MuseTones.fill,
                                 contentColor = if (on) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.onSurface,
                             ) {
-                                Text(stringResource(s.label), fontSize = 13.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp))
+                                Text(stringResource(s.label), fontSize = 13.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S8))
                             }
                         }
                     }
@@ -264,26 +285,34 @@ fun AvatarStudioScreen(onBack: () -> Unit, onOpenSoul: () -> Unit, onOpenMediaMo
                     Button(
                         onClick = { priced(io.github.nanomuse.cloud.FaceCost.candidates()) { AvatarStudio.generateCandidates(context, description, style) } },
                         enabled = !generating,
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget),
                         shape = CircleShape,
                         colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary, disabledContainerColor = MuseTones.action.copy(alpha = 0.5f), disabledContentColor = Color.White),
                     ) {
                         if (generating) {
-                            CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = Color.White)
+                            if (motionEnabled) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = Color.White)
+                            else Icon(Icons.Outlined.AutoAwesome, null, Modifier.size(16.dp))
                             Spacer(Modifier.width(10.dp))
-                            Text(stringResource(R.string.nm_avatar_generating), fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.nm_avatar_generating), fontSize = DotTokens.Type.Body, fontWeight = FontWeight.SemiBold)
                         } else {
                             Icon(Icons.Outlined.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 stringResource(if (slots.any { it is AvatarStudio.Slot.Ready }) R.string.nm_avatar_generate_again else R.string.nm_avatar_generate),
-                                fontSize = 15.sp,
+                                fontSize = DotTokens.Type.Body,
                                 fontWeight = FontWeight.SemiBold,
                             )
                         }
                     }
+                    if (generating) {
+                        DotOperationStatus(DotPageState.Loading, {}, AvatarStudio::cancelCandidates)
+                    } else if (AvatarStudio.canRetryCandidates) {
+                        TextButton(onClick = { AvatarStudio.retryUnfinished(context) }, modifier = Modifier.heightIn(min = DotTokens.TouchTarget)) {
+                            Text(stringResource(R.string.nm_avatar_retry))
+                        }
+                    }
                     Spacer(Modifier.height(8.dp))
-                    Row(Modifier.fillMaxWidth().clickable { onOpenMediaModels() }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget).clickable { onOpenMediaModels() }.padding(vertical = DotTokens.Space.S8), verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             // C11: no provider draws at all → the one sentence naming those that would
                             if (endpoint == null) ImageGen.unavailableLine(context) ?: stringResource(R.string.nm_avatar_no_provider)
@@ -302,7 +331,7 @@ fun AvatarStudioScreen(onBack: () -> Unit, onOpenSoul: () -> Unit, onOpenMediaMo
             }
             if (slots.any { it !is AvatarStudio.Slot.Empty }) {
                 item(key = "candidates") {
-                    Column(Modifier.padding(horizontal = 20.dp)) {
+                    Column(Modifier.padding(horizontal = DotTokens.Space.S24)) {
                         HorizontalDivider(color = MuseTones.hairline)
                         Spacer(Modifier.height(14.dp))
                         Text(stringResource(R.string.nm_avatar_pick_title), fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
@@ -314,6 +343,7 @@ fun AvatarStudioScreen(onBack: () -> Unit, onOpenSoul: () -> Unit, onOpenMediaMo
                                 for (col in 0 until 2) {
                                     val i = row * 2 + col
                                     CandidateTile(
+                                        label = stringResource(R.string.nm_avatar_option_n, i + 1),
                                         slot = slots[i],
                                         selected = selected == i,
                                         onClick = {
@@ -329,18 +359,18 @@ fun AvatarStudioScreen(onBack: () -> Unit, onOpenSoul: () -> Unit, onOpenMediaMo
                             }
                             if (row == 0) Spacer(Modifier.height(12.dp))
                         }
-                        AnimatedVisibility(visible = selected != null, enter = fadeIn(tween(180)) + scaleIn(initialScale = 0.96f), exit = fadeOut(tween(120))) {
+                        AnimatedVisibility(visible = selected != null, enter = fadeIn(tween(if (motionEnabled) DotTokens.Motion.Page else 0)) + scaleIn(tween(if (motionEnabled) DotTokens.Motion.Page else 0), initialScale = 0.96f), exit = fadeOut(tween(if (motionEnabled) DotTokens.Motion.Press else 0))) {
                             Column {
                                 Spacer(Modifier.height(14.dp))
                                 Button(
                                     onClick = { selected?.let { AvatarStudio.adopt(context, it) } },
-                                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                                    modifier = Modifier.fillMaxWidth().heightIn(min = DotTokens.TouchTarget),
                                     shape = CircleShape,
                                     colors = ButtonDefaults.buttonColors(containerColor = MuseTones.action, contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary),
                                 ) {
                                     Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(18.dp))
                                     Spacer(Modifier.width(8.dp))
-                                    Text(stringResource(R.string.nm_avatar_use_this), fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                                    Text(stringResource(R.string.nm_avatar_use_this), fontSize = DotTokens.Type.Body, fontWeight = FontWeight.SemiBold)
                                 }
                                 Spacer(Modifier.height(6.dp))
                                 Text(
@@ -362,7 +392,7 @@ fun AvatarStudioScreen(onBack: () -> Unit, onOpenSoul: () -> Unit, onOpenMediaMo
                     fontSize = 12.sp,
                     lineHeight = 17.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
+                    modifier = Modifier.padding(horizontal = DotTokens.Space.S24, vertical = DotTokens.Space.S16),
                 )
             }
         }
@@ -371,17 +401,28 @@ fun AvatarStudioScreen(onBack: () -> Unit, onOpenSoul: () -> Unit, onOpenMediaMo
 }
 
 @Composable
-private fun CandidateTile(slot: AvatarStudio.Slot, selected: Boolean, onClick: () -> Unit, modifier: Modifier) {
+private fun CandidateTile(label: String, slot: AvatarStudio.Slot, selected: Boolean, onClick: () -> Unit, modifier: Modifier) {
     val shape = RoundedCornerShape(20.dp)
-    val shimmer = rememberInfiniteTransition(label = "shimmer")
-    val a by shimmer.animateFloat(0.45f, 1f, infiniteRepeatable(tween(900), RepeatMode.Reverse), label = "shimmerAlpha")
+    val status = when (slot) {
+        is AvatarStudio.Slot.Loading -> stringResource(R.string.nm_avatar_generating)
+        is AvatarStudio.Slot.Ready -> stringResource(R.string.nm_media_ready)
+        is AvatarStudio.Slot.Failed -> slot.message
+        else -> stringResource(R.string.nm_coding_stopped)
+    }
+    val motionEnabled = LocalDotMotionEnabled.current
+    val a = if (slot is AvatarStudio.Slot.Loading && motionEnabled) {
+        val shimmer = rememberInfiniteTransition(label = "shimmer")
+        val alpha by shimmer.animateFloat(0.45f, 1f, infiniteRepeatable(tween(DotTokens.Motion.Focus), RepeatMode.Reverse), label = "shimmerAlpha")
+        alpha
+    } else 1f
     Box(
         modifier
             .aspectRatio(1f)
             .clip(shape)
             .background(MuseTones.fill)
             .then(if (selected) Modifier.border(3.dp, MuseTones.action, shape) else Modifier)
-            .clickable(onClick = onClick),
+            .semantics { contentDescription = label; stateDescription = status; this.selected = selected }
+            .clickable(enabled = slot is AvatarStudio.Slot.Ready || slot is AvatarStudio.Slot.Failed, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         when (slot) {
@@ -393,15 +434,16 @@ private fun CandidateTile(slot: AvatarStudio.Slot, selected: Boolean, onClick: (
                     modifier = Modifier.fillMaxSize(),
                 )
                 if (selected) {
-                    Box(Modifier.align(Alignment.TopEnd).padding(10.dp).size(28.dp).background(MuseTones.action, CircleShape), contentAlignment = Alignment.Center) {
+                    Box(Modifier.align(Alignment.TopEnd).padding(DotTokens.Space.S12).size(28.dp).background(MuseTones.action, CircleShape), contentAlignment = Alignment.Center) {
                         Icon(Icons.Filled.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                     }
                 }
             }
             AvatarStudio.Slot.Loading -> Box(Modifier.fillMaxSize().alpha(a).background(MuseTones.fill), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (motionEnabled) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                else Icon(Icons.Outlined.AutoAwesome, null)
             }
-            is AvatarStudio.Slot.Failed -> Column(Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            is AvatarStudio.Slot.Failed -> Column(Modifier.padding(DotTokens.Space.S12), horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(Icons.Outlined.Refresh, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(6.dp))
                 Text(slot.message, fontSize = 11.sp, lineHeight = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center, maxLines = 3)

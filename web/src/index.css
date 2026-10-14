@@ -1,25 +1,6 @@
 @import "tailwindcss";
 
-/* Figtree (SIL Open Font License, public/fonts/OFL.txt): a geometric sans close to the one
-   Muse uses. Latin only; CJK and everything else falls through to the system font. */
-@font-face {
-  font-family: "Figtree";
-  font-style: normal;
-  font-weight: 300 900;
-  font-display: swap;
-  src: url(/fonts/figtree-latin.woff2) format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
-    U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: "Figtree";
-  font-style: normal;
-  font-weight: 300 900;
-  font-display: swap;
-  src: url(/fonts/figtree-latin-ext.woff2) format("woff2");
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
-    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
+@import "./dot-tokens.css";
 
 /* `wide:` — the sidebar layout. A browser gets it from 1024px; the desktop app always has it,
    whatever the window's width (main.tsx marks <html class="desktop">). */
@@ -27,9 +8,7 @@
   @media (min-width: 64rem) {
     @slot;
   }
-  :where(html.desktop) & {
-    @slot;
-  }
+
 }
 
 @theme {
@@ -44,7 +23,7 @@
   --color-bubble-user: var(--om-bubble-user);
   --color-bubble-user-fg: var(--om-bubble-user-fg);
   --font-sans:
-    "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
     "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
 }
 
@@ -55,32 +34,32 @@
 /* The palette is Muse's: near-white and near-black surfaces, one blue, grey for the agent's
    bubbles and light blue for yours. */
 :root {
-  --om-bg: #F4F7F8;
+  --om-bg: #F4F8FF;
   --om-surface: #FFFFFF;
   --om-surface-2: #f2f2f4;
   --om-border: #e7e7ea;
-  --om-fg: #16252C;
-  --om-muted: #687980;
-  --om-accent: #136F63;
+  --om-fg: #1C3552;
+  --om-muted: #1C3552;
+  --om-accent: #2D6396;
   --om-accent-fg: #FFFFFF;
-  --om-care: #7057A3;
-  --om-bubble-user: #DCEFEA;
-  --om-bubble-user-fg: #16252C;
+  --om-care: #3F66A0;
+  --om-bubble-user: #2D6396;
+  --om-bubble-user-fg: #FFFFFF;
   color-scheme: light;
 }
 
 html[data-theme="dark"] {
-  --om-bg: #10191D;
-  --om-surface: #182329;
+  --om-bg: #101D30;
+  --om-surface: #172B43;
   --om-surface-2: #2a2a2d;
   --om-border: #333337;
-  --om-fg: #E5EDF0;
-  --om-muted: #8EABB5;
-  --om-accent: #7DD6C5;
-  --om-accent-fg: #10191D;
-  --om-care: #C7B4F7;
-  --om-bubble-user: #21433D;
-  --om-bubble-user-fg: #ffffff;
+  --om-fg: #E8F0FD;
+  --om-muted: #E8F0FD;
+  --om-accent: #A9D2F5;
+  --om-accent-fg: #101D30;
+  --om-care: #C0D9FA;
+  --om-bubble-user: #A9D2F5;
+  --om-bubble-user-fg: #101D30;
   color-scheme: dark;
 }
 
@@ -414,3 +393,29 @@ html.desktop[data-platform="darwin"] .titlebar-room {
 .drawer-in {
   animation: om-drawer-in 0.2s ease-out;
 }
+
+/* Task4: controls and surfaces consume the generated Dot contract. */
+:root { --om-bg: var(--dot-background); --om-surface: var(--dot-surface); --om-fg: var(--dot-text); --om-muted: var(--dot-text); --om-accent: var(--dot-primary); --om-accent-fg: var(--dot-on-primary); --om-care: var(--dot-care); }
+html[data-theme="dark"] { --om-bg: var(--dot-background); --om-surface: var(--dot-surface); --om-fg: var(--dot-text); --om-muted: var(--dot-text); --om-accent: var(--dot-primary); --om-accent-fg: var(--dot-on-primary); --om-care: var(--dot-care); }
+body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: var(--dot-type-body); }
+button, input, select { min-height: 44px; }
+button, input, select, textarea { max-width: 100%; }
+button { min-width: 44px; transition-duration: var(--dot-motion-press); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button:active:not(:disabled) { box-shadow: inset 0 0 0 2px var(--dot-outline); }
+:focus-visible { outline: 2px solid var(--dot-primary); outline-offset: 3px; transition-duration: var(--dot-motion-focus); }
+.dot-status { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: var(--dot-space-8); padding: var(--dot-space-12); font-size: var(--dot-type-body); overflow-wrap: anywhere; }
+.dot-status-error { border-inline-start: 3px solid var(--dot-care); }
+.dot-status button { padding: var(--dot-space-8) var(--dot-space-16); border: 1px solid var(--dot-outline); border-radius: 12px; }
+.dot-task-rooms { display: flex; flex-wrap: wrap; gap: var(--dot-space-4); padding: var(--dot-space-8); background: var(--dot-surface); }
+.dot-task-rooms button { flex: 1; padding: var(--dot-space-8); border-radius: 12px; }
+.dot-task-rooms [aria-current="page"] { background: var(--dot-primary); color: var(--dot-on-primary); }
+[hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+/* Icon geometry stays usable as text grows; the draft takes the remaining width. */
+.dot-chat > header > div:first-child { padding-inline: 64px; }
+.dot-composer-toolbar { gap: 8px; padding: 6px; }
+.dot-composer-toolbar > button { width: 44px; height: 44px; min-width: 44px; }
+.dot-composer textarea { min-width: 0; max-height: min(160px, 20dvh); }
+.dot-status > span:nth-child(2) { min-width: 0; flex: 1 1 140px; }

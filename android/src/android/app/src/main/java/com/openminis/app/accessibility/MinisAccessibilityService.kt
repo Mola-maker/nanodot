@@ -3,6 +3,7 @@ package com.openminis.app.accessibility
 import com.openminis.app.BuildConfig
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
+import android.content.Intent // nanoMuse: diagnostic-only unbind boundary.
 import android.graphics.Bitmap
 import android.graphics.ColorSpace
 import android.graphics.Path
@@ -50,17 +51,48 @@ class MinisAccessibilityService : AccessibilityService() {
     private val eventRing = ConcurrentLinkedQueue<RecordedEvent>()
     private val eventListeners = CopyOnWriteArrayList<(RecordedEvent) -> Unit>()
 
+    // nanoMuse: overlay ownership starts only at the real accessibility connection.
+    internal val dotOverlay by lazy { io.github.nanomuse.dot.overlay.DotOverlayController(this) { dotInteraction.handle(it) } }
+
+    // nanoMuse: read-only scene repository shares the service and its owned-window controller.
+    val dotScreen by lazy { io.github.nanomuse.dot.screen.ScreenRepository(this, dotOverlay) }
+
+    // nanoMuse: ordinary conversation delegates to the canonical main-chat VM.
+    internal val dotInteraction by lazy { io.github.nanomuse.dot.DotInteractionCoordinator(this) }
+
     val nodeRegistry: NodeRegistry = NodeRegistry()
+
+    // nanoMuse: DEBUG-only attachment breadcrumbs; never expose tokens or screen content.
+    internal var dotConnectionSequence = 0
+        private set
+
+    private fun traceDotConnection(phase: String) {
+        if (!BuildConfig.DEBUG) return
+        android.util.Log.d("nanoMuse.DotAttach", "phase=$phase uptimeMs=${android.os.SystemClock.uptimeMillis()} " +
+            "pid=${android.os.Process.myPid()} tid=${android.os.Process.myTid()} " +
+            "service=${System.identityHashCode(this)} connection=$dotConnectionSequence " +
+            "published=${_instance === this}")
+    }
 
     override fun onCreate() {
         super.onCreate()
         _instance = this
+        traceDotConnection("service.created") // nanoMuse: identify same-PID replacement instances.
         AppLogger.info(TAG, "service created")
     }
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        // nanoMuse: record callback admission before lazy owners or native addView can fail.
+        if (BuildConfig.DEBUG) dotConnectionSequence++
+        traceDotConnection("service.connected.begin")
         _instance = this
+        // nanoMuse: service connection, not onCreate, grants the overlay window token.
+        dotOverlay.connect()
+        // nanoMuse: connected sampling remains idle until an explicit capture request.
+        dotScreen.connect()
+        // nanoMuse: attach the serial Care owner without capturing or contacting a model.
+        dotInteraction.connect()
         // [T-android-a11y-miui-service-failure] Breadcrumb on (re)bind. On OEM
         // ROMs (MIUI etc.) the system kills + rebinds this service repeatedly,
         // surfacing "此服务出现故障"; a connect log lets us correlate a degraded
@@ -78,10 +110,27 @@ class MinisAccessibilityService : AccessibilityService() {
         } catch (t: Throwable) {
             AppLogger.warning(TAG, "markGranted failed: ${t.message}")
         }
+        traceDotConnection("service.connected.end") // nanoMuse: all connection work returned.
+    }
+
+    // nanoMuse: observe framework unbinding without changing its return value or teardown order.
+    override fun onUnbind(intent: Intent?): Boolean {
+        traceDotConnection("service.unbind.begin")
+        val result = super.onUnbind(intent)
+        traceDotConnection("service.unbind.end")
+        return result
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        // nanoMuse: recheck keyguard on service events as well as screen broadcasts.
+        dotOverlay.refreshLockState()
         if (event == null) return
+        // nanoMuse: host geometry/content updates invalidate asynchronous scene results.
+        val dotSceneChanged = dotScreen.onAccessibilityEvent(event)
+        // nanoMuse: only actual host/IME geometry or content changes invalidate Care.
+        dotInteraction.onSceneChanged(dotSceneChanged)
+        // nanoMuse: settled host/IME frames constrain the actual focusable Dot panel.
+        dotOverlay.refreshPanelGeometry()
         val rec = RecordedEvent(
             type = AccessibilityEvent.eventTypeToString(event.eventType),
             packageName = event.packageName?.toString(),
@@ -97,16 +146,30 @@ class MinisAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
+        traceDotConnection("service.interrupt.begin") // nanoMuse: separate interrupt from unbind.
+        // nanoMuse: interruption clears pending gestures and every Dot window.
+        dotInteraction.disconnect()
+        dotOverlay.disconnect()
+        // nanoMuse: disconnect also revokes the legacy projection session.
+        dotScreen.disconnect()
         AppLogger.info(TAG, "service interrupted")
+        traceDotConnection("service.interrupt.end") // nanoMuse: teardown observation only.
     }
 
     override fun onDestroy() {
+        traceDotConnection("service.destroy.begin") // nanoMuse: observe before owner teardown.
+        // nanoMuse: dispose window composition and owners before the service goes away.
+        dotInteraction.disconnect()
+        dotOverlay.disconnect()
+        // nanoMuse: disconnect also revokes the legacy projection session.
+        dotScreen.disconnect()
         super.onDestroy()
         if (_instance === this) _instance = null
         eventRing.clear()
         nodeRegistry.clear()
         eventListeners.clear()
         AppLogger.info(TAG, "service destroyed")
+        traceDotConnection("service.destroy.end") // nanoMuse: publication has now been cleared.
     }
 
     fun snapshotEvents(): List<RecordedEvent> = eventRing.toList()

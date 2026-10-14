@@ -190,7 +190,7 @@ fun MountDetailScreen(
             Spacer(Modifier.height(20.dp))
             ActionRow(
                 icon = Icons.Outlined.Folder,
-                tint = Color(0xFF136F63),
+                tint = androidx.compose.material3.MaterialTheme.colorScheme.primary, // nanoMuse: active-theme foreground accent.
                 label = stringResource(R.string.mount_detail_browse_files),
                 onClick = onBrowseFiles,
             )

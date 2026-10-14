@@ -317,7 +317,7 @@
     <string name="nm_avatar_retry">重試</string>
     <string name="nm_avatar_describe_title">描述一個新形象</string>
     <string name="nm_avatar_describe_body">一句話就夠：它是什麼、穿什麼、什麼氣質。選一種風格，你的圖像模型會畫四張讓你挑。</string>
-    <string name="nm_avatar_default_description">一隻圓滾滾的奶黃色小龍，橙色小角，摺著小翅膀</string>
+    <string name="nm_avatar_default_description">淡藍色透明水晶球，柔和高光，帶有輕柔的呼吸感</string>
     <string name="nm_avatar_style_flat">扁平插畫</string>
     <string name="nm_avatar_style_clay">3D 黏土</string>
     <string name="nm_avatar_style_watercolor">水彩</string>
@@ -364,7 +364,7 @@
     <string name="nm_version_failed">沒查到，點一下再試</string>
     <string name="nm_appearance_section_home">首頁</string>
     <string name="nm_appearance_header_model_title">在名字下方顯示模型</string>
-    <string name="nm_appearance_header_model_footer">Muse 只顯示名字。開啟後名字下方會顯示模型群組和服務商 · 模型，點它可以切換。關閉時模型在 ••• → 模型和設定裡。</string>
+    <string name="nm_appearance_header_model_footer">Dot 只顯示名字。開啟後名字下方會顯示模型群組和服務商 · 模型，點它可以切換。關閉時模型在 ••• → 模型和設定裡。</string>
     <string name="nm_appearance_section_chat">對話</string>
     <string name="nm_appearance_steps_title">顯示執行步驟</string>
     <string name="nm_appearance_steps_footer">關閉時，聊天裡只保留回覆，頭像下面那一行說明它正在做什麼。開啟後每一步都會出現在聊天裡：用到的每個工具、它的推理，以及輸入框上方一條可以打開步驟詳情的狀態列。</string>
@@ -384,7 +384,7 @@
     <string name="nm_avatar_size_large">大</string>
     <string name="nm_avatar_size_extra_large">超大型</string>
     <string name="nm_avatar_size_hidden">已隱藏</string>
-    <string name="nm_avatar_style_muse">3D 玩偶（Muse）</string>
+    <string name="nm_avatar_style_muse">3D 玩偶</string>
     <!-- 智慧體主頁 -->
     <string name="nm_profile_online">online</string>
     <string name="nm_profile_edit">編輯</string>
@@ -1074,4 +1074,106 @@
     <string name="nm_models_search_clear">清除搜尋</string>
     <string name="nm_models_no_match">沒有符合的模型</string>
     <string name="nm_update_manual">自動更新已關閉。開啟 Nanodot 發布頁手動查看更新。</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Dot 懸浮球</string>
+    <string name="nm_dot_show_orb">顯示 Dot 懸浮球</string>
+    <string name="nm_dot_settings_footer">無障礙服務連接後顯示。關閉後，重新連接也會保持隱藏。</string>
+    <string name="nm_dot_orb_description">Dot 懸浮球。開啟對話、檢視螢幕或開始關懷。</string>
+    <string name="nm_dot_open_conversation">開啟對話</string>
+    <string name="nm_dot_view_screen">檢視螢幕</string>
+    <string name="nm_dot_start_care">開始關懷</string>
+    <string name="nm_dot_action_unavailable">此 Dot 功能尚未開放。</string>
+    <string name="nm_tab_tasks">任務</string>
+    <string name="nm_task_library">資料</string>
+    <string name="nm_gateway_key_required">需要專用專案 key。保留現有設定和選取的模型。實際服務驗收尚待完成。</string>
+    <string name="nm_gateway_connection_failed">無法連線。請檢查專案 key 和網路。</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Dot 螢幕擷取</string>
+    <string name="nm_dot_capture_active">停止前，Dot 可以擷取螢幕圖片。</string>
+    <string name="nm_dot_capture_stop">停止擷取</string>
+    <string name="nm_dot_capture_explain">在此 Android 版本上，Dot 可以讀取無障礙文字。如需分享螢幕圖片，請單獨授權螢幕擷取。Android 會請求你的許可。</string>
+    <string name="nm_dot_capture_allow">允許螢幕擷取</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">正在載入…</string>
+    <string name="nm_dot_load_failed">無法載入此頁面。</string>
+    <string name="nm_dot_components">元件</string>
+    <string name="nm_dot_empty">這裡還沒有內容。</string>
+    <string name="nm_dot_attach">加入檔案</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">新增至%1$s</string>
+    <string name="nm_goal_completion">目標已完成：%1$s</string>
+    <string name="nm_feed_like_post">喜歡貼文：%1$s</string>
+    <string name="nm_feed_post_info">貼文資訊：%1$s</string>
+    <string name="nm_dot_chat_empty">傳訊息給 Dot，開始這段對話。</string>
+    <string name="nm_dot_chat_message">訊息</string>
+    <string name="nm_dot_chat_send">傳送</string>
+    <string name="nm_dot_chat_stop">停止</string>
+    <string name="nm_dot_chat_retry">重試</string>
+    <string name="nm_dot_chat_collapse">收起對話</string>
+    <string name="nm_dot_chat_remove">移除預覽</string>
+    <string name="nm_dot_chat_capturing">正在查看螢幕…</string>
+    <string name="nm_dot_chat_capture_failed">目前無法擷取螢幕。請回到原本頁面後重試。</string>
+    <string name="nm_dot_chat_historical">擷取於 %1$s · 歷史附件</string>
+    <string name="nm_dot_chat_text_only">僅文字 · 無螢幕截圖</string>
+    <string name="nm_dot_chat_voice_pending">語音功能尚未開放。</string>
+    <string name="nm_dot_chat_compact">壓縮並傳送</string>
+    <string name="nm_dot_chat_cancel">取消</string>
+    <string name="nm_care_clarify_no_nodes">你在這個頁面上能看到哪個控制項？</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">我會一步步引導你。</string>
+    <string name="nm_care_goal">你想完成什麼？</string>
+    <string name="nm_care_start">開始引導</string>
+    <string name="nm_care_copy">複製文字</string>
+    <string name="nm_care_repeat">重複說明</string>
+    <string name="nm_care_pause">暫停</string>
+    <string name="nm_care_reobserve">重新辨識</string>
+    <string name="nm_care_end">結束引導</string>
+    <string name="nm_care_resume">繼續</string>
+    <string name="nm_care_change_goal">修改目標</string>
+    <string name="nm_care_confirm">我已完成這一步</string>
+    <string name="nm_care_observing">正在查看畫面</string>
+    <string name="nm_care_clarifying">需要補充資訊</string>
+    <string name="nm_care_awaiting">等待你操作</string>
+    <string name="nm_care_verifying">正在檢查結果</string>
+    <string name="nm_care_completed">引導已結束</string>
+    <string name="nm_care_recovering">請核對這一步</string>
+    <string name="nm_care_paused">引導已暫停</string>
+    <string name="nm_care_unavailable">暫時無法讀取或確認目前畫面。你可以重新辨識、修改目標或結束引導。</string>
+    <string name="nm_care_provider_missing">請在設定 → 模型中選擇可用的文字模型，然後重新辨識。</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">語音輸入</string>
+    <string name="nm_dot_voice_permission">允許使用麥克風和通知以進行語音輸入，也可以繼續打字。</string>
+    <string name="nm_dot_voice_keyboard">使用鍵盤</string>
+    <string name="nm_dot_voice_notification">Dot 麥克風</string>
+    <string name="nm_dot_voice_stop_hint">正在錄音或收尾，停止將取消本次錄音。</string>
+    <string name="nm_dot_voice_cancel">取消錄音</string>
+    <string name="nm_dot_voice_finish">完成語音輸入</string>
+    <string name="nm_dot_voice_starting">正在啟動麥克風…</string>
+    <string name="nm_dot_voice_recording">正在聆聽…</string>
+    <string name="nm_dot_voice_finishing">正在完成轉寫並釋放麥克風…</string>
+    <string name="nm_dot_voice_denied">無法使用麥克風或通知，請打字、重試或開啟設定。</string>
+    <string name="nm_dot_voice_busy">麥克風正在使用中，停止後可重試。</string>
+    <string name="nm_dot_voice_error">語音失敗，可以打字或重試。</string>
+    <string name="nm_dot_voice_read">朗讀回覆</string>
+    <string name="nm_dot_voice_speaking">正在朗讀回覆…</string>
+    <string name="nm_dot_voice_read_error">無法朗讀回覆。</string>
+
+    <string name="nm_dot_bubble_you">你</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">這一步已確認</string>
+    <string name="nm_dot_foreground_capturing">正在讀取目前畫面</string>
+    <string name="nm_dot_foreground_error">此互動需要處理</string>
+    <string name="nm_dot_foreground_disconnected">Dot 已中斷連線</string>
+    <string name="nm_dot_foreground_expand">展開</string>
+    <string name="nm_dot_foreground_adjust">拖曳調整位置</string>
+    <string name="nm_dot_region_selected">已選取區域</string>
+    <string name="nm_dot_region_text_mode">此模型僅接收選區內可讀取的文字，圖片僅在此預覽。</string>
+    <string name="nm_dot_region_reselect">重新圈選</string>
+    <string name="nm_dot_region_reselect_hint">拖動水晶球，圍住所需區域。</string>
 </resources>

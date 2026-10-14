@@ -332,7 +332,7 @@
     <string name="nm_avatar_retry">Réessayer</string>
     <string name="nm_avatar_describe_title">Décrivez un nouveau visage</string>
     <string name="nm_avatar_describe_body">Une phrase suffit : ce que c’est, ce que ça porte, ce que ça dégage. Choisissez un style, et votre modèle d’image en dessine quatre au choix.</string>
-    <string name="nm_avatar_default_description">Un bébé dragon joufflu jaune pâle, avec de minuscules cornes orange et de petites ailes repliées</string>
+    <string name="nm_avatar_default_description">Une sphère de cristal transparente bleu pâle, aux reflets doux et à la lueur qui pulse doucement</string>
     <string name="nm_avatar_style_flat">Plat</string>
     <string name="nm_avatar_style_clay">Pâte à modeler 3D</string>
     <string name="nm_avatar_style_watercolor">Aquarelle</string>
@@ -379,7 +379,7 @@
     <string name="nm_version_failed">Vérification impossible, touchez pour réessayer</string>
     <string name="nm_appearance_section_home">Accueil</string>
     <string name="nm_appearance_header_model_title">Afficher le modèle sous le nom</string>
-    <string name="nm_appearance_header_model_footer">Muse n’affiche que le nom. Activez ceci pour voir dessous le groupe de modèles et fournisseur · modèle ; touchez-les pour changer. Désactivé, le modèle se trouve sous ••• → Modèle et dans les Réglages.</string>
+    <string name="nm_appearance_header_model_footer">Dot n’affiche que le nom. Activez ceci pour voir dessous le groupe de modèles et fournisseur · modèle ; touchez-les pour changer. Désactivé, le modèle se trouve sous ••• → Modèle et dans les Réglages.</string>
     <string name="nm_appearance_section_chat">Conversation</string>
     <string name="nm_appearance_steps_title">Afficher les étapes de l’agent</string>
     <string name="nm_appearance_steps_footer">Désactivé, la discussion ne garde que les réponses, et la ligne sous le visage dit ce que l’agent fait en ce moment. Activé, chaque étape s’affiche dans la discussion : chaque outil utilisé, son raisonnement, et une barre au-dessus du champ de saisie qui ouvre le détail de l’étape.</string>
@@ -399,7 +399,7 @@
     <string name="nm_avatar_size_large">Grand</string>
     <string name="nm_avatar_size_extra_large">Très grand</string>
     <string name="nm_avatar_size_hidden">Masqué</string>
-    <string name="nm_avatar_style_muse">Jouet 3D (Muse)</string>
+    <string name="nm_avatar_style_muse">Jouet 3D</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">en ligne</string>
@@ -1080,9 +1080,9 @@
     <string name="nm_models_hands_title">Manipuler l’écran</string>
     <string name="nm_models_hands_sub">Regarde l’écran et agit pour vous. Il faut un modèle qui voit les images.</string>
     <string name="nm_models_image_title">Créer des images</string>
-    <string name="nm_models_image_sub">Des portraits de votre Muse et les images que vous demandez.</string>
+    <string name="nm_models_image_sub">Des portraits de Dot et les images que vous demandez.</string>
     <string name="nm_models_video_title">Créer des clips</string>
-    <string name="nm_models_video_sub">De courts clips de votre Muse.</string>
+    <string name="nm_models_video_sub">De courts clips de Dot.</string>
     <string name="nm_models_chat_applies">S’applique à la discussion principale et aux nouvelles discussions ; une discussion secondaire garde son modèle.</string>
     <string name="nm_models_media_more">Plus d’options pour les images et les clips</string>
     <string name="nm_models_media_more_sub">Saisir un nom de modèle, voir ce qui s’arrête sans chaque modèle, ou revérifier quels modèles vidéo une clé peut utiliser.</string>
@@ -1108,4 +1108,106 @@
     <string name="nm_models_search_clear">Effacer la recherche</string>
     <string name="nm_models_no_match">Aucun modèle ne correspond</string>
     <string name="nm_update_manual">Les mises à jour automatiques sont désactivées. Consultez la page des versions de Nanodot.</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Bulle Dot</string>
+    <string name="nm_dot_show_orb">Afficher la bulle Dot</string>
+    <string name="nm_dot_settings_footer">Apparaît lorsque le service d’accessibilité est connecté. Désactivée, elle reste masquée après reconnexion.</string>
+    <string name="nm_dot_orb_description">Bulle Dot. Ouvrir la conversation, voir l’écran ou démarrer l’accompagnement.</string>
+    <string name="nm_dot_open_conversation">Ouvrir la conversation</string>
+    <string name="nm_dot_view_screen">Voir l’écran</string>
+    <string name="nm_dot_start_care">Démarrer l’accompagnement</string>
+    <string name="nm_dot_action_unavailable">Cette fonction de Dot n’est pas encore disponible.</string>
+    <string name="nm_tab_tasks">Tâches</string>
+    <string name="nm_task_library">Bibliothèque</string>
+    <string name="nm_gateway_key_required">Une clé dédiée au projet est requise. Les réglages et modèles sélectionnés sont conservés. La validation du service réel reste à effectuer.</string>
+    <string name="nm_gateway_connection_failed">Connexion impossible. Vérifiez la clé du projet et le réseau.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Capture écran pour Dot</string>
+    <string name="nm_dot_capture_active">La capture reste disponible jusqu’à son arrêt.</string>
+    <string name="nm_dot_capture_stop">Arrêter la capture</string>
+    <string name="nm_dot_capture_explain">Sur cette version Android, Dot peut lire le texte accessible. Autorisez séparément la capture pour partager aussi les images. Android vous demandera votre accord.</string>
+    <string name="nm_dot_capture_allow">Autoriser la capture écran</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Chargement…</string>
+    <string name="nm_dot_load_failed">Impossible de charger cette page.</string>
+    <string name="nm_dot_components">Composants</string>
+    <string name="nm_dot_empty">Aucun contenu pour le moment.</string>
+    <string name="nm_dot_attach">Joindre un fichier</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">Ajouter à %1$s</string>
+    <string name="nm_goal_completion">Objectif terminé : %1$s</string>
+    <string name="nm_feed_like_post">Aimer la publication : %1$s</string>
+    <string name="nm_feed_post_info">Informations sur la publication : %1$s</string>
+    <string name="nm_dot_chat_empty">Écrivez à Dot pour commencer cette conversation.</string>
+    <string name="nm_dot_chat_message">Message</string>
+    <string name="nm_dot_chat_send">Envoyer</string>
+    <string name="nm_dot_chat_stop">Arrêter</string>
+    <string name="nm_dot_chat_retry">Réessayer</string>
+    <string name="nm_dot_chat_collapse">Replier la conversation</string>
+    <string name="nm_dot_chat_remove">Retirer l’aperçu</string>
+    <string name="nm_dot_chat_capturing">Lecture de l’écran…</string>
+    <string name="nm_dot_chat_capture_failed">Capture indisponible. Réessayez sur l’écran d’origine.</string>
+    <string name="nm_dot_chat_historical">Capture %1$s · pièce jointe passée</string>
+    <string name="nm_dot_chat_text_only">Texte seul · sans capture</string>
+    <string name="nm_dot_chat_voice_pending">La voix n’est pas encore disponible.</string>
+    <string name="nm_dot_chat_compact">Compacter et envoyer</string>
+    <string name="nm_dot_chat_cancel">Annuler</string>
+    <string name="nm_care_clarify_no_nodes">Quel contrôle vois-tu sur cette page ?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">Je vous guiderai étape par étape.</string>
+    <string name="nm_care_goal">Que souhaitez-vous faire ?</string>
+    <string name="nm_care_start">Commencer le guidage</string>
+    <string name="nm_care_copy">Copier le texte</string>
+    <string name="nm_care_repeat">Répéter la consigne</string>
+    <string name="nm_care_pause">Mettre en pause</string>
+    <string name="nm_care_reobserve">Observer à nouveau</string>
+    <string name="nm_care_end">Terminer le guidage</string>
+    <string name="nm_care_resume">Reprendre</string>
+    <string name="nm_care_change_goal">Modifier le but</string>
+    <string name="nm_care_confirm">Cette étape est terminée</string>
+    <string name="nm_care_observing">Lecture de cet écran</string>
+    <string name="nm_care_clarifying">Une précision est nécessaire</string>
+    <string name="nm_care_awaiting">En attente de votre action</string>
+    <string name="nm_care_verifying">Vérification du résultat</string>
+    <string name="nm_care_completed">Guidage terminé</string>
+    <string name="nm_care_recovering">Vérifiez cette étape</string>
+    <string name="nm_care_paused">Guidage en pause</string>
+    <string name="nm_care_unavailable">Impossible de lire ou de vérifier cet écran. Observez à nouveau, modifiez le but ou terminez le guidage.</string>
+    <string name="nm_care_provider_missing">Choisissez un modèle de texte disponible dans Paramètres → Modèles, puis observez à nouveau.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Dicter</string>
+    <string name="nm_dot_voice_permission">Autorisez le micro et les notifications pour dicter. Vous pouvez continuer à écrire.</string>
+    <string name="nm_dot_voice_keyboard">Utiliser le clavier</string>
+    <string name="nm_dot_voice_notification">Micro de Dot</string>
+    <string name="nm_dot_voice_stop_hint">Enregistrement ou finalisation. Arrêter annule cet enregistrement.</string>
+    <string name="nm_dot_voice_cancel">Annuler l’enregistrement</string>
+    <string name="nm_dot_voice_finish">Terminer la dictée</string>
+    <string name="nm_dot_voice_starting">Démarrage du micro…</string>
+    <string name="nm_dot_voice_recording">Écoute…</string>
+    <string name="nm_dot_voice_finishing">Finalisation et libération du micro…</string>
+    <string name="nm_dot_voice_denied">Micro ou notifications indisponibles. Écrivez, réessayez ou ouvrez les paramètres.</string>
+    <string name="nm_dot_voice_busy">Micro utilisé. Réessayez après son arrêt.</string>
+    <string name="nm_dot_voice_error">Échec vocal. Vous pouvez écrire ou réessayer.</string>
+    <string name="nm_dot_voice_read">Lire la réponse</string>
+    <string name="nm_dot_voice_speaking">Lecture de la réponse…</string>
+    <string name="nm_dot_voice_read_error">Impossible de lire la réponse à voix haute.</string>
+
+    <string name="nm_dot_bubble_you">Vous</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">Étape confirmée</string>
+    <string name="nm_dot_foreground_capturing">Lecture de l’écran actuel</string>
+    <string name="nm_dot_foreground_error">Cette interaction nécessite votre attention</string>
+    <string name="nm_dot_foreground_disconnected">Dot est déconnecté</string>
+    <string name="nm_dot_foreground_expand">Développer</string>
+    <string name="nm_dot_foreground_adjust">Glisser pour ajuster</string>
+    <string name="nm_dot_region_selected">Zone sélectionnée</string>
+    <string name="nm_dot_region_text_mode">Ce modèle reçoit uniquement le texte accessible de la zone sélectionnée. L’image reste dans cet aperçu.</string>
+    <string name="nm_dot_region_reselect">Sélectionner à nouveau</string>
+    <string name="nm_dot_region_reselect_hint">Faites glisser la boule de cristal autour de la zone à sélectionner.</string>
 </resources>

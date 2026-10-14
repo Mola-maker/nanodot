@@ -329,7 +329,7 @@
     <string name="nm_avatar_retry">ลองใหม่</string>
     <string name="nm_avatar_describe_title">บรรยายใบหน้าใหม่</string>
     <string name="nm_avatar_describe_body">ประโยคเดียวก็พอ: มันคืออะไร สวมอะไร ให้ความรู้สึกแบบไหน เลือกสไตล์ แล้วโมเดลภาพของคุณจะวาดสี่แบบให้เลือก</string>
-    <string name="nm_avatar_default_description">ลูกมังกรอ้วนกลมสีเหลืองอ่อน มีเขาสีส้มเล็ก ๆ และปีกเล็กที่พับอยู่</string>
+    <string name="nm_avatar_default_description">ลูกแก้วคริสตัลโปร่งใสสีฟ้าอ่อน มีแสงสะท้อนนุ่มนวลและแสงเรืองที่ค่อย ๆ เต้นเหมือนลมหายใจ</string>
     <string name="nm_avatar_style_flat">แฟลต</string>
     <string name="nm_avatar_style_clay">ดินปั้น 3D</string>
     <string name="nm_avatar_style_watercolor">สีน้ำ</string>
@@ -376,7 +376,7 @@
     <string name="nm_version_failed">ตรวจสอบไม่ได้ แตะเพื่อลองอีกครั้ง</string>
     <string name="nm_appearance_section_home">หน้าหลัก</string>
     <string name="nm_appearance_header_model_title">แสดงโมเดลใต้ชื่อ</string>
-    <string name="nm_appearance_header_model_footer">Muse แสดงเฉพาะชื่อ เปิดตัวเลือกนี้เพื่อดูกลุ่มโมเดลและ ผู้ให้บริการ · โมเดล ใต้ชื่อ แตะเพื่อสลับได้ เมื่อปิด โมเดลจะอยู่ใต้ ••• → โมเดล และในการตั้งค่า</string>
+    <string name="nm_appearance_header_model_footer">Dot แสดงเฉพาะชื่อ เปิดตัวเลือกนี้เพื่อดูกลุ่มโมเดลและ ผู้ให้บริการ · โมเดล ใต้ชื่อ แตะเพื่อสลับได้ เมื่อปิด โมเดลจะอยู่ใต้ ••• → โมเดล และในการตั้งค่า</string>
     <string name="nm_appearance_section_chat">บทสนทนา</string>
     <string name="nm_appearance_steps_title">แสดงขั้นตอนของเอเจนต์</string>
     <string name="nm_appearance_steps_footer">เมื่อปิด แชทจะแสดงเฉพาะคำตอบ และบรรทัดใต้ใบหน้าจะบอกว่าเอเจนต์กำลังทำอะไรอยู่ เมื่อเปิด ทุกขั้นตอนจะแสดงในแชท เครื่องมือแต่ละตัวที่ใช้ การให้เหตุผล และแถบเหนือช่องพิมพ์ที่เปิดดูรายละเอียดของขั้นตอนได้</string>
@@ -396,7 +396,7 @@
     <string name="nm_avatar_size_large">ใหญ่</string>
     <string name="nm_avatar_size_extra_large">ใหญ่พิเศษ</string>
     <string name="nm_avatar_size_hidden">ซ่อน</string>
-    <string name="nm_avatar_style_muse">ของเล่น 3D (Muse)</string>
+    <string name="nm_avatar_style_muse">ของเล่น 3D</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">ออนไลน์</string>
@@ -1076,9 +1076,9 @@
     <string name="nm_models_hands_title">ควบคุมหน้าจอ</string>
     <string name="nm_models_hands_sub">ดูหน้าจอและทำแทนคุณ ต้องใช้โมเดลที่มองเห็นภาพได้</string>
     <string name="nm_models_image_title">สร้างภาพ</string>
-    <string name="nm_models_image_sub">ภาพบุคคลของมิวส์ของคุณ และภาพที่คุณขอ</string>
+    <string name="nm_models_image_sub">ภาพบุคคลของDot และภาพที่คุณขอ</string>
     <string name="nm_models_video_title">สร้างคลิป</string>
-    <string name="nm_models_video_sub">คลิปสั้นของมิวส์ของคุณ</string>
+    <string name="nm_models_video_sub">คลิปสั้นของDot</string>
     <string name="nm_models_chat_applies">มีผลกับแชทหลักและแชทใหม่ ส่วนแชทย่อยยังใช้โมเดลเดิมของตัวเอง</string>
     <string name="nm_models_media_more">ตัวเลือกภาพและคลิปเพิ่มเติม</string>
     <string name="nm_models_media_more_sub">พิมพ์ชื่อโมเดล ดูว่าหากไม่มีโมเดลใดสิ่งใดจะหยุด หรือตรวจอีกครั้งว่าคีย์ใช้โมเดลวิดีโอใดได้บ้าง</string>
@@ -1104,4 +1104,106 @@
     <string name="nm_models_search_clear">ล้างการค้นหา</string>
     <string name="nm_models_no_match">ไม่มีโมเดลที่ตรงกัน</string>
     <string name="nm_update_manual">ปิดการอัปเดตอัตโนมัติแล้ว เปิดหน้ารุ่นของ Nanodot เพื่อตรวจสอบด้วยตนเอง</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">ปุ่มลอย Dot</string>
+    <string name="nm_dot_show_orb">แสดงปุ่ม Dot</string>
+    <string name="nm_dot_settings_footer">ปรากฏเมื่อเชื่อมต่อบริการการช่วยเหลือพิเศษ เมื่อปิดแล้วจะยังซ่อนอยู่หลังเชื่อมต่อใหม่</string>
+    <string name="nm_dot_orb_description">ปุ่ม Dot เปิดการสนทนา ดูหน้าจอ หรือเริ่มการดูแล</string>
+    <string name="nm_dot_open_conversation">เปิดการสนทนา</string>
+    <string name="nm_dot_view_screen">ดูหน้าจอ</string>
+    <string name="nm_dot_start_care">เริ่มการดูแล</string>
+    <string name="nm_dot_action_unavailable">ฟังก์ชัน Dot นี้ยังไม่พร้อมใช้งาน</string>
+    <string name="nm_tab_tasks">งาน</string>
+    <string name="nm_task_library">คลัง</string>
+    <string name="nm_gateway_key_required">ต้องใช้คีย์เฉพาะโครงการ การตั้งค่าและโมเดลที่เลือกไว้จะคงอยู่ การตรวจสอบบริการจริงยังไม่เสร็จสิ้น</string>
+    <string name="nm_gateway_connection_failed">เชื่อมต่อไม่ได้ โปรดตรวจสอบคีย์โครงการและเครือข่าย</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">การจับภาพหน้าจอสำหรับ Dot</string>
+    <string name="nm_dot_capture_active">ใช้การจับภาพหน้าจอได้จนกว่าคุณจะหยุด</string>
+    <string name="nm_dot_capture_stop">หยุดการจับภาพ</string>
+    <string name="nm_dot_capture_explain">บน Android รุ่นนี้ Dot อ่านข้อความการช่วยเหลือพิเศษได้ อนุญาตการจับภาพหน้าจอแยกต่างหากเพื่อแชร์รูปภาพด้วย Android จะขอสิทธิ์จากคุณ</string>
+    <string name="nm_dot_capture_allow">อนุญาตการจับภาพหน้าจอ</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">กำลังโหลด…</string>
+    <string name="nm_dot_load_failed">ไม่สามารถโหลดหน้านี้ได้</string>
+    <string name="nm_dot_components">ส่วนประกอบ</string>
+    <string name="nm_dot_empty">ยังไม่มีเนื้อหาที่นี่</string>
+    <string name="nm_dot_attach">แนบไฟล์</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">เพิ่มไปยัง %1$s</string>
+    <string name="nm_goal_completion">เป้าหมายที่เสร็จแล้ว: %1$s</string>
+    <string name="nm_feed_like_post">ถูกใจโพสต์: %1$s</string>
+    <string name="nm_feed_post_info">ข้อมูลโพสต์: %1$s</string>
+    <string name="nm_dot_chat_empty">เขียนถึง Dot เพื่อเริ่มการสนทนานี้</string>
+    <string name="nm_dot_chat_message">ข้อความ</string>
+    <string name="nm_dot_chat_send">ส่ง</string>
+    <string name="nm_dot_chat_stop">หยุด</string>
+    <string name="nm_dot_chat_retry">ลองอีกครั้ง</string>
+    <string name="nm_dot_chat_collapse">ยุบการสนทนา</string>
+    <string name="nm_dot_chat_remove">ลบตัวอย่าง</string>
+    <string name="nm_dot_chat_capturing">กำลังอ่านหน้าจอ…</string>
+    <string name="nm_dot_chat_capture_failed">ไม่สามารถจับภาพหน้าจอได้ ลองอีกครั้งบนหน้าจอเดิม</string>
+    <string name="nm_dot_chat_historical">จับภาพ %1$s · ไฟล์แนบที่ผ่านมา</string>
+    <string name="nm_dot_chat_text_only">ข้อความเท่านั้น · ไม่มีภาพหน้าจอ</string>
+    <string name="nm_dot_chat_voice_pending">ยังไม่เปิดใช้เสียง</string>
+    <string name="nm_dot_chat_compact">ย่อและส่ง</string>
+    <string name="nm_dot_chat_cancel">ยกเลิก</string>
+    <string name="nm_care_clarify_no_nodes">คุณเห็นส่วนควบคุมใดบนหน้านี้?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">ฉันจะคอยแนะนำทีละขั้นตอน</string>
+    <string name="nm_care_goal">คุณต้องการทำอะไร</string>
+    <string name="nm_care_start">เริ่มคำแนะนำ</string>
+    <string name="nm_care_copy">คัดลอกข้อความ</string>
+    <string name="nm_care_repeat">ทวนคำแนะนำ</string>
+    <string name="nm_care_pause">พัก</string>
+    <string name="nm_care_reobserve">ดูอีกครั้ง</string>
+    <string name="nm_care_end">จบคำแนะนำ</string>
+    <string name="nm_care_resume">ดำเนินต่อ</string>
+    <string name="nm_care_change_goal">เปลี่ยนเป้าหมาย</string>
+    <string name="nm_care_confirm">ฉันทำขั้นตอนนี้เสร็จแล้ว</string>
+    <string name="nm_care_observing">กำลังดูหน้าจอ</string>
+    <string name="nm_care_clarifying">ต้องการรายละเอียดเพิ่มเติม</string>
+    <string name="nm_care_awaiting">กำลังรอคุณ</string>
+    <string name="nm_care_verifying">กำลังตรวจผลลัพธ์</string>
+    <string name="nm_care_completed">จบคำแนะนำแล้ว</string>
+    <string name="nm_care_recovering">ตรวจสอบขั้นตอนนี้</string>
+    <string name="nm_care_paused">พักคำแนะนำอยู่</string>
+    <string name="nm_care_unavailable">อ่านหรือตรวจสอบหน้าจอนี้ไม่ได้ ดูอีกครั้ง เปลี่ยนเป้าหมาย หรือจบคำแนะนำ</string>
+    <string name="nm_care_provider_missing">เลือกโมเดลข้อความที่พร้อมใช้งานใน การตั้งค่า → โมเดล แล้วดูอีกครั้ง</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">ป้อนด้วยเสียง</string>
+    <string name="nm_dot_voice_permission">อนุญาตไมโครโฟนและการแจ้งเตือนเพื่อป้อนด้วยเสียง คุณยังพิมพ์ได้</string>
+    <string name="nm_dot_voice_keyboard">ใช้แป้นพิมพ์</string>
+    <string name="nm_dot_voice_notification">ไมโครโฟน Dot</string>
+    <string name="nm_dot_voice_stop_hint">กำลังบันทึกหรือจบงาน การหยุดจะยกเลิกการบันทึกนี้</string>
+    <string name="nm_dot_voice_cancel">ยกเลิกการบันทึก</string>
+    <string name="nm_dot_voice_finish">จบการป้อนด้วยเสียง</string>
+    <string name="nm_dot_voice_starting">กำลังเริ่มไมโครโฟน…</string>
+    <string name="nm_dot_voice_recording">กำลังฟัง…</string>
+    <string name="nm_dot_voice_finishing">กำลังจบงานและคืนไมโครโฟน…</string>
+    <string name="nm_dot_voice_denied">ใช้ไมโครโฟนหรือการแจ้งเตือนไม่ได้ พิมพ์ ลองใหม่ หรือเปิดการตั้งค่า</string>
+    <string name="nm_dot_voice_busy">ไมโครโฟนกำลังใช้งาน ลองใหม่หลังหยุด</string>
+    <string name="nm_dot_voice_error">เสียงล้มเหลว คุณพิมพ์หรือลองใหม่ได้</string>
+    <string name="nm_dot_voice_read">อ่านคำตอบ</string>
+    <string name="nm_dot_voice_speaking">กำลังอ่านคำตอบ…</string>
+    <string name="nm_dot_voice_read_error">ไม่สามารถอ่านคำตอบออกเสียงได้</string>
+
+    <string name="nm_dot_bubble_you">คุณ</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">ยืนยันขั้นตอนแล้ว</string>
+    <string name="nm_dot_foreground_capturing">กำลังอ่านหน้าจอปัจจุบัน</string>
+    <string name="nm_dot_foreground_error">การโต้ตอบนี้ต้องการการดูแล</string>
+    <string name="nm_dot_foreground_disconnected">Dot ถูกตัดการเชื่อมต่อ</string>
+    <string name="nm_dot_foreground_expand">ขยาย</string>
+    <string name="nm_dot_foreground_adjust">ลากเพื่อปรับตำแหน่ง</string>
+    <string name="nm_dot_region_selected">บริเวณที่เลือก</string>
+    <string name="nm_dot_region_text_mode">โมเดลนี้จะได้รับเฉพาะข้อความที่เข้าถึงได้ในบริเวณที่เลือก รูปภาพจะอยู่ในตัวอย่างนี้เท่านั้น</string>
+    <string name="nm_dot_region_reselect">เลือกอีกครั้ง</string>
+    <string name="nm_dot_region_reselect_hint">ลากลูกแก้วคริสตัลล้อมรอบบริเวณที่ต้องการเลือก</string>
 </resources>

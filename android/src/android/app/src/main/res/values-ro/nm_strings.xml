@@ -335,7 +335,7 @@
     <string name="nm_avatar_retry">Reîncearcă</string>
     <string name="nm_avatar_describe_title">Descrie o față nouă</string>
     <string name="nm_avatar_describe_body">O propoziție e de ajuns: ce este, ce poartă, ce stare transmite. Alege un stil, iar modelul tău de imagine desenează patru variante din care să alegi.</string>
-    <string name="nm_avatar_default_description">Un pui de dragon dolofan, galben-pal, cu coarne mici portocalii și aripi mici strânse</string>
+    <string name="nm_avatar_default_description">O sferă de cristal transparentă, albastru-deschis, cu reflexii delicate și o lumină care pulsează ca o respirație liniștită</string>
     <string name="nm_avatar_style_flat">Plat</string>
     <string name="nm_avatar_style_clay">Lut 3D</string>
     <string name="nm_avatar_style_watercolor">Acuarelă</string>
@@ -382,7 +382,7 @@
     <string name="nm_version_failed">Nu s-a putut verifica, atinge pentru a reîncerca</string>
     <string name="nm_appearance_section_home">Acasă</string>
     <string name="nm_appearance_header_model_title">Arată modelul sub nume</string>
-    <string name="nm_appearance_header_model_footer">Muse arată doar numele. Pornește asta ca să vezi grupul de modele și furnizor · model dedesubt; atinge-le pentru a comuta. Oprit, modelul e sub ••• → Model și în Setări.</string>
+    <string name="nm_appearance_header_model_footer">Dot arată doar numele. Pornește asta ca să vezi grupul de modele și furnizor · model dedesubt; atinge-le pentru a comuta. Oprit, modelul e sub ••• → Model și în Setări.</string>
     <string name="nm_appearance_section_chat">Conversație</string>
     <string name="nm_appearance_steps_title">Arată pașii agentului</string>
     <string name="nm_appearance_steps_footer">Oprit, chatul păstrează doar răspunsurile, iar rândul de sub față spune ce face agentul chiar acum. Pornit, fiecare pas apare în chat: fiecare unealtă folosită, raționamentul lui și o bară deasupra câmpului de scris care deschide detaliile pasului.</string>
@@ -402,7 +402,7 @@
     <string name="nm_avatar_size_large">Mare</string>
     <string name="nm_avatar_size_extra_large">Foarte mare</string>
     <string name="nm_avatar_size_hidden">Ascuns</string>
-    <string name="nm_avatar_style_muse">Jucărie 3D (Muse)</string>
+    <string name="nm_avatar_style_muse">Jucărie 3D</string>
 
     <!-- The agent's page -->
     <string name="nm_profile_online">online</string>
@@ -1084,9 +1084,9 @@
     <string name="nm_models_hands_title">Operarea ecranului</string>
     <string name="nm_models_hands_sub">Se uită la ecran și acționează în locul tău. Are nevoie de un model care vede imagini.</string>
     <string name="nm_models_image_title">Crearea de imagini</string>
-    <string name="nm_models_image_sub">Portrete ale Muzei tale și imaginile pe care le ceri.</string>
+    <string name="nm_models_image_sub">Portrete ale lui Dot și imaginile pe care le ceri.</string>
     <string name="nm_models_video_title">Crearea de clipuri</string>
-    <string name="nm_models_video_sub">Clipuri scurte cu Muza ta.</string>
+    <string name="nm_models_video_sub">Clipuri scurte cu Dot.</string>
     <string name="nm_models_chat_applies">Se aplică la chatul principal și la chaturile noi; un chat secundar își păstrează modelul.</string>
     <string name="nm_models_media_more">Mai multe opțiuni pentru imagini și clipuri</string>
     <string name="nm_models_media_more_sub">Scrie numele unui model, vezi ce se oprește fără fiecare model sau verifică din nou ce modele video poate folosi o cheie.</string>
@@ -1112,4 +1112,106 @@
     <string name="nm_models_search_clear">Șterge căutarea</string>
     <string name="nm_models_no_match">Niciun model nu se potrivește</string>
     <string name="nm_update_manual">Actualizările automate sunt dezactivate. Verifică manual pagina de versiuni Nanodot.</string>
+
+    <!-- Dot accessibility orb -->
+    <string name="nm_dot_settings_title">Buton plutitor Dot</string>
+    <string name="nm_dot_show_orb">Arată butonul Dot</string>
+    <string name="nm_dot_settings_footer">Apare când accesibilitatea este conectată. Dacă îl dezactivezi, rămâne ascuns după reconectare.</string>
+    <string name="nm_dot_orb_description">Buton Dot. Deschide conversația, vezi ecranul sau începe sprijinul.</string>
+    <string name="nm_dot_open_conversation">Deschide conversația</string>
+    <string name="nm_dot_view_screen">Vezi ecranul</string>
+    <string name="nm_dot_start_care">Începe sprijinul</string>
+    <string name="nm_dot_action_unavailable">Această funcție Dot nu este încă disponibilă.</string>
+    <string name="nm_tab_tasks">Sarcini</string>
+    <string name="nm_task_library">Bibliotecă</string>
+    <string name="nm_gateway_key_required">Este necesară o cheie dedicată proiectului. Setările și modelele selectate sunt păstrate. Validarea serviciului real este în așteptare.</string>
+    <string name="nm_gateway_connection_failed">Conectarea a eșuat. Verifică cheia proiectului și rețeaua.</string>
+
+    <!-- Explicit legacy projection permission and foreground notification. -->
+    <string name="nm_dot_capture_title">Captură de ecran pentru Dot</string>
+    <string name="nm_dot_capture_active">Captura este disponibilă până o oprești.</string>
+    <string name="nm_dot_capture_stop">Oprește captura</string>
+    <string name="nm_dot_capture_explain">În această versiune Android, Dot poate citi text accesibil. Permite separat captura de ecran pentru a partaja și imagini. Android îți va cere permisiunea.</string>
+    <string name="nm_dot_capture_allow">Permite captura de ecran</string>
+
+    <!-- Nanodot shared component states -->
+    <string name="nm_dot_loading">Se încarcă…</string>
+    <string name="nm_dot_load_failed">Această pagină nu a putut fi încărcată.</string>
+    <string name="nm_dot_components">Componente</string>
+    <string name="nm_dot_empty">Nu există încă nimic aici.</string>
+    <string name="nm_dot_attach">Atașează un fișier</string>
+
+    <!-- Native task action labels; checked/unchecked state comes from the actual store. -->
+    <string name="nm_task_add_section">Adaugă la %1$s</string>
+    <string name="nm_goal_completion">Obiectiv finalizat: %1$s</string>
+    <string name="nm_feed_like_post">Apreciază postarea: %1$s</string>
+    <string name="nm_feed_post_info">Informații despre postare: %1$s</string>
+    <string name="nm_dot_chat_empty">Scrie către Dot pentru a începe conversația.</string>
+    <string name="nm_dot_chat_message">Mesaj</string>
+    <string name="nm_dot_chat_send">Trimite</string>
+    <string name="nm_dot_chat_stop">Oprește</string>
+    <string name="nm_dot_chat_retry">Reîncearcă</string>
+    <string name="nm_dot_chat_collapse">Restrânge conversația</string>
+    <string name="nm_dot_chat_remove">Elimină previzualizarea</string>
+    <string name="nm_dot_chat_capturing">Se citește ecranul…</string>
+    <string name="nm_dot_chat_capture_failed">Captura nu este disponibilă. Reîncearcă pe ecranul original.</string>
+    <string name="nm_dot_chat_historical">Capturat %1$s · atașament anterior</string>
+    <string name="nm_dot_chat_text_only">Doar text · fără captură</string>
+    <string name="nm_dot_chat_voice_pending">Vocea nu este încă disponibilă.</string>
+    <string name="nm_dot_chat_compact">Comprimă și trimite</string>
+    <string name="nm_dot_chat_cancel">Anulează</string>
+    <string name="nm_care_clarify_no_nodes">Ce control vezi pe această pagină?</string>
+
+    <!-- Current-screen, user-operated care guidance. -->
+    <string name="nm_care_intro">Te voi ghida pas cu pas.</string>
+    <string name="nm_care_goal">Ce dorești să faci?</string>
+    <string name="nm_care_start">Începe ghidarea</string>
+    <string name="nm_care_copy">Copiază textul</string>
+    <string name="nm_care_repeat">Repetă instrucțiunea</string>
+    <string name="nm_care_pause">Pauză</string>
+    <string name="nm_care_reobserve">Privește din nou</string>
+    <string name="nm_care_end">Încheie ghidarea</string>
+    <string name="nm_care_resume">Reia</string>
+    <string name="nm_care_change_goal">Schimbă obiectivul</string>
+    <string name="nm_care_confirm">Am finalizat acest pas</string>
+    <string name="nm_care_observing">Se examinează ecranul</string>
+    <string name="nm_care_clarifying">Este necesar un detaliu</string>
+    <string name="nm_care_awaiting">Se așteaptă acțiunea ta</string>
+    <string name="nm_care_verifying">Se verifică rezultatul</string>
+    <string name="nm_care_completed">Ghidare încheiată</string>
+    <string name="nm_care_recovering">Verifică acest pas</string>
+    <string name="nm_care_paused">Ghidare întreruptă</string>
+    <string name="nm_care_unavailable">Acest ecran nu a putut fi citit sau verificat. Privește din nou, schimbă obiectivul sau încheie ghidarea.</string>
+    <string name="nm_care_provider_missing">Alege un model text disponibil în Setări → Modele, apoi privește din nou.</string>
+
+    <!-- Dot explicit voice input and reply playback -->
+    <string name="nm_dot_voice_start">Dictează</string>
+    <string name="nm_dot_voice_permission">Permite microfonul și notificările pentru dictare. Poți continua să scrii.</string>
+    <string name="nm_dot_voice_keyboard">Folosește tastatura</string>
+    <string name="nm_dot_voice_notification">Microfon Dot</string>
+    <string name="nm_dot_voice_stop_hint">Înregistrare sau finalizare. Oprirea anulează înregistrarea.</string>
+    <string name="nm_dot_voice_cancel">Anulează înregistrarea</string>
+    <string name="nm_dot_voice_finish">Încheie dictarea</string>
+    <string name="nm_dot_voice_starting">Se pornește microfonul…</string>
+    <string name="nm_dot_voice_recording">Se ascultă…</string>
+    <string name="nm_dot_voice_finishing">Se finalizează și se eliberează microfonul…</string>
+    <string name="nm_dot_voice_denied">Microfonul sau notificările nu sunt disponibile. Scrie, reîncearcă sau deschide Setări.</string>
+    <string name="nm_dot_voice_busy">Microfonul este folosit. Reîncearcă după oprire.</string>
+    <string name="nm_dot_voice_error">Eroare vocală. Poți scrie sau reîncerca.</string>
+    <string name="nm_dot_voice_read">Citește răspunsul</string>
+    <string name="nm_dot_voice_speaking">Se citește răspunsul…</string>
+    <string name="nm_dot_voice_read_error">Răspunsul nu a putut fi citit cu voce tare.</string>
+
+    <string name="nm_dot_bubble_you">Tu</string>
+    <string name="nm_dot_bubble_assistant">Dot</string>
+    <string name="nm_care_step_confirmed">Pas confirmat</string>
+    <string name="nm_dot_foreground_capturing">Citirea ecranului curent</string>
+    <string name="nm_dot_foreground_error">Această interacțiune necesită atenție</string>
+    <string name="nm_dot_foreground_disconnected">Dot este deconectat</string>
+    <string name="nm_dot_foreground_expand">Extinde</string>
+    <string name="nm_dot_foreground_adjust">Trage pentru ajustare</string>
+    <string name="nm_dot_region_selected">Regiune selectată</string>
+    <string name="nm_dot_region_text_mode">Acest model primește doar textul accesibil din regiunea selectată. Imaginea rămâne în această previzualizare.</string>
+    <string name="nm_dot_region_reselect">Selectează din nou</string>
+    <string name="nm_dot_region_reselect_hint">Trage sfera de cristal în jurul regiunii dorite.</string>
 </resources>

@@ -118,6 +118,12 @@ android {
 
     androidResources {
         noCompress += listOf("tar.gz", "proot-aarch64")
+        // nanoMuse: keep chat-only x86 builds independent of cached arm64 sandbox assets.
+        if (project.findProperty("nm.abi") == "x86_64") {
+            // A custom list replaces AGP's implicit defaults (sdk-common 31.7.3 / AAPT).
+            ignoreAssetsPatterns += "!.svn:!.git:!.ds_store:!*.scc:.*:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~".split(":")
+            ignoreAssetsPatterns += listOf("proot-aarch64", "alpine-minirootfs.tar.gz", "alpine-minirootfs.tar")
+        }
     }
 
     testOptions {
@@ -129,6 +135,13 @@ android {
     // without this it fails with "Cannot find the schema file in the assets
     // folder" no matter that the files exist on disk.
     sourceSets {
+        // nanoMuse: opt-in diagnostic debug only; release always compiles the stateless producer.
+        getByName("debug").java.srcDir(if (project.findProperty("nm.manualVoiceProof") == "true")
+            "src/manualVoiceProof/java" else "src/voiceProofNoop/java")
+        getByName("release").java.srcDir("src/voiceProofNoop/java")
+        if (project.findProperty("nm.manualVoiceProof") == "true") {
+            getByName("testDebug").java.srcDir("src/manualVoiceProofTest/java")
+        }
         getByName("androidTest") {
             assets.srcDirs("$projectDir/schemas")
         }

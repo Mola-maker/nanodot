@@ -482,6 +482,33 @@
       "note": "A gateway, a relay, a server of your own: paste the address (usually ending in /v1) and say what it can do; the person sets the capabilities.",
       "note_zh": "网关、中转、自己的服务：贴地址（一般以 /v1 结尾），再说明它能做什么，能力由你勾选。",
       "verified": "2026-10"
+    },
+    {
+      "id": "nanodot-workers",
+      "name": "Nanodot · Workers AI",
+      "name_zh": "Nanodot · Workers AI",
+      "protocol": "openai",
+      "base_url": "https://molamaker.si/v1",
+      "key_url": "",
+      "key_hint": "",
+      "auth": [
+        "key"
+      ],
+      "regions": [
+        "cn",
+        "global"
+      ],
+      "capabilities": [
+        "chat",
+        "vision"
+      ],
+      "defaults": {
+        "chat": "@cf/qwen/qwen3-30b-a3b-fp8",
+        "hands": "@cf/google/gemma-4-26b-a4b-it"
+      },
+      "note": "Requires a dedicated project key. Model availability comes from the gateway. Chinese cloud speech remains unverified. Source protocol checked; live acceptance pending.",
+      "note_zh": "需要专用项目 key。可用模型以网关返回为准。中文云语音尚未验证。 已检查源码协议；真实验收待完成。",
+      "verified": "2026-10"
     }
   ]
 }

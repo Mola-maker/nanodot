@@ -29,6 +29,343 @@ the installed build next to the newest release (`nanomuse.cn/dl/index.json` firs
 repository's GitHub Releases second: *Latest 0.1.x, you have it* / *0.1.x is out, tap to
 update*) and offers the download.
 
+## App navigation
+
+Nanodot's default assistant is **Dot**, with blue crystal avatar moods derived from the same
+atlas as the floating orb. Personal avatars and the Hidden choice remain respected; internal
+nanoMuse identifiers and actual nanoMuse Cloud service names are retained. See
+[foreground interactions](android-interactions.md) for the current crystal and Care design.
+
+The Android home has four labeled destinations: **Chat**, **Tasks**, **Devices** and
+**Settings**. Tasks contains the existing Feed, Ideas, Goals and Library pages. Returning
+from another destination keeps the selected task page and conversation draft. An active reply
+continues while Tasks is open. Settings
+continues to provide models, terminal, skills, connectors, memory, files, backup and
+permissions; the session drawer retains the complete chat archive and profile paths.
+Model setup stays in the Chat panel while the other destinations remain available.
+
+Navigation adapts to the allocated window: below 600 dp it uses bottom navigation,
+600–839 dp a labeled rail, and from 840 dp a session list beside the conversation.
+Large system text can collapse the conversation list into the drawer to keep enough room
+for the composer. Bottom labels use two rows at 150% and 200%; rail labels stay visible.
+Back closes the drawer, returns from Tasks to Chat, then returns a side conversation to
+the main conversation. Existing session links still target the same home host across
+rotation and window resizing; session IDs and stored model settings are unchanged.
+
+## Dot orb gesture foundation
+
+The pure `io.github.nanomuse.dot.gesture.DotGestureReducer` prepares gesture arbitration
+for the accessibility orb. Single and double taps wait for the system's tap
+interval; a qualifying third tap emits only a triple-tap intent. Holding the next tap
+suspends that sequence's deadline. Movement beyond touch slop becomes a drag, which
+remains valid during a long trajectory. A stationary long press suppresses tap actions;
+cancellation, rotation, and additional fingers clear pending gestures. The adapter must
+supply `ViewConfiguration` limits and monotonic times. The orb uses these system limits and event times.
+
+When you enable Nanodot’s accessibility service, a 48dp Dot orb appears above other apps.
+The orb uses a packaged, newly generated ice-blue transparent crystal atlas: 16 frames
+breathe over 3.2 seconds. Dragging leaves a pale-blue trail of actual touch points,
+limited to 36 samples that fade within 240ms. The trail never takes touch or keyboard
+focus and its temporary window closes after fading. Cancel, lock, disable, capture hiding,
+display changes and disconnect clear it. Turning off Android animator duration scale
+holds frame zero and removes the trail; static touch and care cues remain.
+The shared light/dark palette is blue, including chat cards, buttons and care outlines.
+Frame transitions preserve the crystal’s transparency on light and dark content.
+Small thinking and model-picker text follows the selected light/dark appearance.
+Theme overrides and custom avatar choices are preserved.
+Settings → Appearance → Show Dot orb hides it immediately and preserves that choice
+across service reconnects. Locking the phone, disabling accessibility, or rotating the
+display clears pending gestures and removes the old window; unlock and rotation restore
+it only if the switch is on. Drag the orb to move it to an edge; its position is saved
+relative to the usable display area, excluding system bars and display cutouts. On Android
+8–10, Dot waits for its native content frame before restoring its position. Screen-region
+selection uses a closed drag from the orb; open paths still move it to an edge. Other apps receive touches outside the orb. On Android 10+, only the orb's measured 48dp touch area
+is excluded from system edge-Back gestures, so an inward drag does not dismiss the host page.
+
+To select a region, drag the orb around it and return near the starting point. The path must be at least
+160dp long, enclose at least 48×48dp of actual even-odd area, and close within the larger of 24dp or
+15% of its diagonal. The orb returns to its starting position and a blue, touch-through contour marks
+the selection. The bottom conversation shows a cropped preview and its capture time. **Select again**
+closes the preview so you can draw another path; Remove, Stop, collapse, locking or disconnecting
+clear the owned outline and temporary files. A host scene change during acquisition rejects that
+selection rather than applying its coordinates to the next page.
+
+The crop and accessible text come from the same captured snapshot. Pixels outside the actual polygon
+and password rectangles are masked, and text nodes must fit fully inside the selection. Aggregating
+parents with an excluded or password descendant are omitted. On Android 14+, host-window capture
+keeps Stop visible; older devices use fresh selected nodes. Nothing is uploaded until Send. A model
+with explicit image-input modalities receives the masked image and selected accessible text; other models
+receive only that text in the canonical user message, while the image remains a local preview. This is text
+understanding, not proof of vision. Canvas content without accessible text requires a vision-capable
+model; the current DeepSeek text-only test does not establish image understanding. Native gesture,
+encoded-crop and real-provider evidence are separate acceptance gates.
+
+On the API 35 emulator, the closed orb gesture, masked preview, selected accessible text, native keyboard entry, physical Send and genuine DeepSeek reply have passed a controlled-host run. Select again, rectangle selection and Stop passed separately. See the [bound evidence and limits](android-verification.md#region-physical-send-2026-10-13).
+
+TalkBack exposes Open conversation, View screen, and Start care actions. A single tap
+opens a foreground Compose conversation in a real accessibility overlay. A double tap
+opens that panel with Stop available, then captures the host window or fresh accessible nodes
+and shows a removable preview with its capture time. The preview is a historical attachment to the named conversation, even after the
+panel opens. It stays in private cache until you press Send; removing it, collapsing the
+panel, changing conversations or cancelling deletes owned temporary copies. Confirmed
+message media remains in conversation history. The overlay and the main app share the
+same ChatViewModel and draft-to-persisted session identity.
+
+Back first hides the keyboard, then collapses the panel to the orb. Send, Stop and Retry
+use the existing chat pipeline. An empty conversation and an unconfigured model have
+explicit states. Android 8–13 foreground Chat and Selection always use clearly labelled fresh
+accessible-node text, even when separate screen-projection permission exists. Android 14+ uses
+host-window pixels; pixel errors may fall back to newly sampled accessible text. Voice controls are integrated as described below; native voice acceptance
+remains pending; region gestures, encoded crops and real-provider understanding have separate acceptance gates.
+Showing the orb or opening conversation alone never captures, records audio or calls a
+model. Live gateway text/SSE and unique-host vision acceptance remain pending deployment.
+
+## Voice ownership foundation
+
+Dot's real overlay now has explicit **Dictate**, **Finish dictation** and **Cancel recording**
+controls. Dictate opens a visible permission Activity for microphone and notifications. That
+Activity starts a private microphone foreground service while visible and waits for foreground
+promotion before returning to the host. A visible notification can cancel the exact recording.
+Permission denial, blocked notifications or a rejected service start leave editable keyboard input,
+a retry button and an app Settings entry. Returning from Settings never starts recording by itself.
+
+The service accepts only an unexpired in-memory request from this panel and binding. Recreated,
+missing, forged, cancelled or background-only requests cannot arm it. Panel close, keyboard edits,
+session switches, care pause, lock, service loss and permission revocation cancel that request.
+The microphone lease and foreground notification remain owned through controlled recorder, pipe,
+ASR and synthesis cleanup; an IDLE callback is not taken as proof that resources have closed.
+
+Main and Dot use the same speech manager. Each UI keeps its own generation ticket; an old Stop,
+partial result or error cannot affect a new capture. The admitted engine, locale and continuous
+policy are pinned. Main keeps its existing segmented dictation behavior; Dot defaults to one take.
+The final transcription is appended to the same editable draft, including draft-to-persisted
+promotion, and is **not sent automatically**.
+
+**Read reply** and **Stop** use the existing read-aloud player and voice-output selection, with
+speaking and failure states in the overlay. Playback is explicit and does not enable automatic reply reading. Recording pauses read-aloud and
+waits for controlled synthesis cleanup. Closing or switching the panel stops its reply playback.
+A system TTS stop acknowledgement does not prove acoustic silence.
+
+Reply Stop and panel closure retain playback cleanup failures for the next recording attempt.
+Dictation waits for cancelled speech cleanup and does not start when that cleanup fails. An explicit
+Dictate retry refreshes the selected recognition engine after transient failure, once no other
+capture owns the microphone; returning from Settings does not start recording.
+
+This is source integration for Task5B, not native/audio acceptance or completion of Task5.
+Target35 visible-permission/foreground-service, notification/lock/revocation and microphone release
+checks on the selected virtual device remain pending. Genuine Chinese ASR and audible Chinese
+system/cloud TTS are separate gates; successful JVM tests do not prove either audio path works.
+
+An explicitly selected diagnostic debug build (`-Pnm.manualVoiceProof=true`) adds internal,
+passive voice observation for a running same-process AndroidJUnitRunner and a frozen public
+Dot session. It binds the real reply player, queue generation, TTS client and original request
+ID before submission, and observes synthesis PCM in the original progress listener. ASR
+records the successful recognizer factory and platform callback generations separately from
+application commits, buffered-partial replacement and error salvage. It does not change
+recognition, fallback, playback queues or sending behavior.
+
+The observer retains only owned evidence in memory, bounded to 30 seconds, 8 MiB and 256
+events. Missing, expired or revoked ownership prevents payload collection; malformed,
+overflowed or ambiguous evidence stays incomplete. The fixture invalidates ownership,
+cancels and joins actual resources before detaching. There is no file, network, broadcast,
+socket or device audio-mix recorder. Ordinary debug and every release compile only a
+stateless producer with no registration or collection code. Diagnostic APK/release DEX
+checks and actual Chinese platform recognition and synthesis remain separate acceptance gates.
+
+## Dot scene sampling
+
+Dot’s read-only screen repository copies accessible host nodes and redacts password text
+and descriptions. Each requested snapshot carries its host window/display, scene version,
+rotation, insets, keyboard bounds, capture time and pixel transform. The `insets: RectPx`
+field stores left/top/right/bottom host edge margins from the display, including keyboard
+and multiwindow space; it is not a rectangle or universal system `WindowInsets`, and its
+width/height must not be used. Only Dot’s owned orb and panel
+windows are excluded; Nanodot’s normal Activity can be the host. Captures run one at a time,
+temporarily hide the orb and panel through a completed draw, and release cancelled or late buffers.
+Locked devices, changed scenes, permission loss, rate limits and timeouts return an
+unavailable code; an earlier image is never substituted. Callers close accepted snapshots.
+
+Android 8–10 returns fresh accessible text by default. Settings → Appearance → Allow
+screen capture opens a separate explanation and Android’s screen-recording consent dialog.
+Permission enables pixels while a visible foreground notification offers Stop capture;
+stopping, locking the device or disconnecting accessibility ends that grant’s session.
+Android 11–13 uses display screenshots. Android 14+ uses the host window for care and the
+display for chat or selection. Secure-window errors are available on Android 14+ window
+capture. Older display/projection APIs can produce a black host instead: this is reported
+as `blank_host_unavailable` when the publicly accessible `android:id/content` viewport,
+intersected with the host window, is entirely black. This can also mean a truly black page,
+rather than proof of secure content. Without a public viewport node, the check uses the
+host window; visible system bars can prevent detection. Older APIs cannot universally
+identify protected pages, although Android still masks their pixels.
+
+The additive `captureNodes(generation)` entry explicitly re-reads the current scene for a
+fresh text-only fallback after a pixel error. The conversation coordinator labels that fallback as text only. The repository itself
+does not call a model or upload a screen.
+
+## Care planner foundation
+
+The source-only `io.github.nanomuse.dot.care.CarePlanner` prepares **one instruction for
+you to perform**. It accepts a goal, the caller-owned current `ScreenSnapshot`, and
+steps the caller declares previously verified. It calls the selected existing
+`LLMProvider.sendMessage` once with empty tools and images, temperature 0 and
+`ThinkingLevel.OFF`; it has no Hands, gesture, input, clipboard or agent-loop executor,
+and performs no planner retry or provider fallback. A provider may materialize its
+own transport stream; OFF is an interface request, not proof of every remote model's
+reasoning behavior. The planner and controller foundations are not yet connected to the orb or care UI.
+
+The request is JSON in a user message, with a fixed system contract: goals, node text
+and past steps are quoted, untrusted context, never system instructions. Only enabled,
+non-password nodes with unique references and finite, positive bounds inside the current
+snapshot are sent. Pixels are not uploaded. Empty or unusable node sets return a readable
+clarification supplied by the caller from `nm_care_clarify_no_nodes` in all 17 locales;
+future care callers must resolve that resource in their own locale. The planner never
+closes or recycles the caller's snapshot. It cannot handle a Canvas-only page as a verified
+node target.
+
+Output is a single strict JSON object, with case-sensitive values. A step has exactly
+`type: "Step"`, `snapshotId`, `scene` (`packageName`, `windowId`, `displayId`, `version`),
+`targetRef`, `action` (`Open`, `Focus`, `Copy`, `Paste`, `Search`), `instruction`, nullable
+`copyText`, `expectation`, and `confidence`. Expectations are `PageContains` with `text`,
+`Focused` with `ref`, `TextEquals` with `ref` and `text`, or `ResultsFor` with `query`;
+each also has its `type`. A clarification has only `type: "Clarify"` and `question`.
+Obvious script forms, extra fields, bare coordinates, duplicate keys, stale scenes/references,
+password targets, nonfinite values or confidence below 0.7 are rejected. Focus/text
+expectation references must equal the current target. These are user intents and
+observable postconditions, not action handlers; the verifier owns completion.
+
+Script refusal also recognizes unfenced calls (including whitespace-separated numeric
+arguments), member/index assignments, function bodies,
+arrow functions and variable declarations, independent of specific function names. Ordinary
+Chinese queries, numbers, prose and HTTP(S) URLs remain data. This conservative check may
+refuse an ordinary label that resembles code; rephrase it. Finite static recognition does
+not prove that every encoded program or language is script-free. Output remains plain
+user guidance and can never enter an executor.
+
+One call is limited to 30 seconds, at most 1,024 output tokens (or the provider's smaller
+ceiling), 32,768 total request characters, 8,192 response characters, 128 eligible nodes,
+a 2,048-character goal, 1,024-character instruction/expectation text and 2,048-character
+copy text. A known model context window is checked conservatively against request UTF-8
+bytes plus the output allowance. Oversize context is rejected instead of truncating
+identity or text. At most the last eight structurally valid declared steps with an older
+or equal scene version and different snapshot ID are sent as past context; this is not independent
+proof of their completion. Malformed, unsupported, truncated, tool or media output returns
+`recovering_invalid_proposal`; timeout, provider and budget failures have data-only codes
+for the later controller's localized Recovering state. Caller cancellation propagates.
+
+Fake-provider unit results validate request isolation and schema rejection only. A real
+model response targeting a current fixture node, native care interaction, TalkBack and
+evidence-based advancement require separate gates; no fixed fake proposal counts
+as model success. The default service and existing stored credentials are unchanged.
+
+## Care evidence controller foundation {#care-evidence-controller}
+
+The `CareController` exposes a state flow for observing, clarifying, guiding,
+waiting, verifying, recovering, pausing and ending a task. It does not click, type, paste,
+read the clipboard or run Hands. Its caller owns one coroutine scope and supplies fresh
+screen sampling, the read-only planner and the current host scene. Accessibility events
+only request a debounced sample; elapsed time never completes a step.
+
+`CareVerifier` compares the proposal's original snapshot with fresh host evidence. It
+relinks a unique target using its view ID and Android class, or a stable accessible
+label when no view ID exists. Snapshot-local references and old bounds are never reused.
+Only a newly focused correct field or a readable change to the expected field text can
+advance automatically. An already satisfied condition, wrong field, unrelated scroll,
+advertisement refresh or changed app/window/display does not establish completion.
+
+The current node DTO has no trustworthy page-title, result-query or clipboard metadata.
+Open, Search and Copy therefore require explicit confirmation when their condition
+cannot be established. Matching page text alone cannot prove navigation or search
+results. A ref-free `pendingInstruction` exposes only the current confirmation text, and
+clears on pause, goal change or ending. Confirmation resamples the current host and records
+its origin as user-confirmed; it does not claim automatic evidence or invent a scene
+version. The planner can retain caller-declared confirmed history at the same scene
+version with a different snapshot ID. Current-snapshot IDs and future versions remain excluded; this
+is quoted past context and cannot override current screen evidence.
+
+Pause and automatic-operation admission clear the target and reject pending replies.
+Stopping automatic operation does not resume care by itself. Explicit resume observes
+again. Goal changes and cancellation invalidate late captures and model replies, and
+owned snapshots close after use. Protected, blank, unavailable and empty captures
+recover without recording a successful step. Ending a task is an explicit user decision.
+
+This foundation is covered by deterministic JVM tests using the public snapshot DTO.
+Native wrong-target/advertisement checks, TalkBack and a full care task remain separate
+acceptance gates; unit tests do not establish those results.
+
+## Care guidance overlay {#care-guidance-overlay}
+
+Single, double and triple tap stay in a foreground sidebar over the current app. Conversation
+and Care use the same bottom bubble presentation: your messages and goals on the right,
+actual replies, questions, instructions and confirmed steps on the left. The native window
+is bounded to the host and keyboard area; touches outside its rectangle reach the host.
+History and controls scroll within it, including with enlarged text. The complete instruction
+is visible in bottom chat immediately. A separate, non-touchable instruction cue avoids the
+validated target and the whole measured chat card inside the observed, keyboard-clipped host.
+It reveals whole Unicode graphemes, holds briefly and disappears; when the complete text cannot
+fit safely, only bottom chat carries the instruction. The target outline has no connector.
+Short keyboard-clipped hosts use a compact collapse control beside the transcript, with a
+full 48dp scrolling control viewport; they use the available host height instead of leaving
+the chat at the ordinary proportional height cap. Enlarged text uses the same compact budget,
+with tighter outer spacing to retain at least 48dp of visible history after native pixel rounding.
+Double tap keeps the existing capture-before-panel order and adds a blue display-perimeter scan owned by that
+capture request. Scanner, Dot and panel windows are hidden before pixels are captured,
+including windows still awaiting attachment. Cancellation, mode changes, lock, disable and
+disconnect clear scanning; stale outcomes cannot update a newer scan. A removable timestamped
+preview, text-only fallback or actual capture error describes the result; animation never
+claims a model has understood the screen.
+The scan covers the full display, including its system-bar edges. It respects Android's
+effective animator state as well as the motion setting; disabled motion shows a static
+perimeter. Its 720ms trace and 100ms ending hold, or 250ms static result, begin only after
+the restored window has drawn visibly with positive dimensions. Capture hiding does not
+consume that visible lifetime, and closing or detaching cancels pending draw callbacks.
+
+Triple-tap the same Dot, or choose its accessible **Start care** action, to open the blue
+care entry and enter a goal. Opening it does not contact a model or capture the screen.
+Starting a goal reads the current host and requests one instruction using your selected
+visible text model, or your configured default model group. Missing configuration appears
+as a recovery message with a Settings → Models instruction. Care uses a separate tools-empty
+planner; it never enters the chat agent loop or retries with a different provider.
+
+The Care transcript retains submitted goals and actual controller output. Only the verifier's
+recorded steps receive a confirmed-step label. The panel normally sits at the bottom; when
+it overlaps the valid target, it temporarily moves upward while keeping the transcript
+visible, and returns to the bottom after the step loses its active target. Its buttons
+copy the proposed text to the clipboard, replay the current visual instruction,
+pause, look again, change the goal, or end guidance. **Repeat** makes no model or speech-provider
+request and does not reobserve or advance the step. Copying only happens when you press
+**Copy text**; Care never types or pastes into the host. Uncertain steps show the pending
+instruction and **I completed this step**. That explicit confirmation samples again before
+recording user-confirmed evidence. It does not count a generic touch as completion.
+
+The card waits for its native window to attach before measuring Compose content. Closing
+or detaching the card cancels pending geometry callbacks; a reopened card uses its current
+host and keyboard bounds. Updates to an unchanged card size and position reuse the existing
+window placement, avoiding a repeated layout loop.
+
+A finite blue trace follows the validated target's accessible rounded bounds. It does not
+infer an irregular button contour or perform the requested touch. Its separate instruction cue
+uses native measured text and bidi layout; neither drawing takes touches or accessibility focus.
+Cue identity includes session, step and scene. Expiry never confirms a step; layout refresh does
+not restart it. Losing safe placement retires the cue until an explicit current-step Repeat.
+Host content, keyboard or display changes clear stale targets before fresh observation. Dot and
+Care windows are excluded from host events and hidden during capture. Android's reduced-motion
+setting shows a static outline and the complete cue text without typing or fading; the cue still
+has a finite hold, while the complete bottom message remains readable.
+Back dismisses transient orb/Care menus first, then hides a shown keyboard before pausing and
+closing the panel; reopening offers explicit resume with fresh observation. Single/double tap
+or entering the main chat pauses competing Care. Locking, hiding Dot or losing the service
+clears the windows and cancels their pending visual work.
+
+Real Hands runs, permitted remote shell/open/task calls, and accessibility action commands
+pause Care before acting. Overlapping operation owners keep it paused until every owner
+releases; their completion never automatically resumes Care. A remote timeout or a cancelled
+UI status still waits for actual VM jobs and their cleanup to complete before releasing
+ownership. Existing permission and risk checks remain in place. Read-only accessibility node/screenshot requests need no action lease.
+
+The native fixture uses an inert public provider and a disposable test host. Native touch,
+copy, Back, TalkBack, light/dark, portrait/landscape and 100/150/200% font acceptance are
+separate root-run gates; successful source compilation is not native or real-model acceptance.
+
 ## Install
 
 1. Download `nanoMuse-<version>-arm64.apk` from the
@@ -247,6 +584,14 @@ not taken for a private address. The same rule decides whether a relay of your o
 `http://`; nanoMuse Cloud and the hub to it are TLS only. The in-app web view is not exported
 to other apps.
 
+Debug builds keep a bounded in-memory LLM request log. Before retaining a request,
+the log replaces Authorization, Proxy-Authorization, common API-key headers
+(`X-API-Key`, `Api-Key`, `ApiKey`, `X-Goog-Api-Key`), Cookie and Set-Cookie values
+with `[REDACTED]`, regardless of header-name case. Raw request and agent-trace
+exports use the same masked snapshot; other header names and values remain useful
+for diagnostics. Request bodies, response content and URLs can still contain
+sensitive data, so inspect these before sharing a debug export.
+
 ## Building it yourself
 
 JDK 17 or 21 (CI uses 21) and the Android SDK (Android Studio installs both); `scripts/android/env.sh` sets
@@ -307,3 +652,23 @@ like the Python package's version does.
 | `connectors/`, `ui/connectors/` | The connectors catalogue (`ConnectorsCatalogue` reads the asset), MCP authorization discovery + registration (`McpAuthDiscovery`), connecting and token refresh (`Connectors`), what this phone connected as published to the profile and what the other devices did (`SharedConnectors`), the Settings → Connectors page |
 | `ui/cloud/` | Sign-in, the Account screen, the Devices section |
 | `res/values*/nm_strings.xml` | Every nanoMuse string in the seventeen languages the app has (English, 简体中文, 繁體中文, German, Spanish, Filipino, French, Indonesian, Japanese, Korean, Malay, Polish, Brazilian Portuguese, Romanian, Russian, Thai, Turkish); every file carries the same keys, and a missing one falls back to English |
+
+Dot foreground admission belongs to the accessibility connection. Stop, account replacement and disconnect reject late captures and status callbacks; reconnect starts fresh transient owners. Closing the foreground interaction cancels its owned reply without stopping Hub or unrelated persistent tasks. Canonical history and alias promotion remain shared with Chat.
+
+The orb follows the pointer directly. Its decorative trail is delayed by 80 ms within the 240 ms sample lifetime. Release snaps toward the existing safe edge using the native Compose spring and measured release velocity; a new touch, geometry change, lock, disconnect or disabled motion cancels the snap. Press feedback scales the artwork to 0.96 over 100 ms without shrinking the 48 dp touch target.
+
+Dot keeps the same chat window, canonical draft, transcript state and binding when the keyboard, display or current Care target changes its placement. Short conversations request less height; only the transcript scrolls when the host limits available space. One header chooses the current owner operation before the Care task status. Stop remains in that header, alongside Collapse and More. Chat uses one row for the editable draft, dictation and explicit Send; finishing dictation never sends automatically. Read reply, permission settings and secondary Care actions live in More, inside the existing bounded window over the transcript. Back first dismisses More, then hides the keyboard before closing.
+
+Care shows one current action: submit a goal, confirm an admitted user-completion claim, resume paused guidance, or look again. Copy stays beside its text and is also available in More. Confirm keeps the existing fresh-observation verification; an old proposal never becomes completion evidence. Placement controls are in More, and the visible header can be dragged. Expanding or adjusting continues protecting a known target whenever a non-overlapping placement exists. Compact windows increase their budget for large text; a physically insufficient host remains bounded and may require repositioning or collapse. Chat Stop cancels its owned reply; Care Stop pauses its current guidance. The existing owned windows remain excluded from captures and the host outside their bounded rectangles stays touchable.
+
+Screen analysis mounts its owned status and Stop before sampling begins. Android 14 and later capture the current application window, which excludes accessibility overlays without hiding the cancellation controls. On Android 8–13 this foreground flow reads a fresh host text snapshot so Stop stays visible and Dot is excluded; it does not attach display pixels. Explicit Care pixel capture and screen-recording permission flows retain their capabilities; region selection uses the same visible-Stop window/text rule as foreground chat. A previous screen-capture failure does not become a new Care error.
+
+Care's actual target-owning card also receives compact placement. If the valid current target leaves no useful free region, the fallback keeps a small bounded reply/control panel with placement actions in More and a named draggable header. User adjustments persist while that target remains unchanged; moving or expanding retains the Care conversation, goal editor and instruction owner. Changing a target recomputes placement. A target covering the whole host can still overlap the card, so adjust the card to expose the part you need to touch.
+
+Foreground chat and Care use a light transparent blue glass surface with an edge highlight. Message bubbles have a translucent cobalt-blue background with white text and text actions; this tint is confined to the bubbles. Empty history regions keep the underlying application's words visible, while captions and controls use local reading plates.
+
+Messages have more padding and separation, with line height set to 1.45 times the text size. Body and Care text follow the system text size. The panel reserves height for displayed conversation text, previews and recovery actions, including empty-state and missing-model messages. Longer content scrolls within the bounded panel. Placement avoids the currently validated Care target, with a movable compact fallback. This does not infer every reading target or promise that a local text/control plate can never cover host text.
+
+The default soft-blue drag trail reuses the crystal atlas for up to three sparse translucent afterimages, with a narrow blue-white glow. Samples keep the existing 80 ms delay and 240 ms lifetime; small loops do not pile crystals onto the same location. These afterimages remain visual decorations. Region selection separately classifies the original touch path and derives a masked crop and selected text; its correctness is verified independently from trail appearance. The approved reference images are retained unchanged under `docs/superpowers/assets/2026-10-13-android-reference/`; their desktop workspace is a design reference, not a shipped Android screen. See [Android verification](android-verification.md) for native evidence and the adapted pstack workflow.
+
+[Foreground interaction design](android-interactions.md) describes long-press actions, the crystal default, no-leader instruction cues and scenario-specific evidence.

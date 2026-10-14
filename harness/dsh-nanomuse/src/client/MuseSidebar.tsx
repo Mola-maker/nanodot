@@ -16,11 +16,11 @@ import { Avatar } from './Avatar.tsx'
 import { Toast } from '@deepseek-ai/dsh-client-ui-primitives'
 import { aboutBus } from './About.tsx'
 import { bridge, openLink } from './bridge.ts'
-import { IconBulb, IconCalendar, IconChat, IconClose, IconFeed, IconDoc, IconMenu, IconPanelLeft, IconPin, IconPlus, IconPuzzle, IconSearch, IconShapes, IconTarget, IconBug, IconDownload, IconInfo, IconKeyboard, IconSettings } from './icons.tsx'
+import { IconBulb, IconCalendar, IconChat, IconClose, IconFeed, IconDoc, IconMenu, IconPanelLeft, IconPin, IconPlus, IconPuzzle, IconSearch, IconShapes, IconTarget, IconBug, IconDownload, IconInfo, IconKeyboard, IconSettings, IconDevices } from './icons.tsx'
 import { openShortcutsReference, pressSettingsChord } from './keys.ts'
 import { useLive } from './live.ts'
 import { MuseChats, type ChatActions, type UseSessionList, type UseStatusMap, type UseWorkspaceList } from './MuseChats.tsx'
-import { FEED_PANEL, GOALS_PANEL, IDEAS_PANEL, LIBRARY_PANEL, REPO_URL, ROOM_PANELS } from './panels.ts'
+import { FEED_PANEL, GOALS_PANEL, IDEAS_PANEL, LIBRARY_PANEL, DEVICES_PANEL, REPO_URL, ROOM_PANELS } from './panels.ts'
 import { useRooms } from './rooms.ts'
 import { usePrefs } from './prefs.ts'
 import { useWin, win, type RecentDoc } from './win.ts'
@@ -31,7 +31,6 @@ const SCHEDULES_PANEL = 'schedules'
 const PLUGINS_PANEL = 'plugins'
 
 const COLLAPSE_SETTLE_MS = 150
-const RAIL = 66
 
 export interface PanelMeta {
   id: string
@@ -87,7 +86,7 @@ function RailButton({ label, active, expanded, dot, onClick, children, buttonRef
     'aria-expanded': expanded,
     onClick,
     ref: buttonRef,
-  }, children, dot ? h('span', { className: 'nm-rail-dot', 'aria-hidden': true }) : null)
+  }, children, h('span', { className: 'nm-rail-label' }, label), dot ? h('span', { className: 'nm-rail-dot', 'aria-hidden': true }) : null)
 }
 
 interface MenuItem {
@@ -110,7 +109,15 @@ function CornerMenu({ anchor, items, onClose }: { anchor: HTMLElement; items: (M
       if (menu.current?.contains(target) || anchor.contains(target)) return
       onClose()
     }
-    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); onClose(); anchor.focus() }
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        const buttons = Array.from(menu.current?.querySelectorAll<HTMLButtonElement>('button') ?? [])
+        const at = buttons.indexOf(document.activeElement as HTMLButtonElement)
+        event.preventDefault()
+        buttons[(at + (event.key === 'ArrowDown' ? 1 : buttons.length - 1)) % buttons.length]?.focus()
+      }
+    }
     document.addEventListener('pointerdown', onPointer, true)
     document.addEventListener('keydown', onKey)
     return () => {
@@ -120,7 +127,7 @@ function CornerMenu({ anchor, items, onClose }: { anchor: HTMLElement; items: (M
   }, [anchor, onClose])
   useEffect(() => { menu.current?.querySelector('button')?.focus() }, [])
   // Open upward from the corner button, flush with the rail's right edge.
-  const style = { left: rect.right + 6, bottom: Math.max(8, window.innerHeight - rect.bottom) }
+  const style = { left: Math.min(rect.right + 6, Math.max(8, window.innerWidth - 232)), maxWidth: Math.max(160, window.innerWidth - 16), maxHeight: window.innerHeight - 16, overflowY: 'auto' as const, bottom: Math.max(8, window.innerHeight - rect.bottom) }
   return h('div', { ref: menu, className: 'nm-menu', role: 'menu', style },
     items.map((item, index) => item === 'sep'
       ? h('div', { key: `sep-${index}`, className: 'nm-menu-sep', role: 'separator' })
@@ -140,6 +147,9 @@ export function MuseSidebar(props: MuseSidebarProps): ReactNode {
   const settingsShortcut = useShortcuts((rows) => rows.find((row) => row.id === 'settings.open'))
   const shortcutsShortcut = useShortcuts((rows) => rows.find((row) => row.id === 'shortcuts.open'))
   const searchShortcut = useShortcuts((rows) => rows.find((row) => row.id === 'session.search'))
+  const sidebarRoot = useRef<HTMLDivElement | null>(null)
+  const [tasksAnchor, setTasksAnchor] = useState<HTMLElement | null>(null)
+  const taskButton = useRef<HTMLButtonElement | null>(null)
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
   const [docMenu, setDocMenu] = useState<{ anchor: HTMLElement; doc: RecentDoc } | null>(null)
   const [notice, setNotice] = useState<{ id: number; text: string } | null>(null)
@@ -209,6 +219,12 @@ export function MuseSidebar(props: MuseSidebarProps): ReactNode {
     ...others.map((p) => ({ id: p.id, label: p.label, icon: h('span', { style: { display: 'inline-flex', width: 16, height: 16 } }, renderSlot('sidebar.panellist', { size: 16, active: false }, { only: p.id })), onSelect: () => selectPanel(p.id) })),
     { id: 'toggle', label: collapsed ? t('menuExpand') : t('menuCollapse'), icon: h(IconPanelLeft, { size: 16 }), onSelect: toggleSidebar },
   ]
+  const taskItems: (MenuItem | 'sep')[] = [
+    { id: FEED_PANEL, label: t('railFeed'), icon: h(IconFeed, { size: 16 }), onSelect: () => selectPanel(FEED_PANEL) },
+    { id: IDEAS_PANEL, label: t('railIdeas'), icon: h(IconBulb, { size: 16 }), onSelect: () => selectPanel(IDEAS_PANEL) },
+    { id: GOALS_PANEL, label: t('railGoals'), icon: h(IconTarget, { size: 16 }), onSelect: () => selectPanel(GOALS_PANEL) },
+    { id: LIBRARY_PANEL, label: t('railLibrary'), icon: h(IconShapes, { size: 16 }), onSelect: () => selectPanel(LIBRARY_PANEL) },
+  ]
   const docItems: (MenuItem | 'sep')[] = docMenu
     ? [
         { id: 'pin', label: docMenu.doc.pinned ? t('chUnpin') : t('chPin'), icon: h(IconPin, { size: 16 }), onSelect: () => win.pinRecent(docMenu.doc.key, !docMenu.doc.pinned) },
@@ -232,11 +248,9 @@ export function MuseSidebar(props: MuseSidebarProps): ReactNode {
     faceOnRail ? h(RailButton, { label: live.profile.name || t('railProfile'), onClick: openProfile }, h('span', { className: `nm-rail-face${busy ? ' nm-live' : ''}` }, h(Avatar, { size: 28, profile: live.profile, mood: busy ? 'working' : 'idle' }))) : null,
     h(RailButton, { label: t('railChats'), active: active === null, dot: busy, onClick: showChats }, h(IconChat, { size: 21 })),
     h(RailButton, { label: withKeys(t('railSearch'), searchShortcut?.keys), onClick: search }, h(IconSearch, { size: 21 })),
-    // Muse's rooms, in Muse's order: Feed, Ideas, Goals, Library.
-    h(RailButton, { label: t('railFeed'), active: active === FEED_PANEL, dot: freshFeed && active !== FEED_PANEL, onClick: () => selectPanel(FEED_PANEL) }, h(IconFeed, { size: 21 })),
-    h(RailButton, { label: t('railIdeas'), active: active === IDEAS_PANEL, onClick: () => selectPanel(IDEAS_PANEL) }, h(IconBulb, { size: 21 })),
-    h(RailButton, { label: t('railGoals'), active: active === GOALS_PANEL, onClick: () => selectPanel(GOALS_PANEL) }, h(IconTarget, { size: 21 })),
-    h(RailButton, { label: t('railLibrary'), active: active === LIBRARY_PANEL, onClick: () => selectPanel(LIBRARY_PANEL) }, h(IconShapes, { size: 21 })),
+    h(RailButton, { label: t('railTasks'), active: [FEED_PANEL, IDEAS_PANEL, GOALS_PANEL, LIBRARY_PANEL].includes(active ?? ''), expanded: tasksAnchor !== null, dot: freshFeed, onClick: () => setTasksAnchor((current) => current ? null : taskButton.current), buttonRef: (el) => { taskButton.current = el } }, h(IconTarget, { size: 21 })),
+    h(RailButton, { label: t('railDevices'), active: active === DEVICES_PANEL, onClick: () => selectPanel(DEVICES_PANEL) }, h(IconDevices, { size: 21 })),
+    h(RailButton, { label: t('menuSettings'), onClick: openSettings }, h(IconSettings, { size: 21 })),
     // Recent documents (IDENTITY.md, a Library text…): one glyph each, a menu on right-click.
     recent.length ? h('div', { className: 'nm-rail-recent', role: 'group', 'aria-label': t('recentDocs') },
       recent.map((doc) => h('button', {
@@ -260,13 +274,30 @@ export function MuseSidebar(props: MuseSidebarProps): ReactNode {
   // In a room (Feed, Ideas, Goals, Library…) Muse shows only the rail: the room has the
   // rest of the window, and its own top-left toggle brings the chat back beside it.
   const roomMode = (active !== null || split !== null) && !browser
+  // dsh 0.2.0-rc.2 owns the frame's inline tracks. Resize only its collapsed rail;
+  // mirror the unchanged center/right tracks so right-side panels keep their owner.
+  useEffect(() => {
+    const frame = sidebarRoot.current?.closest<HTMLElement>('[class*="_frame"]')
+    if (!frame || !collapsed || roomMode) return
+    const sync = () => {
+      const tracks = frame.style.gridTemplateColumns
+      if (!tracks) return
+      const value = tracks.replace(/^\S+\s+/, 'var(--nm-rail) ')
+      if (frame.style.getPropertyValue('--nm-host-frame-columns') !== value) frame.style.setProperty('--nm-host-frame-columns', value)
+    }
+    sync()
+    frame.setAttribute('data-nm-rail-frame', '')
+    const observer = new MutationObserver(sync)
+    observer.observe(frame, { attributes: true, attributeFilter: ['style'] })
+    return () => { observer.disconnect(); frame.removeAttribute('data-nm-rail-frame'); frame.style.removeProperty('--nm-host-frame-columns') }
+  }, [collapsed, roomMode])
   useEffect(() => {
     if (roomMode) document.documentElement.dataset['nmRoom'] = ''
     else delete document.documentElement.dataset['nmRoom']
     return () => { delete document.documentElement.dataset['nmRoom'] }
   }, [roomMode])
   const chats = wide && !roomMode
-    ? h('div', { ref: column, className: `nm-col${collapsed ? ' nm-fading' : ''}`, style: { width: Math.max(0, (collapsed ? lastWideWidth.current : width) - RAIL) } },
+    ? h('div', { ref: column, className: `nm-col${collapsed ? ' nm-fading' : ''}`, style: { width: `calc(${collapsed ? lastWideWidth.current : width}px - var(--nm-rail))` } },
         h('div', { className: 'nm-col-top', 'data-window-drag': true }),
         browser
           ? h('div', { className: 'nm-col-body' },
@@ -280,9 +311,10 @@ export function MuseSidebar(props: MuseSidebarProps): ReactNode {
         h('div', { className: 'nm-col-foot' }, renderSlot('sidebar.footer.action', { wide: true })))
     : null
 
-  return h('div', { className: 'nm-sidebar', style: { width: wide && !roomMode ? (collapsed ? lastWideWidth.current : width) : RAIL } },
+  return h('div', { ref: sidebarRoot, className: 'nm-sidebar', style: { width: wide && !roomMode ? (collapsed ? lastWideWidth.current : width) : 'var(--nm-rail)' } },
     rail,
     chats,
+    tasksAnchor ? h(CornerMenu, { anchor: tasksAnchor, items: taskItems, onClose: () => setTasksAnchor(null) }) : null,
     menuAnchor ? h(CornerMenu, { anchor: menuAnchor, items: menuItems, onClose: () => setMenuAnchor(null) }) : null,
     docMenu ? h(CornerMenu, { anchor: docMenu.anchor, items: docItems, onClose: () => setDocMenu(null) }) : null,
     notice ? h('div', { style: { position: 'fixed', top: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 60, pointerEvents: 'none' } },

@@ -2,6 +2,12 @@ package com.openminis.app.provider.voice
 
 import android.util.Base64
 import android.util.Log
+// nanoMuse: cancellation watcher interrupts blocking voice HTTP IO.
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.ensureActive
+import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -158,15 +164,20 @@ open class VoiceProvider(
     /** Parse the ASR response. Default: OpenAI JSON, falling back to plain text. */
     open fun parseVoiceInputResponse(data: ByteArray, request: VoiceInputRequest): VoiceInputResponse {
         val text = String(data, Charsets.UTF_8)
-        runCatching {
-            val obj = JSONObject(text)
-            if (obj.has("text")) {
-                return VoiceInputResponse(
-                    text = obj.getString("text"),
-                    language = obj.optString("language").takeIf { it.isNotBlank() },
-                    durationSeconds = if (obj.has("duration")) obj.optDouble("duration") else null,
-                )
+        // nanoMuse: JSON errors/malformed envelopes must never become raw ASR text.
+        val obj = runCatching { JSONObject(text) }.getOrNull()
+        if (obj != null) {
+            if (obj.has("error") || obj.opt("text") !is String) {
+                throw VoiceProviderException.Parse("Invalid ASR JSON response")
             }
+            return VoiceInputResponse(
+                text = obj.getString("text"),
+                language = obj.optString("language").takeIf { it.isNotBlank() },
+                durationSeconds = if (obj.has("duration")) obj.optDouble("duration") else null,
+            )
+        }
+        if (request.responseFormat == VoiceInputFormat.JSON) {
+            throw VoiceProviderException.Parse("Undecodable ASR JSON response")
         }
         // Some compatible endpoints return raw text.
         if (text.isNotEmpty()) return VoiceInputResponse(text = text)
@@ -201,7 +212,12 @@ open class VoiceProvider(
     }
 
     suspend fun executeRequest(request: Request): ByteArray = withContext(Dispatchers.IO) {
-        httpClient.newCall(request).execute().use { response ->
+        // nanoMuse: enter cancellation suspension before execute()/bytes() block.
+        val call = httpClient.newCall(request)
+        val cancellationWatcher = launch(start = CoroutineStart.UNDISPATCHED) {
+            try { awaitCancellation() } finally { call.cancel() }
+        }
+        try { call.execute().use { response ->
             val body = response.body?.bytes()
             if (!response.isSuccessful) {
                 if (response.code == 401 || response.code == 403) {
@@ -212,6 +228,13 @@ open class VoiceProvider(
                 throw VoiceProviderException.Http(response.code, body)
             }
             body ?: ByteArray(0)
+        } } catch (cause: Exception) {
+            // nanoMuse: cancelled OkHttp IO throws IOException; preserve coroutine cancellation.
+            coroutineContext.ensureActive()
+            throw cause
+        } finally {
+            // nanoMuse: bound watcher lifetime to the owned call/response.
+            cancellationWatcher.cancel()
         }
     }
 

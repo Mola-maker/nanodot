@@ -88,15 +88,18 @@ jobs:
           export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/$NDK_VERSION"
           export GOROOT="$(go env GOROOT)" GOPATH="$(go env GOPATH)"
           export PATH="$GOPATH/bin:$PATH" # gomobile / gobind land there
-          bash scripts/build-nanodot-apk.sh debug
+          bash scripts/build-nanodot-apk.sh debug --with-test
 
-      # Our unit tests (io.github.nanomuse.*: the guards, the hub client, the sandbox paths, the
-      # strings' parity). Same Gradle invocation as AGENTS.md; the compiled classes are warm.
-      - name: Unit tests
-        working-directory: android/src/android
+      # The explicit nanoMuse namespace scope matches the existing CI regression suite.
+      # check uses x86_64 and does not prove the full upstream suite passes.
+      # The preceding paired build assembles instrumentation sources; no device execution.
+      - name: nanoMuse unit regressions (scoped)
+        env:
+          NANODOT_TEST_SCOPE: nanomuse
         run: |
           export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/$NDK_VERSION"
-          ./gradlew :app:testDebugUnitTest --tests 'io.github.nanomuse.*' --console=plain --no-daemon
+          export GOROOT="$(go env GOROOT)" GOPATH="$(go env GOPATH)"
+          bash scripts/build-nanodot-apk.sh check
 
       - uses: actions/upload-artifact@v7
         with:

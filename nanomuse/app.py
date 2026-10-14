@@ -20,6 +20,7 @@ from nanomuse.contacts import ContactBook
 from nanomuse.goals import GoalStore
 from nanomuse.llm import BaseLLM, catalogue, create_llm
 from nanomuse.llm.catalogue import Provider
+from nanomuse.llm.gateway_profile import may_inherit_project_key
 from nanomuse.logger import logger, setup_logging
 from nanomuse.memory import Embedder, MemoryIndex, MemoryStore
 from nanomuse.phone import PhoneLink
@@ -171,6 +172,13 @@ class NanoMuseApp:
         there; the model's own key when none is set (same endpoint, same key)."""
         m = self.settings.memory
         key = m.embedding_api_key or self.settings.llm.api_key
+        # nanoMuse: a dedicated gateway key cannot inherit into another embedding origin.
+        if not m.embedding_api_key and not may_inherit_project_key(
+            self.settings.llm.provider,
+            self.settings.llm.api_key,
+            m.embedding_base_url or self.settings.llm.base_url or "https://api.openai.com/v1",
+        ):
+            return ""
         if self.vault.has_placeholders(key):
             key = self.vault.resolve(key, strict=False)
             if self.vault.has_placeholders(key):

@@ -1,5 +1,7 @@
 package io.github.nanomuse.ui.ideas
 
+import io.github.nanomuse.dot.ui.DotTokens
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -72,7 +74,7 @@ fun IdeasTab(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().background(ChatColors.background),
-        contentPadding = PaddingValues(bottom = 24.dp),
+        contentPadding = PaddingValues(bottom = DotTokens.Space.S24),
     ) {
         item(key = "header") { header() }
         item(key = "title") { io.github.nanomuse.ui.home.MusePageTitle(stringResource(R.string.nm_ideas_title)) }
@@ -84,14 +86,14 @@ fun IdeasTab(
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 22.dp, bottom = 4.dp),
+                        modifier = Modifier.padding(start = DotTokens.Space.S24, end = DotTokens.Space.S24, top = DotTokens.Space.S24, bottom = DotTokens.Space.S4),
                     )
                 }
             }
             items(section.ideas, key = { it.id }) { idea ->
                 IdeaRow(idea = idea, onClick = { selected = idea })
                 HorizontalDivider(
-                    modifier = Modifier.padding(start = 76.dp, end = 20.dp),
+                    modifier = Modifier.padding(start = 76.dp, end = DotTokens.Space.S24),
                     color = io.github.nanomuse.ui.home.MuseTones.hairline,
                 )
             }
@@ -107,8 +109,8 @@ fun IdeasTab(
         ) {
             Column(
                 Modifier
-                    .padding(horizontal = 24.dp)
-                    .padding(bottom = 20.dp)
+                    .padding(horizontal = DotTokens.Space.S24)
+                    .padding(bottom = DotTokens.Space.S24)
                     .navigationBarsPadding(),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -124,7 +126,7 @@ fun IdeasTab(
                     )
                 }
                 Spacer(Modifier.height(12.dp))
-                Text(idea.body, fontSize = 15.sp, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onSurface)
+                Text(idea.body, fontSize = DotTokens.Type.Body, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(Modifier.height(14.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val (kindIcon, kindText) = when (idea.kind) {
@@ -161,7 +163,7 @@ fun IdeasTab(
                 ) {
                     Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text(primaryLabel, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(primaryLabel, fontSize = DotTokens.Type.Body, fontWeight = FontWeight.SemiBold)
                 }
                 if (idea.kind != IdeaKind.CHAT) {
                     Spacer(Modifier.height(10.dp))
@@ -170,7 +172,7 @@ fun IdeasTab(
                         shape = CircleShape,
                         modifier = Modifier.fillMaxWidth().height(46.dp),
                     ) {
-                        Text(stringResource(R.string.nm_idea_action_chat), fontSize = 15.sp)
+                        Text(stringResource(R.string.nm_idea_action_chat), fontSize = DotTokens.Type.Body)
                     }
                 }
             }
@@ -185,7 +187,7 @@ private fun IdeaRow(idea: Idea, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 14.dp),
+            .padding(horizontal = DotTokens.Space.S24, vertical = DotTokens.Space.S16),
     ) {
         Box(Modifier.width(40.dp), contentAlignment = Alignment.TopCenter) {
             Text(idea.emoji, fontSize = 28.sp, lineHeight = 34.sp)
@@ -194,7 +196,7 @@ private fun IdeaRow(idea: Idea, onClick: () -> Unit) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 idea.title,
-                fontSize = 16.sp,
+                fontSize = DotTokens.Type.Body,
                 lineHeight = 22.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,

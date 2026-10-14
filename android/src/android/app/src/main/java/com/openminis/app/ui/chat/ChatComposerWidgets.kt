@@ -378,7 +378,8 @@ internal fun InputCircleButton(
 ) {
     Box(
         modifier = Modifier
-            .size(38.dp)
+            // nanoMuse: native composer controls retain a full accessible touch target.
+            .size(io.github.nanomuse.dot.ui.DotTokens.TouchTarget)
             .then(
                 if (plain) Modifier else Modifier
                     .background(ChatColors.inputIconBg, CircleShape)
@@ -419,7 +420,8 @@ internal fun MicButton(
     val borderColor = if (isRecording || plain) Color.Transparent else ChatColors.inputIconBorder // nanoMuse: plain composer
     Box(
         modifier = Modifier
-            .size(38.dp)
+            // nanoMuse: native composer controls retain a full accessible touch target.
+            .size(io.github.nanomuse.dot.ui.DotTokens.TouchTarget)
             .background(bg, CircleShape)
             .border(0.5.dp, borderColor, CircleShape)
             .clip(CircleShape)

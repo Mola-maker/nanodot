@@ -1,5 +1,12 @@
 package io.github.nanomuse.ui.library
 
+import io.github.nanomuse.dot.ui.*
+import kotlinx.coroutines.CancellationException
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.layout.heightIn
+
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
@@ -88,13 +95,18 @@ fun LibraryTab(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var segment by rememberSaveable { mutableStateOf(0) }
+    var scanAttempt by remember { mutableStateOf(0) }
+    var scanError by remember { mutableStateOf<String?>(null) }
     var entries by remember { mutableStateOf<List<LibraryEntry>?>(null) }
 
     // Rescan whenever the tab comes back to the foreground: the agent may have written
     // something while the user was in the chat.
-    LaunchedEffect(lifecycleOwner) {
+    LaunchedEffect(lifecycleOwner, scanAttempt) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            entries = LibraryIndex.scan(context, chatRepository)
+            scanError = null
+            try { entries = LibraryIndex.scan(context, chatRepository) }
+            catch (e: CancellationException) { throw e }
+            catch (e: Exception) { scanError = e.message?.takeIf { it.isNotBlank() } ?: context.getString(R.string.nm_dot_load_failed) }
         }
     }
 
@@ -105,7 +117,7 @@ fun LibraryTab(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().background(ChatColors.background),
-        contentPadding = PaddingValues(bottom = 24.dp),
+        contentPadding = PaddingValues(bottom = DotTokens.Space.S24),
     ) {
         item(key = "header") { header() }
         item(key = "segments") {
@@ -113,36 +125,20 @@ fun LibraryTab(
                 labels = listOf(stringResource(R.string.nm_library_artifacts), stringResource(R.string.nm_library_media)),
                 selected = segment,
                 onSelect = { segment = it },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                modifier = Modifier.padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S12),
             )
         }
-        if (entries != null && shown.isEmpty()) {
+        if (scanError != null || entries == null) {
+            item(key = "scan-status") {
+                DotStatusSurface(if (scanError != null) DotPageState.Error(scanError!!, true) else DotPageState.Loading,
+                    onRetry = { scanAttempt++ }) {}
+            }
+        } else if (shown.isEmpty()) {
             item(key = "empty") {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(top = 36.dp, start = 32.dp, end = 32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Outlined.LibraryBooks,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(34.dp),
-                    )
-                    Spacer(Modifier.height(14.dp))
-                    Text(
-                        stringResource(if (segment == 0) R.string.nm_library_empty_artifacts_title else R.string.nm_library_empty_media_title),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        stringResource(if (segment == 0) R.string.nm_library_empty_artifacts_body else R.string.nm_library_empty_media_body),
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                    )
-                }
+                DotStatusSurface(DotPageState.Empty(
+                    stringResource(if (segment == 0) R.string.nm_library_empty_artifacts_title else R.string.nm_library_empty_media_title) + "\n" +
+                        stringResource(if (segment == 0) R.string.nm_library_empty_artifacts_body else R.string.nm_library_empty_media_body)), {}) {}
+
             }
         } else {
             items(shown, key = { it.item.file.absolutePath }) { entry ->
@@ -158,11 +154,11 @@ fun Segmented(labels: List<String>, selected: Int, onSelect: (Int) -> Unit, modi
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(48.dp)
+            .heightIn(min = DotTokens.TouchTarget + DotTokens.Space.S8).selectableGroup()
             .clip(CircleShape)
             .border(BorderStroke(1.dp, io.github.nanomuse.ui.home.MuseTones.hairline), CircleShape)
             .background(io.github.nanomuse.ui.home.MuseTones.surface)
-            .padding(4.dp),
+            .padding(DotTokens.Space.S4),
     ) {
         labels.forEachIndexed { i, label ->
             val active = i == selected
@@ -170,10 +166,11 @@ fun Segmented(labels: List<String>, selected: Int, onSelect: (Int) -> Unit, modi
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxSize()
+                    .heightIn(min = DotTokens.TouchTarget)
+                    .padding(vertical = DotTokens.Space.S8)
                     .clip(CircleShape)
                     .background(if (active) io.github.nanomuse.ui.home.MuseTones.fill else io.github.nanomuse.ui.home.MuseTones.surface)
-                    .clickable { onSelect(i) },
+                    .selectable(selected = active, role = Role.Tab, onClick = { onSelect(i) }),
             ) {
                 Text(
                     label,
@@ -210,7 +207,7 @@ private fun LibraryRow(entry: LibraryEntry, onClick: () -> Unit, onOpenSession: 
             modifier = Modifier
                 .fillMaxWidth()
                 .combinedClickable(onClick = onClick, onLongClick = { menu = true })
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = DotTokens.Space.S16, vertical = DotTokens.Space.S8),
         ) {
             Box(
                 modifier = Modifier
@@ -229,7 +226,7 @@ private fun LibraryRow(entry: LibraryEntry, onClick: () -> Unit, onOpenSession: 
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
                     item.name,
-                    fontSize = 15.sp,
+                    fontSize = DotTokens.Type.Body,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,

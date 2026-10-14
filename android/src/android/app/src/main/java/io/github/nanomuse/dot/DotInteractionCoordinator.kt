@@ -1,0 +1,423 @@
+package io.github.nanomuse.dot
+
+import android.widget.Toast
+import android.content.Context
+import android.content.SharedPreferences
+import io.github.nanomuse.cloud.NanoMuseCloud
+import io.github.nanomuse.dot.chat.SessionBinding
+import io.github.nanomuse.dot.voice.DotVoiceController
+import kotlinx.coroutines.flow.*
+import com.openminis.app.MinisApp
+import com.openminis.app.R
+import com.openminis.app.accessibility.MinisAccessibilityService
+import io.github.nanomuse.dot.care.*
+import io.github.nanomuse.dot.chat.DotChatAdapter
+import io.github.nanomuse.dot.gesture.DotIntent
+import io.github.nanomuse.dot.screen.CaptureOutcome
+import io.github.nanomuse.dot.screen.CapturePurpose
+import io.github.nanomuse.dot.selection.*
+import io.github.nanomuse.home.MainChat
+import kotlinx.coroutines.*
+
+/** Service-scoped admission only. ChatViewModel remains the sole conversation/stream owner. */
+class DotInteractionCoordinator internal constructor(
+    private val service: MinisAccessibilityService,
+    private val injectedAdapter: DotChatAdapter? = null,
+    private val screenCapture: suspend (CapturePurpose, Long) -> CaptureOutcome = { purpose, generation ->
+        service.dotScreen.capture(purpose, generation)
+    },
+    private val nodeCapture: suspend (Long) -> CaptureOutcome = { generation -> service.dotScreen.captureNodes(generation) },
+) {
+    private val app get() = service.application as MinisApp
+    private var scope = newScope()
+    private fun newScope() = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    val foreground = DotForegroundSession()
+    private var projection: Job? = null
+    private val capturing = MutableStateFlow(false)
+    private var accountIdentity: Pair<Boolean?, String?>? = null
+    private val metadata by lazy { service.getSharedPreferences("nanomuse", Context.MODE_PRIVATE) }
+    private val accountListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key in setOf("cloud.account_id", "cloud.hint", "cloud.instance_id")) {
+            scope.launch { if (foreground.state.value.connected) refreshAccount() }
+        }
+    }
+    private val adapter by lazy { injectedAdapter ?: DotChatAdapter.create(app).also { chat ->
+        chat.voice = io.github.nanomuse.dot.voice.DotVoiceController(chat,
+            io.github.nanomuse.dot.voice.DotVoiceRuntime.gate,
+            {
+                val choice = app.providerRepository.resolveVoiceInputChoice()
+                io.github.nanomuse.dot.voice.VoiceSelection(if (choice.isSystem) "system" else "provider",
+                    com.openminis.app.speech.SpeechRecognitionManager.locale.value, choice.systemPreferOffline == true)
+            },
+            { request, controller -> io.github.nanomuse.dot.voice.DotVoiceRuntime.launch(service, request, controller) },
+            service.dotOverlay::setVoicePermissionWindow,
+            io.github.nanomuse.dot.voice.DotVoiceRuntime::release)
+    } }
+    private val idleVoiceUi = MutableStateFlow(DotVoiceController.Ui())
+    /** Projection of the existing microphone owner, never a second recording state machine. */
+    val voiceUi: StateFlow<DotVoiceController.Ui> get() = adapter.voice?.ui ?: idleVoiceUi
+    private var opening: Job? = null
+    private var careWindow: CareOverlayWindow? = null
+    private val carePlanner by lazy { ConfiguredCarePlanner(app) }
+    private var careOwner: CareSession? = null
+    val careSession: CareSession get() = careOwner ?: CareSession(CareController(scope,
+        { generation ->
+            refreshAccount()
+            val ticket = foreground.ticket()
+            // Care planning and verification consume fresh host nodes, not screenshot pixels.
+            val outcome = nodeCapture(generation)
+            if (!admitted(ticket)) {
+                (outcome as? CaptureOutcome.Success)?.snapshot?.close()
+                throw CancellationException("Foreground admission ended")
+            }
+            outcome
+        }, { service.dotScreen.currentSceneKey() }, { goal, snapshot, history ->
+            val ticket = foreground.ticket()
+            val result = carePlanner.next(goal, snapshot, history)
+            if (!admitted(ticket)) throw CancellationException("Foreground admission ended")
+            result
+        }),
+        { careWindow?.clearFocus() }, { careWindow?.stopSpeech() }).also { careOwner = it }
+
+    fun connect() {
+        if (foreground.state.value.connected) return
+        if (!scope.isActive) scope = newScope()
+        foreground.connect()
+        accountIdentity = identity()
+        metadata.registerOnSharedPreferenceChangeListener(accountListener)
+        scope.launch { NanoMuseCloud.signedIn(service).collect { refreshAccount() } }
+        CareOperationGate.observe(careSession::automatic)
+    }
+    private fun identity() = NanoMuseCloud.signedIn(service).value to NanoMuseCloud.account(service)?.accountId
+    private fun refreshAccount() {
+        val next = identity()
+        if (accountIdentity != null && next != accountIdentity) {
+            accountIdentity = next
+            foreground.accountChanged()
+            close()
+            careOwner?.disconnect()
+        } else accountIdentity = next
+    }
+    private fun admitted(ticket: DotForegroundTicket, binding: SessionBinding? = null): Boolean {
+        refreshAccount()
+        return foreground.accepts(ticket) && (binding == null || adapter.accepts(binding))
+    }
+    /** Display priority only; every independent producer retains its own lifecycle. */
+    private fun project() {
+        projection?.cancel()
+        val ticket = foreground.ticket()
+        val binding = adapter.binding.value
+        val mode = foreground.state.value.mode
+        projection = scope.launch {
+            combine(capturing, adapter.session?.isStreaming ?: flowOf(false),
+                adapter.voice?.ui ?: flowOf(DotVoiceController.Ui()), careSession.controller.state,
+                adapter.captureError) { capture, busy, voice, care, error ->
+                when {
+                    capture -> DotForegroundOperation.Capturing
+                    voice.phase in setOf(DotVoiceController.Phase.PERMISSION, DotVoiceController.Phase.STARTING,
+                        DotVoiceController.Phase.RECORDING, DotVoiceController.Phase.FINISHING) -> DotForegroundOperation.Listening
+                    busy && binding != null -> DotForegroundOperation.Replying
+                    (error && mode in setOf(DotForegroundMode.Chat, DotForegroundMode.Screen) && binding != null) ||
+                        (mode == DotForegroundMode.Care && care.errorCode != null) -> DotForegroundOperation.Error
+                    mode == DotForegroundMode.Care && care.state !in setOf(CareState.Idle, CareState.Completed) -> DotForegroundOperation.CareWaiting
+                    else -> DotForegroundOperation.Idle
+                }
+            }.collect { operation ->
+                if (admitted(ticket, binding)) foreground.update(mode, binding, operation)
+            }
+        }
+    }
+    fun pauseCare(hide: Boolean = false) {
+        service.dotOverlay.dismissOrbMenu()
+        adapter.voice?.cancel(); adapter.stopReply()
+        careSession.pause(hide)
+        if (hide) careWindow?.hide()
+    }
+    fun onHostGeometryChanged() {
+        service.dotOverlay.clearSelectionOutline()
+        careWindow?.clearFocus(); careWindow?.stopSpeech()
+        careSession.controller.onSceneChanged()
+        careWindow?.refreshGeometry()
+    }
+    fun onSceneChanged(changed: Boolean) {
+        if (!foreground.state.value.connected) return
+        if (changed) onHostGeometryChanged()
+        else careWindow?.refreshGeometry()
+    }
+    private fun openCare() {
+        close()
+        if (careWindow == null) careWindow = CareOverlayWindow(service,scope,careSession,
+            { service.dotScreen.hostViewport() }, { service.dotScreen.currentSceneKey() },
+            foreground = foreground.state, onStop = ::stopCare)
+        careSession.enter()
+        foreground.update(DotForegroundMode.Care, null, DotForegroundOperation.Idle)
+        project()
+    }
+
+    private fun stopCare() {
+        val state = foreground.state.value
+        val binding = state.binding
+        if (state.mode in setOf(DotForegroundMode.Screen, DotForegroundMode.Chat) && binding != null) {
+            stopChatReply(binding)
+        } else {
+            if (state.mode == DotForegroundMode.Idle) {
+                // A conversation may still be resolving its session before it has a binding.
+                foreground.invalidate()
+                opening?.cancel()
+                capturing.value = false
+            }
+            pauseCare(hide = true)
+        }
+    }
+
+    /** Explicit main-app session entry switches admission; opening our panel alone never does. */
+    fun onChatEntered(sessionId: String) {
+        if (!foreground.state.value.connected) return
+        service.dotOverlay.dismissOrbMenu()
+        service.dotOverlay.cancelCaptureScan()
+        pauseCare(hide=true)
+        refreshAccount()
+        foreground.invalidate()
+        capturing.value = false
+        projection?.cancel()
+        opening?.cancel()
+        if (service.dotOverlay.panelView != null) {
+            val binding = adapter.bind(sessionId)
+            foreground.update(DotForegroundMode.Chat, binding, DotForegroundOperation.Idle)
+            project()
+        }
+    }
+
+    fun handle(intent: DotIntent) {
+        if (!foreground.state.value.connected) return
+        if (intent == DotIntent.LongPress) return // The overlay owns this presentation-only action.
+        service.dotOverlay.dismissOrbMenu()
+        refreshAccount()
+        if (intent == DotIntent.Voice) { handleVoiceAction(); return }
+        service.dotOverlay.cancelCaptureScan()
+        if (intent == DotIntent.Triple) { openCare(); return }
+        if (intent != DotIntent.Single && intent != DotIntent.Double) {
+            Toast.makeText(service,R.string.nm_dot_action_unavailable,Toast.LENGTH_SHORT).show()
+            return
+        }
+        openConversation(intent)
+    }
+
+    private fun handleVoiceAction() {
+        val voice = adapter.voice
+        if (voice == null) {
+            Toast.makeText(service, R.string.nm_dot_action_unavailable, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val binding = adapter.binding.value
+        val state = foreground.state.value
+        if (!capturing.value && binding != null && adapter.accepts(binding) && state.binding == binding &&
+            state.mode in setOf(DotForegroundMode.Chat, DotForegroundMode.Screen) && service.dotOverlay.panelView != null) {
+            voice.primaryAction() // Finish/Cancel retains the current permission request and draft.
+        } else {
+            service.dotOverlay.cancelCaptureScan()
+            openConversation(DotIntent.Single, startVoice = true)
+        }
+    }
+
+    fun selectRegion(region: RegionSelection, origin: SelectionOrigin) {
+        if (!foreground.state.value.connected) return
+        refreshAccount()
+        openConversation(DotIntent.Double,selection=region to origin)
+    }
+
+    fun reselectRegion() {
+        close()
+        Toast.makeText(service,R.string.nm_dot_region_reselect_hint,Toast.LENGTH_SHORT).show()
+    }
+
+    private fun openConversation(intent: DotIntent, startVoice: Boolean = false,
+        selection: Pair<RegionSelection,SelectionOrigin>? = null) {
+        // Keep the old focusable card until the new one owns native focus. Removing it
+        // first briefly refocuses the host and invalidates the selected scene.
+        val heldCare = careOwner?.takeIf { selection != null && it.visible.value }
+        val heldCareWindow = careWindow
+        pauseCare(hide = heldCare == null)
+        val heldPanel = selection?.let {
+            service.dotOverlay.retainedPanel(adapter, foreground.state, it.second.scene.windowId)
+        }
+        // A selection can keep its focused window while revoking all previous work.
+        // Ordinary entry still collapses before the new ticket exists.
+        if (heldPanel == null) service.dotOverlay.collapsePanel()
+        foreground.invalidate()
+        opening?.cancel()
+        projection?.cancel()
+        service.dotOverlay.cancelCaptureScan()
+        service.dotOverlay.clearSelectionOutline()
+        adapter.binding.value?.let(adapter::cancel)
+        capturing.value = false
+        val ticket = foreground.ticket()
+        opening = scope.launch {
+            var careHandoffPending = heldCare != null
+            fun releaseHeldCare() {
+                if (careHandoffPending && careOwner === heldCare && careWindow === heldCareWindow) {
+                    heldCare?.pause(hide = true)
+                    heldCareWindow?.hide()
+                }
+                careHandoffPending = false
+            }
+            try {
+            val id = com.openminis.app.ui.chat.ChatViewModelStore.activeSessionId ?: MainChat.sessionId.value ?: MainChat.resolve(app,app.chatRepository)
+            if (!admitted(ticket) || !service.dotOverlay.isConnected) return@launch
+            if (heldPanel != null && service.dotOverlay.retainedPanel(adapter, foreground.state,
+                    requireNotNull(selection).second.scene.windowId) !== heldPanel) {
+                // Never let an old collapse callback revoke a newly created binding.
+                close()
+                return@launch
+            }
+            val binding = adapter.bind(id)
+            foreground.update(if (intent == DotIntent.Double) DotForegroundMode.Screen else DotForegroundMode.Chat,
+                binding, DotForegroundOperation.Idle)
+            if (intent == DotIntent.Double) {
+                capturing.value = true
+                foreground.update(DotForegroundMode.Screen, binding, DotForegroundOperation.Capturing)
+            }
+            project()
+            // Keep the owned cancellation surface mounted throughout capture and fallback.
+            // The repository uses host-window pixels or fresh nodes while these controls are visible.
+            if (heldPanel == null) service.dotOverlay.showPanel(adapter, onStop = ::stopChatReply, foreground = foreground.state) { close() }
+            if (!admitted(ticket, binding)) return@launch
+            if (careHandoffPending) {
+                val panel = service.dotOverlay.panelView
+                val focused = panel != null && awaitPanelFocus(panel) { admitted(ticket, binding) }
+                if (!admitted(ticket, binding)) return@launch
+                if (!focused) {
+                    adapter.captureError.value = true
+                    capturing.value = false
+                    return@launch
+                }
+                releaseHeldCare()
+            }
+            if (startVoice && service.dotOverlay.panelView != null) adapter.voice?.primaryAction()
+            if (intent == DotIntent.Double) {
+                service.dotOverlay.beginCaptureScan(ticket.epoch)
+                try {
+                val acquisition=if (selection == null) screenCapture(CapturePurpose.Chat,binding.generation) else {
+                    SelectionCoordinator(service.dotScreen::currentSceneKey,
+                        { generation ->
+                            val pixels=screenCapture(CapturePurpose.Selection,generation)
+                            if (pixels is CaptureOutcome.Unavailable && pixels.code !in setOf("scene_changed","geometry_changed"))
+                                nodeCapture(generation) else pixels
+                        }, { snapshot, region -> withContext(Dispatchers.Default) { RegionCropper.crop(snapshot,region) } })
+                        .capture(selection.first,selection.second,binding.generation) { admitted(ticket,binding) }
+                }
+                when (val result = acquisition) {
+                    is CaptureOutcome.Success -> if (admitted(ticket, binding)) {
+                        if (selection == null) adapter.attach(binding,result.snapshot)
+                        else {
+                            val snapshot=result.snapshot
+                            var text: java.io.File?=null
+                            try {
+                                val directory=java.io.File(app.cacheDir,"dot_preview").apply { check(mkdirs() || isDirectory) }
+                                text=java.io.File.createTempFile("region-nodes-", ".txt",directory)
+                                val selected=snapshot.nodes.mapNotNull { it.text ?: it.description }.distinct()
+                                text.writeText("Selected region captured ${snapshot.capturedAtMs}. Accessible text only; no image understanding.\n"+
+                                    selected.joinToString("\n").ifBlank { "No accessible text in this selected region." })
+                                if (adapter.attachRegion(binding,snapshot,text)) service.dotOverlay.showSelectionOutline(selection.first)
+                                else text.delete()
+                            } catch (failure: Throwable) { text?.delete(); throw failure }
+                            finally { snapshot.close() }
+                        }
+                    } else result.snapshot.close()
+                    is CaptureOutcome.Unavailable -> {
+                        if (!admitted(ticket, binding)) return@launch
+                        if (selection != null) {
+                            adapter.captureError.value=true
+                            Toast.makeText(service,R.string.nm_dot_region_reselect_hint,Toast.LENGTH_SHORT).show()
+                        } else {
+                        // A fresh read is required: failed screenshot nodes are never reused.
+                        when (val fallback = nodeCapture(binding.generation)) {
+                            is CaptureOutcome.Success -> if (admitted(ticket, binding)) adapter.attach(binding,fallback.snapshot) else fallback.snapshot.close()
+                            is CaptureOutcome.Unavailable -> if (admitted(ticket, binding)) adapter.captureError.value = true
+                        }
+                        }
+                    }
+                }
+                if(admitted(ticket, binding)) service.dotOverlay.finishCaptureScan(ticket.epoch,adapter.preview.value!=null)
+                else service.dotOverlay.cancelCaptureScan(ticket.epoch)
+                } catch(cancelled: CancellationException) {
+                    service.dotOverlay.cancelCaptureScan(ticket.epoch)
+                    throw cancelled
+                } catch(failure: Exception) {
+                    if(admitted(ticket, binding)) {
+                        adapter.captureError.value=true
+                        service.dotOverlay.finishCaptureScan(ticket.epoch,false)
+                    } else service.dotOverlay.cancelCaptureScan(ticket.epoch)
+                } finally {
+                    if (foreground.accepts(ticket)) capturing.value = false
+                }
+            }
+            } finally {
+                // A replacement Care/Chat admission owns its own windows. Stop and close
+                // release the retained card explicitly before cancelling this job.
+                if (foreground.accepts(ticket)) releaseHeldCare()
+            }
+        }
+    }
+
+    private suspend fun awaitPanelFocus(panel: android.view.View, admitted: () -> Boolean): Boolean =
+        withTimeoutOrNull(2_000) {
+            while (!panel.isAttachedToWindow || !panel.hasWindowFocus()) {
+                if (!admitted() || service.dotOverlay.panelView !== panel) return@withTimeoutOrNull false
+                suspendCancellableCoroutine<Unit> { continuation ->
+                    val frame = Runnable { if (continuation.isActive) continuation.resumeWith(Result.success(Unit)) }
+                    panel.postOnAnimation(frame)
+                    continuation.invokeOnCancellation { panel.removeCallbacks(frame) }
+                }
+            }
+            admitted() && service.dotOverlay.panelView === panel
+        } == true
+
+    /** Stop the owned stream, retaining the mounted panel and canonical history. */
+    fun stopChatReply(binding: SessionBinding) {
+        if (!foreground.state.value.connected) return
+        refreshAccount()
+        if (!adapter.accepts(binding)) return
+        // Stop also releases a Care card retained during native focus handoff.
+        careOwner?.pause(hide = true)
+        careWindow?.hide()
+        service.dotOverlay.clearSelectionOutline()
+        service.dotOverlay.dismissOrbMenu()
+        val mode = foreground.state.value.mode
+        foreground.invalidate()
+        service.dotOverlay.cancelCaptureScan()
+        capturing.value = false
+        opening?.cancel()
+        projection?.cancel()
+        adapter.cancel(binding)
+        val fresh = adapter.bind(binding.sessionId)
+        foreground.update(mode, fresh, DotForegroundOperation.Idle)
+        project()
+    }
+
+    fun close() {
+        service.dotOverlay.clearSelectionOutline()
+        service.dotOverlay.dismissOrbMenu()
+        service.dotOverlay.cancelCaptureScan()
+        foreground.invalidate()
+        capturing.value = false
+        projection?.cancel()
+        opening?.cancel()
+        adapter.voice?.cancel(); adapter.closeSpeech()
+        careOwner?.pause(hide = true)
+        careWindow?.hide()
+        adapter.binding.value?.let(adapter::cancel)
+        service.dotOverlay.collapsePanel()
+    }
+
+    fun disconnect() {
+        if (!foreground.state.value.connected) return
+        foreground.disconnect()
+        metadata.unregisterOnSharedPreferenceChangeListener(accountListener)
+        CareOperationGate.observe(null)
+        close()
+        careOwner?.disconnect(); careWindow?.close(); careWindow=null
+        careOwner = null
+        scope.cancel()
+    }
+}
